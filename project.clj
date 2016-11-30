@@ -4,9 +4,11 @@
   :license {:name "Gnu General Public License version 3.0"
             :url "http://www.gnu.org/copyleft/gpl.html"}
   :dependencies [[org.clojure/clojure "1.9.0-alpha14"]
+                 [org.clojure/math.numeric-tower "0.0.4"]
+                 [org.clojure/tools.cli "0.3.5"]
+                 [org.clojure/data.csv "0.1.3"]
                  [net.mikera/core.matrix "0.57.0"]
                  [net.mikera/vectorz-clj "0.45.0"]
-                 [org.clojure/math.numeric-tower "0.0.4"]
                  [incanter "1.5.7"]
                  [criterium "0.4.4"] ; to use, e.g.: (use '[criterium.core :as c])
                  [org.jfree/jcommon "1.0.21"]    ; for MASON
