@@ -9,6 +9,9 @@
                  [org.clojure/math.numeric-tower "0.0.4"]
                  [incanter "1.5.7"]
                  [criterium "0.4.4"]] ; to use, e.g.: (use '[criterium.core :as c])
+
+  :source-paths ["src/clj"]
+  :java-source-paths ["src/java"]
   :main ^:skip-aot free-agent.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})
