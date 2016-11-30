@@ -17,3 +17,5 @@
 pom.xml
 pom.xml.asc
 .*.swp
+doc/classdocs.html
+doc/manual.pdf
