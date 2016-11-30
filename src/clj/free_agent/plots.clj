@@ -3,7 +3,7 @@
 ;; the file LICENSE.
 
 (ns free.plots
-  (:require [clojure.core.matrix :as mx]
+  (:require [clojure.core.matrix :as m]
             [incanter.charts :as ch]
             [incanter.core :as co]))
 
@@ -22,7 +22,7 @@
   "Plot the stages for a single parameter--phi, epsilon, etc."
   [chart base-color color-inc first-line-num plot-fn level-stages level-param]
   (let [param-stages (map level-param level-stages)
-        idxs-seq (mx/index-seq (first param-stages)) ; TODO for sigma only use two, since it's symmetric?
+        idxs-seq (m/index-seq (first param-stages)) ; TODO for sigma only use two, since it's symmetric?
         num-idxs (count idxs-seq)
         last-line-num (+ first-line-num num-idxs)]
     (doseq [[idxs color line-num] (map vector 
