@@ -10,7 +10,8 @@
 
 (ns free-agent.level
   (:require [clojure.spec :as s]
-            [free.arithmetic :refer [e* m* m+ m- tr inv make-identity-obj limit-sigma]]
+            [clojure.core.matrix :as m]
+            ;[free.arithmetic :refer [e* m* m+ m- tr inv make-identity-obj limit-sigma]]
             [utils.string :as us]))
 
 ;;;;;;;;;;;;;;;;;;;;;
@@ -20,6 +21,8 @@
          theta-inc next-theta
          next-level next-levels
          m-square)
+
+(def scalar-sigma-min 1.0)
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;; Level
@@ -127,8 +130,8 @@
   the generative function gen at this level, and subtracting the error at 
   this level.  See equations (44), (53) in Bogacz's \"Tutorial\"."
   [phi epsilon -epsilon -theta gen']
-  (m- (e* (gen' phi)
-          (m* (tr -theta) -epsilon))
+  (m/sub (m/mul (gen' phi)
+          (m/mmul (m/transpose -theta) -epsilon))
       epsilon))
 
 (defn next-phi 
@@ -138,8 +141,8 @@
   (let [{:keys [phi phi-dt epsilon gen']} level
         -epsilon (:epsilon -level)
         -theta (:theta -level)]
-    (m+ phi 
-        (e* phi-dt
+    (m/add phi 
+        (m/mul phi-dt
             (phi-inc phi epsilon -epsilon -theta gen')))))
 
 ;;;;;;;;;;;;;;;;;;;;;
@@ -152,9 +155,9 @@
   variance/cov-matrix at this level, and making the whole thing
   relative to phi at this level. See equation (54) in Bogacz's \"Tutorial\"."
   [epsilon phi +phi sigma theta +gen]
-  (m- phi 
-      (m* theta (+gen +phi))
-      (m* sigma epsilon)))
+  (m/sub phi 
+      (m/mmul theta (+gen +phi))
+      (m/mmul sigma epsilon)))
 
 (defn next-epsilon
   "Calculates the next-timestep 'error' epsilon from this level and the one
@@ -163,8 +166,8 @@
   (let [{:keys [phi epsilon epsilon-dt sigma theta]} level
         +phi (:phi +level)
         +gen (:gen +level)
-        scaled-increment (e* epsilon-dt (epsilon-inc epsilon phi +phi sigma theta +gen))]
-    (m+ epsilon scaled-increment)))
+        scaled-increment (m/mul epsilon-dt (epsilon-inc epsilon phi +phi sigma theta +gen))]
+    (m/add epsilon scaled-increment)))
 
 ;(defn next-epsilon
 ;  "Calculates the next-timestep 'error' epsilon from this level and the one
@@ -173,8 +176,8 @@
 ;  (let [{:keys [phi epsilon epsilon-dt sigma theta]} level
 ;        +phi (:phi +level)
 ;        +gen (:gen +level)]
-;    (m+ epsilon
-;        (e* epsilon-dt
+;    (m/add epsilon
+;        (m/mul epsilon-dt
 ;            (epsilon-inc epsilon phi +phi sigma theta +gen)))))
 
 ;;;;;;;;;;;;;;;;;;;;;
@@ -187,8 +190,21 @@
   matrix inversion for vector/matrix calcualtions, a non-Hebbian calculation,
   rather than the local update methods of section 5.)"
   [epsilon sigma]
-  (e* 0.5 (m- (m-square epsilon)
-              (inv sigma))))
+  (m/mul 0.5 (m/sub (m-square epsilon)
+              (m/inverse sigma))))
+
+(defn limit-sigma
+  "If sigma is a scalar variance or a single-element vector or matrix, then clip the
+  value to be no less than sigma-min.  If sigma is a covariance matrix of at least 
+  2x2 size, just return it as is, because I'm not yet sure how to limit it.  
+  (Using determinant > n? positive definite? Neither's widely implemented in core.matrix.)"
+  [sigma]
+  (letfn [(mat-max [x y] (mx/matrix [[(max x y)]]))]
+    (case (mx/shape ~sigma)
+      nil   (max     sigma scalar-sigma-min)
+      [1]   (mat-max sigma scalar-sigma-min)
+      [[1]] (mat-max sigma scalar-sigma-min)
+      sigma)))
 
 (defn next-sigma
   "Calculates the next-timestep sigma, i.e. the variance or the covariance 
@@ -196,8 +212,8 @@
   [level]
   (let [{:keys [epsilon sigma sigma-dt]} level]
     (limit-sigma
-      (m+ sigma
-          (e* sigma-dt
+      (m/add sigma
+          (m/mul sigma-dt
               (sigma-inc epsilon sigma))))))
 
 
@@ -210,8 +226,8 @@
   along with the mean of the generative function at the next level up.  
   See equation (56) in Bogacz's \"Tutorial\"."
   [epsilon +phi +gen]
-  (m* epsilon 
-      (tr (+gen +phi))))
+  (m/mmul epsilon 
+      (m/transpose (+gen +phi))))
 
 (defn next-theta
   "Calculates the next-timestep theta component of the mean value function
@@ -220,8 +236,8 @@
   (let [{:keys [epsilon theta theta-dt]} level
         +phi (:phi +level)
         +gen (:gen +level)]
-    (m+ theta
-        (e* theta-dt
+    (m/add theta
+        (m/mul theta-dt
             (theta-inc epsilon +phi +gen)))))
 
 ;;;;;;;;;;;;;;;;;;;;;
@@ -230,7 +246,7 @@
 (defn m-square
   "Calculates the matrix or scalar square of a value."
   [x]
-  (m* x (tr x)))
+  (m/mmul x (m/transpose x)))
 
 ;(defn print-level
 ;  [level]
