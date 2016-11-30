@@ -13,6 +13,20 @@ perception and learning", *Journal of Mathematical Psychology*,
 Available online 14 December 2015, ISSN 0022-2496,
 http://dx.doi.org/10.1016/j.jmp.2015.11.003 .)
 
+My intention is that you can use this software with
+[MASON](http://cs.gmu.edu/~eclab/projects/mason/) if you want to have
+a GUI, but that it's also possible to run it without MASON.  This
+means you don't have a GUI, but you'll be able to inspect the data,
+write it out, and plot it with Incanter.
+
+## Setup
+
+To use this with MASON, you'll need to download the MASON jar file
+mason.19.jar (or a later version, probably), and the MASON
+libraries.tar.gz or libraries.zip file.  Move the MASON jar file into
+the lib directory under this project's directory. Unpack the contents of
+the libraries file into this project as well.
+
 
 ## License
 
