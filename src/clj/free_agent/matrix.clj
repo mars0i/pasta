@@ -4,9 +4,9 @@
 (defn col-mat
   "Turns a sequence of numbers xs into a column vector."
   [xs]
-  (mx/matrix (map vector xs)))
+  (m/matrix (map vector xs)))
 
 (defn row-mat
   "Turns a sequence of numbers xs into a row vector."
   [xs]
-  (mx/matrix (vector xs)))
+  (m/matrix (vector xs)))

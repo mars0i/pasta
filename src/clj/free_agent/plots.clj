@@ -2,7 +2,7 @@
 ;; under the Gnu General Public License version 3.0 as specified in the
 ;; the file LICENSE.
 
-(ns free.plots
+(ns free-agent.plots
   (:require [clojure.core.matrix :as m]
             [incanter.charts :as ch]
             [incanter.core :as co]))
@@ -30,7 +30,7 @@
                                        (iterate color-inc base-color) ; seq of similar but diff colors
                                        (range first-line-num last-line-num))]
       (plot-fn chart (range) 
-                     (map #(apply mx/mget % idxs) param-stages)
+                     (map #(apply m/mget % idxs) param-stages)
                      :series-label (name level-param))
                      ;; if parts of the same vector/matrix have different colors, consider using this:
                      ; :series-label (str (name level-param) " " idxs))
