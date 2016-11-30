@@ -15,7 +15,7 @@
 
   :resource-paths ["lib"]
   :source-paths ["src/clj"]
-  :java-source-paths ["src/java"]
+  ;:java-source-paths ["src/java"]
   :main ^:skip-aot free-agent.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})
