@@ -7,8 +7,9 @@
 (ns free-agent.example-3
   (:require [free-agent.level :as lvl]
             [clojure.core.matrix :as m] ; needed for arithmetic macros even if not used explicitly
-            [free.random :as ran] ; clj or cljs depending on dialect
-            [free-agent.matrix :as fm]))
+            [free-agent.matrix :as fm]
+            [free.core :as fc]
+            [utils.random :as ran]))
 
 (m/set-current-implementation :vectorz)
 
@@ -26,8 +27,8 @@
                                [(* x1 2.0 x2)]])))
 
 (def next-bottom (lvl/make-next-bottom 
-                   #(m/matrix [[(ran/next-gaussian  2 5)]
-                                [(ran/next-gaussian -1 3)]])))
+                   #(m/matrix [[(ran/next-gaussian fc/rng 2 5)]
+                               [(ran/next-gaussian fc/rng -1 3)]])))
 
 (def init-theta (m/identity-matrix 2)) ; i.e. initially pass value of gen(phi) through unchanged
 
