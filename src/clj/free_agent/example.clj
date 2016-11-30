@@ -4,11 +4,11 @@
 
 ;; simple vector/matrix example
 
-(ns free-agent.example-3
+(ns free-agent.example
   (:require [free-agent.level :as lvl]
             [clojure.core.matrix :as m] ; needed for arithmetic macros even if not used explicitly
             [free-agent.matrix :as fm]
-            [free.core :as fc]
+            [free-agent.core :as fc]
             [utils.random :as ran]))
 
 (m/set-current-implementation :vectorz)
