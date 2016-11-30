@@ -2,27 +2,17 @@
 ;;; is distributed under the Gnu General Public License version 3.0 as
 ;;; specified in the file LICENSE.
 
-;; Note: Traditional MASON models put e.g. Continuous2D and Network in another
-;; class that's central to the model.  This class would normally use those
-;; instances from the other class, passing them to portrayals created here.
-;; Since the underlying model (Sim) doesn't need spatial relations or explicit
-;; link representations, I create the Continuous2D and Network here, because
-;; they're needed by the portrayals.
-
-(ns intermit.SimWithUI
-  (:require [intermit.layout :as lay]
-            [intermit.Sim :as s])
-  (:import [intermit Sim]
+(ns free-agent.SimWithUI
+  (:require [free-agent.Sim :as s])
+  (:import [free_agent Sim]
            [sim.engine Steppable Schedule]
            [sim.field.continuous Continuous2D]
-           [sim.field.network Network Edge]
            [sim.portrayal.continuous ContinuousPortrayal2D]
-           [sim.portrayal.network NetworkPortrayal2D SpatialNetwork2D SimpleEdgePortrayal2D]
            [sim.portrayal.simple OvalPortrayal2D OrientedPortrayal2D]
            [sim.display Console Display2D]
            [java.awt Color])
   (:gen-class
-    :name intermit.SimWithUI
+    :name free-agent.SimWithUI
     :extends sim.display.GUIState
     :main true
     :exposes {state {:get getState}}  ; accessor for field in superclass
@@ -79,7 +69,7 @@
   (let [sim (Sim. (System/currentTimeMillis))]
     (s/record-commandline-args! args) 
     (when @s/commandline (s/set-instance-state-from-commandline! sim s/commandline))
-    (.setVisible (Console. (intermit.SimWithUI. sim)) true)))
+    (.setVisible (Console. (free-agent.SimWithUI. sim)) true)))
 
 (defn -getName [this] "Intermittent") ; override method in super
 
@@ -135,7 +125,7 @@
                          (if (= (.getLinkStyle sim) s/sequential-link-style-idx) 0.0 lay/indiv-position-jitter) ; jitter makes it easier to distinguish links that just happen to cross a node
                          field
                          communities)
-    (.setPortrayalForClass field-portrayal intermit.Sim.Indiv indiv-portrayal)
+    (.setPortrayalForClass field-portrayal free-agent.Sim.Indiv indiv-portrayal)
     ;; set up within-community social network link display:
     (.clear soc-net)
     (lay/set-links! soc-net population) ; set-links! sets edges' info fields to nil (null): edges have no weight, so weight defaults to 1.0
@@ -185,6 +175,6 @@
   Returns the new Sim object."
   []
   (let [sim (Sim. (System/currentTimeMillis))]
-    (.setVisible (Console. (intermit.SimWithUI. sim))
+    (.setVisible (Console. (free-agent.SimWithUI. sim))
                  true)
     sim))

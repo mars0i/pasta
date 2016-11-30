@@ -1,19 +1,6 @@
-;;; This software is copyright 2015 by Marshall Abrams, and
+;;; This software is copyright 2016 by Marshall Abrams, and
 ;;; is distributed under the Gnu General Public License version 3.0 as
 ;;; specified in the file LICENSE.
-
-;; IN THIS VERSION:
-;; * There is NOT a step function in each agent.
-;; * There is a single step function for the entire simulation.
-;; * Indivs update their states update "in parallel" by updating a "new" 
-;;   version of a variable from others "old" versions.
-
-;; Note: Traditional MASON models put e.g. Continuous2D and Network here, 
-;; and then the GUIState class would normally use those instances from 
-;; this class, passing them to portrayals created in the GUIState class.
-;; Since the underlying model doesn't need spatial relations or explicit
-;; link representations, I only create the Continuous2D and Network objects
-;; in the GUIState class (SimWithGUI), where they're needed to be used by portrayals.
 
 ;; Tip: Methods named "getBlahBlah" or "setBlahBlah" will be found by the UI via reflection.
 
@@ -22,52 +9,32 @@
 
 ;(set! *warn-on-reflection* true)
 
-;; Put gen-class Sim first so we can type-hint methods in Indiv etc.
-;; But put intermit.Sim's methods at end, so we can type-hint references to Indiv, etc. in them.
-(ns intermit.Sim
+;; Put gen-class Sim first so we can type-hint methods in agent class etc.
+;; But put Sim's methods at end, so we can type-hint references to agent class, etc. in them.
+(ns free-agent.Sim
   (:require [clojure.tools.cli :as cli]
             [clojure.pprint :as pp])
-  (:import [sim.engine Steppable Schedule]
-           [sim.portrayal Oriented2D]
-           [sim.util Interval Double2D]
-           [sim.util.distribution Poisson Normal Beta]
+  (:import ;[sim.engine Steppable Schedule]
+           ;[sim.portrayal Oriented2D]
+           ;[sim.util Interval Double2D]
+           ;[sim.util.distribution Poisson Normal Beta]
            [ec.util MersenneTwisterFast]
-           [java.lang String]
-           [java.util Collection]
-           [intermit Sim]) ; import rest of classes after each is defined
-  (:gen-class :name intermit.Sim
+           ;[java.lang String]
+           ;[java.util Collection]
+           [free-agent Sim]) ; import rest of classes after each is defined
+  (:gen-class :name free-agent.Sim
               :extends sim.engine.SimState                         ; includes signature for the start() method
               :exposes-methods {start superStart}                  ; alias method start() in superclass. (Don't name it 'super-start'; use a Java name.)
-              :methods [[getNumCommunities [] long]                ; these methods are defined much further down
-                        [setNumCommunities [long] void]
-                        [domNumCommunities [] java.lang.Object]
-                        [getIndivsPerCommunity [] long]
-                        [setIndivsPerCommunity [long] void]
-                        [domIndivsPerCommunity [] java.lang.Object]
-                        [getLinkProb [] double]
-                        [setLinkProb [double] void]
-                        [domLinkProb [] java.lang.Object]
-                        [getTranStddev [] double]
-                        [setTranStddev [double] void]
-                        [domTranStddev [] java.lang.Object]
-                        [getGlobalInterlocMean [] double]     ; i.e. mean # of interlocutors from global population
-                        [setGlobalInterlocMean [double] void]
-                        [domGlobalInterlocMean [] java.lang.Object]
-                        [getSuccessSampleSize [] double]
-                        [setSuccessSampleSize [double] void]
-                        [domSuccessSampleSize [] java.lang.Object]
-                        [getSuccessThreshold [] double]
-                        [setSuccessThreshold [double] void]
-                        [domSuccessThreshold [] java.lang.Object]
-                        [getReligDistribution [] "[D" ]
-                        [getMeanReligDistribution [] "[D" ]
-                        [getMeanReligTimeSeries [] "[Lsim.util.Double2D;"]
-                        [getSuccessDistribution [] "[D" ]
-                        [getMeanSuccessDistribution [] "[D" ]
-                        [getMeanSuccessTimeSeries [] "[Lsim.util.Double2D;"]
-                        [getLinkStyle [] long]
-                        [setLinkStyle [long] void]
-                        [domLinkStyle [] java.lang.Object]]
+              :methods [;;EXAMPLES:
+                        ;[getNumCommunities [] long]                ; these methods are defined much further down
+                        ;[setNumCommunities [long] void]
+                        ;[domNumCommunities [] java.lang.Object]
+                        ;[getLinkProb [] double]
+                        ;[setLinkProb [double] void]
+                        ;[getReligDistribution [] "[D" ]
+                        ;[getMeanReligDistribution [] "[D" ]
+                        ;[getMeanReligTimeSeries [] "[Lsim.util.Double2D;"]
+                       ]
               :state instanceState
               :init init-instance-state
               :main true))
@@ -75,37 +42,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; DEFAULTS AND GENERAL UTILITY CODE
 
-(declare ;; constructor functions defined by deftype or defrecord:
-         ->InstanceState ->Indiv ->Community
-         ;; method functions defined by defprotocol or definterface:
-         getId getSuccess getRelig getNeighbors get-rest-of-pop get-prev-speaker add-neighbor! set-rest-of-community! set-rest-of-pop! copy-relig! update-relig! update-success! get-members
-         ;; regular functions defined by defn:
-         remove-if-identical -init-instance-state -getNumCommunities -setNumCommunities -domNumCommunities -getIndivsPerCommunity -setIndivsPerCommunity -domIndivsPerCommunity 
-         -getLinkProb -setLinkProb -domLinkProb -getTranStddev -setTranStddev -domTranStddev -getGlobalInterlocMean -setGlobalInterlocMean -domGlobalInterlocMean -getSuccessSampleSize 
-         -setSuccessSampleSize -domSuccessSampleSize -getLinkStyle -setLinkStyle -domLinkStyle get-communities get-population 
-         -getReligDistribution -getMeanReligTimeSeries -getMeanReligDistribution -getSuccessDistribution -getMeanSuccessTimeSeries -getMeanSuccessDistribution add-relig add-success 
-         bag-shuffle bag-sample take-rand choose-others-from-pop choose-most-successful calc-success normal-noise beta-noise make-indiv binomial-link-indivs! sequential-link-indivs! 
-         both-link-indivs! link-style-name-to-idx link-indivs!  make-community-of-indivs make-communities-into-pop! collect-data report-run-params record-commandline-args! 
-         set-instance-state-from-commandline! -main -start relig-to-success
-         ;; non-functions not defined immediately below:
-         sum-relig sum-success link-style-names link-style-fns binomial-link-style-idx sequential-link-style-idx both-link-style-idx commandline)
+(declare )
 
-(def initial-num-communities 12) ; use something that factors into x and y dimensions
-(def initial-indivs-per-community 15)
-(def initial-link-prob 0.20)
-(def initial-tran-stddev 0.03)
-(def initial-global-interloc-mean 0.1)     ; i.e. Poisson-mean interlocutors from global population
-(def initial-success-sample-size 10.0)
-(def initial-link-style-idx 1) ; This is an index into link-style-names and link-style-fns, defined below.
-(def initial-success-threshold 0.95) ; used by relig-to-success, which is used by calc-success
-;; (We can't put link-style-fns here; eval'ing them at this point produces nothing.)
-
-
-(def slider-max-num-communities 50)
-(def slider-max-indivs-per-community 50)
-(def slider-max-tran-stddev 3.0)
-(def slider-max-global-interloc-mean 200.0)
-(def slider-max-success-sample-size 50.0)
+;; EXAMPLE:
+;(def slider-max-num-communities 50)
 
 (defn remove-if-identical
   "Removes from coll any object that's identical to obj."
@@ -237,7 +177,7 @@
 (defn -main
   [& args]
   (record-commandline-args! args) ; The Sim isn't available yet, so store commandline args for later access by start().
-  (sim.engine.SimState/doLoop intermit.Sim (into-array String args))
+  (sim.engine.SimState/doLoop free-agent.Sim (into-array String args))
   (System/exit 0))
 
 ;; doall all sequences below.  They're short, so there's no point in waiting for them to get realized who knows where/when.
