@@ -11,7 +11,6 @@
 (ns free-agent.level
   (:require [clojure.spec :as s]
             [clojure.core.matrix :as m]
-            ;[free.arithmetic :refer [e* m* m+ m- tr inv make-identity-obj limit-sigma]]
             [utils.string :as us]))
 
 ;;;;;;;;;;;;;;;;;;;;;
