@@ -199,8 +199,8 @@
   2x2 size, just return it as is, because I'm not yet sure how to limit it.  
   (Using determinant > n? positive definite? Neither's widely implemented in core.matrix.)"
   [sigma]
-  (letfn [(mat-max [x y] (mx/matrix [[(max x y)]]))]
-    (case (mx/shape ~sigma)
+  (letfn [(mat-max [x y] (m/matrix [[(max x y)]]))]
+    (case (m/shape sigma)
       nil   (max     sigma scalar-sigma-min)
       [1]   (mat-max sigma scalar-sigma-min)
       [[1]] (mat-max sigma scalar-sigma-min)
