@@ -13,7 +13,7 @@
                  [org.jfree/jfreechart "1.0.17"] ; for MASON
                  [org.beanshell/bsh "2.0b4"]]    ; for MASON
 
-  :resource-paths ["resources/jars"]
+  :resource-paths ["lib"]
   :source-paths ["src/clj"]
   :java-source-paths ["src/java"]
   :main ^:skip-aot free-agent.core
