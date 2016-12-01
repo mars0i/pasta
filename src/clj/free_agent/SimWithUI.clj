@@ -93,7 +93,7 @@
                                 population @(.population istate)]
                             (.clear talk-net)
                             (doseq [indiv population] 
-                              (when-let [speaker (s/get-prev-speaker indiv)]
+                              (when-let [speaker (s/get-prev-speaker indiv)]  ; UPDATE LINKS FROM DATA IN INDIVS
                                 (.addEdge talk-net speaker indiv nil))))))))
                                                  ;  from    to  (from end is wider; to end is pointed)
 
@@ -113,7 +113,7 @@
         indiv-portrayal (OrientedPortrayal2D.  ; what this represents is set in the Oriented2D part of Indiv in Sim.clj
                           (proxy [OvalPortrayal2D] [1.5]    ; note proxy auto-captures 'this'
                             (draw [indiv graphics info]                      ; override OvalPortrayal2D method
-                              (let [shade (int (* (.getRelig indiv) 255))]
+                              (let [shade (int (* (.getRelig indiv) 255))]  ; UPDATE COLOR FROM DATA IN INDIV
                                 (set! (.-paint this) (Color. shade 0 (- 255 shade))) ; paint var is in OvalPortrayal2D
                                 (proxy-super draw indiv graphics info))))
                           0 1.75 (Color. 255 175 175) OrientedPortrayal2D/SHAPE_LINE) ; color is of orientation line/shape

@@ -59,116 +59,24 @@
 
 ;; Note some of these have to be atoms so that that we can allow restarting with a different setup.
 (deftype InstanceState [; run parameters:
-                        numCommunities      ; number of communities
-                        indivsPerCommunity  ; exact number of indivs in each
-                        linkStyleIdx ; see sect 3.4.2, "MASON Extensions",  of MASON manual v. 19
-                        linkProb
-                        tranStddev
-                        globalInterlocMean ; mean number of interlocutors from global pop
-                        successSampleSize
-                        successThreshold
-                        ; runtime storage slots:
-                        communities             ; holds the communities
-                        population              ; holds all individuals
-                        poisson                 ; a Poisson-distribution wrapper
-                        gaussian                ; a normally-distribution wrapper
-                        beta                    ; a beta-distribution wrapper
-                        meanReligSeries         ; records mean relig values at timestep
-                        meanSuccessSeries])     ; records mean success values at timestep
+                        ;numCommunities      ; number of communities
+                        ;linkProb
+                        ])     ; records mean success values at timestep
 
 (defn -init-instance-state
   "Initializes instance-state when an instance of class Sim is created."
   [seed]
-  [[seed] (->InstanceState (atom initial-num-communities)
-                          (atom initial-indivs-per-community) 
-                          (atom initial-link-style-idx)
-                          (atom initial-link-prob)
-                          (atom initial-tran-stddev)
-                          (atom initial-global-interloc-mean)
-                          (atom initial-success-sample-size)
-                          (atom initial-success-threshold)
-                          (atom nil)   ; communities
-                          (atom nil)   ; population
-                          (atom nil)   ; poisson
-                          (atom nil)   ; gaussian
-                          (atom nil)   ; beta
-                          (atom [])    ; meanReligSeries
-                          (atom []))]) ; meanSuccessSeries
+  [[seed] (->InstanceState ;(atom initial-num-communities)
+                           ;(atom initial-link-prob)
+                          )])
 
 ;; NOTE The numeric -domXY fns set limits for sliders BUT DON'T RESTRICT VALUES TO THAT RANGE.  You can type in values outside the range, and they'll get used.
-(defn -getNumCommunities ^long [^Sim this] @(.numCommunities ^InstanceState (.instanceState this)))
-(defn -setNumCommunities [^Sim this ^long newval] (reset! (.numCommunities ^InstanceState (.instanceState this)) newval))
-(defn -domNumCommunities [this] (Interval. 1 ^long slider-max-num-communities))
-(defn -getIndivsPerCommunity ^long [^Sim this] @(.indivsPerCommunity ^InstanceState (.instanceState this)))
-(defn -setIndivsPerCommunity [^Sim this ^long newval] (reset! (.indivsPerCommunity ^InstanceState (.instanceState this)) newval))
-(defn -domIndivsPerCommunity [this] (Interval. 1 ^long slider-max-indivs-per-community))
-(defn -getLinkProb ^double [^Sim this] @(.linkProb ^InstanceState (.instanceState this)))
-(defn -setLinkProb [^Sim this ^double newval] (reset! (.linkProb ^InstanceState (.instanceState this)) newval))
-(defn -domLinkProb [this] (Interval. 0.0 1.0))
-(defn -getTranStddev ^double [^Sim this] @(.tranStddev ^InstanceState (.instanceState this)))
-(defn -setTranStddev [^Sim this ^double newval] (reset! (.tranStddev ^InstanceState (.instanceState this)) newval))
-(defn -domTranStddev [this] (Interval. 0.0 ^double slider-max-tran-stddev))
-(defn -getGlobalInterlocMean ^double [^Sim this] @(.globalInterlocMean ^InstanceState (.instanceState this)))
-(defn -setGlobalInterlocMean [^Sim this ^double newval] 
-  (let [^InstanceState istate (.instanceState this)]
-    (reset! (.globalInterlocMean istate) newval)    ; store it so that UI can display its current value
-    (when-let [^Poisson poisson @(.poisson istate)] ; avoid npe: poisson isn't created until start is run (at which point it will be init'ed with value of globalInterlocMean)
-      (.setMean poisson newval))))                  ; allows changing value during the middle of a run.
-(defn -domGlobalInterlocMean [this] (Interval. 0.0 ^double slider-max-global-interloc-mean)) ; Poisson dist mean: how many indivs each person talks to from entire pop (including neighbors).
-(defn -getSuccessSampleSize ^double [^Sim this] @(.successSampleSize ^InstanceState (.instanceState this)))
-(defn -setSuccessSampleSize [^Sim this ^double newval] (reset! (.successSampleSize ^InstanceState (.instanceState this)) newval))
-(defn -domSuccessSampleSize [this] (Interval. 0.01 ^double slider-max-success-sample-size)) ; use small non-zero as the min; zero should work, theoretically, but hangs the app and isn't needed.
-(defn -getSuccessThreshold ^double [^Sim this] @(.successThreshold ^InstanceState (.instanceState this)))
-(defn -setSuccessThreshold [^Sim this ^double newval] (reset! (.successThreshold ^InstanceState (.instanceState this)) newval))
-(defn -domSuccessThreshold [this] (Interval. 0.0 1.0)) 
-
-;; We set the function that decides how to link nodes using MASON's popup menu functionality,
-;; which uses a mapping between strings in an array and their indexes.  It's the string that's
-;; displayed; it's the index that's returned, and that we need to use to choose the appropriate function.
-;; See related defs below, and sect 3.4.2, "MASON Extensions",  of MASON manual v. 19.
-(defn -getLinkStyle ^long [^Sim this] @(.linkStyleIdx ^InstanceState (.instanceState this)))
-(defn -setLinkStyle [^Sim this ^long newval] (reset! (.linkStyleIdx ^InstanceState (.instanceState this)) newval))
-(defn -domLinkStyle [^Sim this] (into-array link-style-names))
-
-;; Useful since the fields contain atoms:
-(defn get-communities [^Sim this] @(.communities ^InstanceState (.instanceState this)))
-(defn get-population [^Sim this] @(.population ^InstanceState (.instanceState this)))
-
-(defn -getReligDistribution
-  "Returns array of doubles of relig values in population at current timestep."
-  [^Sim this] 
-  (double-array (map getRelig (get-population this))))
-
-(defn -getMeanReligTimeSeries
-  "Returns array of sim.util.Double2D's in which the first element is a
-  timestep and the second is the population's mean relig at that timestep."
-  [^Sim this] 
-  (into-array sim.util.Double2D @(.meanReligSeries ^InstanceState (.instanceState this)))) ; Double2D version: just convert Clojure vector to Java array
-
-(defn -getMeanReligDistribution
-  "Returns array of doubles containing the population's mean relig values at
-  all timesteps until and including the current timestep.  (Useful for generating
-  a histogram over all timesteps so far.)"
-  [^Sim this]
-  (double-array (map #(.y ^Double2D %) @(.meanReligSeries ^InstanceState (.instanceState this)))))    ; Double2D version: extract data in y element
-
-(defn -getSuccessDistribution 
- "Returns array of doubles of success values in population at current timestep."
-  [^Sim this]
-  (double-array (map getSuccess (get-population this))))
-
-(defn -getMeanSuccessTimeSeries
-  "Returns array of sim.util.Double2D's in which the first element is a
-  timestep and the second is the population's mean success at that timestep."
-  [^Sim this] 
-  (into-array sim.util.Double2D @(.meanSuccessSeries ^InstanceState (.instanceState this)))) ; Double2D version: just convert Clojure vector to Java array
-
-(defn -getMeanSuccessDistribution
-  "Returns array of doubles containing the population's mean success values at
-  all timesteps until and including the current timestep.  (Useful for generating
-  a histogram over all timesteps so far.)"
-  [^Sim this]
-  (double-array (map #(.y ^Double2D %) @(.meanSuccessSeries ^InstanceState (.instanceState this)))))    ; Double2D version: extract data in y element
+;(defn -getNumCommunities ^long [^Sim this] @(.numCommunities ^InstanceState (.instanceState this)))
+;(defn -setNumCommunities [^Sim this ^long newval] (reset! (.numCommunities ^InstanceState (.instanceState this)) newval))
+;(defn -domNumCommunities [this] (Interval. 1 ^long slider-max-num-communities))
+;(defn -getLinkProb ^double [^Sim this] @(.linkProb ^InstanceState (.instanceState this)))
+;(defn -setLinkProb [^Sim this ^double newval] (reset! (.linkProb ^InstanceState (.instanceState this)) newval))
+;(defn -domLinkProb [this] (Interval. 0.0 1.0))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; SIM: Definitions for main class in this file
@@ -193,55 +101,37 @@
   ;; Construct core data structures of the simulation:
   (let [^Schedule schedule (.schedule this)
         ^InstanceState istate (.instanceState this)
-        num-communities  @(.numCommunities istate)
-        indivs-per-community @(.indivsPerCommunity istate)
-        communities (vec (repeatedly num-communities
-                                     #(make-community-of-indivs this indivs-per-community)))
-        population (make-communities-into-pop! communities)
-        meanReligSeriesAtom (.meanReligSeries istate)]
+        ;num-communities  @(.numCommunities istate)
+        ]
     ;; Record core data structures and utility states:
-    (reset! (.poisson istate) (Poisson. @(.globalInterlocMean istate) (.random this)))
-    (reset! (.gaussian istate) (Normal. 0.0 1.0 (.random this))) ; mean and sd here can be overridden later
-    (reset! (.beta istate) (Beta. 0.5 0.5 (.random this))) ; alpha and beta here will be overridden later
-    (reset! (.communities istate) communities)
-    (reset! (.population istate) population)
-    (reset! (.meanReligSeries istate) [])
+    ;(reset! (.communities istate) communities)
     ;; Schedule per-tick step function(s):
     (.scheduleRepeating schedule Schedule/EPOCH 0
                         (reify Steppable 
                           (step [this sim-state]
-                            (let [^Sim sim sim-state
-                                  ^InstanceState istate (.instanceState sim)]
-                              (doseq [^Indiv indiv population] (copy-relig! indiv sim))      ; first communicate relig (to newrelig's)
-                              (doseq [^Indiv indiv population] (update-relig! indiv))        ; then copy newrelig to relig ("parallel" update)
-                              (doseq [^Indiv indiv population] (update-success! indiv sim))  ; update each indiv's success field (uses relig)
-                              (collect-data sim))))))
+                            (let [^Sim sim sim-state]
+                              ;(doseq [^Indiv indiv population] (copy-relig! indiv sim))      ; first communicate relig (to newrelig's)
+                              ;(doseq [^Indiv indiv population] (update-relig! indiv))        ; then copy newrelig to relig ("parallel" update)
+                              ;(doseq [^Indiv indiv population] (update-success! indiv sim))  ; update each indiv's success field (uses relig)
+                              (let [[this-step & rest-steps] @pop-steps$]
+                                (reset! pop-steps$ rest-steps)
+                                (process-step this-step))
+                              (collect-data sim)
+                              )))))
   (report-run-params this)) ; At beginning of run, tell user what parameters we're using
 
 (defn collect-data
   "Record per-tick data."
   [^Sim sim]
   (let [^Schedule schedule (.schedule sim)
-        ^InstanceState istate (.instanceState sim)
-        population @(.population istate)
-        pop-size (count population)
-        tick (double (.getSteps schedule))] ; coercion will happen automatically; I made it explicit. (getTime incorrect if funny scheduling.)
-    (swap! (.meanReligSeries istate)   conj (Double2D. tick (/ (sum-relig 0.0 population) pop-size)))
-    (swap! (.meanSuccessSeries istate) conj (Double2D. tick (/ (sum-success 0.0 population) pop-size)))))
+        ^InstanceState istate (.instanceState sim)]
+        ))
 
 (defn report-run-params
   [^Sim sim]
   (let [istate (.instanceState sim)]
-    (pp/cl-format true
+    (pp/cl-format true "")))
                   "~ax~a indivs, link style = ~a, link prob (if relevant) = ~a, tran stddev = ~a, global interlocutor mean = ~a, succ sample size = ~a, succ threshold = ~a~%"
-                  @(.numCommunities istate)
-                  @(.indivsPerCommunity istate)
-                  (link-style-names @(.linkStyleIdx istate))
-                  @(.linkProb istate)
-                  @(.tranStddev istate)
-                  @(.globalInterlocMean istate)
-                  @(.successSampleSize istate)
-                  @(.successThreshold istate))))
 
 ;; Var to pass info from main to start.  Must be a better, proper, way.  Really a big kludge.
 ;; Note this is a "static" var--it's in the class, so to speak, and not in the instance (i.e. not in instanceState)
