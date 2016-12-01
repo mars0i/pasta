@@ -1,6 +1,9 @@
 algorithms, etc.
 ====
 
+(the AntForaging example might be a useful starting point on the Java
+side)
+
 two organism types
 
 two food types
