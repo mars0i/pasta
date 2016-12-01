@@ -8,6 +8,14 @@ two food types
 two display spaces (worlds)
 
 each world has random food items, <= 1 per cell
+and animals moving around on the cells
+	this means that either I need two ObjectGrid2D grids per world, 
+	one for food and one animals, or a single DenseGrid2D.
+	Unless I use core.matrix ndarrays (which can contain
+	non-numbers).  Or I suppose I could use the IntGrid2D and just
+	store indexes of animals food, etc.
+each world is toroidal
+
 
 there is a max energy per organism.
 min energy is zero.
