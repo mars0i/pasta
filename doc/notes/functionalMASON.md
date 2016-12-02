@@ -25,11 +25,32 @@ states--it's the scheduler that makes the UI window repaint.  cf. page
 24 of the v.19 manual.  (You make this happen by calling
 Display2D.reset().)  
 
-Unless it's possible to manually step the scheduler
-or something like that.
 
-Well this may be possible with Schedule.step().  Note thogh it will only do
-anything if there are things registered on the schedule.
+## But could I step the scheduler myself?
+
+i.e. rather than the MASON scheduler driving Clojure code, let Clojure
+drive the MASON UI.
+
+Well there's a step() function in Schedule.  Note though it will only do
+anything if there are things registered on the schedule.  So I would
+have to add things to the schedule before calling step(), or maybe
+just leave them on there but repeat.
+
+But how do you pause it?  This is clearly possible, since you can do
+this in the GUI.  But I think that step() is exposed mainly so people
+can override it in a subclass.  
+
+(Note though that step() in Steppable is something completely
+different.)
+
+In the MASON source, look at the second def of `pressPause() in
+display/Console.java.  This calls setPlayState().  The comments there
+suggest that we can call pressPause, but that we shouldn't mess with
+setPlayState() or anything further.
+
+Question: If I *can* do this repeated pausing and starting, is it a
+good idea?  e.g. will it make the thing a lot slower?  Note that in
+Console.java, pausing involves messing with the state of a thread.
 
 ## Is it necessary to extend SimState?
 
