@@ -1,7 +1,7 @@
-notes toward a more functional-style use of MASON
+Notes toward functional-style MASON
 ====
 
-### defrecord vs deftype
+## defrecord vs. deftype
 
 (cf. document about this in the doc dir for intermittran)
 
@@ -17,7 +17,29 @@ The real display stuff is all Protrayal stuff.  In intermittran,
 I was able to put all of that in SimUI.clj (but made a decision
 to put that one Oriented2D interface into Sim.clj).
 
-### Is it necessary to extend SimState?
+## Is it necessary to run the scheduler?
+
+Yes, it appears so.  Even if the model itself isn't controlled by the
+scheduler--if say, you're just `take`int from a lazy sequence of model
+states--it's the scheduler that makes the UI window repaint.  cf. page
+24 of the v.19 manual.  (You make this happen by calling
+Display2D.reset().)  Unless it's possible to manually step the scheduler
+or something like that.
+
+## Is it necessary to extend SimState?
+
+Summary: yes
+
+Why?  
+
+1. To get at a spun-up MersenneTwister RNG.
+2. To support user parameter configurations from the GUI.
+3. If you use MASON's scheduling facility, that comes from SimState, too.
+4. You do need a GUIState if you want to have a UI, and the only
+   constructor for GUIState listed in the docs requires that you pass 
+   in a SimState.
+
+#### discussion:
 
 It's clear you need to extend MASON's GUIState to display stuff via
 MASON.  Is it necessary to have a class that extends its SimState?
@@ -41,7 +63,7 @@ use atoms or deftype or something else to allow modification of
 parameters.  So you have to have a whole bunch of boilerplate for each
 parameter you want accessible through the GUI.
 
-SimState provides step() and start(), but you can use GUIState's
-intead, which will call the SimState's scheduler, for example.
+Or just write SimState in Java. :-(
 
-
+(SimState provides step() and start(), but you can use GUIState's
+intead, which will call the SimState's scheduler, for example.)
