@@ -23,8 +23,13 @@ Yes, it appears so.  Even if the model itself isn't controlled by the
 scheduler--if say, you're just `take`int from a lazy sequence of model
 states--it's the scheduler that makes the UI window repaint.  cf. page
 24 of the v.19 manual.  (You make this happen by calling
-Display2D.reset().)  Unless it's possible to manually step the scheduler
+Display2D.reset().)  
+
+Unless it's possible to manually step the scheduler
 or something like that.
+
+Well this may be possible with Schedule.step().  Note thogh it will only do
+anything if there are things registered on the schedule.
 
 ## Is it necessary to extend SimState?
 
