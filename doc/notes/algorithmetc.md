@@ -27,6 +27,9 @@ and animals moving around on the cells
 	world and size.
 
 each world is toroidal
+maybe with a hex grid, so I don't have to think about the Moore/vonNeumann
+issue.  Note that a hex grid should have even-numbered height and width
+if you want it to be toroidal.
 
 
 there is a max energy per organism.
