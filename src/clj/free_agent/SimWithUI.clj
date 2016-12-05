@@ -66,12 +66,12 @@
 
 (defn -main
   [& args]
-  (let [sim (Sim. (System/currentTimeMillis))]
+  (let [sim (Sim. (System/currentTimeMillis))]                                         ; CREATE AN INSTANCE OF my SimState
     (s/record-commandline-args! args) 
     (when @s/commandline (s/set-instance-state-from-commandline! sim s/commandline))
-    (.setVisible (Console. (free-agent.SimWithUI. sim)) true)))
+    (.setVisible (Console. (free-agent.SimWithUI. sim)) true)))                        ; THIS IS WHAT CONNECTS THE GUI TO my SimState (I think)
 
-(defn -getName [this] "Intermittent") ; override method in super
+(defn -getName [this] "free-agent") ; override method in super
 
 ;; This is called by the pause and go buttons when starting from fully stopped.
 (defn -start
@@ -88,9 +88,9 @@
                       Schedule/EPOCH 2
                       (reify Steppable
                         (step [this-steppable sim-state]
-                          (let [talk-net (get-talk-net this-gui)
-                                istate (.instanceState sim-state)
-                                population @(.population istate)]
+                          (let [talk-net (get-talk-net this-gui)  ; DEFINITELY NOT NEEDED FOR free-agent
+                                istate (.instanceState sim-state) ; PROBABLY NOT NEEDED FOR free-agent
+                                population @(.population istate)] ; PROBABLY NOT NEEDED FOR free-agent
                             (.clear talk-net)
                             (doseq [indiv population] 
                               (when-let [speaker (s/get-prev-speaker indiv)]  ; UPDATE LINKS FROM DATA IN INDIVS
