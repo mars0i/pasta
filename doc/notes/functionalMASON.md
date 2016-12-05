@@ -17,6 +17,7 @@ The real display stuff is all Protrayal stuff.  In intermittran,
 I was able to put all of that in SimUI.clj (but made a decision
 to put that one Oriented2D interface into Sim.clj).
 
+
 ## Is it necessary to run the scheduler?
 
 Yes, it appears so.  Even if the model itself isn't controlled by the
@@ -52,6 +53,7 @@ Question: If I *can* do this repeated pausing and starting, is it a
 good idea?  e.g. will it make the thing a lot slower?  Note that in
 Console.java, pausing involves messing with the state of a thread.
 
+
 ## Is it necessary to extend SimState?
 
 Summary: yes
@@ -65,7 +67,7 @@ Why?
    constructor for GUIState listed in the docs requires that you pass 
    in a SimState.
 
-#### discussion:
+### discussion:
 
 It's clear you need to extend MASON's GUIState to display stuff via
 MASON.  Is it necessary to have a class that extends its SimState?
@@ -93,3 +95,55 @@ Or just write SimState in Java. :-(
 
 (SimState provides step() and start(), but you can use GUIState's
 intead, which will call the SimState's scheduler, for example.)
+
+
+## Do you have to store simulation parameters in your SimState?
+
+The actual data can go wherever you want.  It's at best only marginally
+going to be data in the class that extends SimState, since `gen-class`
+gives you only one modifiable field, so if you want more than one
+element, you're going to stick a map or defrecord or something into that
+data element.  And I don't think you really have to store it there,
+actually.  The GUI is going to access the data using bean accessors
+anyway, so you could put the data anywhere they can find it.  Heck could
+be closures, or another namespace.  It could even be functionally
+generated data that's never modified per se, as long as you maintain
+some way that the bean accessors can find the current value.  (OK, that
+might require atoms.  But still--it doesn't have to be anywhere
+particular.)
+
+
+## Can the program's running state be purely functional?
+
+In my current conception, the internal animal processes, their births
+and deaths, etc. can be functional.  I think it's going to make most
+sense to use MASON's grid structure(s) for the underlying world.
+They're already designed for this purpose, will return Moore
+neighborhoods easily, have a hex version, etc.
+
+Q: Can I update a single grid structure (or two or four), as one's
+supposed to do in MASON, and pass it along with the functionally updated
+animals?  Or is it better to create a new grid for each step, as one
+should do in Clojure--especially if the model is lazy?
+
+A: One can get away with using the same data structure, I think.
+This will work when you use MASON to pull the system along, and
+it's OK up to a point at a repl.
+
+But you loose the ability to go back in time by looking at different
+stages of the sequence if you reuse the same grid.  Because the old grid
+is the same as the most recent grid, so it won't match the state of the
+animals at that earlier time.
+
+On the other hand, maybe it will take up a lot of RAM to store
+one grid per tick.  Also maybe it's silly to store old grids
+if you're just walking the program using the MASON scheduler
+from the GUI.
+
+Q: If I did update the grids functionally, i.e. just created a new one
+for each step, does this cause problems with their display?  What do I
+have to do to get the Field Portrayal that displays the content of the
+grid to connect to a new grid each time?
+
+A: It looks like I just have to call `.setField` on the Portrayal
+to assign it the new grid each time.
