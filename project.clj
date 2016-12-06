@@ -4,6 +4,7 @@
   :license {:name "Gnu General Public License version 3.0"
             :url "http://www.gnu.org/copyleft/gpl.html"}
   :dependencies [[org.clojure/clojure "1.9.0-alpha14"]
+                 ;[org.clojure/clojure "1.8.0"]
                  [org.clojure/math.numeric-tower "0.0.4"]
                  [org.clojure/tools.cli "0.3.5"]
                  [org.clojure/data.csv "0.1.3"]
@@ -17,7 +18,7 @@
 
   :resource-paths ["lib"]
   :source-paths ["src/clj"]
-  :java-source-paths ["src/java"]
+  ;:java-source-paths ["src/java"]
   :main ^:skip-aot free-agent.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})
