@@ -14,7 +14,7 @@
 (defn flush-rng
   "Flush out initial order from a Mersenne Twister."
   [rng]
-  (dotimes [_ 1500] (.nextInt rng)))  ; see ;; https://listserv.gmu.edu/cgi-bin/wa?A1=ind1609&L=MASON-INTEREST-L#1
+  (dotimes [_ 2000] (.nextInt rng)))  ; see ;; https://listserv.gmu.edu/cgi-bin/wa?A1=ind1609&L=MASON-INTEREST-L#1
 
 (defn make-rng
   "Make an instance of a MersenneTwisterFast RNG and flush out its initial
