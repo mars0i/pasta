@@ -35,10 +35,10 @@
 (defn -init-instance-state 
   "Automatically initializes instance-state when an instance of class State is created."
   [seed]
-  (InstanceState. (atom default-initial-snipe-energy)
-                  (atom default-initial-snipe-priors)
-                  (atom default-num-k-snipes)
-                  (atom default-num-r-snipes)))
+  [[seed] (InstanceState. (atom default-initial-snipe-energy)
+                          (atom default-initial-snipe-priors)
+                          (atom default-num-k-snipes)
+                          (atom default-num-r-snipes))])
 
 ;; Bean accessors
 (defn -getInitialSnipeEnergy ^double [^State this] @(:initial-snipe-energy$ ^InstanceState (.instanceState this)))
@@ -78,7 +78,7 @@
 (defn -main
   [& args]
   (record-commandline-args! args) ; The State isn't available yet, so store commandline args for later access by start().
-  (sim.engine.SimState/doLoop State (into-array String args))
+  (sim.engine.SimState/doLoop free-agent.State (into-array String args))
   (System/exit 0))
 
 (defn set-instance-state-from-commandline!
