@@ -30,7 +30,7 @@
 (def default-num-r-snipes default-num-k-snipes)
 
 ;; This holds the global parameters in gen-class's single state field:
-(defrecord InstanceState [initial-snipe-energy$ snipe-priors$])
+(defrecord InstanceState [initial-snipe-energy$ snipe-priors$ num-k-snipes$ num-r-snipes$])
 
 (defn -init-instance-state 
   "Automatically initializes instance-state when an instance of class State is created."
