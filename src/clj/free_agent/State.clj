@@ -3,22 +3,23 @@
   (:import [sim.engine Steppable Schedule]
            [ec.util MersenneTwisterFast]
            [java.lang String]
-           [free-agent State])
-  (:gen-class :name free-agent.State
-              :extends sim.engine.SimState        ; includes signature for the start() method
-              :exposes-methods {start superStart} ; alias method start() in superclass. (Don't name it 'super-start'; use a Java name.)
-              ;; Bean methods that will be exposed to the UI--need to have Java types:
-              :methods [[getInitialSnipeEnergy [] double]
-                        [setInitialSnipeEnergy [double] void]
-                        [getRSnipePriors [] "[D"]       ; i.e. array of doubles.
-                        [setRSnipePriors ["[D"] void]
-                        [setNumKSnipes [long] void]
-                        [getNumKSnipes [] long]
-                        [setNumRSnipes [long] void]
-                        [getNumRSnipes [] long]]
-              :state instanceState
-              :init init-instance-state
-              :main true))
+           [free-agent State]))
+
+(gen-class :name free-agent.State
+           :extends sim.engine.SimState        ; includes signature for the start() method
+           :exposes-methods {start superStart} ; alias method start() in superclass. (Don't name it 'super-start'; use a Java name.)
+           ;; Bean methods that will be exposed to the UI--need to have Java types:
+           :methods [[getInitialSnipeEnergy [] double]
+                     [setInitialSnipeEnergy [double] void]
+                     [getRSnipePriors [] "[D"]       ; i.e. array of doubles.
+                     [setRSnipePriors ["[D"] void]
+                     [setNumKSnipes [long] void]
+                     [getNumKSnipes [] long]
+                     [setNumRSnipes [long] void]
+                     [getNumRSnipes [] long]]
+           :state instanceState
+           :init init-instance-state
+           :main true)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Global parameters exposed to MASON UI
