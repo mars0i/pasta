@@ -41,14 +41,14 @@
                   (atom default-num-r-snipes)))
 
 ;; Bean accessors
-(defn -getInitialSnipeEnergy ^double [^free-agent.State this] @(:initial-snipe-energy$ ^InstanceState (.instanceState this)))
-(defn -setInitialSnipeEnergy [^free-agent.State this ^double newval] (reset! (:initial-snipe-energy$ ^InstanceState (.instanceState this)) newval))
-(defn -getInitialSnipePriors [^free-agent.State this] @(:initial-snipe-priors$ ^InstanceState (.instanceState this)))
-(defn -setInitialSnipePriors [^free-agent.State this newval] (reset! (:initial-snipe-priors$ ^InstanceState (.instanceState this) newval)))
-(defn -getNumKSnipes ^long [^free-agent.State this] @(:num-k-snipes ^InstanceState (.instanceState this)))
-(defn -setNumKSnipes [^free-agent.State this ^long newval] (reset! (:num-k-snipes ^InstanceState (.instanceState this)) newval))
-(defn -getNumRSnipes ^long [^free-agent.State this] @(:num-r-snipes ^InstanceState (.instanceState this)))
-(defn -setNumRSnipes [^free-agent.State this ^long newval] (reset! (:num-r-snipes ^InstanceState (.instanceState this)) newval))
+(defn -getInitialSnipeEnergy ^double [^State this] @(:initial-snipe-energy$ ^InstanceState (.instanceState this)))
+(defn -setInitialSnipeEnergy [^State this ^double newval] (reset! (:initial-snipe-energy$ ^InstanceState (.instanceState this)) newval))
+(defn -getInitialSnipePriors [^State this] @(:initial-snipe-priors$ ^InstanceState (.instanceState this)))
+(defn -setInitialSnipePriors [^State this newval] (reset! (:initial-snipe-priors$ ^InstanceState (.instanceState this) newval)))
+(defn -getNumKSnipes ^long [^State this] @(:num-k-snipes ^InstanceState (.instanceState this)))
+(defn -setNumKSnipes [^State this ^long newval] (reset! (:num-k-snipes ^InstanceState (.instanceState this)) newval))
+(defn -getNumRSnipes ^long [^State this] @(:num-r-snipes ^InstanceState (.instanceState this)))
+(defn -setNumRSnipes [^State this ^long newval] (reset! (:num-r-snipes ^InstanceState (.instanceState this)) newval))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -77,13 +77,13 @@
 
 (defn -main
   [& args]
-  (record-commandline-args! args) ; The free-agent.State isn't available yet, so store commandline args for later access by start().
-  (sim.engine.SimState/doLoop free-agent.State (into-array String args))
+  (record-commandline-args! args) ; The State isn't available yet, so store commandline args for later access by start().
+  (sim.engine.SimState/doLoop State (into-array String args))
   (System/exit 0))
 
 (defn set-instance-state-from-commandline!
-  "Set fields in the free-agent.State's instanceState from parameters passed on the command line."
-  [^free-agent.State state cmdline]
+  "Set fields in the State's instanceState from parameters passed on the command line."
+  [^State state cmdline]
   (let [{:keys [options arguments errors summary]} @cmdline]
     (when-let [newval (:energy options)] (.setEnergy state newval))
     (when-let [newval (:popsize options)] (.setNumKSnipes state newval) (.setNumRSnipes state newval)))
@@ -94,7 +94,7 @@
 
 (defn -start
   "Function called to (re)start a new simulation run."
-  [^free-agent.State this]
+  [^State this]
   (.superStart this)
   ;; If user passed commandline options, use them to set parameters, rather than defaults:
   (when @commandline (set-instance-state-from-commandline! this commandline))
@@ -105,7 +105,7 @@
     (.scheduleRepeating schedule Schedule/EPOCH 0
                         (reify Steppable 
                           (step [this sim-state]
-                            (let [^free-agent.State state sim-state]
+                            (let [^State state sim-state]
                               ;(doseq [^Indiv indiv population] (copy-relig! indiv state))      ; first communicate relig (to newrelig's)
                               ;(doseq [^Indiv indiv population] (update-relig! indiv))        ; then copy newrelig to relig ("parallel" update)
                               ;(doseq [^Indiv indiv population] (update-success! indiv state))  ; update each indiv's success field (uses relig)
