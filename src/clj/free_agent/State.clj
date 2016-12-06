@@ -10,7 +10,11 @@
               :methods [[getInitialSnipeEnergy [] double]
                         [setInitialSnipeEnergy [double] void]
                         [getRSnipePriors [] "[D"]       ; i.e. array of doubles.
-                        [setRSnipePriors ["[D"] void]]
+                        [setRSnipePriors ["[D"] void]
+                        [setNumKSnipes [long] void]
+                        [getNumKSnipes [] long]
+                        [setNumRSnipes [long] void]
+                        [getNumRSnipes [] long]]
               :state instanceState
               :init init-instance-state
               :main true))
@@ -21,6 +25,8 @@
 ;; Initial defaults for global parameters
 (def default-initial-snipe-energy 10.0)
 (def default-initial-snipe-priors [5.0 20.0])
+(def default-num-k-snipes 20)
+(def default-num-r-snipes default-num-k-snipes)
 
 ;; This holds the global parameters in gen-class's single state field:
 (defrecord InstanceState [initial-snipe-energy$ snipe-priors$])
@@ -29,13 +35,19 @@
   "Automatically initializes instance-state when an instance of class State is created."
   [seed]
   (InstanceState. (atom default-initial-snipe-energy)
-                  (atom default-initial-snipe-priors)))
+                  (atom default-initial-snipe-priors)
+                  (atom default-num-k-snipes)
+                  (atom default-num-r-snipes)))
 
 ;; Bean accessors
 (defn -getInitialSnipeEnergy ^double [^State this] @(:initial-snipe-energy$ ^InstanceState (.instanceState this)))
 (defn -setInitialSnipeEnergy [^State this ^double newval] (reset! (:initial-snipe-energy$ ^InstanceState (.instanceState this)) newval))
 (defn -getInitialSnipePriors [^State this] @(:initial-snipe-priors$ ^InstanceState (.instanceState this)))
 (defn -setInitialSnipePriors [^State this newval] (reset! (:initial-snipe-priors$ ^InstanceState (.instanceState this) newval)))
+(defn -getNumKSnipes ^long [^State this] @(:num-k-snipes ^InstanceState (.instanceState this)))
+(defn -setNumKSnipes [^State this ^long newval] (reset! (:num-k-snipes ^InstanceState (.instanceState this)) newval))
+(defn -getNumRSnipes ^long [^State this] @(:num-r-snipes ^InstanceState (.instanceState this)))
+(defn -setNumRSnipes [^State this ^long newval] (reset! (:num-r-snipes ^InstanceState (.instanceState this)) newval))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
