@@ -2,7 +2,7 @@
 ;;; is distributed under the Gnu General Public License version 3.0 as
 ;;; specified in the file LICENSE.
 
-(ns free-agent.SimWithUI
+(ns free-agent.UI
   (:require [free-agent.Sim :as s])
   (:import [free_agent Sim]
            [sim.engine Steppable Schedule]
