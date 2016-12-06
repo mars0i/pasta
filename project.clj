@@ -16,7 +16,7 @@
                  [org.jfree/jfreechart "1.0.17"] ; for MASON
                  [org.beanshell/bsh "2.0b4"]]    ; for MASON
 
-  :resource-paths ["lib"]
+  :resource-paths ["lib/itext-1.2.jar" "lib/jmf.jar" "lib/mason.19.jar" "lib/portfolio.jar"]
   :source-paths ["src/clj"]
   ;:java-source-paths ["src/java"]
   :main ^:skip-aot free-agent.core
