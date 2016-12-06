@@ -3,8 +3,8 @@
   :url "https://github.com/mars0i/free-agent"
   :license {:name "Gnu General Public License version 3.0"
             :url "http://www.gnu.org/copyleft/gpl.html"}
-  :dependencies [[org.clojure/clojure "1.9.0-alpha14"]
-                 ;[org.clojure/clojure "1.8.0"]
+  :dependencies [;[org.clojure/clojure "1.9.0-alpha14"]
+                 [org.clojure/clojure "1.8.0"]
                  [org.clojure/math.numeric-tower "0.0.4"]
                  [org.clojure/tools.cli "0.3.5"]
                  [org.clojure/data.csv "0.1.3"]
@@ -18,12 +18,15 @@
 
   :resource-paths ["lib/itext-1.2.jar" "lib/jmf.jar" "lib/mason.19.jar" "lib/portfolio.jar"]
   :source-paths ["src/clj"]
-  ;:java-source-paths ["src/java"]
-  :main ^:skip-aot free-agent.core
+  :main free-agent.State
+  :aot [free-agent.State]
+  :profiles {:gui   {:main free-agent.UI} ; execute this with 'lein with-profile gui   run'
+             :nogui {:main free-agent.State}})     ; execute this with 'lein with-profile nogui run'
   :target-path "target/%s"
-  :profiles {:uberjar {:aot :all}})
 
 
+  ;:java-source-paths ["src/java"]
+  ;:main ^:skip-aot free-agent.core
   ; jvm-opts ["-Xms1g"]
   ;:jvm-opts ["-Dclojure.compiler.disable-locals-clearing=true"] ; ???: FASTER, and may be useful to debuggers. see https://groups.google.com/forum/#!msg/clojure/8a1FjNvh-ZQ/DzqDz4oKMj0J
   ;:jvm-opts ["-XX:+TieredCompilation" "-XX:TieredStopAtLevel=1"] ; setting this to 1 will produce faster startup but will disable extra optimization of long-running processes
