@@ -36,18 +36,19 @@
           (hyphed-to-studly-str (name '~sym)))))
 
 (defmacro defsimstate
-  "Requires option :field followed by a vector of field names, and :name for the name of 
-  the class to be defined by gen-class."
-  [& opts-seq]
-   (let [opts (into {} (map vec (partition 2 opts-seq)))
-         fields (:fields opts)   ; take out my special entries
-         opts (dissoc opts :state-vars)  ; leave only entries gen-class knows
-         opts (assoc opts                ; add in gen-class options we want for sure
-                     :state 'instanceState
-                     :exposes-methods '{start superStart}
-                     :init 'init-instance-state
-                     :main true)]
+  "sim-state-class is a fully-qualified name for the new class. fields is a vector
+  of names of fields in which atoms will be stored and accessed.  The following
+  gen-class options will be automatically provided: :state, :exposes-methods, :init,
+  :main, :methods.  Additional options can be provided."
+  [sim-state-class fields & addl-gen-class-opts]
+   (let [gen-class-opts {:name sim-state-class
+                         :state 'instanceState
+                         :exposes-methods '{start superStart}
+                         :init 'init-instance-state
+                         :main true}
+         gen-class-opts (into gen-class-opts 
+                              (map vec (partition 2 addl-gen-class-opts)))]
      `(do
         (defrecord ~'InstanceState ~fields) ; TODO make sure InstanceState comes out in the right namespace
-        (gen-class ~@(apply concat opts)))))
+        (gen-class ~@(apply concat gen-class-opts)))))
 
