@@ -5,22 +5,6 @@
            [java.lang String]
            [free-agent State]))
 
-(gen-class :name free-agent.State
-           :extends sim.engine.SimState        ; includes signature for the start() method
-           :exposes-methods {start superStart} ; alias method start() in superclass. (Don't name it 'super-start'; use a Java name.)
-           ;; Bean methods that will be exposed to the UI--need to have Java types:
-           :methods [[getInitialSnipeEnergy [] double]
-                     [setInitialSnipeEnergy [double] void]
-                     [getRSnipePriors [] "[D"]       ; i.e. array of doubles.
-                     [setRSnipePriors ["[D"] void]
-                     [setNumKSnipes [long] void]
-                     [getNumKSnipes [] long]
-                     [setNumRSnipes [long] void]
-                     [getNumRSnipes [] long]]
-           :state instanceState
-           :init init-instance-state
-           :main true)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Global parameters exposed to MASON UI
 
@@ -30,8 +14,13 @@
 (def default-num-k-snipes 20)
 (def default-num-r-snipes default-num-k-snipes)
 
-;; This holds the global parameters in gen-class's single state field:
-(defrecord InstanceState [initial-snipe-energy$ snipe-priors$ num-k-snipes$ num-r-snipes$])
+
+;; This will hold the global parameters in gen-class's single state field.
+;; (My convention is that variables holding atoms have "$" as suffix.)
+(defrecord InstanceState [initial-snipe-energy$
+                          snipe-priors$
+                          num-k-snipes$
+                          num-r-snipes$])
 
 (defn -init-instance-state 
   "Automatically initializes instance-state when an instance of class State is created."
@@ -51,9 +40,27 @@
 (defn -getNumRSnipes ^long [^State this] @(:num-r-snipes ^InstanceState (.instanceState this)))
 (defn -setNumRSnipes [^State this ^long newval] (reset! (:num-r-snipes ^InstanceState (.instanceState this)) newval))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; The SimState subclass specification
+
+(gen-class :name free-agent.State
+           :extends sim.engine.SimState        ; includes signature for the start() method
+           :exposes-methods {start superStart} ; alias method start() in superclass. (Don't name it 'super-start'; use a Java name.)
+           ;; Bean methods that will be exposed to the UI--need to have Java types:
+           :methods [[getInitialSnipeEnergy [] double]
+                     [setInitialSnipeEnergy [double] void]
+                     [getRSnipePriors [] "[D"]       ; i.e. array of doubles.
+                     [setRSnipePriors ["[D"] void]
+                     [setNumKSnipes [long] void]
+                     [getNumKSnipes [] long]
+                     [setNumRSnipes [long] void]
+                     [getNumRSnipes [] long]]
+           :state instanceState
+           :init init-instance-state
+           :main true)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Commandline start up
+;; Command line start up
 
 (def commandline (atom nil))
 
