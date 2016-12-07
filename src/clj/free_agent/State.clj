@@ -16,11 +16,10 @@
 
 
 ;; This will hold the global parameters in gen-class's single state field.
-;; (My convention is that variables holding atoms have "$" as suffix.)
-(defrecord InstanceState [initial-snipe-energy$
-                          snipe-priors$
-                          num-k-snipes$
-                          num-r-snipes$])
+(defrecord InstanceState [initial-snipe-energy
+                          snipe-priors
+                          num-k-snipes
+                          num-r-snipes])
 
 (defn -init-instance-state 
   "Automatically initializes instance-state when an instance of class State is created."
@@ -31,10 +30,10 @@
                           (atom default-num-r-snipes))])
 
 ;; Bean accessors
-(defn -getInitialSnipeEnergy ^double [^State this] @(:initial-snipe-energy$ ^InstanceState (.instanceState this)))
-(defn -setInitialSnipeEnergy [^State this ^double newval] (reset! (:initial-snipe-energy$ ^InstanceState (.instanceState this)) newval))
-(defn -getInitialSnipePriors [^State this] @(:initial-snipe-priors$ ^InstanceState (.instanceState this)))
-(defn -setInitialSnipePriors [^State this newval] (reset! (:initial-snipe-priors$ ^InstanceState (.instanceState this) newval)))
+(defn -getInitialSnipeEnergy ^double [^State this] @(:initial-snipe-energy ^InstanceState (.instanceState this)))
+(defn -setInitialSnipeEnergy [^State this ^double newval] (reset! (:initial-snipe-energy ^InstanceState (.instanceState this)) newval))
+(defn -getInitialSnipePriors [^State this] @(:initial-snipe-priors ^InstanceState (.instanceState this)))
+(defn -setInitialSnipePriors [^State this newval] (reset! (:initial-snipe-priors ^InstanceState (.instanceState this) newval)))
 (defn -getNumKSnipes ^long [^State this] @(:num-k-snipes ^InstanceState (.instanceState this)))
 (defn -setNumKSnipes [^State this ^long newval] (reset! (:num-k-snipes ^InstanceState (.instanceState this)) newval))
 (defn -getNumRSnipes ^long [^State this] @(:num-r-snipes ^InstanceState (.instanceState this)))
@@ -117,8 +116,8 @@
                               ;(doseq [^Indiv indiv population] (copy-relig! indiv state))      ; first communicate relig (to newrelig's)
                               ;(doseq [^Indiv indiv population] (update-relig! indiv))        ; then copy newrelig to relig ("parallel" update)
                               ;(doseq [^Indiv indiv population] (update-success! indiv state))  ; update each indiv's success field (uses relig)
-                              ;(let [[this-step & rest-steps] @pop-steps$]
-                              ;  (reset! pop-steps$ rest-steps)
+                              ;(let [[this-step & rest-steps] @pop-steps]
+                              ;  (reset! pop-steps rest-steps)
                               ;  (ui/display-step this-step))
                               ;(collect-data state)
                               )))))
