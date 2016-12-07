@@ -25,8 +25,8 @@
 ;; Global parameters exposed to MASON UI
 
 ;; Initial defaults for global parameters
-(def default-initial-snipe-energy 10.0)
-(def default-initial-snipe-priors [5.0 20.0])
+(def default-snipe-energy 10.0)
+(def default-snipe-priors [5.0 20.0])
 (def default-num-k-snipes 20)
 (def default-num-r-snipes default-num-k-snipes)
 
@@ -36,8 +36,8 @@
 (defn -init-instance-state 
   "Automatically initializes instance-state when an instance of class State is created."
   [seed]
-  [[seed] (InstanceState. (atom default-initial-snipe-energy)
-                          (atom default-initial-snipe-priors)
+  [[seed] (InstanceState. (atom default-snipe-energy)
+                          (atom default-snipe-priors)
                           (atom default-num-k-snipes)
                           (atom default-num-r-snipes))])
 
