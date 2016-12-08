@@ -63,10 +63,13 @@
         ;;;; should be in State namespace:
         (gen-class ~@(apply concat gen-class-opts))
         ;;;; Should be in same namespace as gen-class:
-        (defn ~'-init-instance-state [~'seed] [[~'seed] (InstanceState. ~@(map #(list 'atom %) default-syms))]) ; NOTE will fail if default-syms are not yet defined.
+        (defn ~'-init-instance-state [~'seed] [[~'seed] (atom (InstanceState. ~@default-syms))]) ; NOTE will fail if default-syms are not yet defined.
         ;; need to add type annotations:
-        ~@(map (fn [sym keyw] (list 'defn sym '[this] `@(~keyw (.instanceState ~'this)))) get-syms field-keywords)
-        ~@(map (fn [sym keyw] (list 'defn sym '[this newval] `(reset! (~keyw (.instanceState ~'this)) ~'newval))) set-syms field-keywords)
+        (import ~sim-state-class) ; must go after gen-class but before any type annotations using the class
+        ~@(map (fn [sym keyw] (list 'defn sym '[this] `(~keyw @(.instanceState ~'this))))
+               get-syms field-keywords)
+        ~@(map (fn [sym keyw] (list 'defn sym '[this newval] `(swap! (.instanceState ~'this) assoc ~keyw  ~'newval)))
+               set-syms field-keywords)
 
         ;; define setX for elements in fields
         ;; define domX for elements in domains

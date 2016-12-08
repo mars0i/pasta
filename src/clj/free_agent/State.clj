@@ -2,8 +2,9 @@
   (:require [clojure.tools.cli])
   (:import [sim.engine Steppable Schedule]
            [ec.util MersenneTwisterFast]
-           [java.lang String]
-           [free-agent State]))
+           [java.lang String]))
+;; import free-agent.State separately below
+;; (if done here, fails when aot-compiling from a clean project)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Global parameters exposed to MASON UI
@@ -49,6 +50,8 @@
                           (atom default-num-k-snipes)
                           (atom default-num-r-snipes))])
 
+(import free-agent.State) ; do this after gen-class but before any type hints using State
+
 ;; Bean accessors
 (defn -getInitialSnipeEnergy ^double [^State this] @(:initial-snipe-energy ^InstanceState (.instanceState this)))
 (defn -setInitialSnipeEnergy [^State this ^double newval] (reset! (:initial-snipe-energy ^InstanceState (.instanceState this)) newval))
@@ -58,6 +61,7 @@
 (defn -setNumKSnipes [^State this ^long newval] (reset! (:num-k-snipes ^InstanceState (.instanceState this)) newval))
 (defn -getNumRSnipes ^long [^State this] @(:num-r-snipes ^InstanceState (.instanceState this)))
 (defn -setNumRSnipes [^State this ^long newval] (reset! (:num-r-snipes ^InstanceState (.instanceState this)) newval))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Command line start up
