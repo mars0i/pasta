@@ -21,14 +21,6 @@
                           num-k-snipes
                           num-r-snipes])
 
-(defn -init-instance-state 
-  "Automatically initializes instance-state when an instance of class State is created."
-  [seed]
-  [[seed] (InstanceState. (atom default-snipe-energy)
-                          (atom default-snipe-priors)
-                          (atom default-num-k-snipes)
-                          (atom default-num-r-snipes))])
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; The SimState subclass specification
 
@@ -47,6 +39,15 @@
            :state instanceState
            :init init-instance-state
            :main true)
+
+;; TODO OH WAIT can I put the instance-state somewhere else or if it's here there'll be cyclic deps .... ?
+(defn -init-instance-state 
+  "Automatically initializes instance-state when an instance of class State is created."
+  [seed]
+  [[seed] (InstanceState. (atom default-snipe-energy)
+                          (atom default-snipe-priors)
+                          (atom default-num-k-snipes)
+                          (atom default-num-r-snipes))])
 
 ;; Bean accessors
 (defn -getInitialSnipeEnergy ^double [^State this] @(:initial-snipe-energy ^InstanceState (.instanceState this)))
