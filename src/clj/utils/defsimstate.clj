@@ -27,13 +27,11 @@
 ;  `(symbol (hyphed-to-capped-butfirst (name '~sym))))
 
 (defn make-accessor-sym
-  "Given a prefix string and a Clojure symbol with zero or more hyphens,
-  returns a Java Bean-style accessor symbol using the prefix.  e.g.:
+  "Given a prefix string and a Clojure symbol, returns a Java 
+  Bean-style accessor symbol using the prefix.  e.g.:
   (make-accessor-sym \"get\" this-and-that) ;=> getThisAndThat"
-  [prefix sym]
-  (symbol 
-    (str prefix 
-         (hyphed-to-studly-str (name sym)))))
+  [prefix stub-str]
+  (symbol (str prefix stub-str)))
 
 (defmacro defsimstate
   "sim-state-class is a fully-qualified name for the new class. fields is a
@@ -67,7 +65,9 @@
         ;;;; Should be in same namespace as gen-class:
         (defn ~'-init-instance-state [~'seed] [[~'seed] (InstanceState. ~@(map #(list 'atom %) default-syms))]) ; NOTE will fail if default-syms are not yet defined.
         ;; need to add type annotations:
-        ~@(map (fn [sym keyw] (list 'defn sym '[this] `@(~keyw (.instanceState ~'this)))) get-syms field-keywords) ; NOT RIGHT
+        ~@(map (fn [sym keyw] (list 'defn sym '[this] `@(~keyw (.instanceState ~'this)))) get-syms field-keywords)
+        ~@(map (fn [sym keyw] (list 'defn sym '[this newval] `(reset! (~keyw (.instanceState ~'this)) ~'newval))) set-syms field-keywords)
+
         ;; define setX for elements in fields
         ;; define domX for elements in domains
         )))
