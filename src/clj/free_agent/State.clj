@@ -29,16 +29,6 @@
                           (atom default-num-k-snipes)
                           (atom default-num-r-snipes))])
 
-;; Bean accessors
-(defn -getInitialSnipeEnergy ^double [^State this] @(:initial-snipe-energy ^InstanceState (.instanceState this)))
-(defn -setInitialSnipeEnergy [^State this ^double newval] (reset! (:initial-snipe-energy ^InstanceState (.instanceState this)) newval))
-(defn -getInitialSnipePriors [^State this] @(:initial-snipe-priors ^InstanceState (.instanceState this)))
-(defn -setInitialSnipePriors [^State this newval] (reset! (:initial-snipe-priors ^InstanceState (.instanceState this) newval)))
-(defn -getNumKSnipes ^long [^State this] @(:num-k-snipes ^InstanceState (.instanceState this)))
-(defn -setNumKSnipes [^State this ^long newval] (reset! (:num-k-snipes ^InstanceState (.instanceState this)) newval))
-(defn -getNumRSnipes ^long [^State this] @(:num-r-snipes ^InstanceState (.instanceState this)))
-(defn -setNumRSnipes [^State this ^long newval] (reset! (:num-r-snipes ^InstanceState (.instanceState this)) newval))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; The SimState subclass specification
 
@@ -57,6 +47,16 @@
            :state instanceState
            :init init-instance-state
            :main true)
+
+;; Bean accessors
+(defn -getInitialSnipeEnergy ^double [^State this] @(:initial-snipe-energy ^InstanceState (.instanceState this)))
+(defn -setInitialSnipeEnergy [^State this ^double newval] (reset! (:initial-snipe-energy ^InstanceState (.instanceState this)) newval))
+(defn -getInitialSnipePriors [^State this] @(:initial-snipe-priors ^InstanceState (.instanceState this)))
+(defn -setInitialSnipePriors [^State this newval] (reset! (:initial-snipe-priors ^InstanceState (.instanceState this) newval)))
+(defn -getNumKSnipes ^long [^State this] @(:num-k-snipes ^InstanceState (.instanceState this)))
+(defn -setNumKSnipes [^State this ^long newval] (reset! (:num-k-snipes ^InstanceState (.instanceState this)) newval))
+(defn -getNumRSnipes ^long [^State this] @(:num-r-snipes ^InstanceState (.instanceState this)))
+(defn -setNumRSnipes [^State this ^long newval] (reset! (:num-r-snipes ^InstanceState (.instanceState this)) newval))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Command line start up
