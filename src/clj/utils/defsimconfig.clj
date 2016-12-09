@@ -23,7 +23,6 @@
   [sym]
   (hyphed-to-studly-str (name sym)))
 
-
 (defn make-accessor-sym
   "Given a prefix string and a Clojure symbol, returns a Java 
   Bean-style accessor symbol using the prefix.  e.g.:
@@ -91,8 +90,7 @@
         ~@(map (fn [sym keyw] (list 'defn sym '[this newval] `(swap! (~data-accessor ~'this) assoc ~keyw  ~'newval)))
                -set-syms field-keywords)
         ~@(map (fn [sym keyw range-pair] (list 'defn sym '[this] `(Interval. ~@range-pair)))
-               -dom-syms dom-keywords ranges)
-        )))
+               -dom-syms dom-keywords ranges))))
 
 
 
