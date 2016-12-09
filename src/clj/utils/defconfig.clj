@@ -18,20 +18,17 @@
             first-part 
             (map s/capitalize other-parts))))
 
-;(defmacro clj-to-capped-java-sym
-;  [sym]
-;  `(symbol (hyphed-to-capped (name '~sym))))
-;
-;(defmacro clj-to-capped-butfirst-java-sym
-;  [sym]
-;  `(symbol (hyphed-to-capped-butfirst (name '~sym))))
-
 (defn make-accessor-sym
   "Given a prefix string and a Clojure symbol, returns a Java 
   Bean-style accessor symbol using the prefix.  e.g.:
   (make-accessor-sym \"get\" this-and-that) ;=> getThisAndThat"
   [prefix stub-str]
   (symbol (str prefix stub-str)))
+
+(defn make-method-sigs
+  [get-syms set-syms classes]
+  (vec (mapcat (fn [get-sym set-sym cls] [[get-sym [] cls] [set-sym [cls] 'void]])
+               get-syms set-syms classes)))
 
 (defmacro defconfig
   "sim-state-class is a fully-qualified name for the new class. fields is a
@@ -43,20 +40,23 @@
   automatically provided: :state, :exposes-methods, :init, :main, :methods.  
   Additional options can be provided in addl-gen-class-opts."
   [sim-state-class fields domains & addl-gen-class-opts]
-   (let [gen-class-opts {:name sim-state-class
-                         :state 'configData
-                         :exposes-methods '{start superStart}
-                         :init 'init-config-data
-                         :main true}
-         gen-class-opts (into gen-class-opts 
-                              (map vec (partition 2 addl-gen-class-opts)))
-         field-syms (keys fields)
+   (let [field-syms (keys fields)
          field-keywords (map keyword field-syms)
          field-strs (map name field-syms)
          default-syms (map #(symbol (str "default-" %)) field-strs)
          accessor-stubs (map hyphed-to-studly-str field-strs)
-         get-syms (map (partial make-accessor-sym "-get") accessor-stubs)  ; TODO why are these coming out not fully studly?
-         set-syms (map (partial make-accessor-sym "-set") accessor-stubs)]
+         get-syms (map (partial make-accessor-sym "get") accessor-stubs)
+         set-syms (map (partial make-accessor-sym "set") accessor-stubs)
+         -get-syms (map (partial make-accessor-sym "-") get-syms)
+         -set-syms (map (partial make-accessor-sym "-") set-syms)
+         gen-class-opts {:name sim-state-class
+                         :state 'configData
+                         :exposes-methods '{start superStart}
+                         :init 'init-config-data
+                         :main true
+                         :methods (make-method-sigs get-syms set-syms (vals fields))}
+         gen-class-opts (into gen-class-opts 
+                              (map vec (partition 2 addl-gen-class-opts)))]
      `(do
         ;;;; should be in a different namespace (so simulation code can access it without cyclicly referencing State):
         (defrecord ~'ConfigData ~(vec field-syms)) ; TODO make sure ConfigData comes out in the right namespace
@@ -67,9 +67,11 @@
         ;; need to add type annotations:
         (import ~sim-state-class) ; must go after gen-class but before any type annotations using the class
         ~@(map (fn [sym keyw] (list 'defn sym '[this] `(~keyw @(.configData ~'this))))
-               get-syms field-keywords)
+               -get-syms field-keywords)
         ~@(map (fn [sym keyw] (list 'defn sym '[this newval] `(swap! (.configData ~'this) assoc ~keyw  ~'newval)))
-               set-syms field-keywords)
+               -set-syms field-keywords)
         ;; define domX for elements in domains
         )))
+
+
 
