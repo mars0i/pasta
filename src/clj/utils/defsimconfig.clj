@@ -25,12 +25,12 @@
   [prefix stub-str]
   (symbol (str prefix stub-str)))
 
-(defn make-method-sigs
+(defn make-accessor-sigs
   [get-syms set-syms classes]
-  (vec (mapcat (fn [get-sym set-sym cls] [[get-sym [] cls] [set-sym [cls] 'void]])
-               get-syms set-syms classes)))
+  (mapcat (fn [get-sym set-sym cls] [[get-sym [] cls] [set-sym [cls] 'void]])
+               get-syms set-syms classes))
 
-(defmacro defismconfig
+(defmacro defsimconfig
   "sim-state-class is a fully-qualified name for the new class. fields is a
   sequence of 2- or 4-element sequences starting with names of fields in which 
   configuration data will be stored and accessed.  Second elements are Java type 
@@ -41,19 +41,28 @@
   [sim-state-class fields & addl-gen-class-opts]
    (let [field-syms (map first fields)
          field-keywords (map keyword field-syms)
-         field-strs (map name field-syms)
-         default-syms (map #(symbol (str "default-" %)) field-strs)
-         accessor-stubs (map hyphed-to-studly-str field-strs)
-         get-syms (map (partial make-accessor-sym "get") accessor-stubs)
-         set-syms (map (partial make-accessor-sym "set") accessor-stubs)
+         default-syms (map #(symbol (str "default-" %)) field-syms)
+         accessor-stubs (map hyphed-to-studly-str field-syms)
+         get-syms  (map (partial make-accessor-sym "get") accessor-stubs)
+         set-syms  (map (partial make-accessor-sym "set") accessor-stubs)
          -get-syms (map (partial make-accessor-sym "-") get-syms)
          -set-syms (map (partial make-accessor-sym "-") set-syms)
+         dom-syms  (map (comp (partial make-accessor-sym "dom") hyphed-to-studly-str name first) ; TODO doesn't work
+                        (filter #(= 4 (count %)) fields))
+         ;(->> fields
+         ;     (filter #(= 4 (count %)))
+         ;     first
+         ;     name
+         ;     hyphed-to-studly-str
+         ;     (partial make-accessor-sym "dom"))
+         _ (println dom-syms)
          gen-class-opts {:name sim-state-class
                          :state 'configData
                          :exposes-methods '{start superStart}
                          :init 'init-config-data
                          :main true
-                         :methods (make-method-sigs get-syms set-syms (map second fields))}
+                         :methods (vec (concat (make-accessor-sigs get-syms set-syms (map second fields))
+                                               (map #(vector % [] java.lang.Object) dom-syms)))} ;; TODO NOT WORKING
          gen-class-opts (into gen-class-opts 
                               (map vec (partition 2 addl-gen-class-opts)))]
      `(do
