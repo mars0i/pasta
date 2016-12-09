@@ -1,7 +1,7 @@
 ;; Define a defsymstate macro that will define a subclass of MASON's
 ;; SimState with associated instance state variable, accessors, etc.
 
-(ns utils.defconfig
+(ns utils.defsimconfig
   (:require [clojure.string :as s]))
 
 (defn hyphed-to-studly-str
@@ -30,17 +30,16 @@
   (vec (mapcat (fn [get-sym set-sym cls] [[get-sym [] cls] [set-sym [cls] 'void]])
                get-syms set-syms classes)))
 
-(defmacro defconfig
+(defmacro defismconfig
   "sim-state-class is a fully-qualified name for the new class. fields is a
-  map with keys whose (symbol, not keyword) names will name fields in which 
-  atoms will be stored and accessed.  Values are Java type identifiers.  
-  domains is a possibly empty map whose keys are symbols that are among the 
-  keys in fields, and whose values are pairs of numbers specifying min and
-  max values for the field.  The following gen-class options will be 
+  sequence of 2- or 4-element sequences starting with names of fields in which 
+  configuration data will be stored and accessed.  Second elements are Java type 
+  identifiers for these fields.  If there is a third and fourth element, they
+  are the min and max values for the field.  The following gen-class options will be 
   automatically provided: :state, :exposes-methods, :init, :main, :methods.  
   Additional options can be provided in addl-gen-class-opts."
-  [sim-state-class fields domains & addl-gen-class-opts]
-   (let [field-syms (keys fields)
+  [sim-state-class fields & addl-gen-class-opts]
+   (let [field-syms (map first fields)
          field-keywords (map keyword field-syms)
          field-strs (map name field-syms)
          default-syms (map #(symbol (str "default-" %)) field-strs)
@@ -54,7 +53,7 @@
                          :exposes-methods '{start superStart}
                          :init 'init-config-data
                          :main true
-                         :methods (make-method-sigs get-syms set-syms (vals fields))}
+                         :methods (make-method-sigs get-syms set-syms (map second fields))}
          gen-class-opts (into gen-class-opts 
                               (map vec (partition 2 addl-gen-class-opts)))]
      `(do
