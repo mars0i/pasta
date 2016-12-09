@@ -10,14 +10,6 @@
   (let [parts (s/split hyphed-str #"-")]
     (reduce str (map s/capitalize parts))))
 
-(defn hyphed-to-camel-str
-  "Converts a hyphenated string into the corresponding camelcase string."
-  [hyphed-str]
-  (let [[first-part & other-parts] (s/split hyphed-str #"-")]
-    (reduce str 
-            first-part 
-            (map s/capitalize other-parts))))
-
 (defn make-accessor-sym
   "Given a prefix string and a Clojure symbol, returns a Java 
   Bean-style accessor symbol using the prefix.  e.g.:
