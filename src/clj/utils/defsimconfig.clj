@@ -36,7 +36,7 @@
   (mapcat (fn [get-sym set-sym cls] [[get-sym [] cls] [set-sym [cls] 'void]])
                get-syms set-syms classes))
 
-(defn range-fields
+(defn get-range-fields
   "Given a fields argument to defsimconfig, return a sequence containing 
   only those field specifications that include specification of the default
   range of values for the field."
@@ -62,8 +62,12 @@
          set-syms  (map (partial make-accessor-sym "set") accessor-stubs)
          -get-syms (map (partial make-accessor-sym "-") get-syms)
          -set-syms (map (partial make-accessor-sym "-") set-syms)
+         range-fields (get-range-fields fields)
          dom-syms  (map (comp (partial make-accessor-sym "dom") hyphed-sym-to-studly-str first)
-                        (range-fields fields))
+                        range-fields)
+         -dom-syms (map (partial make-accessor-sym "-") dom-syms)
+         dom-keywords (map keyword dom-syms)
+         ranges (map nnext range-fields)
          gen-class-opts {:name qualified-class
                          :state data-sym
                          :exposes-methods '{start superStart}
@@ -86,7 +90,8 @@
                -get-syms field-keywords)
         ~@(map (fn [sym keyw] (list 'defn sym '[this newval] `(swap! (~data-accessor ~'this) assoc ~keyw  ~'newval)))
                -set-syms field-keywords)
-        ;; TODO define domX for elements in domains
+        ~@(map (fn [sym keyw range-pair] (list 'defn sym '[this] `(Interval. ~@range-pair)))
+               -dom-syms dom-keywords ranges)
         )))
 
 
