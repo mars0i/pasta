@@ -1,7 +1,7 @@
 ;; Define a defsymstate macro that will define a subclass of MASON's
 ;; SimState with associated instance state variable, accessors, etc.
 
-(ns utils.defsimstate
+(ns utils.defconfig
   (:require [clojure.string :as s]))
 
 (defn hyphed-to-studly-str
@@ -33,7 +33,7 @@
   [prefix stub-str]
   (symbol (str prefix stub-str)))
 
-(defmacro defsimstate
+(defmacro defconfig
   "sim-state-class is a fully-qualified name for the new class. fields is a
   map with keys whose (symbol, not keyword) names will name fields in which 
   atoms will be stored and accessed.  Values are Java type identifiers.  
@@ -44,9 +44,9 @@
   Additional options can be provided in addl-gen-class-opts."
   [sim-state-class fields domains & addl-gen-class-opts]
    (let [gen-class-opts {:name sim-state-class
-                         :state 'instanceState
+                         :state 'configData
                          :exposes-methods '{start superStart}
-                         :init 'init-instance-state
+                         :init 'init-config-data
                          :main true}
          gen-class-opts (into gen-class-opts 
                               (map vec (partition 2 addl-gen-class-opts)))
@@ -59,19 +59,17 @@
          set-syms (map (partial make-accessor-sym "-set") accessor-stubs)]
      `(do
         ;;;; should be in a different namespace (so simulation code can access it without cyclicly referencing State):
-        (defrecord ~'InstanceState ~(vec field-syms)) ; TODO make sure InstanceState comes out in the right namespace
+        (defrecord ~'ConfigData ~(vec field-syms)) ; TODO make sure ConfigData comes out in the right namespace
         ;;;; should be in State namespace:
         (gen-class ~@(apply concat gen-class-opts))
         ;;;; Should be in same namespace as gen-class:
-        (defn ~'-init-instance-state [~'seed] [[~'seed] (atom (InstanceState. ~@default-syms))]) ; NOTE will fail if default-syms are not yet defined.
+        (defn ~'-init-config-data [~'seed] [[~'seed] (atom (ConfigData. ~@default-syms))]) ; NOTE will fail if default-syms are not yet defined.
         ;; need to add type annotations:
         (import ~sim-state-class) ; must go after gen-class but before any type annotations using the class
-        ~@(map (fn [sym keyw] (list 'defn sym '[this] `(~keyw @(.instanceState ~'this))))
+        ~@(map (fn [sym keyw] (list 'defn sym '[this] `(~keyw @(.configData ~'this))))
                get-syms field-keywords)
-        ~@(map (fn [sym keyw] (list 'defn sym '[this newval] `(swap! (.instanceState ~'this) assoc ~keyw  ~'newval)))
+        ~@(map (fn [sym keyw] (list 'defn sym '[this newval] `(swap! (.configData ~'this) assoc ~keyw  ~'newval)))
                set-syms field-keywords)
-
-        ;; define setX for elements in fields
         ;; define domX for elements in domains
         )))
 

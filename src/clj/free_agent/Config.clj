@@ -1,9 +1,9 @@
-(ns free-agent.State
+(ns free-agent.Config
   (:require [clojure.tools.cli])
   (:import [sim.engine Steppable Schedule]
            [ec.util MersenneTwisterFast]
            [java.lang String]))
-;; import free-agent.State separately below
+;; import free-agent.Config separately below
 ;; (if done here, fails when aot-compiling from a clean project)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -17,7 +17,7 @@
 
 
 ;; This will hold the global parameters in gen-class's single state field.
-(defrecord InstanceState [initial-snipe-energy
+(defrecord ConfigData [initial-snipe-energy
                           snipe-priors
                           num-k-snipes
                           num-r-snipes])
@@ -25,7 +25,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; The SimState subclass specification
 
-(gen-class :name free-agent.State
+(gen-class :name free-agent.Config
            :extends sim.engine.SimState        ; includes signature for the start() method
            :exposes-methods {start superStart} ; alias method start() in superclass. (Don't name it 'super-start'; use a Java name.)
            ;; Bean methods that will be exposed to the UI--need to have Java types:
@@ -37,30 +37,30 @@
                      [getNumKSnipes [] long]
                      [setNumRSnipes [long] void]
                      [getNumRSnipes [] long]]
-           :state instanceState
-           :init init-instance-state
+           :state configData
+           :init init-config-data
            :main true)
 
-;; TODO OH WAIT can I put the instance-state somewhere else or if it's here there'll be cyclic deps .... ?
-(defn -init-instance-state 
-  "Automatically initializes instance-state when an instance of class State is created."
+;; TODO OH WAIT can I put the config-data somewhere else or if it's here there'll be cyclic deps .... ?
+(defn -init-config-data 
+  "Automatically initializes config-data when an instance of class Config is created."
   [seed]
-  [[seed] (InstanceState. (atom default-snipe-energy)
-                          (atom default-snipe-priors)
-                          (atom default-num-k-snipes)
-                          (atom default-num-r-snipes))])
+  [[seed] (ConfigData. (atom default-snipe-energy)
+                       (atom default-snipe-priors)
+                       (atom default-num-k-snipes)
+                       (atom default-num-r-snipes))])
 
-(import free-agent.State) ; do this after gen-class but before any type hints using State
+(import free-agent.Config) ; do this after gen-class but before any type hints using Config
 
 ;; Bean accessors
-(defn -getInitialSnipeEnergy ^double [^State this] @(:initial-snipe-energy ^InstanceState (.instanceState this)))
-(defn -setInitialSnipeEnergy [^State this ^double newval] (reset! (:initial-snipe-energy ^InstanceState (.instanceState this)) newval))
-(defn -getInitialSnipePriors [^State this] @(:initial-snipe-priors ^InstanceState (.instanceState this)))
-(defn -setInitialSnipePriors [^State this newval] (reset! (:initial-snipe-priors ^InstanceState (.instanceState this) newval)))
-(defn -getNumKSnipes ^long [^State this] @(:num-k-snipes ^InstanceState (.instanceState this)))
-(defn -setNumKSnipes [^State this ^long newval] (reset! (:num-k-snipes ^InstanceState (.instanceState this)) newval))
-(defn -getNumRSnipes ^long [^State this] @(:num-r-snipes ^InstanceState (.instanceState this)))
-(defn -setNumRSnipes [^State this ^long newval] (reset! (:num-r-snipes ^InstanceState (.instanceState this)) newval))
+(defn -getInitialSnipeEnergy ^double [^Config this] @(:initial-snipe-energy ^ConfigData (.configData this)))
+(defn -setInitialSnipeEnergy [^Config this ^double newval] (reset! (:initial-snipe-energy ^ConfigData (.configData this)) newval))
+(defn -getInitialSnipePriors [^Config this] @(:initial-snipe-priors ^ConfigData (.configData this)))
+(defn -setInitialSnipePriors [^Config this newval] (reset! (:initial-snipe-priors ^ConfigData (.configData this) newval)))
+(defn -getNumKSnipes ^long [^Config this] @(:num-k-snipes ^ConfigData (.configData this)))
+(defn -setNumKSnipes [^Config this ^long newval] (reset! (:num-k-snipes ^ConfigData (.configData this)) newval))
+(defn -getNumRSnipes ^long [^Config this] @(:num-r-snipes ^ConfigData (.configData this)))
+(defn -setNumRSnipes [^Config this ^long newval] (reset! (:num-r-snipes ^ConfigData (.configData this)) newval))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -89,13 +89,13 @@
 
 (defn -main
   [& args]
-  (record-commandline-args! args) ; The State isn't available yet, so store commandline args for later access by start().
-  (sim.engine.SimState/doLoop free-agent.State (into-array String args))
+  (record-commandline-args! args) ; The Config isn't available yet, so store commandline args for later access by start().
+  (sim.engine.SimState/doLoop free-agent.Config (into-array String args))
   (System/exit 0))
 
-(defn set-instance-state-from-commandline!
-  "Set fields in the State's instanceState from parameters passed on the command line."
-  [^State state cmdline]
+(defn set-config-data-from-commandline!
+  "Set fields in the Config's configData from parameters passed on the command line."
+  [^Config state cmdline]
   (let [{:keys [options arguments errors summary]} @cmdline]
     (when-let [newval (:energy options)] (.setEnergy state newval))
     (when-let [newval (:popsize options)] (.setNumKSnipes state newval) (.setNumRSnipes state newval)))
@@ -106,18 +106,18 @@
 
 (defn -start
   "Function called to (re)start a new simulation run."
-  [^State this]
+  [^Config this]
   (.superStart this)
   ;; If user passed commandline options, use them to set parameters, rather than defaults:
-  (when @commandline (set-instance-state-from-commandline! this commandline))
+  (when @commandline (set-config-data-from-commandline! this commandline))
   ;; Construct core data structures of the simulation:
   (let [^Schedule schedule (.schedule this)
-        ^InstanceState istate (.instanceState this)]
+        ^ConfigData istate (.configData this)]
     ;; Schedule per-tick step function(s):
     (.scheduleRepeating schedule Schedule/EPOCH 0
                         (reify Steppable 
                           (step [this sim-state]
-                            (let [^State state sim-state]
+                            (let [^Config state sim-state]
                               ;(doseq [^Indiv indiv population] (copy-relig! indiv state))      ; first communicate relig (to newrelig's)
                               ;(doseq [^Indiv indiv population] (update-relig! indiv))        ; then copy newrelig to relig ("parallel" update)
                               ;(doseq [^Indiv indiv population] (update-success! indiv state))  ; update each indiv's success field (uses relig)
