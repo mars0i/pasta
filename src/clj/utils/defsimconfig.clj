@@ -44,13 +44,15 @@
           fields))
 
 (defmacro defsimconfig
-  "sim-state-class is a fully-qualified name for the new class. fields is a
+  "class-prefix is a what goes before the dot in a fully-qualified name for the 
+  new class, whose name is specified by class-sym in defsimconfig.  fields is a
   sequence of 2- or 4-element sequences starting with names of fields in which 
   configuration data will be stored and accessed.  Second elements are Java type 
   identifiers for these fields.  If there is a third and fourth element, they
   are the min and max values for the field.  The following gen-class options will be 
   automatically provided: :state, :exposes-methods, :init, :main, :methods.  
-  Additional options can be provided in addl-gen-class-opts."
+  Additional options can be provided in addl-gen-class-opts.  Java bean style
+  and other MASON-style accessors will be defined."
   [class-prefix fields & addl-gen-class-opts]
    (let [qualified-class (symbol (str class-prefix "." class-sym))
          field-syms (map first fields)
@@ -91,6 +93,3 @@
                -set-syms field-keywords)
         ~@(map (fn [sym keyw range-pair] (list 'defn sym '[this] `(Interval. ~@range-pair)))
                -dom-syms dom-keywords ranges))))
-
-
-
