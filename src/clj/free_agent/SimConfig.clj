@@ -1,6 +1,7 @@
 (ns free-agent.SimConfig
   (:require [clojure.tools.cli])
   (:import [sim.engine Steppable Schedule]
+           [sim.util Interval]
            [ec.util MersenneTwisterFast]
            [java.lang String]))
 ;; import free-agent.SimConfig separately below
