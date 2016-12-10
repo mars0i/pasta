@@ -10,7 +10,8 @@
 (def data-class-constructor 'SimConfigData.)
 (def data-sym 'simConfigData)
 (def data-accessor '.simConfigData)
-(def init-sym 'init-sim-config-data)
+(def init-genclass-sym 'init-sim-config-data)
+(def init-defn-sym '-init-sim-config-data)
 
 (defn get-class-prefix
   "Given a Java/Clojure class identifier symbol or string, or class object (found
@@ -85,7 +86,7 @@
          gen-class-opts {:name qualified-class
                          :state data-sym
                          :exposes-methods '{start superStart}
-                         :init init-sym
+                         :init init-genclass-sym
                          :main true
                          :methods (vec (concat (make-accessor-sigs get-syms set-syms (map second fields))
                                                (map #(vector % [] java.lang.Object) dom-syms)))} 
@@ -96,10 +97,10 @@
         (defrecord ~data-class-sym ~(vec field-syms)) ; TODO make sure SimConfigData comes out in the right namespace
         ;;;; should be in SimConfig namespace:
         (gen-class ~@(apply concat gen-class-opts))
-        ;;;; Should be in same namespace as gen-class:
-        (defn ~init-sym [~'seed] [[~'seed] (atom (~data-class-constructor ~@default-syms))]) ; NOTE will fail if default-syms are not yet defined.
-        ;; need to add type annotations:
         (import ~qualified-class) ; must go after gen-class but before any type annotations using the class
+        ;;;; Should be in same namespace as gen-class:
+        (defn ~init-defn-sym [~'seed] [[~'seed] (atom (~data-class-constructor ~@default-syms))]) ; NOTE will fail if default-syms are not yet defined.
+        ;; TODO need to add type annotations:
         ~@(map (fn [sym keyw] (list 'defn sym '[this] `(~keyw @(.simConfigData ~'this))))
                -get-syms field-keywords)
         ~@(map (fn [sym keyw] (list 'defn sym '[this newval] `(swap! (~data-accessor ~'this) assoc ~keyw  ~'newval)))
