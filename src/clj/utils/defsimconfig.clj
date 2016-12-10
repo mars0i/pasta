@@ -23,10 +23,10 @@
   [sym]
   (hyphed-to-studly-str (name sym)))
 
-(defn make-accessor-sym
+(defn prefix-sym
   "Given a prefix string and a Clojure symbol, returns a Java 
   Bean-style accessor symbol using the prefix.  e.g.:
-  (make-accessor-sym \"get\" this-and-that) ;=> getThisAndThat"
+  (prefix-sym \"get\" this-and-that) ;=> getThisAndThat"
   [prefix stub-str]
   (symbol (str prefix stub-str)))
 
@@ -43,6 +43,8 @@
   (filter #(= 4 (count %)) 
           fields))
 
+;; TODO add type annotations. (maybe iff they're symbols??)
+;; TODO put data structure in its own namespace to avoid circular references
 (defmacro defsimconfig
   "class-prefix is a what goes before the dot in a fully-qualified name for the 
   new class, whose name is specified by class-sym in defsimconfig.  fields is a
@@ -59,14 +61,14 @@
          field-keywords (map keyword field-syms)
          default-syms (map #(symbol (str "default-" %)) field-syms)
          accessor-stubs (map hyphed-sym-to-studly-str field-syms)
-         get-syms  (map (partial make-accessor-sym "get") accessor-stubs)
-         set-syms  (map (partial make-accessor-sym "set") accessor-stubs)
-         -get-syms (map (partial make-accessor-sym "-") get-syms)
-         -set-syms (map (partial make-accessor-sym "-") set-syms)
+         get-syms  (map (partial prefix-sym "get") accessor-stubs)
+         set-syms  (map (partial prefix-sym "set") accessor-stubs)
+         -get-syms (map (partial prefix-sym "-") get-syms)
+         -set-syms (map (partial prefix-sym "-") set-syms)
          range-fields (get-range-fields fields)
-         dom-syms  (map (comp (partial make-accessor-sym "dom") hyphed-sym-to-studly-str first)
+         dom-syms  (map (comp (partial prefix-sym "dom") hyphed-sym-to-studly-str first)
                         range-fields)
-         -dom-syms (map (partial make-accessor-sym "-") dom-syms)
+         -dom-syms (map (partial prefix-sym "-") dom-syms)
          dom-keywords (map keyword dom-syms)
          ranges (map nnext range-fields)
          gen-class-opts {:name qualified-class
