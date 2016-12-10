@@ -54,15 +54,16 @@
 ;; TODO add type annotations. (maybe iff they're symbols??)
 ;; TODO put data structure in its own namespace to avoid circular references
 (defmacro defsimconfig
-  "class-prefix is a what goes before the dot in a fully-qualified name for the 
-  new class, whose name is specified by class-sym in defsimconfig.  fields is a
+  "fields is a
   sequence of 2- or 4-element sequences starting with names of fields in which 
   configuration data will be stored and accessed.  Second elements are Java type 
   identifiers for these fields.  If there is a third and fourth element, they
   are the min and max values for the field.  The following gen-class options will be 
   automatically provided: :state, :exposes-methods, :init, :main, :methods.  
-  Additional options can be provided in addl-gen-class-opts.  Java bean style
-  and other MASON-style accessors will be defined."
+  Additional options can be provided in addl-gen-class-opts.  The generated class
+  will be named <namespace prefix>.SimConfig, where <namespace prefix> is the path 
+  before the last dot of the current namespace.  Java bean style and other MASON-style 
+  accessors will be defined."
   [fields & addl-gen-class-opts]
    (let [class-prefix (get-class-prefix *ns*)
          qualified-class (symbol (str class-prefix "." class-sym))
