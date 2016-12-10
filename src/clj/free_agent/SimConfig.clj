@@ -12,7 +12,7 @@
 ;; Global parameters exposed to MASON UI
 
 ;; Initial defaults for global parameters
-(def default-initial-snipe-energy 10.0)
+(def default-initial-energy 10.0)
 (def default-r-snipe-prior-0 5.0)  ; Defininging these as individual doubles
 (def default-r-snipe-prior-1 20.0) ;  rather than a sequence makes them easy to
 (def default-k-snipe-prior 10.0)   ;  edit from the UI.
@@ -20,12 +20,12 @@
 (def default-num-r-snipes default-num-k-snipes)
 
 ;; Generate SimConfig class as subclass of SimState, init function, import statement, Bean/MASON field accessors
-(cfg/defsimconfig [[initial-snipe-energy double 0.0 10.0]
-                   [r-snipe-prior-0      double 1.0 50.0]
-                   [r-snipe-prior-1      double 1.0 50.0]
-                   [k-snipe-prior        double 1.0 50.0]
-                   [num-k-snipes         long   1 200]
-                   [num-r-snipes         long   1 200]])
+(cfg/defsimconfig [[initial-energy   double 0.0 10.0]
+                   [r-snipe-prior-0  double 1.0 50.0]
+                   [r-snipe-prior-1  double 1.0 50.0]
+                   [k-snipe-prior    double 1.0 50.0]
+                   [num-k-snipes     long   1 200]
+                   [num-r-snipes     long   1 200]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Command line start up
@@ -61,7 +61,7 @@
   "Set fields in the SimConfig's simConfigData from parameters passed on the command line."
   [^SimConfig state cmdline]
   (let [{:keys [options arguments errors summary]} @cmdline]
-    (when-let [newval (:energy options)] (.setEnergy state newval))
+    (when-let [newval (:energy options)] (.setInitialEnergy state newval))
     (when-let [newval (:popsize options)] (.setNumKSnipes state newval) (.setNumRSnipes state newval)))
   (reset! commandline nil)) ; clear it so user can set params in the gui
 
