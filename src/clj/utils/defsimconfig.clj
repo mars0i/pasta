@@ -53,26 +53,30 @@
   (filter #(= 4 (count %)) 
           fields))
 
+(defn third [xs] (nth xs 2))
+(defn fourth [xs] (nth xs 3))
+
 ;; TODO add type annotations. (maybe iff they're symbols??)
 ;; TODO put data structure in its own namespace to avoid circular references
-;; Maybe some of gensym pound signs are overkill. Can't hurt.
+;; Maybe some of gensym pound signs are overkill. Can't hurt?
 (defmacro defsimconfig
-  "fields is a
-  sequence of 2- or 4-element sequences starting with names of fields in which 
-  configuration data will be stored and accessed.  Second elements are Java type 
-  identifiers for these fields.  If there is a third and fourth element, they
-  are the min and max values for the field.  The following gen-class options will be 
-  automatically provided: :state, :exposes-methods, :init, :main, :methods.  
-  Additional options can be provided in addl-gen-class-opts.  The generated class
-  will be named <namespace prefix>.SimConfig, where <namespace prefix> is the path 
-  before the last dot of the current namespace.  Java bean style and other MASON-style 
-  accessors will be defined."
+  "fields is a sequence of 3- or 4-element sequences starting with names of 
+  fields in which configuration data will be stored and accessed, followed
+  by initial values and a Java type identifiers for the field.  The optional 
+  fourth element is a two-element sequence containing default min and max 
+  values to be used for sliders in the UI.  (This range doesn't constraint
+  fields' values in any other respect.) The following gen-class options will 
+  automatically be provided: :state, :exposes-methods, :init, :main, :methods.  
+  Additional options can be provided in addl-gen-class-opts.  The generated 
+  class will be named <namespace prefix>.SimConfig, where <namespace prefix> 
+  is the path before the last dot of the current namespace.  Java bean style 
+  and other MASON-style accessors will be defined."
   [fields & addl-gen-class-opts]
-   (let [class-prefix# (get-class-prefix *ns*)
-         qualified-class# (symbol (str class-prefix# "." class-sym))
+   (let [
          field-syms# (map first fields)
+         field-inits# (map second fields)
+         field-types# (map third fields)
          field-keywords# (map keyword field-syms#)
-         default-syms# (map #(symbol (str "default-" %)) field-syms#)
          accessor-stubs# (map hyphed-sym-to-studly-str field-syms#)
          get-syms#  (map (partial prefix-sym "get") accessor-stubs#)
          set-syms#  (map (partial prefix-sym "set") accessor-stubs#)
@@ -83,14 +87,15 @@
                         range-fields#)
          -dom-syms# (map (partial prefix-sym "-") dom-syms#)
          dom-keywords# (map keyword dom-syms#)
-         ranges# (map nnext range-fields#)
+         ranges# (map fourth range-fields#)
+         qualified-class# (symbol (str (get-class-prefix *ns*) "." class-sym))
          gen-class-opts# {:name qualified-class#
                          :extends 'sim.engine.SimState
                          :state data-sym
                          :exposes-methods '{start superStart}
                          :init init-genclass-sym
                          :main true
-                         :methods (vec (concat (make-accessor-sigs get-syms# set-syms# (map second fields))
+                         :methods (vec (concat (make-accessor-sigs get-syms# set-syms# field-types#)
                                                (map #(vector % [] java.lang.Object) dom-syms#)))} 
          gen-class-opts# (into gen-class-opts# 
                               (map vec (partition 2 addl-gen-class-opts)))]
@@ -101,11 +106,11 @@
         (gen-class ~@(apply concat gen-class-opts#))
         (import ~qualified-class#) ; must go after gen-class but before any type annotations using the class
         ;;;; Should be in same namespace as gen-class:
-        (defn ~init-defn-sym [seed] [[seed] (atom (~data-class-constructor ~@default-syms#))]) ; NOTE will fail if default-syms are not yet defined.
+        (defn ~init-defn-sym [~'seed] [[~'seed] (atom (~data-class-constructor ~@field-inits#))])
         ;; TODO need to add type annotations:
         ~@(map (fn [sym# keyw#] (list 'defn sym# '[this] `(~keyw# @(.simConfigData ~'this))))
                -get-syms# field-keywords#)
-        ~@(map (fn [sym# keyw#] (list 'defn sym# '[this newval] `(swap! (~data-accessor ~'this) assoc ~keyw#  newval)))
+        ~@(map (fn [sym# keyw#] (list 'defn sym# '[this newval] `(swap! (~data-accessor ~'this) assoc ~keyw# ~'newval)))
                -set-syms# field-keywords#)
         ~@(map (fn [sym# keyw# range-pair#] (list 'defn sym# '[this] `(Interval. ~@range-pair#)))
                -dom-syms# dom-keywords# ranges#))))

@@ -11,21 +11,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Global parameters exposed to MASON UI
 
-;; Initial defaults for global parameters
-(def default-initial-energy 10.0)
-(def default-r-snipe-prior-0 5.0)  ; Defininging these as individual doubles
-(def default-r-snipe-prior-1 20.0) ;  rather than a sequence makes them easy to
-(def default-k-snipe-prior 10.0)   ;  edit from the UI.
-(def default-num-k-snipes 20)
-(def default-num-r-snipes default-num-k-snipes)
-
 ;; Generate SimConfig class as subclass of SimState, init function, import statement, Bean/MASON field accessors
-(cfg/defsimconfig [[initial-energy   double 0.0 10.0]
-                   [r-snipe-prior-0  double 1.0 50.0]
-                   [r-snipe-prior-1  double 1.0 50.0]
-                   [k-snipe-prior    double 1.0 50.0]
-                   [num-k-snipes     long   1 200]
-                   [num-r-snipes     long   1 200]])
+;;                 field name     initial value   type   optional default range
+(cfg/defsimconfig [[initial-energy   10.0         double [0.0 10.0]]
+                   [k-snipe-prior    10.0         double [1.0 50.0]]
+                   [r-snipe-prior-0   5.0         double [1.0 50.0]]
+                   [r-snipe-prior-1  20.0         double [1.0 50.0]]
+                   [num-k-snipes     20           long   [1 200]]
+                   [num-r-snipes     20           long   [1 200]]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Command line start up
