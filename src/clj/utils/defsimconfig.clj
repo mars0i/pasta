@@ -11,6 +11,14 @@
 (def data-accessor '.simConfigData)
 (def init-sym 'init-sim-config-data)
 
+(defn get-class-prefix
+  "Given a Java/Clojure class identifier symbol or string, or class object (found
+  e.g. in *ns*), returns a string containing only the path part before the last 
+  period, stripping off the class name at the end."
+  [class-rep]
+  (s/join "." (butlast 
+                (s/split (str class-rep) #"\."))))
+
 (defn hyphed-to-studly-str
   "Converts a hyphenated string into the corresponding studly caps string."
   [string]
@@ -55,8 +63,9 @@
   automatically provided: :state, :exposes-methods, :init, :main, :methods.  
   Additional options can be provided in addl-gen-class-opts.  Java bean style
   and other MASON-style accessors will be defined."
-  [class-prefix fields & addl-gen-class-opts]
-   (let [qualified-class (symbol (str class-prefix "." class-sym))
+  [fields & addl-gen-class-opts]
+   (let [class-prefix (get-class-prefix *ns*)
+         qualified-class (symbol (str class-prefix "." class-sym))
          field-syms (map first fields)
          field-keywords (map keyword field-syms)
          default-syms (map #(symbol (str "default-" %)) field-syms)
