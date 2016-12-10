@@ -84,6 +84,7 @@
          dom-keywords (map keyword dom-syms)
          ranges (map nnext range-fields)
          gen-class-opts {:name qualified-class
+                         :extends 'sim.engine.SimState
                          :state data-sym
                          :exposes-methods '{start superStart}
                          :init init-genclass-sym
