@@ -9,16 +9,19 @@
 ;; (if done here, fails when aot-compiling from a clean project)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Global parameters exposed to MASON UI
+;; Generate SimConfig class as subclass of SimState using genclass, with an init 
+;; function, import statement, and Bean/MASON field accessors.
+;; To see what code will be generated, try this in a repl:
+;;    (require '[utils.defsimconfig :as cfg])
+;;    (pprint (macroexpand-1 '<insert defsimconfig call>))
 
-;; Generate SimConfig class as subclass of SimState, init function, import statement, Bean/MASON field accessors
-;;                 field name     initial value   type   optional default range
-(cfg/defsimconfig [[initial-energy   10.0         double [0.0 10.0]]
-                   [k-snipe-prior    10.0         double [1.0 50.0]]
-                   [r-snipe-prior-0   5.0         double [1.0 50.0]]
-                   [r-snipe-prior-1  20.0         double [1.0 50.0]]
-                   [num-k-snipes     20           long   [1 200]]
-                   [num-r-snipes     20           long   [1 200]]])
+;;                 field name   initial value   type   optional default range
+(cfg/defsimconfig [[initial-energy   10.0       double [0.0 10.0]]
+                   [k-snipe-prior    10.0       double [1.0 50.0]]
+                   [r-snipe-prior-0   5.0       double [1.0 50.0]]
+                   [r-snipe-prior-1  20.0       double [1.0 50.0]]
+                   [num-k-snipes     20         long   [1 200]]
+                   [num-r-snipes     20         long   [1 200]]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Command line start up
