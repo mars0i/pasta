@@ -1,5 +1,6 @@
 (ns free-agent.SimConfig
-  (:require [clojure.tools.cli])
+  (:require [clojure.tools.cli]
+            [utils.defsimconfig :as cfg])
   (:import [sim.engine Steppable Schedule]
            [sim.util Interval]
            [ec.util MersenneTwisterFast]
@@ -11,58 +12,20 @@
 ;; Global parameters exposed to MASON UI
 
 ;; Initial defaults for global parameters
-(def default-snipe-energy 10.0)
-(def default-r-snipe-priors [5.0 20.0])
+(def default-initial-snipe-energy 10.0)
+(def default-r-snipe-prior-0 5.0)  ; Defininging these as individual doubles
+(def default-r-snipe-prior-1 20.0) ;  rather than a sequence makes them easy to
+(def default-k-snipe-prior 10.0)   ;  edit from the UI.
 (def default-num-k-snipes 20)
 (def default-num-r-snipes default-num-k-snipes)
 
-
-;; This will hold the global parameters in gen-class's single state field.
-(defrecord SimConfigData [initial-snipe-energy
-                          r-snipe-priors
-                          num-k-snipes
-                          num-r-snipes])
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; The SimState subclass specification
-
-(gen-class :name free-agent.SimConfig
-           :extends sim.engine.SimState        ; includes signature for the start() method
-           :exposes-methods {start superStart} ; alias method start() in superclass. (Don't name it 'super-start'; use a Java name.)
-           ;; Bean methods that will be exposed to the UI--need to have Java types:
-           :methods [[getInitialSnipeEnergy [] double]
-                     [setInitialSnipeEnergy [double] void]
-                     [getRSnipePriors [] "[D"]       ; i.e. array of doubles.
-                     [setRSnipePriors ["[D"] void]
-                     [setNumKSnipes [long] void]
-                     [getNumKSnipes [] long]
-                     [setNumRSnipes [long] void]
-                     [getNumRSnipes [] long]]
-           :state simConfigData
-           :init init-sim-config-data
-           :main true)
-
-;; TODO OH WAIT can I put the sim-config-data somewhere else or if it's here there'll be cyclic deps .... ?
-(defn -init-sim-config-data 
-  "Automatically initializes sim-config-data when an instance of class SimConfig is created."
-  [seed]
-  [[seed] (SimConfigData. (atom default-snipe-energy)
-                       (atom default-r-snipe-priors)
-                       (atom default-num-k-snipes)
-                       (atom default-num-r-snipes))])
-
-(import free-agent.SimConfig) ; do this after gen-class but before any type hints using SimConfig
-
-;; Bean accessors
-(defn -getInitialSnipeEnergy ^double [^SimConfig this] @(:initial-snipe-energy ^SimConfigData (.simConfigData this)))
-(defn -setInitialSnipeEnergy [^SimConfig this ^double newval] (reset! (:initial-snipe-energy ^SimConfigData (.simConfigData this)) newval))
-(defn -getInitialRSnipePriors [^SimConfig this] @(:initial-r-snipe-priors ^SimConfigData (.simConfigData this)))
-(defn -setInitialRSnipePriors [^SimConfig this newval] (reset! (:initial-r-snipe-priors ^SimConfigData (.simConfigData this) newval)))
-(defn -getNumKSnipes ^long [^SimConfig this] @(:num-k-snipes ^SimConfigData (.simConfigData this)))
-(defn -setNumKSnipes [^SimConfig this ^long newval] (reset! (:num-k-snipes ^SimConfigData (.simConfigData this)) newval))
-(defn -getNumRSnipes ^long [^SimConfig this] @(:num-r-snipes ^SimConfigData (.simConfigData this)))
-(defn -setNumRSnipes [^SimConfig this ^long newval] (reset! (:num-r-snipes ^SimConfigData (.simConfigData this)) newval))
-
+;; Generate SimConfig class as subclass of SimState, init function, import statement, Bean/MASON field accessors
+(cfg/defsimconfig [[initial-snipe-energy double 0.0 10.0]
+                   [r-snipe-prior-0      double 1.0 50.0]
+                   [r-snipe-prior-1      double 1.0 50.0]
+                   [k-snipe-prior        double 1.0 50.0]
+                   [num-k-snipes         long   1 200]
+                   [num-r-snipes         long   1 200]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Command line start up
@@ -91,7 +54,7 @@
 (defn -main
   [& args]
   (record-commandline-args! args) ; The SimConfig isn't available yet, so store commandline args for later access by start().
-  (sim.engine.SimState/doLoop free-agent.SimConfig (into-array String args))
+  (sim.engine.SimState/doLoop free-agent.SimConfig (into-array String args)) ;; FIXME RUNTIME EXCEPTION HERE
   (System/exit 0))
 
 (defn set-sim-config-data-from-commandline!
