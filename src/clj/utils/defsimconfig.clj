@@ -7,6 +7,7 @@
 (def class-sym 'SimConfig)
 (def class-constructor 'SimConfig.)
 (def data-class-sym 'SimConfigData)
+(def data-class-constructor 'SimConfigData.)
 (def data-sym 'simConfigData)
 (def data-accessor '.simConfigData)
 (def init-sym 'init-sim-config-data)
@@ -96,7 +97,7 @@
         ;;;; should be in SimConfig namespace:
         (gen-class ~@(apply concat gen-class-opts))
         ;;;; Should be in same namespace as gen-class:
-        (defn ~init-sym [~'seed] [[~'seed] (atom (~class-constructor ~@default-syms))]) ; NOTE will fail if default-syms are not yet defined.
+        (defn ~init-sym [~'seed] [[~'seed] (atom (~data-class-constructor ~@default-syms))]) ; NOTE will fail if default-syms are not yet defined.
         ;; need to add type annotations:
         (import ~qualified-class) ; must go after gen-class but before any type annotations using the class
         ~@(map (fn [sym keyw] (list 'defn sym '[this] `(~keyw @(.simConfigData ~'this))))
