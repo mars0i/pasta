@@ -15,15 +15,10 @@
                    [num-k-snipes         long   1 200]
                    [num-r-snipes         long   1 200]])
 
-;; produces this:
+;; produces this (reformatted here):
 
 (do
-  (clojure.core/defrecord SimConfigData [initial-snipe-energy
-                                         r-snipe-prior-0
-                                         r-snipe-prior-1
-                                         k-snipe-prior
-                                         num-k-snipes
-                                         num-r-snipes])
+  (clojure.core/defrecord SimConfigData [initial-snipe-energy r-snipe-prior-0 r-snipe-prior-1 k-snipe-prior num-k-snipes num-r-snipes])
 
   (clojure.core/gen-class
     :name free-agent.SimConfig
@@ -50,50 +45,34 @@
               [domNumKSnipes [] java.lang.Object]
               [domNumRSnipes [] java.lang.Object]])
 
-  (clojure.core/defn init-sim-config-data
-    [seed]
-    [[seed] (clojure.core/atom (SimConfig.
-                                 default-initial-snipe-energy
-                                 default-r-snipe-prior-0
-                                 default-r-snipe-prior-1
-                                 default-k-snipe-prior
-                                 default-num-k-snipes
-                                 default-num-r-snipes))])
-
   (clojure.core/import free-agent.SimConfig)
 
+  (clojure.core/defn -init-sim-config-data
+    [seed]
+    [[seed] (clojure.core/atom (SimConfigData. default-initial-snipe-energy
+                                               default-r-snipe-prior-0
+                                               default-r-snipe-prior-1
+                                               default-k-snipe-prior
+                                               default-num-k-snipes
+                                               default-num-r-snipes))])
+
   (defn -getInitialSnipeEnergy [this] (:initial-snipe-energy @(.simConfigData this)))
-
   (defn -getRSnipePrior0 [this] (:r-snipe-prior-0 @(.simConfigData this)))
-
   (defn -getRSnipePrior1 [this] (:r-snipe-prior-1 @(.simConfigData this)))
-
   (defn -getKSnipePrior [this] (:k-snipe-prior @(.simConfigData this)))
-
   (defn -getNumKSnipes [this] (:num-k-snipes @(.simConfigData this)))
-
   (defn -getNumRSnipes [this] (:num-r-snipes @(.simConfigData this)))
 
   (defn -setInitialSnipeEnergy [this newval] (clojure.core/swap! (.simConfigData this) clojure.core/assoc :initial-snipe-energy newval))
-
   (defn -setRSnipePrior0 [this newval] (clojure.core/swap! (.simConfigData this) clojure.core/assoc :r-snipe-prior-0 newval))
-
   (defn -setRSnipePrior1 [this newval] (clojure.core/swap! (.simConfigData this) clojure.core/assoc :r-snipe-prior-1 newval))
-
   (defn -setKSnipePrior [this newval] (clojure.core/swap! (.simConfigData this) clojure.core/assoc :k-snipe-prior newval))
-
   (defn -setNumKSnipes [this newval] (clojure.core/swap! (.simConfigData this) clojure.core/assoc :num-k-snipes newval))
-
   (defn -setNumRSnipes [this newval] (clojure.core/swap! (.simConfigData this) clojure.core/assoc :num-r-snipes newval))
 
   (defn -domInitialSnipeEnergy [this] (Interval. 0.0 10.0))
-
   (defn -domRSnipePrior0 [this] (Interval. 1.0 50.0))
-
   (defn -domRSnipePrior1 [this] (Interval. 1.0 50.0))
-
   (defn -domKSnipePrior [this] (Interval. 1.0 50.0))
-
   (defn -domNumKSnipes [this] (Interval. 1 200))
-
   (defn -domNumRSnipes [this] (Interval. 1 200)))
