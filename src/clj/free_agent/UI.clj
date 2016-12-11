@@ -3,8 +3,8 @@
 ;;; specified in the file LICENSE.
 
 (ns free-agent.UI
-  (:require [free-agent.Sim :as s])
-  (:import [free_agent Sim]
+  (:require [free-agent.SimConfig :as cfg])
+  (:import [free-agent SimConfig]
            [sim.engine Steppable Schedule]
            [sim.field.continuous Continuous2D]
            [sim.portrayal.continuous ContinuousPortrayal2D]
@@ -12,7 +12,7 @@
            [sim.display Console Display2D]
            [java.awt Color])
   (:gen-class
-    :name free-agent.SimWithUI
+    :name free-agent.UI
     :extends sim.display.GUIState
     :main true
     :exposes {state {:get getState}}  ; accessor for field in superclass
@@ -25,21 +25,23 @@
   [& args]
   (let [field (Continuous2D. 1.0 125 100)
         field-portrayal (ContinuousPortrayal2D.)
-        soc-net (Network. false) ; undirected
-        soc-net-portrayal (NetworkPortrayal2D.)
-        talk-net (Network. true) ; directed
-        talk-net-portrayal (NetworkPortrayal2D.)]
+        ;soc-net (Network. false) ; undirected
+        ;soc-net-portrayal (NetworkPortrayal2D.)
+        ;talk-net (Network. true) ; directed
+        ;talk-net-portrayal (NetworkPortrayal2D.)
+        ]
     (.setField field-portrayal field)
-    (.setField soc-net-portrayal  (SpatialNetwork2D. field soc-net))
-    (.setField talk-net-portrayal (SpatialNetwork2D. field talk-net))
+    ;(.setField soc-net-portrayal  (SpatialNetwork2D. field soc-net))
+    ;(.setField talk-net-portrayal (SpatialNetwork2D. field talk-net))
     [(vec args) {:display (atom nil)
                  :display-frame (atom nil)
                  :field field                         ; holds nodes
-                 :field-portrayal field-portrayal     ; displays nodes
-                 :soc-net soc-net                     ; holds within-community social network
-                 :soc-net-portrayal soc-net-portrayal ; displays ditto
-                 :talk-net talk-net
-                 :talk-net-portrayal talk-net-portrayal}]))
+                 ;:field-portrayal field-portrayal     ; displays nodes
+                 ;:soc-net soc-net                     ; holds within-community social network
+                 ;:soc-net-portrayal soc-net-portrayal ; displays ditto
+                 ;:talk-net talk-net
+                 ;:talk-net-portrayal talk-net-portrayal
+                 }]))
 
 (defn get-display [this] @(:display (.iState this)))
 (defn set-display [this newval] (reset! (:display (.iState this)) newval))
@@ -47,10 +49,10 @@
 (defn set-display-frame [this newval] (reset! (:display-frame (.iState this)) newval))
 (defn get-field [this] (:field (.iState this)))
 (defn get-field-portrayal [this] (:field-portrayal (.iState this)))
-(defn get-soc-net-portrayal [this] (:soc-net-portrayal (.iState this)))
-(defn get-soc-net [this] (:soc-net (.iState this)))
-(defn get-talk-net-portrayal [this] (:talk-net-portrayal (.iState this)))
-(defn get-talk-net [this] (:talk-net (.iState this)))
+;(defn get-soc-net-portrayal [this] (:soc-net-portrayal (.iState this)))
+;(defn get-soc-net [this] (:soc-net (.iState this)))
+;(defn get-talk-net-portrayal [this] (:talk-net-portrayal (.iState this)))
+;(defn get-talk-net [this] (:talk-net (.iState this)))
 
 ;; Override methods in sim.display.GUIState so that UI can make graphs, etc.
 (defn -getSimulationInspectedObject [this] (.state this))
@@ -66,10 +68,10 @@
 
 (defn -main
   [& args]
-  (let [sim (Sim. (System/currentTimeMillis))]                                         ; CREATE AN INSTANCE OF my SimState
-    (s/record-commandline-args! args) 
-    (when @s/commandline (s/set-instance-state-from-commandline! sim s/commandline))
-    (.setVisible (Console. (free-agent.SimWithUI. sim)) true)))                        ; THIS IS WHAT CONNECTS THE GUI TO my SimState (I think)
+  (let [sim-config (SimConfig. (System/currentTimeMillis))]                                         ; CREATE AN INSTANCE OF my SimState
+    (cfg/record-commandline-args! args) 
+    (when @cfg/commandline (cfg/set-sim-config-data-from-commandline! sim-config cfg/commandline))
+    (.setVisible (Console. (free-agent.UI. sim-config)) true)))                        ; THIS IS WHAT CONNECTS THE GUI TO my SimState (I think)
 
 (defn -getName [this] "free-agent") ; override method in super
 
@@ -87,56 +89,60 @@
   (.scheduleRepeating (.schedule (.getState this-gui))
                       Schedule/EPOCH 2
                       (reify Steppable
-                        (step [this-steppable sim-state]
-                          (let [talk-net (get-talk-net this-gui)  ; DEFINITELY NOT NEEDED FOR free-agent
-                                istate (.instanceState sim-state) ; PROBABLY NOT NEEDED FOR free-agent
-                                population @(.population istate)] ; PROBABLY NOT NEEDED FOR free-agent
-                            (.clear talk-net)
-                            (doseq [indiv population] 
-                              (when-let [speaker (s/get-prev-speaker indiv)]  ; UPDATE LINKS FROM DATA IN INDIVS
-                                (.addEdge talk-net speaker indiv nil))))))))
+                        (step [this-steppable sim-config]
+                          ;(let [talk-net (get-talk-net this-gui)  ; DEFINITELY NOT NEEDED FOR free-agent
+                          ;      istate (.instanceState sim-config) ; PROBABLY NOT NEEDED FOR free-agent
+                          ;      population @(.population istate)
+                          ;      ] ; PROBABLY NOT NEEDED FOR free-agent
+                          ;  (.clear talk-net)
+                          ;  (doseq [indiv population] 
+                          ;    (when-let [speaker (cfg/get-prev-speaker indiv)]  ; UPDATE LINKS FROM DATA IN INDIVS
+                          ;      (.addEdge talk-net speaker indiv nil)))
+                          ;  )
+                          ))))
                                                  ;  from    to  (from end is wider; to end is pointed)
 
 (defn setup-portrayals
   [this-gui]  ; instead of 'this': avoid confusion with proxy below
-  (let [sim (.getState this-gui)
-        rng (.random sim)
+  (let [sim-config (.getState this-gui)
+        rng (.random sim-config)
         field (get-field this-gui)
         field-portrayal (get-field-portrayal this-gui)
-        soc-net (get-soc-net this-gui)
-        soc-net-portrayal (get-soc-net-portrayal this-gui)
-        talk-net (get-talk-net this-gui)
-        talk-net-portrayal (get-talk-net-portrayal this-gui)
+        ;soc-net (get-soc-net this-gui)
+        ;soc-net-portrayal (get-soc-net-portrayal this-gui)
+        ;talk-net (get-talk-net this-gui)
+        ;talk-net-portrayal (get-talk-net-portrayal this-gui)
         display (get-display this-gui)
-        communities (s/get-communities sim)
-        population (s/get-population sim)
-        indiv-portrayal (OrientedPortrayal2D.  ; what this represents is set in the Oriented2D part of Indiv in Sim.clj
-                          (proxy [OvalPortrayal2D] [1.5]    ; note proxy auto-captures 'this'
-                            (draw [indiv graphics info]                      ; override OvalPortrayal2D method
-                              (let [shade (int (* (.getRelig indiv) 255))]  ; UPDATE COLOR FROM DATA IN INDIV
-                                (set! (.-paint this) (Color. shade 0 (- 255 shade))) ; paint var is in OvalPortrayal2D
-                                (proxy-super draw indiv graphics info))))
-                          0 1.75 (Color. 255 175 175) OrientedPortrayal2D/SHAPE_LINE) ; color is of orientation line/shape
-        soc-edge-portrayal (SimpleEdgePortrayal2D. (Color. 150 150 150) nil)
-        talk-edge-portrayal (SimpleEdgePortrayal2D. (Color. 200 225 150 85) nil)]
+        ;communities (cfg/get-communities sim)
+        ;population (cfg/get-population sim)
+        ;indiv-portrayal (OrientedPortrayal2D.  ; what this represents is set in the Oriented2D part of Indiv in Sim.clj
+        ;                  (proxy [OvalPortrayal2D] [1.5]    ; note proxy auto-captures 'this'
+        ;                    (draw [indiv graphics info]                      ; override OvalPortrayal2D method
+        ;                      (let [shade (int (* (.getRelig indiv) 255))]  ; UPDATE COLOR FROM DATA IN INDIV
+        ;                        (set! (.-paint this) (Color. shade 0 (- 255 shade))) ; paint var is in OvalPortrayal2D
+        ;                        (proxy-super draw indiv graphics info))))
+        ;                  0 1.75 (Color. 255 175 175) OrientedPortrayal2D/SHAPE_LINE) ; color is of orientation line/shape
+        ;soc-edge-portrayal (SimpleEdgePortrayal2D. (Color. 150 150 150) nil)
+        ;talk-edge-portrayal (SimpleEdgePortrayal2D. (Color. 200 225 150 85) nil)
+        ]
     ;; set up node display
     (.clear field)
-    (lay/set-indiv-locs! rng
-                         (if (= (.getLinkStyle sim) s/sequential-link-style-idx) 0.0 lay/indiv-position-jitter) ; jitter makes it easier to distinguish links that just happen to cross a node
-                         field
-                         communities)
-    (.setPortrayalForClass field-portrayal free-agent.Sim.Indiv indiv-portrayal)
+    ;(lay/set-indiv-locs! rng
+    ;                     (if (= (.getLinkStyle sim) cfg/sequential-link-style-idx) 0.0 lay/indiv-position-jitter) ; jitter makes it easier to distinguish links that just happen to cross a node
+    ;                     field
+    ;                     communities)
+    ;(.setPortrayalForClass field-portrayal free-agent.Sim.Indiv indiv-portrayal)
     ;; set up within-community social network link display:
-    (.clear soc-net)
-    (lay/set-links! soc-net population) ; set-links! sets edges' info fields to nil (null): edges have no weight, so weight defaults to 1.0
-    (.setShape soc-edge-portrayal SimpleEdgePortrayal2D/SHAPE_LINE_BUTT_ENDS) ; Default SHAPE_THIN_LINE doesn't allow changing thickness. Other differences don't matter, if thinner than nodes.
-    (.setBaseWidth soc-edge-portrayal 0.15) ; line width
-    (.setPortrayalForAll soc-net-portrayal soc-edge-portrayal)
+    ;(.clear soc-net)
+    ;(lay/set-links! soc-net population) ; set-links! sets edges' info fields to nil (null): edges have no weight, so weight defaults to 1.0
+    ;(.setShape soc-edge-portrayal SimpleEdgePortrayal2D/SHAPE_LINE_BUTT_ENDS) ; Default SHAPE_THIN_LINE doesn't allow changing thickness. Other differences don't matter, if thinner than nodes.
+    ;(.setBaseWidth soc-edge-portrayal 0.15) ; line width
+    ;(.setPortrayalForAll soc-net-portrayal soc-edge-portrayal)
     ;; set up actual communication network link display (links added transiently during ticks):
-    (.clear talk-net)
-    (.setShape talk-edge-portrayal SimpleEdgePortrayal2D/SHAPE_TRIANGLE)
-    (.setBaseWidth talk-edge-portrayal 0.85) ; width at base (from end) of triangle
-    (.setPortrayalForAll talk-net-portrayal talk-edge-portrayal)
+    ;(.clear talk-net)
+    ;(.setShape talk-edge-portrayal SimpleEdgePortrayal2D/SHAPE_TRIANGLE)
+    ;(.setBaseWidth talk-edge-portrayal 0.85) ; width at base (from end) of triangle
+    ;(.setPortrayalForAll talk-net-portrayal talk-edge-portrayal)
     ;; set up display
     (doto display
       (.reset )
@@ -151,14 +157,15 @@
     (set-display this display)
     (doto display
       (.setClipping false)
-      (.attach (get-soc-net-portrayal this) "local networks") ; The order of attaching is the order of painting.
-      (.attach (get-talk-net-portrayal this) "communications") ; what's attached later will appear on top of what's earlier. 
-      (.attach (get-field-portrayal this) "indivs"))
+      ;(.attach (get-soc-net-portrayal this) "local networks") ; The order of attaching is the order of painting.
+      ;(.attach (get-talk-net-portrayal this) "communications") ; what's attached later will appear on top of what's earlier. 
+      ;(.attach (get-field-portrayal this) "indivs")
+      )
     ;; set up display frame:
     (set-display-frame this display-frame)
     (.registerFrame controller display-frame)
     (doto display-frame 
-      (.setTitle "Intermittent")
+      (.setTitle "free-agent")
       (.setVisible true))))
 
 (defn -quit
@@ -174,7 +181,7 @@
   "Convenience function to init and start GUI from the REPL.
   Returns the new Sim object."
   []
-  (let [sim (Sim. (System/currentTimeMillis))]
-    (.setVisible (Console. (free-agent.SimWithUI. sim))
+  (let [sim-config (SimConfig. (System/currentTimeMillis))]
+    (.setVisible (Console. (free-agent.UI. sim-config))
                  true)
-    sim))
+    sim-config))
