@@ -16,7 +16,7 @@
 ;;    (pprint (macroexpand-1 '<insert defsimconfig call>))
 
 ;;                 field name   initial value   type   optional default range
-(cfg/defsimconfig [[initial-energy   10.0       double [0.0 10.0]]
+(cfg/defsimconfig [[initial-energy   10.0       double [0.0 20.0]]
                    [k-snipe-prior    10.0       double [1.0 50.0]]
                    [r-snipe-prior-0   5.0       double [1.0 50.0]]
                    [r-snipe-prior-1  20.0       double [1.0 50.0]]
