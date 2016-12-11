@@ -72,7 +72,11 @@
   (when @commandline (set-sim-config-data-from-commandline! this commandline))
   ;; Construct core data structures of the simulation:
   (let [^Schedule schedule (.schedule this)
-        ^SimConfigData istate (.simConfigData this)]
+        ^SimConfigData istate (.simConfigData this)
+        ;; make snipes here
+        ;; and make field/fields for them to move on
+        ;; add mushrooms to field(s)
+        ]
     ;; Schedule per-tick step function(s):
     (.scheduleRepeating schedule Schedule/EPOCH 0
                         (reify Steppable 
