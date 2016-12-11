@@ -17,7 +17,7 @@
     :main true
     :exposes {state {:get getState}}  ; accessor for field in superclass
     :exposes-methods {start superStart, quit superQuit, init superInit, getInspector superGetInspector}
-    ;:methods []
+    ;:methods 
     :state iState
     :init init-instance-state))
 
@@ -42,6 +42,15 @@
                  ;:talk-net talk-net
                  ;:talk-net-portrayal talk-net-portrayal
                  }]))
+
+;; getName()
+;; Obscure corner of the already obscure gen-class corner: When a method has multiple arities in the super,
+;; you have to distinguish them by tacking type specifiers on to the name of the method.
+;; https://groups.google.com/forum/#!topic/clojure/TVRsy4Gnf70
+;; https://puredanger.github.io/tech.puredanger.com/2011/08/12/subclassing-in-clojure (in which Alex Miller of all people learns from random others)
+;; http://stackoverflow.com/questions/32773861/clojure-gen-class-for-overloaded-and-overridden-methods
+;; http://dishevelled.net/Tricky-uses-of-Clojure-gen-class-and-AOT-compilation.html
+(defn -getName-void [this] "free-agent") ; override method in super. should cause this to be displayed as title of config window of gui, but it doesn't.
 
 (defn get-display [this] @(:display (.iState this)))
 (defn set-display [this newval] (reset! (:display (.iState this)) newval))
@@ -72,8 +81,6 @@
     (cfg/record-commandline-args! args) 
     (when @cfg/commandline (cfg/set-sim-config-data-from-commandline! sim-config cfg/commandline))
     (.setVisible (Console. (free-agent.UI. sim-config)) true)))                        ; THIS IS WHAT CONNECTS THE GUI TO my SimState (I think)
-
-(defn -getName [this] "free-agent") ; override method in super
 
 ;; This is called by the pause and go buttons when starting from fully stopped.
 (defn -start
