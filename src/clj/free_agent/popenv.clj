@@ -14,4 +14,7 @@
               (partial sn/make-r-snipe cfg-data)))
   
 
+(defn next-popenv
+  [cfg-data]
+  )
 
