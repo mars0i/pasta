@@ -36,8 +36,15 @@
   [args]
   ;; These options should not conflict with MASON's.  Example: If "-h" is the single-char help option, doLoop will never see "-help" (although "-t n" doesn't conflict with "-time") (??).
   (let [cli-options [["-?" "--help" "Print this help message."]
-                     ["-e" "--energy <energy>" "Initial energy of snipes." :parse-fn #(Double. %)]
-                     ["-N" "--popsize <population size>" "Size of both populations" :parse-fn #(Long. %)]]
+                     ["-w" "--world-width" "World widths <world-width>" :parse-fn #(Long. %)]
+                     ["-h" "--world-height" "World heights <world-height>" :parse-fn #(Long. %)]
+                     ["-e" "--energy <initial-energy>" "Initial energy of snipes" :parse-fn #(Double. %)]
+                     ["-k" "--k-snipe-prior <k-snipe-prior>" "Prior for k-snipes" :parse-fn #(Double. %)]
+                     ["-p" "--r-snipe-prior-0 <r-snipe-prior-0>" "One of two possible priors for r-snipes" :parse-fn #(Double. %)]
+                     ["-q" "--r-snipe-prior-1 <r-snipe-prior-1>" "One of two possible priors for r-snipes" :parse-fn #(Double. %)]
+                     ["-n" "--num-k-snipes <num-k-snipes>" "Size of k-snipe subpopulation" :parse-fn #(Long. %)]
+                     ["-o" "--num-r-snipes <num-r-snipes>" "Size of r-snipe subpopulation" :parse-fn #(Long. %)]
+                     ["-m" "--mushroom-prob <mushroom-prob>" "Probability that a mushroom will appear on a given patch."]]
         usage-fmt (fn [options]
                     (let [fmt-line (fn [[short-opt long-opt desc]] (str short-opt ", " long-opt ": " desc))]
                       (clojure.string/join "\n" (concat (map fmt-line options)))))
@@ -68,7 +75,7 @@
 ;; Start main loop
 
 (defn -start
-  "Function called to (re)start a new simulation run."
+  "Function that's called to (re)start a new simulation run."
   [^SimConfig this]
   (.superStart this)
   ;; If user passed commandline options, use them to set parameters, rather than defaults:
