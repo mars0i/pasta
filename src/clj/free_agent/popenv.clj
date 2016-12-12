@@ -1,7 +1,7 @@
 (ns free-agent.popenv
   (:require ;[free-agent.SimConfig :as cfg]
             [free-agent.snipe :as sn]
-            [sim.field.grid ObjectGrid2D]
+            [sim.field.grid DoubleGrid2D ObjectGrid2D]
             [utils.random :as ran]))
 
 ;; need prior, energy, num snips
@@ -15,16 +15,16 @@
 
 (defn make-popenv
   [cfg-data] ; TODO this is where circular ref will prevent type annotation if SimConfigData is defined in the SimConfig namespace
-  (let [{:keys [initial-energy k-snipe-prior 
+  (let [{:keys [world-width world-height
+                initial-energy k-snipe-prior 
                r-snipe-prior-0 r-snipe-prior-1 
                num-k-snipes num-r-snipes]} cfg-data
         k-snipes (make-k-snipes num-k-snipes initial-energy k-snipe-prior)
         r-snipes (make-r-snipes num-r-snipes initial-energy 
-                                r-snipe-prior-0 r-snipe-prior-1)]
+                                r-snipe-prior-0 r-snipe-prior-1)
+        mushroom-field (DoubleGrid2D. world-width world-height -1.0) ; -1 means no mushroom.  eventually make two of these
+        snipe-field    (ObjectGrid2D. world-width world-height)]     ; eventually make two of these
 
-    ;; make mushrooms
-    ;; HERE make one or two ObjectGrid2D's and stick the snipes and mushrooms in it.
-    ;; or maybe mushrooms are in a DoubleGrid2D.
 
     ))
         
