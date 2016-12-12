@@ -1,6 +1,8 @@
 ;; Define a defsymstate macro that will define a subclass of MASON's
 ;; SimState with associated instance state variable, accessors, etc.
 
+;; TODO consider moving command line processing into this macro.
+
 (ns utils.defsimconfig
   (:require [clojure.string :as s]))
 
