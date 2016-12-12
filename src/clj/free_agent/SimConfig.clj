@@ -21,7 +21,8 @@
                    [r-snipe-prior-0   5.0       double [1.0 50.0]]
                    [r-snipe-prior-1  20.0       double [1.0 50.0]]
                    [num-k-snipes     20         long   [1 200]]
-                   [num-r-snipes     20         long   [1 200]]])
+                   [num-r-snipes     20         long   [1 200]]
+                   [mushroom-prob    0.1        double [0.0 1.0]]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Command line start up
