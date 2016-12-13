@@ -1,6 +1,5 @@
 (ns free-agent.snipe
-  (:require ;[free-agent.SimConfig :as cfg]
-            [free-agent.level :as l]))
+  (:require [free-agent.level :as l]))
 
 ;; Could be a bottleneck if reproduction starts happening in different threads. In that case I could switch to e.g. (str (gensym "i")) as in intermmitran.
 (def prev-snipe-id (atom -1)) ; first inc'ed value will be 0
