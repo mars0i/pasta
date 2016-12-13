@@ -101,19 +101,20 @@
                          :main true
                          :methods (vec (concat (make-accessor-sigs get-syms# set-syms# field-types#)
                                                (map #(vector % [] java.lang.Object) dom-syms#)))} 
-         gen-class-opts# (into gen-class-opts# 
-                              (map vec (partition 2 addl-gen-class-opts)))]
+         gen-class-opts# (into gen-class-opts# (map vec (partition 2 addl-gen-class-opts)))]
      `(do
         ;;
         ;; Put following in its own namespace so that other namespaces can access it without cyclicly referencing SimConfig:
-        (ns ~qualified-cfg-class#)
+        (ns ~qualified-data-class#)
+        (println "yo: " *ns*)
         (defrecord ~data-class-sym ~(vec field-syms#))
         ;;
         ;; The rest belongs in the main config namespace. gen-class will switch to it (?).
         ;(ns ~qualified-cfg-class#)
         (gen-class ~@(apply concat gen-class-opts#))
         (require '[~qualified-data-class#])
-        (import ~qualified-data-class# ~qualified-cfg-class#) ; must go after gen-class but before any type annotations using the class
+        (import ~qualified-data-class# 
+                ~qualified-cfg-class#) ; must go after gen-class but before any type annotations using the class
         (defn ~init-defn-sym [~'seed] [[~'seed] (atom (~qualified-data-class-constructor# ~@field-inits#))])
         ;; TODO need to add type annotations:
         ~@(map (fn [sym# keyw#] (list 'defn sym# '[this] `(~keyw# @(.simConfigData ~'this))))
