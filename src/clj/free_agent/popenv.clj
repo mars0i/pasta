@@ -41,7 +41,7 @@
   [rng cfg-data]
   (let [{:keys [world-width world-height]} cfg-data
         snipe-field    (ObjectGrid2D. world-width world-height) ; eventually make two of each
-        mushroom-field (DoubleGrid2D. world-width world-height)]
+        mushroom-field (ObjectGrid2D. world-width world-height)]
     (make-k-snipes cfg-data snipe-field)
     (make-r-snipes cfg-data snipe-field)
     (make-mushrooms rng cfg-data mushroom-field) ; no need for a separate list of mushrooms
