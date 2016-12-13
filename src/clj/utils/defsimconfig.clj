@@ -6,8 +6,8 @@
 (ns utils.defsimconfig
   (:require [clojure.string :as s]))
 
-(def class-sym 'SimConfig)
-(def class-constructor 'SimConfig.)
+(def cfg-class-sym 'SimConfig)
+(def cfg-class-constructor 'SimConfig.)
 (def data-class-sym 'SimConfigData)
 (def data-class-constructor 'SimConfigData.)
 (def data-sym 'simConfigData)
@@ -74,8 +74,7 @@
   is the path before the last dot of the current namespace.  Java bean style 
   and other MASON-style accessors will be defined."
   [fields & addl-gen-class-opts]
-   (let [
-         field-syms# (map first fields)
+   (let [field-syms# (map first fields)
          field-inits# (map second fields)
          field-types# (map third fields)
          field-keywords# (map keyword field-syms#)
@@ -90,8 +89,11 @@
          -dom-syms# (map (partial prefix-sym "-") dom-syms#)
          dom-keywords# (map keyword dom-syms#)
          ranges# (map fourth range-fields#)
-         qualified-class# (symbol (str (get-class-prefix *ns*) "." class-sym))
-         gen-class-opts# {:name qualified-class#
+         class-prefix (get-class-prefix *ns*)
+         qualified-cfg-class# (symbol (str class-prefix "." cfg-class-sym))
+         qualified-data-class# (symbol (str class-prefix "." data-class-sym))
+         qualified-data-class-constructor# (symbol (str class-prefix "." data-class-constructor))
+         gen-class-opts# {:name qualified-cfg-class#
                          :extends 'sim.engine.SimState
                          :state data-sym
                          :exposes-methods '{start superStart}
@@ -102,13 +104,17 @@
          gen-class-opts# (into gen-class-opts# 
                               (map vec (partition 2 addl-gen-class-opts)))]
      `(do
-        ;;;; TODO should be in a different namespace (so simulation code can access it without cyclicly referencing SimConfig):
-        (defrecord ~data-class-sym ~(vec field-syms#)) ; TODO make sure SimConfigData comes out in the right namespace
-        ;;;; should be in SimConfig namespace:
+        ;;
+        ;; Put following in its own namespace so that other namespaces can access it without cyclicly referencing SimConfig:
+        (ns ~qualified-cfg-class#)
+        (defrecord ~data-class-sym ~(vec field-syms#))
+        ;;
+        ;; The rest belongs in the main config namespace. gen-class will switch to it (?).
+        ;(ns ~qualified-cfg-class#)
         (gen-class ~@(apply concat gen-class-opts#))
-        (import ~qualified-class#) ; must go after gen-class but before any type annotations using the class
-        ;;;; Should be in same namespace as gen-class:
-        (defn ~init-defn-sym [~'seed] [[~'seed] (atom (~data-class-constructor ~@field-inits#))])
+        (require '[~qualified-data-class#])
+        (import ~qualified-data-class# ~qualified-cfg-class#) ; must go after gen-class but before any type annotations using the class
+        (defn ~init-defn-sym [~'seed] [[~'seed] (atom (~qualified-data-class-constructor# ~@field-inits#))])
         ;; TODO need to add type annotations:
         ~@(map (fn [sym# keyw#] (list 'defn sym# '[this] `(~keyw# @(.simConfigData ~'this))))
                -get-syms# field-keywords#)
