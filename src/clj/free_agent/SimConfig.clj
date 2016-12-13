@@ -1,6 +1,7 @@
 (ns free-agent.SimConfig
   (:require [clojure.tools.cli]
-            [utils.defsimconfig :as cfg])
+            [utils.defsimconfig :as cfg]
+            [free-agent.popenv :as pe])
   (:import [sim.engine Steppable Schedule]
            [sim.util Interval]
            [ec.util MersenneTwisterFast]
