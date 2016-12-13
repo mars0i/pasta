@@ -12,11 +12,11 @@
 (defrecord RSnipe [id levels energy]) ; levels is a sequence of free-agent.Levels
 
 (defn make-k-snipe [energy prior]
-  (Snipe. (swap! prev-snipe-id inc) 
-          nil ;; TODO construct levels here using prior
-          energy))
+  (KSnipe. (swap! prev-snipe-id inc) 
+           nil ;; TODO construct levels here using prior
+           energy))
 
 (defn make-r-snipe [energy prior-0 prior-1]
-  (Snipe. (swap! prev-snipe-id inc) 
-          nil ;; TODO construct levels here using prior (one of two values, randomly)
-          energy))
+  (RSnipe. (swap! prev-snipe-id inc) 
+           nil ;; TODO construct levels here using prior (one of two values, randomly)
+           energy))
