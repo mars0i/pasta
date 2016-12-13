@@ -24,7 +24,10 @@
                    [r-snipe-prior-1  20.0       double [1.0 50.0]]
                    [num-k-snipes     20         long   [1 200]]
                    [num-r-snipes     20         long   [1 200]]
-                   [mushroom-prob    0.1        double [0.0 1.0]]])
+                   [mushroom-prob    0.1        double [0.0 1.0]] ; prob that a mushroom will appear in a patch
+                   [mushroom-mean-0  4.0        double]           ; mean of mushroom light distribution
+                   [mushroom-mean-1 16.0        double]         ; mean of mushroom light distribution
+                   [mushroom-sd      2.0        double]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Command line start up
@@ -57,19 +60,20 @@
       (println "-help (note single dash): Print help message for MASON.")
       (System/exit 0))))
 
+(defn set-sim-config-data-from-commandline!
+  "Set fields in the SimConfig's simConfigData from parameters passed on the command line."
+  [^SimConfig state cmdline]
+  (let [{:keys [options arguments errors summary]} @cmdline]
+    ;; FIXME
+    (when-let [newval (:energy options)] (.setInitialEnergy state newval))
+    (when-let [newval (:popsize options)] (.setNumKSnipes state newval) (.setNumRSnipes state newval)))
+  (reset! commandline nil)) ; clear it so user can set params in the gui
+
 (defn -main
   [& args]
   (record-commandline-args! args) ; The SimConfig isn't available yet, so store commandline args for later access by start().
   (sim.engine.SimState/doLoop free-agent.SimConfig (into-array String args)) ;; FIXME RUNTIME EXCEPTION HERE
   (System/exit 0))
-
-(defn set-sim-config-data-from-commandline!
-  "Set fields in the SimConfig's simConfigData from parameters passed on the command line."
-  [^SimConfig state cmdline]
-  (let [{:keys [options arguments errors summary]} @cmdline]
-    (when-let [newval (:energy options)] (.setInitialEnergy state newval))
-    (when-let [newval (:popsize options)] (.setNumKSnipes state newval) (.setNumRSnipes state newval)))
-  (reset! commandline nil)) ; clear it so user can set params in the gui
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Start main loop
@@ -82,7 +86,9 @@
   (when @commandline (set-sim-config-data-from-commandline! this commandline))
   ;; Construct core data structures of the simulation:
   (let [^Schedule schedule (.schedule this)
-        ^SimConfigData istate (.simConfigData this)
+        ^SimConfigData cfg-data (.simConfigData this)
+        ^MersenneTwisterFast rng (.-random this)
+        initial-popenv (pe/make-popenv rng cfg-data)
         ;; make snipes here
         ;; and make field/fields for them to move on
         ;; add mushrooms to field(s)
