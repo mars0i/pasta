@@ -87,7 +87,8 @@
   (when @commandline (set-sim-config-data-from-commandline! this commandline))
   ;; Construct core data structures of the simulation:
   (let [^Schedule schedule (.schedule this)
-        ^SimConfigData cfg-data (.simConfigData this)
+        ^SimConfigData 
+        cfg-data (.simConfigData this)
         ^MersenneTwisterFast rng (.-random this)
         initial-popenv (pe/make-popenv rng cfg-data)
         ;; make snipes here
