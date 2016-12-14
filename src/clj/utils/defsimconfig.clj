@@ -106,7 +106,6 @@
         ;;
         ;; Put following in its own namespace so that other namespaces can access it without cyclicly referencing SimConfig:
         (ns ~qualified-data-class#)
-        (println "yo: " *ns*)
         (defrecord ~data-class-sym ~(vec field-syms#))
         ;;
         ;; The rest belongs in the main config namespace. gen-class will switch to it (?).
