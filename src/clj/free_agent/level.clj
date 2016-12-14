@@ -9,7 +9,7 @@
 ;; SEE doc/level.md for documentation on general features of the code below.
 
 (ns free-agent.level
-  (:require [clojure.spec :as s]
+  (:require ;[clojure.spec :as s]
             [clojure.core.matrix :as m]
             [utils.string :as us]))
 
@@ -264,18 +264,18 @@
 ;;;;;;;;;;;;;;;;;;;;;
 ;; spec
 
-(s/def ::pos-num (s/and number? pos?)) ; doesn't work. why?
-
-(s/def ::phi number?)
-(s/def ::epsilon number?)
-(s/def ::sigma ::pos-num)
-(s/def ::theta number?)
-
-(s/def ::phi-dt ::pos-num)
-(s/def ::epsilon-dt ::pos-num)
-(s/def ::sigma-dt ::pos-num)
-(s/def ::theta-dt ::pos-num)
-
-(s/def ::level-params 
-  (s/keys :req-un [::phi ::epsilon ::sigma ::theta
-                   ::phi-dt ::epsilon-dt ::sigma-dt ::theta-dt]))
+;; (s/def ::pos-num (s/and number? pos?)) ; doesn't work. why?
+;; 
+;; (s/def ::phi number?)
+;; (s/def ::epsilon number?)
+;; (s/def ::sigma ::pos-num)
+;; (s/def ::theta number?)
+;; 
+;; (s/def ::phi-dt ::pos-num)
+;; (s/def ::epsilon-dt ::pos-num)
+;; (s/def ::sigma-dt ::pos-num)
+;; (s/def ::theta-dt ::pos-num)
+;; 
+;; (s/def ::level-params 
+;;   (s/keys :req-un [::phi ::epsilon ::sigma ::theta
+;;                    ::phi-dt ::epsilon-dt ::sigma-dt ::theta-dt]))

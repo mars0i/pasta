@@ -3,8 +3,8 @@
   :url "https://github.com/mars0i/free-agent"
   :license {:name "Gnu General Public License version 3.0"
             :url "http://www.gnu.org/copyleft/gpl.html"}
-  :dependencies [[org.clojure/clojure "1.9.0-alpha14"]
-                 ;[org.clojure/clojure "1.8.0"]
+  :dependencies [;[org.clojure/clojure "1.9.0-alpha14"]
+                 [org.clojure/clojure "1.8.0"]
                  [org.clojure/math.numeric-tower "0.0.4"]
                  [org.clojure/tools.cli "0.3.5"]
                  [org.clojure/data.csv "0.1.3"]
@@ -19,7 +19,7 @@
   :resource-paths ["lib/itext-1.2.jar" "lib/jmf.jar" "lib/mason.19.jar" "lib/portfolio.jar"]
   :source-paths ["src/clj"]
   :main free-agent.SimConfig
-  :aot [free-agent.SimConfig free-agent.UI]
+  ;:aot [free-agent.SimConfig free-agent.UI]
   :profiles {:nogui {:main free-agent.SimConfig} ; execute this with 'lein with-profile nogui run'
              :gui   {:main free-agent.UI}})      ; execute this with 'lein with-profile gui run'
              
