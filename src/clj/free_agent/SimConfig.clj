@@ -39,7 +39,7 @@
 
   (ns free-agent.SimConfig
     (:require [free-agent.config-data :as cd])
-  ;; clojure.core/gen-class 
+    ;(:import [free-agent SimConfig])
     (:gen-class
     :name free-agent.SimConfig
     :extends sim.engine.SimState
@@ -81,7 +81,7 @@
 
   ;(clojure.core/require '[free-agent.config-data])
 
-  (clojure.core/import free-agent.SimConfig) ;free-agent.config-data 
+  ;(clojure.core/import [free-agent.SimConfig]) ;free-agent.config-data 
 
   (clojure.core/defn -init-sim-config-data [seed]
     [[seed] (clojure.core/atom (cd/->SimConfigData 200 200 10.0 10.0 5.0 20.0 20 20 0.1 4.0 16.0 2.0))])
