@@ -18,7 +18,7 @@
 
   :resource-paths ["lib/itext-1.2.jar" "lib/jmf.jar" "lib/mason.19.jar" "lib/portfolio.jar"]
   :source-paths ["src/clj"]
-  :main free-agent.SimConfig
+  ;:main free-agent.SimConfig
   ;:aot [free-agent.SimConfig free-agent.UI]
   :profiles {:nogui {:main free-agent.SimConfig} ; execute this with 'lein with-profile nogui run'
              :gui   {:main free-agent.UI}})      ; execute this with 'lein with-profile gui run'
