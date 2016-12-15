@@ -114,12 +114,13 @@
      `(do
         ;;
         ;; Put following in its own namespace so that other namespaces can access it without cyclicly referencing SimConfig:
-        (ns ~qualified-data-rec#)
+        (ns ~qualified-data-class#)
         (defrecord ~data-rec-sym ~(vec field-syms#))
 
         ;; The rest is in the main config namespace:
         (ns ~qualified-cfg-class# 
           (:require [~qualified-data-class#])
+          (:import ~qualified-cfg-class#)
           (:gen-class ~@(apply concat gen-class-opts#)))  ; NOTE qualified-data-rec must be aot-compiled, or you'll get class not found errors.
 
         (defn ~init-defn-sym [~'seed] [[~'seed] (atom (~qualified-data-rec-constructor# ~@field-inits#))])
