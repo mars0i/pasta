@@ -32,7 +32,7 @@
   (let [{:keys [world-width world-height mushroom-prob mushroom-mean-0 mushroom-mean-1 mushroom-sd]} cfg-data]
     (doseq [x (range world-width)
             y (range world-height)]
-      (maybe-add-mushroom rng mushroom-field x y 
+      (maybe-add-mushroom rng mushroom-field x y mushroom-prob
                           mushroom-mean-0 mushroom-mean-1 mushroom-sd))))
 
 (defrecord PopEnv [snipe-field mushroom-field])
