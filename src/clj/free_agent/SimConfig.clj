@@ -32,13 +32,13 @@
 
 (do
 
-  (clojure.core/ns free-agent.config-data)
+  ;(clojure.core/ns free-agent.config-data)
 
-  (clojure.core/defrecord SimConfigData
-    [world-width world-height initial-energy k-snipe-prior r-snipe-prior-0 r-snipe-prior-1 num-k-snipes num-r-snipes mushroom-prob mushroom-mean-0 mushroom-mean-1 mushroom-sd])
+  ;(clojure.core/defrecord SimConfigData
+  ;  [world-width world-height initial-energy k-snipe-prior r-snipe-prior-0 r-snipe-prior-1 num-k-snipes num-r-snipes mushroom-prob mushroom-mean-0 mushroom-mean-1 mushroom-sd])
 
   (ns free-agent.SimConfig
-    (:require [free-agent.config-data :as cd])
+    ;(:require [free-agent.config-data :as cd])
     ;(:import [free-agent SimConfig])
     (:gen-class
     :name free-agent.SimConfig
@@ -81,10 +81,10 @@
 
   ;(clojure.core/require '[free-agent.config-data])
 
-  ;(clojure.core/import [free-agent.SimConfig]) ;free-agent.config-data 
+  (clojure.core/import free-agent.SimConfig) ;free-agent.config-data 
 
   (clojure.core/defn -init-sim-config-data [seed]
-    [[seed] (clojure.core/atom (cd/->SimConfigData 200 200 10.0 10.0 5.0 20.0 20 20 0.1 4.0 16.0 2.0))])
+    [[seed] (clojure.core/atom (list 200 200 10.0 10.0 5.0 20.0 20 20 0.1 4.0 16.0 2.0))])
 
   (defn -getWorldWidth [this] (:world-width @(.simConfigData this)))
   (defn -getWorldHeight [this] (:world-height @(.simConfigData this)))
