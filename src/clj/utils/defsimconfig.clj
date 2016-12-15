@@ -16,8 +16,8 @@
 (def cfg-class-sym 'SimConfig)
 (def data-class-sym 'config-data)
 (def data-rec-sym 'SimConfigData)
-(def data-class-constructor '->SimConfigData)
-(def data-sym 'simConfigData)
+(def data-rec-constructor '->SimConfigData)
+(def data-field-sym 'simConfigData)
 (def data-accessor '.simConfigData)
 (def init-genclass-sym 'init-sim-config-data)
 (def init-defn-sym '-init-sim-config-data)
@@ -99,11 +99,12 @@
          ranges# (map fourth range-fields#)
          class-prefix (get-class-prefix *ns*)
          qualified-cfg-class# (symbol (str class-prefix "." cfg-class-sym))
+         qualified-data-class# (symbol (str class-prefix "." data-class-sym))
          qualified-data-rec# (symbol (str class-prefix "." data-rec-sym))
          qualified-data-rec-constructor# (symbol (str class-prefix "." data-class-sym "/" data-rec-constructor))
          gen-class-opts# {:name qualified-cfg-class#
                          :extends 'sim.engine.SimState
-                         :state data-sym
+                         :state data-field-sym
                          :exposes-methods '{start superStart}
                          :init init-genclass-sym
                          :main true
@@ -118,7 +119,7 @@
 
         ;; The rest is in the main config namespace:
         (ns ~qualified-cfg-class# 
-          (:require '[~qualified-data-class#])
+          (:require [~qualified-data-class#])
           (:gen-class ~@(apply concat gen-class-opts#)))  ; NOTE qualified-data-rec must be aot-compiled, or you'll get class not found errors.
 
         (defn ~init-defn-sym [~'seed] [[~'seed] (atom (~qualified-data-rec-constructor# ~@field-inits#))])
