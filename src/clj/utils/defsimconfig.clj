@@ -3,13 +3,20 @@
 
 ;; TODO consider moving command line processing into this macro.
 
+;; NOTE this will not work unless project.clj specifies that SimConfig
+;; is aot-compiled.  e.g. if your overarching namespace path is named
+;; "myproject", you need a line like this in project.clj:
+;;     :aot [myproject.SimConfig]
+;; or like this:
+;;     :aot [myproject.SimConfig myproject.UI]
+
 (ns utils.defsimconfig
   (:require [clojure.string :as s]))
 
 (def cfg-class-sym 'SimConfig)
-(def cfg-class-constructor 'SimConfig.)
-(def data-class-sym 'SimConfigData)
-(def data-class-constructor 'SimConfigData.)
+(def data-class-sym 'config-data)
+(def data-rec-sym 'SimConfigData)
+(def data-class-constructor '->SimConfigData)
 (def data-sym 'simConfigData)
 (def data-accessor '.simConfigData)
 (def init-genclass-sym 'init-sim-config-data)
@@ -72,7 +79,8 @@
   Additional options can be provided in addl-gen-class-opts.  The generated 
   class will be named <namespace prefix>.SimConfig, where <namespace prefix> 
   is the path before the last dot of the current namespace.  Java bean style 
-  and other MASON-style accessors will be defined."
+  and other MASON-style accessors will be defined.  Note: SimConfig must
+  be aot-compiled in order for gen-class to work."
   [fields & addl-gen-class-opts]
    (let [field-syms# (map first fields)
          field-inits# (map second fields)
@@ -91,8 +99,8 @@
          ranges# (map fourth range-fields#)
          class-prefix (get-class-prefix *ns*)
          qualified-cfg-class# (symbol (str class-prefix "." cfg-class-sym))
-         qualified-data-class# (symbol (str class-prefix "." data-class-sym))
-         qualified-data-class-constructor# (symbol (str class-prefix "." data-class-constructor))
+         qualified-data-rec# (symbol (str class-prefix "." data-rec-sym))
+         qualified-data-rec-constructor# (symbol (str class-prefix "." data-class-sym "/" data-rec-constructor))
          gen-class-opts# {:name qualified-cfg-class#
                          :extends 'sim.engine.SimState
                          :state data-sym
@@ -105,16 +113,15 @@
      `(do
         ;;
         ;; Put following in its own namespace so that other namespaces can access it without cyclicly referencing SimConfig:
-        (ns ~qualified-data-class#)
-        (defrecord ~data-class-sym ~(vec field-syms#))
-        ;;
-        ;; The rest belongs in the main config namespace. gen-class will switch to it (?).
-        ;(ns ~qualified-cfg-class#)
-        (gen-class ~@(apply concat gen-class-opts#))
-        (require '[~qualified-data-class#])
-        (import ~qualified-data-class# 
-                ~qualified-cfg-class#) ; must go after gen-class but before any type annotations using the class
-        (defn ~init-defn-sym [~'seed] [[~'seed] (atom (~qualified-data-class-constructor# ~@field-inits#))])
+        (ns ~qualified-data-rec#)
+        (defrecord ~data-rec-sym ~(vec field-syms#))
+
+        ;; The rest is in the main config namespace:
+        (ns ~qualified-cfg-class# 
+          (:require '[~qualified-data-class#])
+          (:gen-class ~@(apply concat gen-class-opts#)))  ; NOTE qualified-data-rec must be aot-compiled, or you'll get class not found errors.
+
+        (defn ~init-defn-sym [~'seed] [[~'seed] (atom (~qualified-data-rec-constructor# ~@field-inits#))])
         ;; TODO need to add type annotations:
         ~@(map (fn [sym# keyw#] (list 'defn sym# '[this] `(~keyw# @(.simConfigData ~'this))))
                -get-syms# field-keywords#)
