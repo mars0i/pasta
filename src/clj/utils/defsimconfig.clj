@@ -22,8 +22,28 @@
 (def init-genclass-sym 'init-sim-config-data)
 (def init-defn-sym '-init-sim-config-data)
 
-(defn third [xs] (nth xs 2))
-(defn fourth [xs] (nth xs 3))
+(defn third 
+  "Returns the third element of xs.  Throws an exception if xs is too short."
+  [xs] 
+  (nth xs 2))
+
+(defn fourth 
+  "Returns the fourth element of xs.  Throws an exception if xs is too short."
+  [xs] 
+  (nth xs 3))
+
+;; note that clojure.core/fnext is defined exactly as second is.
+(defn fnnext 
+  "Returns the third element of xs, or nil if it has fewer than three elements.
+  Avoid using in time-sensitive loops."
+  [xs] 
+  (first (next (next xs)))) ; i.e. 
+
+(defn fnnnext ; maybe the name is a bad idea
+  "Returns the fourth element of xs, or nil if it has fewer than four elements.
+  Avoid using in time-sensitive loops."
+  [xs] 
+  (first (next (next (next xs)))))
 
 (defn get-class-prefix
   "Given a Java/Clojure class identifier symbol or string, or class object (found
@@ -59,17 +79,17 @@
 (defn get-ui-fields
   [fields]
   "Given a fields argument to defsimconfig, return a sequence containing 
-  only those field specifications suitable for modification in the UI."
-  (let [test-fn #{'double 'long}] ; TODO a bit of a kludge
-    (filter #(test-fn (third %)) fields)))
+  only those field specifications suitable for modification in the UI.
+  These are those have a truthy fourth element"
+    (filter fourth fields)) ; i.e. 
 
 (defn get-range-fields
   "Given a fields argument to defsimconfig, return a sequence containing 
   only those field specifications that include specification of the default
-  range of values for the field."
+  range of values for the field--i.e. those field specs that have a sequence,
+  presumably with exactly two elements, as the fourth element."
   [fields]
-  (filter #(= 4 (count %)) 
-          fields))
+  (filter (comp sequential? fourth) fields))
 
 ;; TODO add type annotations. (maybe iff they're symbols??)
 ;; TODO put data structure in its own namespace to avoid circular references
@@ -77,16 +97,18 @@
 (defmacro defsimconfig
   "fields is a sequence of 3- or 4-element sequences starting with names of 
   fields in which configuration data will be stored and accessed, followed
-  by initial values and a Java type identifiers for the field.  The optional 
-  fourth element is a two-element sequence containing default min and max 
-  values to be used for sliders in the UI.  (This range doesn't constraint
-  fields' values in any other respect.) The following gen-class options will 
-  automatically be provided: :state, :exposes-methods, :init, :main, :methods.  
-  Additional options can be provided in addl-gen-class-opts.  The generated 
-  class will be named <namespace prefix>.SimConfig, where <namespace prefix> 
-  is the path before the last dot of the current namespace.  Java bean style 
-  and other MASON-style accessors will be defined.  Note: SimConfig must
-  be aot-compiled in order for gen-class to work."
+  by initial values and a Java type identifiers for the field.  The fourth
+  element either false to indicate that the field should not be configurable
+  from the UI, or truthy if it is.  In the latter case, it may be a two-element 
+  sequence containing default min and max values to be used for sliders in the
+  UI.  (This range doesn't constraint fields' values in any other respect.) 
+  The following gen-class options will automatically be provided: :state, 
+  :exposes-methods, :init, :main, :methods.  Additional options can be provided 
+  in addl-gen-class-opts.  The generated class will be named 
+  <namespace prefix>.SimConfig, where <namespace prefix> is the path before the 
+  last dot of the current namespace.  Java bean style and other MASON-style 
+  accessors will be defined.  Note: SimConfig must be aot-compiled in order 
+  for gen-class to work."
   [fields & addl-gen-class-opts]
    (let [field-syms# (map first fields)
          field-inits# (map second fields)
