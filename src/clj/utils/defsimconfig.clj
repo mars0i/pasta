@@ -22,6 +22,9 @@
 (def init-genclass-sym 'init-sim-config-data)
 (def init-defn-sym '-init-sim-config-data)
 
+(defn third [xs] (nth xs 2))
+(defn fourth [xs] (nth xs 3))
+
 (defn get-class-prefix
   "Given a Java/Clojure class identifier symbol or string, or class object (found
   e.g. in *ns*), returns a string containing only the path part before the last 
@@ -53,6 +56,12 @@
   [get-syms set-syms classes]
   (mapcat (fn [get-sym set-sym cls] [[get-sym [] cls] [set-sym [cls] 'void]])
                get-syms set-syms classes))
+(defn get-ui-fields
+  [fields]
+  "Given a fields argument to defsimconfig, return a sequence containing 
+  only those field specifications suitable for modification in the UI."
+  (let [test-fn #{'double 'long}] ; TODO a bit of a kludge
+    (filter #(test-fn (third %)) fields)))
 
 (defn get-range-fields
   "Given a fields argument to defsimconfig, return a sequence containing 
@@ -61,9 +70,6 @@
   [fields]
   (filter #(= 4 (count %)) 
           fields))
-
-(defn third [xs] (nth xs 2))
-(defn fourth [xs] (nth xs 3))
 
 ;; TODO add type annotations. (maybe iff they're symbols??)
 ;; TODO put data structure in its own namespace to avoid circular references
@@ -84,14 +90,16 @@
   [fields & addl-gen-class-opts]
    (let [field-syms# (map first fields)
          field-inits# (map second fields)
-         field-types# (map third fields)
-         field-keywords# (map keyword field-syms#)
+         ui-fields# (get-ui-fields fields)
+         ui-field-syms# (map first ui-fields#)
+         ui-field-types# (map third ui-fields#)
+         ui-field-keywords# (map keyword ui-field-syms#)
          accessor-stubs# (map hyphed-sym-to-studly-str field-syms#)
          get-syms#  (map (partial prefix-sym "get") accessor-stubs#)
          set-syms#  (map (partial prefix-sym "set") accessor-stubs#)
          -get-syms# (map (partial prefix-sym "-") get-syms#)
          -set-syms# (map (partial prefix-sym "-") set-syms#)
-         range-fields# (get-range-fields fields)
+         range-fields# (get-range-fields ui-fields#)
          dom-syms#  (map (comp (partial prefix-sym "dom") hyphed-sym-to-studly-str first)
                         range-fields#)
          -dom-syms# (map (partial prefix-sym "-") dom-syms#)
@@ -108,7 +116,7 @@
                          :exposes-methods '{start superStart}
                          :init init-genclass-sym
                          :main true
-                         :methods (vec (concat (make-accessor-sigs get-syms# set-syms# field-types#)
+                         :methods (vec (concat (make-accessor-sigs get-syms# set-syms# ui-field-types#)
                                                (map #(vector % [] java.lang.Object) dom-syms#)))} 
          gen-class-opts# (into gen-class-opts# (map vec (partition 2 addl-gen-class-opts)))]
      `(do
@@ -126,8 +134,8 @@
         (defn ~init-defn-sym [~'seed] [[~'seed] (atom (~qualified-data-rec-constructor# ~@field-inits#))])
         ;; TODO need to add type annotations:
         ~@(map (fn [sym# keyw#] (list 'defn sym# '[this] `(~keyw# @(.simConfigData ~'this))))
-               -get-syms# field-keywords#)
+               -get-syms# ui-field-keywords#)
         ~@(map (fn [sym# keyw#] (list 'defn sym# '[this newval] `(swap! (~data-accessor ~'this) assoc ~keyw# ~'newval)))
-               -set-syms# field-keywords#)
+               -set-syms# ui-field-keywords#)
         ~@(map (fn [sym# keyw# range-pair#] (list 'defn sym# '[this] `(Interval. ~@range-pair#)))
                -dom-syms# dom-keywords# ranges#))))
