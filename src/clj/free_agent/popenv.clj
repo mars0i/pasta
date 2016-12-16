@@ -59,8 +59,9 @@
 
 
 (defn next-popenv
-  [cfg-data prev-popenv]
+  [prev-popenv cfg-data] ; put popenv first so we can swap! it
+  ;; TODO
   ;; snipes move and/or eat
   ;; mushrooms spawn
-  )
+  prev-popenv) 
 
