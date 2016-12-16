@@ -6,8 +6,7 @@
   (:require [free-agent.SimConfig :as cfg])
   (:import [free-agent SimConfig]
            [sim.engine Steppable Schedule]
-           [sim.field.continuous Continuous2D]
-           [sim.portrayal.continuous ContinuousPortrayal2D]
+           [sim.portrayal.grid ObjectGridPortrayal2D]
            [sim.portrayal.simple OvalPortrayal2D OrientedPortrayal2D]
            [sim.display Console Display2D]
            [java.awt Color])
@@ -17,31 +16,26 @@
     :main true
     :exposes {state {:get getState}}  ; accessor for field in superclass
     :exposes-methods {start superStart, quit superQuit, init superInit, getInspector superGetInspector}
-    ;:methods 
     :state iState
     :init init-instance-state))
 
 (defn -init-instance-state
   [& args]
-  (let [field (Continuous2D. 1.0 125 100)
-        field-portrayal (ContinuousPortrayal2D.)
-        ;soc-net (Network. false) ; undirected
-        ;soc-net-portrayal (NetworkPortrayal2D.)
-        ;talk-net (Network. true) ; directed
-        ;talk-net-portrayal (NetworkPortrayal2D.)
-        ]
-    (.setField field-portrayal field)
-    ;(.setField soc-net-portrayal  (SpatialNetwork2D. field soc-net))
-    ;(.setField talk-net-portrayal (SpatialNetwork2D. field talk-net))
+;; TODO HERE: get access to sim-config, then config-data.  
+;; Get the mushroom and snipe fields from these, somehow.  
+  (let [snipe-field nil ; TODO
+        mush-field nil ; TODO
+        ;; TODO consider other poss portrayals:
+        snipe-field-portrayal (ObjectGridPortrayal2D.)
+        mush-field-portrayal (ObjectGridPortrayal2D.)]
+    (.setField snipe-field-portrayal snipe-field)
+    (.setField mush-field-portrayal mush-field)
     [(vec args) {:display (atom nil)
                  :display-frame (atom nil)
-                 :field field                         ; holds nodes
-                 ;:field-portrayal field-portrayal     ; displays nodes
-                 ;:soc-net soc-net                     ; holds within-community social network
-                 ;:soc-net-portrayal soc-net-portrayal ; displays ditto
-                 ;:talk-net talk-net
-                 ;:talk-net-portrayal talk-net-portrayal
-                 }]))
+                 :snipe-field snipe-field
+                 :mush-field mush-field
+                 :snipe-field-portrayal snipe-field-portrayal
+                 :mush-field-portrayal mush-field-portrayal}]))
 
 ;; getName()
 ;; Obscure corner of the already obscure gen-class corner: When a method has multiple arities in the super,
@@ -86,31 +80,10 @@
 (defn -start
   [this-gui]
   (.superStart this-gui) ; this will call start() on the sim, i.e. in our SimState object
-  (setup-portrayals this-gui)
-  (schedule-talk-links this-gui)) ; TODO: Question: SHOULD THIS BE IN INIT??
-
-;; Schedule a step here to transiently add/remove talk-links from the talk-net.
-;; This isn't needed in the underlying simulation, so do it here rather than Sim.clj.
-(defn schedule-talk-links
-  [this-gui]
-  (.scheduleRepeating (.schedule (.getState this-gui))
-                      Schedule/EPOCH 2
-                      (reify Steppable
-                        (step [this-steppable sim-config]
-                          ;(let [talk-net (get-talk-net this-gui)  ; DEFINITELY NOT NEEDED FOR free-agent
-                          ;      istate (.instanceState sim-config) ; PROBABLY NOT NEEDED FOR free-agent
-                          ;      population @(.population istate)
-                          ;      ] ; PROBABLY NOT NEEDED FOR free-agent
-                          ;  (.clear talk-net)
-                          ;  (doseq [indiv population] 
-                          ;    (when-let [speaker (cfg/get-prev-speaker indiv)]  ; UPDATE LINKS FROM DATA IN INDIVS
-                          ;      (.addEdge talk-net speaker indiv nil)))
-                          ;  )
-                          ))))
-                                                 ;  from    to  (from end is wider; to end is pointed)
+  (setup-portrayals this-gui))
 
 (defn setup-portrayals
-  [this-gui]  ; instead of 'this': avoid confusion with proxy below
+  [this-gui]  ; instead of 'this': avoid confusion with e.g. proxy below
   (let [sim-config (.getState this-gui)
         rng (.random sim-config)
         field (get-field this-gui)
