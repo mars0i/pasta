@@ -16,19 +16,19 @@
 ;;    (require '[utils.defsimconfig :as cfg])
 ;;    (pprint (macroexpand-1 '<insert defsimconfig call>))
 
-;;                 field name   initial value   type   optional default range
-(defcfg/defsimconfig [[world-width      25         double]
-                      [world-height     25         double]
-                      [initial-energy   10.0       double [0.0 20.0]]
-                      [k-snipe-prior    10.0       double [1.0 50.0]]
-                      [r-snipe-prior-0   5.0       double [1.0 50.0]]
-                      [r-snipe-prior-1  20.0       double [1.0 50.0]]
-                      [num-k-snipes     20         long   [1 200]]
-                      [num-r-snipes     20         long   [1 200]]
-                      [mushroom-prob    0.1        double [0.0 1.0]] ; prob that a mushroom will appear in a patch
-                      [mushroom-mean-0  4.0        double]           ; mean of mushroom light distribution
-                      [mushroom-mean-1 16.0        double]         ; mean of mushroom light distribution
-                      [mushroom-sd      2.0        double]])
+;;                 field name   initial value  type   optional default range
+(defcfg/defsimconfig [[world-width      25     double]
+                      [world-height     25     double]
+                      [initial-energy   10.0   double [0.0 20.0]]
+                      [k-snipe-prior    10.0   double [1.0 50.0]]
+                      [r-snipe-prior-0   5.0   double [1.0 50.0]]
+                      [r-snipe-prior-1  20.0   double [1.0 50.0]]
+                      [num-k-snipes     20     long   [1 200]]
+                      [num-r-snipes     20     long   [1 200]]
+                      [mushroom-prob    0.1    double [0.0 1.0]] ; prob that a mushroom will appear in a patch
+                      [mushroom-mean-0  4.0    double]           ; mean of mushroom light distribution
+                      [mushroom-mean-1 16.0    double]         ; mean of mushroom light distribution
+                      [mushroom-sd      2.0    double]])
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
