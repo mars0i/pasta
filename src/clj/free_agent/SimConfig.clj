@@ -88,26 +88,12 @@
   (when @commandline (set-sim-config-data-from-commandline! this commandline))
   ;; Construct core data structures of the simulation:
   (let [^Schedule schedule (.schedule this)
-        ^SimConfigData 
-        cfg-data @(.simConfigData this)
+        ^SimConfigData cfg-data @(.simConfigData this)
         ^MersenneTwisterFast rng (.-random this)
-        initial-popenv (pe/make-popenv rng cfg-data)
-        ;; make snipes here
-        ;; and make field/fields for them to move on
-        ;; add mushrooms to field(s)
-        ]
-    ;; Schedule per-tick step function(s):
+        popenv$ (atom (pe/make-popenv rng cfg-data))] ; populate initial popenv
+    ;; Run it:
     (.scheduleRepeating schedule Schedule/EPOCH 0
                         (reify Steppable 
                           (step [this sim-state]
                             (let [^SimConfig state sim-state]
-                              ;(doseq [^Indiv indiv population] (copy-relig! indiv state))      ; first communicate relig (to newrelig's)
-                              ;(doseq [^Indiv indiv population] (update-relig! indiv))        ; then copy newrelig to relig ("parallel" update)
-                              ;(doseq [^Indiv indiv population] (update-success! indiv state))  ; update each indiv's success field (uses relig)
-                              ;(let [[this-step & rest-steps] @pop-steps]
-                              ;  (reset! pop-steps rest-steps)
-                              ;  (ui/display-step this-step))
-                              ;(collect-data state)
-                              )))))
-  ;(report-run-params this)
-  )
+                              (swap! popenv$ pe/next-popenv cfg-data)))))))
