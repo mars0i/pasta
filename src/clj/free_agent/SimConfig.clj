@@ -5,7 +5,8 @@
   (:import [sim.engine Steppable Schedule]
            [sim.util Interval]
            [ec.util MersenneTwisterFast]
-           [java.lang String]))
+           [java.lang String]
+           [free-agent.popenv.PopEnv]))
 ;; import free-agent.SimConfig separately below
 ;; (if done here, fails when aot-compiling from a clean project)
 
@@ -17,9 +18,7 @@
 ;;    (pprint (macroexpand-1 '<insert defsimconfig call>))
 
 ;;                 field name   initial value  type   optional default range
-(defcfg/defsimconfig [[world-width      25     double]
-                      [world-height     25     double]
-                      [initial-energy   10.0   double [0.0 20.0]]
+(defcfg/defsimconfig [[initial-energy   10.0   double [0.0 20.0]]
                       [k-snipe-prior    10.0   double [1.0 50.0]]
                       [r-snipe-prior-0   5.0   double [1.0 50.0]]
                       [r-snipe-prior-1  20.0   double [1.0 50.0]]
@@ -28,7 +27,10 @@
                       [mushroom-prob    0.1    double [0.0 1.0]] ; prob that a mushroom will appear in a patch
                       [mushroom-mean-0  4.0    double]           ; mean of mushroom light distribution
                       [mushroom-mean-1 16.0    double]         ; mean of mushroom light distribution
-                      [mushroom-sd      2.0    double]])
+                      [mushroom-sd      2.0    double]
+                      [world-width      25     double]
+                      [world-height     25     double]
+                      [popenv           nil    free-agent.popenv.PopEnv]])
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -88,12 +90,13 @@
   (when @commandline (set-sim-config-data-from-commandline! this commandline))
   ;; Construct core data structures of the simulation:
   (let [^Schedule schedule (.schedule this)
-        ^SimConfigData cfg-data @(.simConfigData this)
-        ^MersenneTwisterFast rng (.-random this)
-        popenv$ (atom (pe/make-popenv rng cfg-data))] ; populate initial popenv
+        ^SimConfigData cfg-data$ (.simConfigData this)
+        ^MersenneTwisterFast rng (.-random this)]
+    ;; populate initial popenv:
+    (swap! cfg-data$ assoc :popenv (pe/make-popenv rng @cfg-data$)) ; it's ok to pass in cfg-data to update cfg-data; make-popenv will use the old version
     ;; Run it:
     (.scheduleRepeating schedule Schedule/EPOCH 0
                         (reify Steppable 
                           (step [this sim-state]
                             (let [^SimConfig state sim-state]
-                              (swap! popenv$ pe/next-popenv cfg-data)))))))
+                              (swap! cfg-data$ update-in [:popenv] pe/next-popenv @cfg-data$))))))) ; i.e. call next-popenv with old popenv and cfg-data, and replace popenv in cfg-data
