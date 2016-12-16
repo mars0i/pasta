@@ -23,17 +23,11 @@
   [& args]
 ;; TODO HERE: get access to sim-config, then config-data.  
 ;; Get the mushroom and snipe fields from these, somehow.  
-  (let [snipe-field nil ; TODO
-        mush-field nil ; TODO
-        ;; TODO consider other poss portrayals:
-        snipe-field-portrayal (ObjectGridPortrayal2D.)
+  (let [snipe-field-portrayal (ObjectGridPortrayal2D.)
         mush-field-portrayal (ObjectGridPortrayal2D.)]
-    (.setField snipe-field-portrayal snipe-field)
-    (.setField mush-field-portrayal mush-field)
     [(vec args) {:display (atom nil)
                  :display-frame (atom nil)
-                 :snipe-field snipe-field
-                 :mush-field mush-field
+                 :popenv nil
                  :snipe-field-portrayal snipe-field-portrayal
                  :mush-field-portrayal mush-field-portrayal}]))
 
@@ -107,6 +101,10 @@
         ]
     ;; set up node display
     (.clear field)
+
+    ;(.setField snipe-field-portrayal snipe-field)
+    ;(.setField mush-field-portrayal mush-field)
+
     ;(lay/set-indiv-locs! rng
     ;                     (if (= (.getLinkStyle sim) cfg/sequential-link-style-idx) 0.0 lay/indiv-position-jitter) ; jitter makes it easier to distinguish links that just happen to cross a node
     ;                     field
