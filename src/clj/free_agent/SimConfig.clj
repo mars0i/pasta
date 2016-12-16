@@ -17,8 +17,8 @@
 ;;    (pprint (macroexpand-1 '<insert defsimconfig call>))
 
 ;;                 field name   initial value   type   optional default range
-(defcfg/defsimconfig [[world-width     200         double]
-                      [world-height    200         double]
+(defcfg/defsimconfig [[world-width      25         double]
+                      [world-height     25         double]
                       [initial-energy   10.0       double [0.0 20.0]]
                       [k-snipe-prior    10.0       double [1.0 50.0]]
                       [r-snipe-prior-0   5.0       double [1.0 50.0]]
