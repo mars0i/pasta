@@ -27,19 +27,18 @@
                :mushroom-field-portrayal (ObjectGridPortrayal2D.)}])
 
 ;; see doc/getName.md
-(defn -getName-void [this] "free-agent") ; override method in super. should cause this to be displayed as title of config window of gui, but it doesn't.
+(defn -getName-void [this] "free-agent") ; override method in super. Should cause this string to be displayed as title of config window of gui, but it doesn't.
 
 (defn get-display [this] @(:display (.uiState this)))
 (defn set-display! [this newval] (reset! (:display (.uiState this)) newval))
 (defn get-display-frame [this] @(:display-frame (.uiState this)))
 (defn set-display-frame! [this newval] (reset! (:display-frame (.uiState this)) newval))
-;(defn get-field [this] (:field (.uiState this)))
 (defn get-snipe-field-portrayal [this] (:snipe-field-portrayal (.uiState this)))
 (defn get-mushroom-field-portrayal [this] (:mushroom-field-portrayal (.uiState this)))
 
 ;; Override methods in sim.display.GUIState so that UI can make graphs, etc.
 (defn -getSimulationInspectedObject [this] (.state this))
-;; This controls makes the controls for the sim state in the Model tab (and does other things?):
+;; This makes the controls for the sim state in the Model tab (and does other things?):
 (defn -getInspector [this]
   (let [i (.superGetInspector this)]
     (.setVolatile i true)
@@ -75,7 +74,6 @@
         snipe-field-portrayal (get-snipe-field-portrayal this-ui)
         mushroom-field-portrayal (get-mushroom-field-portrayal this-ui)
         display (get-display this-ui)]
-
     ; NOTE UNDERSCORES NOT HYPHENS IN CLASSNAMES FOR JAVA:
     (.setField mushroom-field-portrayal mushroom-field)
     ;; TODO make size depend on underlying size:
@@ -83,9 +81,7 @@
     (.setField snipe-field-portrayal snipe-field)
     (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe (OvalPortrayal2D. (Color. 200 0 0) 2.5))
     (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe (OvalPortrayal2D. (Color. 0 0 200) 2.5))
-    ;; another option: setPortrayalForAll
-
-    ;; set up display
+    ;; set up display:
     (doto display
       (.reset )
       (.setBackdrop (Color. 0 0 0))
