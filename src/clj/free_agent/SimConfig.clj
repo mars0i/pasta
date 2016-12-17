@@ -28,8 +28,8 @@
                       [mushroom-mean-0  4.0    double true]      ; mean of mushroom light distribution
                       [mushroom-mean-1 16.0    double true]      ; mean of mushroom light distribution
                       [mushroom-sd      2.0    double true]
-                      [world-width      25     double false]
-                      [world-height     25     double false]
+                      [world-width      250     double false]
+                      [world-height     250     double false]
                       [popenv           nil    free-agent.popenv.PopEnv false]])
 
 
