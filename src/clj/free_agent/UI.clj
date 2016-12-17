@@ -3,23 +3,9 @@
 ;;; specified in the file LICENSE.
 
 (ns free-agent.UI
-  (:require [free-agent.SimConfig :as cfg]
-            [free-agent.snipe]) ; needed??
-
-  (:import [free-agent SimConfig]
-
-           ;; none of these are working, even if aot'ed:
-           [free-agent.snipe]
-           ;[free-agent snipe]
-           ;[free-agent.snipe.KSnipe]
-           ;[free-agent.snipe.KSnipe]
-           ;[free-agent.snipe.RSnipe]
-           ;[free-agent.snipe RSnipe]
-           [free-agent.mushroom]
-           ;[free-agent mushroom]
-           ;[free-agent.mushroom.Mushroom]
-           ;[free-agent.mushroom Mushroom]
-
+  (:require [free-agent.SimConfig :as cfg])
+            ;[free-agent.snipe]) ; needed??
+  (:import [free-agent mushroom snipe SimConfig]
            [sim.engine Steppable Schedule]
            [sim.portrayal.grid ObjectGridPortrayal2D]
            [sim.portrayal.simple OvalPortrayal2D OrientedPortrayal2D]
@@ -95,12 +81,10 @@
     (.setField snipe-field-portrayal snipe-field)
     (.setField mushroom-field-portrayal mushroom-field)
 
-    (.setPortrayalForAll mushroom-field-portrayal (OvalPortrayal2D. (Color. 0 0 200) 2.0)) ;   temporary experiment
-    (.setPortrayalForAll snipe-field-portrayal (OvalPortrayal2D. (Color. 200 0 0 100))) ;   temporary experiment
-    ;; TODO not working:
-    ;(.setPortrayalForClass snipe-field-portrayal free-agent.snipe.KSnipe (OvalPortrayal2D.)) ; need to fix/vary oval portrayal
-    ;(.setPortrayalForClass snipe-field-portrayal free-agent.snipe.RSnipe (OvalPortrayal2D.))
-    ;(.setPortrayalForClass mushroom-field-portrayal free-agent.mushroom.Mushroom (OvalPortrayal2D.))
+    (.setPortrayalForClass mushroom-field-portrayal free_agent.mushroom.Mushroom (OvalPortrayal2D.)) ; NOTE UNDERSCORES NOT HYPHENS FOR JAVA
+    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe (OvalPortrayal2D.))         ; need to fix/vary oval portrayal
+    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe (OvalPortrayal2D.))
+    ;; another option: setPortrayalForAll
 
     ;; set up display
     (doto display
