@@ -79,16 +79,16 @@
     ; NOTE UNDERSCORES NOT HYPHENS IN CLASSNAMES FOR JAVA:
     (.setField mushroom-field-portrayal mushroom-field)
     ;; TODO make size depend on underlying size:
-    (.setPortrayalForClass mushroom-field-portrayal free_agent.mushroom.Mushroom (OvalPortrayal2D. (Color. 0 0 200) 3.0))
+    (.setPortrayalForClass mushroom-field-portrayal free_agent.mushroom.Mushroom (OvalPortrayal2D. (Color. 150 150 150) 4.0))
     (.setField snipe-field-portrayal snipe-field)
-    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe (OvalPortrayal2D. (Color. 200 0 0) 2.0))
-    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe (OvalPortrayal2D. (Color. 0 200 0) 2.0))
+    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe (OvalPortrayal2D. (Color. 200 0 0) 2.5))
+    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe (OvalPortrayal2D. (Color. 0 0 200) 2.5))
     ;; another option: setPortrayalForAll
 
     ;; set up display
     (doto display
       (.reset )
-      (.setBackdrop (Color. 10 10 10)) ; almost black
+      (.setBackdrop (Color. 0 0 0))
       (.repaint))))
 
 (defn -init
