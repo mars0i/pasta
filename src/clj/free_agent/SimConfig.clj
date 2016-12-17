@@ -18,7 +18,7 @@
 ;;    (pprint (macroexpand-1 '<insert defsimconfig call>))
 
 ;;                 field name   initial value  type  in ui? with range?
-(defcfg/defsimconfig [[initial-energy   10.0   double [0.0 20.0]]
+(defcfg/defsimconfig [[initial-energy   10.0   double [0.0 20.0] ["-e" "--initial-energy <energy>" "Initial energy for each snipe" :parse-fn #(Double. %)]]
                       [k-snipe-prior    10.0   double [1.0 50.0]]
                       [r-snipe-prior-0   5.0   double [1.0 50.0]]
                       [r-snipe-prior-1  20.0   double [1.0 50.0]]
@@ -38,31 +38,31 @@
 
 (def commandline (atom nil))
 
-(defn record-commandline-args!
-  "Temporarily store values of parameters passed on the command line."
-  [args]
-  ;; These options should not conflict with MASON's.  Example: If "-h" is the single-char help option, doLoop will never see "-help" (although "-t n" doesn't conflict with "-time") (??).
-  (let [cli-options [["-?" "--help" "Print this help message."]
-                     ["-w" "--world-width <width>" "How wide is world?" :parse-fn #(Long. %)]
-                     ["-h" "--world-height <height>" "How tall is world?" :parse-fn #(Long. %)]
-                     ["-e" "--initial-energy <energy>" "Initial energy for each snipe" :parse-fn #(Double. %)]
-                     ["-k" "--k-snipe-prior <prior>" "Prior for k-snipes" :parse-fn #(Double. %)]
-                     ["-p" "--r-snipe-prior-0 <prio>" "One of two possible priors for r-snipes" :parse-fn #(Double. %)]
-                     ["-q" "--r-snipe-prior-1 <prior>" "One of two possible priors for r-snipes" :parse-fn #(Double. %)]
-                     ["-n" "--num-k-snipes <size>" "Size of k-snipe subpopulation" :parse-fn #(Long. %)]
-                     ["-o" "--num-r-snipes <size>" "Size of r-snipe subpopulation" :parse-fn #(Long. %)]
-                     ["-m" "--mushroom-prob <probability>" "Probability that a mushroom will appear on a given patch." :parse-fn #(Double. %)]]
-        usage-fmt (fn [options]
-                    (let [fmt-line (fn [[short-opt long-opt desc]] (str short-opt ", " long-opt ": " desc))]
-                      (clojure.string/join "\n" (concat (map fmt-line options)))))
-        {:keys [options arguments errors summary] :as cmdline} (clojure.tools.cli/parse-opts args cli-options)]
-    (reset! commandline cmdline)
-    (when (:help options)
-      (println "Command line options for free-agent:")
-      (println (usage-fmt cli-options))
-      (println "free-agent and MASON options can both be used:")
-      (println "-help (note single dash): Print help message for MASON.")
-      (System/exit 0))))
+;(defn record-commandline-args!
+;  "Temporarily store values of parameters passed on the command line."
+;  [args]
+;  ;; These options should not conflict with MASON's.  Example: If "-h" is the single-char help option, doLoop will never see "-help" (although "-t n" doesn't conflict with "-time") (??).
+;  (let [cli-options [["-?" "--help" "Print this help message."]
+;                     ["-w" "--world-width <width>" "How wide is world?" :parse-fn #(Long. %)]
+;                     ["-h" "--world-height <height>" "How tall is world?" :parse-fn #(Long. %)]
+;                     ["-e" "--initial-energy <energy>" "Initial energy for each snipe" :parse-fn #(Double. %)]
+;                     ["-k" "--k-snipe-prior <prior>" "Prior for k-snipes" :parse-fn #(Double. %)]
+;                     ["-p" "--r-snipe-prior-0 <prio>" "One of two possible priors for r-snipes" :parse-fn #(Double. %)]
+;                     ["-q" "--r-snipe-prior-1 <prior>" "One of two possible priors for r-snipes" :parse-fn #(Double. %)]
+;                     ["-n" "--num-k-snipes <size>" "Size of k-snipe subpopulation" :parse-fn #(Long. %)]
+;                     ["-o" "--num-r-snipes <size>" "Size of r-snipe subpopulation" :parse-fn #(Long. %)]
+;                     ["-m" "--mushroom-prob <probability>" "Probability that a mushroom will appear on a given patch." :parse-fn #(Double. %)]]
+;        usage-fmt (fn [options]
+;                    (let [fmt-line (fn [[short-opt long-opt desc]] (str short-opt ", " long-opt ": " desc))]
+;                      (clojure.string/join "\n" (concat (map fmt-line options)))))
+;        {:keys [options arguments errors summary] :as cmdline} (clojure.tools.cli/parse-opts args cli-options)]
+;    (reset! commandline cmdline)
+;    (when (:help options)
+;      (println "Command line options for free-agent:")
+;      (println (usage-fmt cli-options))
+;      (println "free-agent and MASON options can both be used:")
+;      (println "-help (note single dash): Print help message for MASON.")
+;      (System/exit 0))))
 
 (defn set-sim-config-data-from-commandline!
   "Set fields in the SimConfig's simConfigData from parameters passed on the command line."
