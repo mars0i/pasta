@@ -4,7 +4,6 @@
 
 (ns free-agent.UI
   (:require [free-agent.SimConfig :as cfg])
-            ;[free-agent.snipe]) ; needed??
   (:import [free-agent mushroom snipe SimConfig]
            [sim.engine Steppable Schedule]
            [sim.portrayal.grid ObjectGridPortrayal2D]
@@ -81,9 +80,9 @@
     (.setField snipe-field-portrayal snipe-field)
     (.setField mushroom-field-portrayal mushroom-field)
 
-    (.setPortrayalForClass mushroom-field-portrayal free_agent.mushroom.Mushroom (OvalPortrayal2D.)) ; NOTE UNDERSCORES NOT HYPHENS FOR JAVA
-    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe (OvalPortrayal2D.))         ; need to fix/vary oval portrayal
-    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe (OvalPortrayal2D.))
+    (.setPortrayalForClass mushroom-field-portrayal free_agent.mushroom.Mushroom (OvalPortrayal2D. (Color. 0 0 200) 10.0)) ; NOTE UNDERSCORES NOT HYPHENS FOR JAVA
+    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe (OvalPortrayal2D. (Color. 200 0 0) 5.0))         ; need to fix/vary oval portrayal
+    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe (OvalPortrayal2D. (Color. 0 200 0) 5.0))
     ;; another option: setPortrayalForAll
 
     ;; set up display
