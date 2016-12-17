@@ -3,8 +3,23 @@
 ;;; specified in the file LICENSE.
 
 (ns free-agent.UI
-  (:require [free-agent.SimConfig :as cfg])
+  (:require [free-agent.SimConfig :as cfg]
+            [free-agent.snipe]) ; needed??
+
   (:import [free-agent SimConfig]
+
+           ;; none of these are working, even if aot'ed:
+           [free-agent.snipe]
+           ;[free-agent snipe]
+           ;[free-agent.snipe.KSnipe]
+           ;[free-agent.snipe.KSnipe]
+           ;[free-agent.snipe.RSnipe]
+           ;[free-agent.snipe RSnipe]
+           [free-agent.mushroom]
+           ;[free-agent mushroom]
+           ;[free-agent.mushroom.Mushroom]
+           ;[free-agent.mushroom Mushroom]
+
            [sim.engine Steppable Schedule]
            [sim.portrayal.grid ObjectGridPortrayal2D]
            [sim.portrayal.simple OvalPortrayal2D OrientedPortrayal2D]
@@ -74,24 +89,15 @@
         mushroom-field  (:mushroom-field  popenv)
         snipe-field-portrayal (get-snipe-field-portrayal this-ui)
         mushroom-field-portrayal (get-mushroom-field-portrayal this-ui)
-        display (get-display this-ui)
-        ;indiv-portrayal (OrientedPortrayal2D.  ; what this represents is set in the Oriented2D part of Indiv in Sim.clj
-        ;                  (proxy [OvalPortrayal2D] [1.5]    ; note proxy auto-captures 'this'
-        ;                    (draw [indiv graphics info]                      ; override OvalPortrayal2D method
-        ;                      (let [shade (int (* (.getRelig indiv) 255))]  ; UPDATE COLOR FROM DATA IN INDIV
-        ;                        (set! (.-paint this) (Color. shade 0 (- 255 shade))) ; paint var is in OvalPortrayal2D
-        ;                        (proxy-super draw indiv graphics info))))
-        ;                  0 1.75 (Color. 255 175 175) OrientedPortrayal2D/SHAPE_LINE) ; color is of orientation line/shape
-        ]
+        display (get-display this-ui)]
     (.clear mushroom-field)
     (.clear snipe-field)
     (.setField snipe-field-portrayal snipe-field)
     (.setField mushroom-field-portrayal mushroom-field)
 
-    ;; OR USE THIS FUNCTION?: (.setPortrayalForAll soc-net-portrayal soc-edge-portrayal)
-    (.setPortrayalForClass snipe-field-portrayal free-agent.KSnipe k-snipe-portrayal) ; need to fix/vary indiv-portrayal above
-    (.setPortrayalForClass snipe-field-portrayal free-agent.RSnipe r-snipe-portrayal) ; ditto
-    (.setPortrayalForClass mushroom-field-portrayal free-agent.Mushroom mushroom-portrayal) ; and here
+    (.setPortrayalForClass snipe-field-portrayal free-agent.snipe.KSnipe (OvalPortrayal2D.)) ; need to fix/vary oval portrayal
+    (.setPortrayalForClass snipe-field-portrayal free-agent.snipe.RSnipe (OvalPortrayal2D.))
+    (.setPortrayalForClass mushroom-field-portrayal free-agent.mushroom.Mushroom (OvalPortrayal2D.))
 
     ;; set up display
     (doto display
