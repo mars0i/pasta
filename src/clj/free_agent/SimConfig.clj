@@ -43,24 +43,24 @@
   [args]
   ;; These options should not conflict with MASON's.  Example: If "-h" is the single-char help option, doLoop will never see "-help" (although "-t n" doesn't conflict with "-time") (??).
   (let [cli-options [["-?" "--help" "Print this help message."]
-                     ["-w" "--world-width" "World widths <world-width>" :parse-fn #(Long. %)]
-                     ["-h" "--world-height" "World heights <world-height>" :parse-fn #(Long. %)]
-                     ["-e" "--energy <initial-energy>" "Initial energy of snipes" :parse-fn #(Double. %)]
-                     ["-k" "--k-snipe-prior <k-snipe-prior>" "Prior for k-snipes" :parse-fn #(Double. %)]
-                     ["-p" "--r-snipe-prior-0 <r-snipe-prior-0>" "One of two possible priors for r-snipes" :parse-fn #(Double. %)]
-                     ["-q" "--r-snipe-prior-1 <r-snipe-prior-1>" "One of two possible priors for r-snipes" :parse-fn #(Double. %)]
-                     ["-n" "--num-k-snipes <num-k-snipes>" "Size of k-snipe subpopulation" :parse-fn #(Long. %)]
-                     ["-o" "--num-r-snipes <num-r-snipes>" "Size of r-snipe subpopulation" :parse-fn #(Long. %)]
-                     ["-m" "--mushroom-prob <mushroom-prob>" "Probability that a mushroom will appear on a given patch."]]
+                     ["-w" "--world-width <width>" "How wide is world?" :parse-fn #(Long. %)]
+                     ["-h" "--world-height <height>" "How tall is world?" :parse-fn #(Long. %)]
+                     ["-e" "--initial-energy <energy>" "Initial energy for each snipe" :parse-fn #(Double. %)]
+                     ["-k" "--k-snipe-prior <prior>" "Prior for k-snipes" :parse-fn #(Double. %)]
+                     ["-p" "--r-snipe-prior-0 <prio>" "One of two possible priors for r-snipes" :parse-fn #(Double. %)]
+                     ["-q" "--r-snipe-prior-1 <prior>" "One of two possible priors for r-snipes" :parse-fn #(Double. %)]
+                     ["-n" "--num-k-snipes <size>" "Size of k-snipe subpopulation" :parse-fn #(Long. %)]
+                     ["-o" "--num-r-snipes <size>" "Size of r-snipe subpopulation" :parse-fn #(Long. %)]
+                     ["-m" "--mushroom-prob <probability>" "Probability that a mushroom will appear on a given patch." :parse-fn #(Double. %)]]
         usage-fmt (fn [options]
                     (let [fmt-line (fn [[short-opt long-opt desc]] (str short-opt ", " long-opt ": " desc))]
                       (clojure.string/join "\n" (concat (map fmt-line options)))))
         {:keys [options arguments errors summary] :as cmdline} (clojure.tools.cli/parse-opts args cli-options)]
     (reset! commandline cmdline)
     (when (:help options)
-      (println "Command line options for the free-agent:")
+      (println "Command line options for free-agent:")
       (println (usage-fmt cli-options))
-      (println "Intermittent and MASON options can both be used:")
+      (println "free-agent and MASON options can both be used:")
       (println "-help (note single dash): Print help message for MASON.")
       (System/exit 0))))
 
@@ -69,8 +69,9 @@
   [^SimConfig state cmdline]
   (let [{:keys [options arguments errors summary]} @cmdline]
     ;; FIXME
-    (when-let [newval (:energy options)] (.setInitialEnergy state newval))
-    (when-let [newval (:popsize options)] (.setNumKSnipes state newval) (.setNumRSnipes state newval)))
+    (when-let [newval (:initial-energy options)] (.setInitialEnergy state newval))
+    (when-let [newval (:num-k-snipes options)] (.setNumKSnipes state newval))
+    (when-let [newval (:num-r-snipes options)] (.setNumRSnipes state newval)))
   (reset! commandline nil)) ; clear it so user can set params in the gui
 
 (defn -main
