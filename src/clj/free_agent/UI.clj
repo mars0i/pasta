@@ -14,42 +14,28 @@
     :name free-agent.UI
     :extends sim.display.GUIState
     :main true
-    :exposes {state {:get getState}}  ; accessor for field in superclass
+    :exposes {state {:get getState}}  ; accessor for field in superclass that will contain my SimConfig after main creates instances of this class with it.
     :exposes-methods {start superStart, quit superQuit, init superInit, getInspector superGetInspector}
-    :state iState
+    :state uiState
     :init init-instance-state))
 
 (defn -init-instance-state
   [& args]
-;; TODO HERE: get access to sim-config, then config-data.  
-;; Get the mushroom and snipe fields from these, somehow.  
-  (let [snipe-field-portrayal (ObjectGridPortrayal2D.)
-        mush-field-portrayal (ObjectGridPortrayal2D.)]
-    [(vec args) {:display (atom nil)
-                 :display-frame (atom nil)
-                 :popenv nil
-                 :snipe-field-portrayal snipe-field-portrayal
-                 :mush-field-portrayal mush-field-portrayal}]))
+  [(vec args) {:display (atom nil)       ; will be replaced in init because we need to pass the UI instance to it
+               :display-frame (atom nil) ; will be replaced in init because we need to pass the display to it
+               :snipe-field-portrayal (ObjectGridPortrayal2D.)
+               :mushroom-field-portrayal (ObjectGridPortrayal2D.)}])
 
-;; getName()
-;; Obscure corner of the already obscure gen-class corner: When a method has multiple arities in the super,
-;; you have to distinguish them by tacking type specifiers on to the name of the method.
-;; https://groups.google.com/forum/#!topic/clojure/TVRsy4Gnf70
-;; https://puredanger.github.io/tech.puredanger.com/2011/08/12/subclassing-in-clojure (in which Alex Miller of all people learns from random others)
-;; http://stackoverflow.com/questions/32773861/clojure-gen-class-for-overloaded-and-overridden-methods
-;; http://dishevelled.net/Tricky-uses-of-Clojure-gen-class-and-AOT-compilation.html
+;; see doc/getName.md
 (defn -getName-void [this] "free-agent") ; override method in super. should cause this to be displayed as title of config window of gui, but it doesn't.
 
-(defn get-display [this] @(:display (.iState this)))
-(defn set-display [this newval] (reset! (:display (.iState this)) newval))
-(defn get-display-frame [this] @(:display-frame (.iState this)))
-(defn set-display-frame [this newval] (reset! (:display-frame (.iState this)) newval))
-(defn get-field [this] (:field (.iState this)))
-(defn get-field-portrayal [this] (:field-portrayal (.iState this)))
-;(defn get-soc-net-portrayal [this] (:soc-net-portrayal (.iState this)))
-;(defn get-soc-net [this] (:soc-net (.iState this)))
-;(defn get-talk-net-portrayal [this] (:talk-net-portrayal (.iState this)))
-;(defn get-talk-net [this] (:talk-net (.iState this)))
+(defn get-display [this] @(:display (.uiState this)))
+(defn set-display! [this newval] (reset! (:display (.uiState this)) newval))
+(defn get-display-frame [this] @(:display-frame (.uiState this)))
+(defn set-display-frame! [this newval] (reset! (:display-frame (.uiState this)) newval))
+;(defn get-field [this] (:field (.uiState this)))
+(defn get-snipe-field-portrayal [this] (:snipe-field-portrayal (.uiState this)))
+(defn get-mushroom-field-portrayal [this] (:mushroom-field-portrayal (.uiState this)))
 
 ;; Override methods in sim.display.GUIState so that UI can make graphs, etc.
 (defn -getSimulationInspectedObject [this] (.state this))
@@ -65,30 +51,30 @@
 
 (defn -main
   [& args]
-  (let [sim-config (SimConfig. (System/currentTimeMillis))]                                         ; CREATE AN INSTANCE OF my SimState
+  (let [sim-config (SimConfig. (System/currentTimeMillis))]  ; CREATE AN INSTANCE OF my SimConfig
     (cfg/record-commandline-args! args) 
     (when @cfg/commandline (cfg/set-sim-config-data-from-commandline! sim-config cfg/commandline))
-    (.setVisible (Console. (free-agent.UI. sim-config)) true)))                        ; THIS IS WHAT CONNECTS THE GUI TO my SimState (I think)
+    (.setVisible (Console. (free-agent.UI. sim-config)) true)))  ; THIS IS WHAT CONNECTS THE GUI TO my SimState subclass SimConfig
 
 ;; This is called by the pause and go buttons when starting from fully stopped.
 (defn -start
-  [this-gui]
-  (.superStart this-gui) ; this will call start() on the sim, i.e. in our SimState object
-  (setup-portrayals this-gui))
+  [this-ui]
+  (.superStart this-ui) ; this will call start() on the sim, i.e. in our SimState object
+  (setup-portrayals this-ui))
+
+;; Possibly also define a load() method. See manual.
 
 (defn setup-portrayals
-  [this-gui]  ; instead of 'this': avoid confusion with e.g. proxy below
-  (let [sim-config (.getState this-gui)
+  [this-ui]  ; instead of 'this': avoid confusion with e.g. proxy below
+  (let [sim-config (.getState this-ui)
         rng (.random sim-config)
-        field (get-field this-gui)
-        field-portrayal (get-field-portrayal this-gui)
-        ;soc-net (get-soc-net this-gui)
-        ;soc-net-portrayal (get-soc-net-portrayal this-gui)
-        ;talk-net (get-talk-net this-gui)
-        ;talk-net-portrayal (get-talk-net-portrayal this-gui)
-        display (get-display this-gui)
-        ;communities (cfg/get-communities sim)
-        ;population (cfg/get-population sim)
+        cfg-data @(.simConfigData this-ui)
+        popenv (:popenv cfg-data)
+        snipe-field (:snipe-field popenv)
+        mushroom-field  (:mushroom-field  popenv)
+        snipe-field-portrayal (get-snipe-field-portrayal this-ui)
+        mushroom-field-portrayal (get-mushroom-field-portrayal this-ui)
+        display (get-display this-ui)
         ;indiv-portrayal (OrientedPortrayal2D.  ; what this represents is set in the Oriented2D part of Indiv in Sim.clj
         ;                  (proxy [OvalPortrayal2D] [1.5]    ; note proxy auto-captures 'this'
         ;                    (draw [indiv graphics info]                      ; override OvalPortrayal2D method
@@ -96,31 +82,17 @@
         ;                        (set! (.-paint this) (Color. shade 0 (- 255 shade))) ; paint var is in OvalPortrayal2D
         ;                        (proxy-super draw indiv graphics info))))
         ;                  0 1.75 (Color. 255 175 175) OrientedPortrayal2D/SHAPE_LINE) ; color is of orientation line/shape
-        ;soc-edge-portrayal (SimpleEdgePortrayal2D. (Color. 150 150 150) nil)
-        ;talk-edge-portrayal (SimpleEdgePortrayal2D. (Color. 200 225 150 85) nil)
         ]
-    ;; set up node display
-    (.clear field)
+    (.clear mushroom-field)
+    (.clear snipe-field)
+    (.setField snipe-field-portrayal snipe-field)
+    (.setField mushroom-field-portrayal mushroom-field)
 
-    ;(.setField snipe-field-portrayal snipe-field)
-    ;(.setField mush-field-portrayal mush-field)
+    ;; OR USE THIS FUNCTION?: (.setPortrayalForAll soc-net-portrayal soc-edge-portrayal)
+    (.setPortrayalForClass snipe-field-portrayal free-agent.KSnipe k-snipe-portrayal) ; need to fix/vary indiv-portrayal above
+    (.setPortrayalForClass snipe-field-portrayal free-agent.RSnipe r-snipe-portrayal) ; ditto
+    (.setPortrayalForClass mushroom-field-portrayal free-agent.Mushroom mushroom-portrayal) ; and here
 
-    ;(lay/set-indiv-locs! rng
-    ;                     (if (= (.getLinkStyle sim) cfg/sequential-link-style-idx) 0.0 lay/indiv-position-jitter) ; jitter makes it easier to distinguish links that just happen to cross a node
-    ;                     field
-    ;                     communities)
-    ;(.setPortrayalForClass field-portrayal free-agent.Sim.Indiv indiv-portrayal)
-    ;; set up within-community social network link display:
-    ;(.clear soc-net)
-    ;(lay/set-links! soc-net population) ; set-links! sets edges' info fields to nil (null): edges have no weight, so weight defaults to 1.0
-    ;(.setShape soc-edge-portrayal SimpleEdgePortrayal2D/SHAPE_LINE_BUTT_ENDS) ; Default SHAPE_THIN_LINE doesn't allow changing thickness. Other differences don't matter, if thinner than nodes.
-    ;(.setBaseWidth soc-edge-portrayal 0.15) ; line width
-    ;(.setPortrayalForAll soc-net-portrayal soc-edge-portrayal)
-    ;; set up actual communication network link display (links added transiently during ticks):
-    ;(.clear talk-net)
-    ;(.setShape talk-edge-portrayal SimpleEdgePortrayal2D/SHAPE_TRIANGLE)
-    ;(.setBaseWidth talk-edge-portrayal 0.85) ; width at base (from end) of triangle
-    ;(.setPortrayalForAll talk-net-portrayal talk-edge-portrayal)
     ;; set up display
     (doto display
       (.reset )
@@ -128,18 +100,17 @@
       (.repaint))))
 
 (defn -init
-  [this controller] ; controller is called c in Java version
+  [this controller] ; fyi controller is called c in Java version
   (.superInit this controller)
-  (let [display (Display2D. 800 600 this)
+  (let [sim-config (.getState this)
+        cfg-data @(.simConfigData this) ; just for world dimensions
+        display (Display2D. (:world-width cfg-data) (:world-height cfg-data) this)
         display-frame (.createFrame display)]
-    (set-display this display)
+    (set-display! this display)
     (doto display
       (.setClipping false)
-      ;(.attach (get-soc-net-portrayal this) "local networks") ; The order of attaching is the order of painting.
-      ;(.attach (get-talk-net-portrayal this) "communications") ; what's attached later will appear on top of what's earlier. 
-      ;(.attach (get-field-portrayal this) "indivs")
-      )
-    ;; set up display frame:
+      (.attach (get-mushroom-field-portrayal this) "mushrooms") ; The order of attaching is the order of painting.
+      (.attach (get-snipe-field-portrayal this) "snipes"))  ; what's attached later will appear on top of what's earlier. 
     (set-display-frame this display-frame)
     (.registerFrame controller display-frame)
     (doto display-frame 

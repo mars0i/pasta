@@ -33,17 +33,17 @@
   (nth xs 3))
 
 ;; note that clojure.core/fnext is defined exactly as second is.
-(defn fnnext 
-  "Returns the third element of xs, or nil if it has fewer than three elements.
-  Avoid using in time-sensitive loops."
-  [xs] 
-  (first (next (next xs)))) ; i.e. 
+;(defn fnnext 
+;  "Returns the third element of xs, or nil if it has fewer than three elements.
+;  Avoid using in time-sensitive loops."
+;  [xs] 
+;  (first (next (next xs)))) ; i.e. 
 
-(defn fnnnext ; maybe the name is a bad idea
-  "Returns the fourth element of xs, or nil if it has fewer than four elements.
-  Avoid using in time-sensitive loops."
-  [xs] 
-  (first (next (next (next xs)))))
+;(defn fnnnext ; maybe the name is a bad idea
+;  "Returns the fourth element of xs, or nil if it has fewer than four elements.
+;  Avoid using in time-sensitive loops."
+;  [xs] 
+;  (first (next (next (next xs)))))
 
 (defn get-class-prefix
   "Given a Java/Clojure class identifier symbol or string, or class object (found
