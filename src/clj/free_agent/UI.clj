@@ -76,9 +76,10 @@
         mushroom-field-portrayal (get-mushroom-field-portrayal this-ui)
         display (get-display this-ui)]
 
+    ; NOTE UNDERSCORES NOT HYPHENS IN CLASSNAMES FOR JAVA:
     (.setField mushroom-field-portrayal mushroom-field)
-    (.setPortrayalForClass mushroom-field-portrayal free_agent.mushroom.Mushroom (OvalPortrayal2D. (Color. 0 0 200) 3.0)) ; NOTE UNDERSCORES NOT HYPHENS FOR JAVA
-
+    ;; TODO make size depend on underlying size:
+    (.setPortrayalForClass mushroom-field-portrayal free_agent.mushroom.Mushroom (OvalPortrayal2D. (Color. 0 0 200) 3.0))
     (.setField snipe-field-portrayal snipe-field)
     (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe (OvalPortrayal2D. (Color. 200 0 0) 2.0))
     (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe (OvalPortrayal2D. (Color. 0 200 0) 2.0))
