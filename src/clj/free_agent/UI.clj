@@ -81,7 +81,7 @@
     (.setField mushroom-field-portrayal mushroom-field)
 
     (.setPortrayalForClass mushroom-field-portrayal free_agent.mushroom.Mushroom (OvalPortrayal2D. (Color. 0 0 200) 10.0)) ; NOTE UNDERSCORES NOT HYPHENS FOR JAVA
-    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe (OvalPortrayal2D. (Color. 200 0 0) 5.0))         ; need to fix/vary oval portrayal
+    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe (OvalPortrayal2D. (Color. 200 0 0) 5.0))
     (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe (OvalPortrayal2D. (Color. 0 200 0) 5.0))
     ;; another option: setPortrayalForAll
 
