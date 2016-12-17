@@ -83,7 +83,7 @@
   [this-ui]  ; instead of 'this': avoid confusion with e.g. proxy below
   (let [sim-config (.getState this-ui)
         rng (.random sim-config)
-        cfg-data @(.simConfigData this-ui)
+        cfg-data @(.simConfigData sim-config)
         popenv (:popenv cfg-data)
         snipe-field (:snipe-field popenv)
         mushroom-field  (:mushroom-field  popenv)
@@ -95,9 +95,12 @@
     (.setField snipe-field-portrayal snipe-field)
     (.setField mushroom-field-portrayal mushroom-field)
 
-    (.setPortrayalForClass snipe-field-portrayal free-agent.snipe.KSnipe (OvalPortrayal2D.)) ; need to fix/vary oval portrayal
-    (.setPortrayalForClass snipe-field-portrayal free-agent.snipe.RSnipe (OvalPortrayal2D.))
-    (.setPortrayalForClass mushroom-field-portrayal free-agent.mushroom.Mushroom (OvalPortrayal2D.))
+    (.setPortrayalForAll mushroom-field-portrayal (OvalPortrayal2D. (Color. 0 0 200) 2.0)) ;   temporary experiment
+    (.setPortrayalForAll snipe-field-portrayal (OvalPortrayal2D. (Color. 200 0 0 100))) ;   temporary experiment
+    ;; TODO not working:
+    ;(.setPortrayalForClass snipe-field-portrayal free-agent.snipe.KSnipe (OvalPortrayal2D.)) ; need to fix/vary oval portrayal
+    ;(.setPortrayalForClass snipe-field-portrayal free-agent.snipe.RSnipe (OvalPortrayal2D.))
+    ;(.setPortrayalForClass mushroom-field-portrayal free-agent.mushroom.Mushroom (OvalPortrayal2D.))
 
     ;; set up display
     (doto display
@@ -109,7 +112,7 @@
   [this controller] ; fyi controller is called c in Java version
   (.superInit this controller)
   (let [sim-config (.getState this)
-        cfg-data @(.simConfigData this) ; just for world dimensions
+        cfg-data @(.simConfigData sim-config) ; just for world dimensions
         display (Display2D. (:world-width cfg-data) (:world-height cfg-data) this)
         display-frame (.createFrame display)]
     (set-display! this display)
@@ -117,7 +120,7 @@
       (.setClipping false)
       (.attach (get-mushroom-field-portrayal this) "mushrooms") ; The order of attaching is the order of painting.
       (.attach (get-snipe-field-portrayal this) "snipes"))  ; what's attached later will appear on top of what's earlier. 
-    (set-display-frame this display-frame)
+    (set-display-frame! this display-frame)
     (.registerFrame controller display-frame)
     (doto display-frame 
       (.setTitle "free-agent")
@@ -129,8 +132,8 @@
   (when-let [display-frame (get-display-frame this)]
     (.dispose display-frame))
   (doto this
-    (set-display-frame nil)
-    (set-display nil)))
+    (set-display-frame! nil)
+    (set-display! nil)))
 
 (defn repl-gui
   "Convenience function to init and start GUI from the REPL.
