@@ -75,14 +75,13 @@
         snipe-field-portrayal (get-snipe-field-portrayal this-ui)
         mushroom-field-portrayal (get-mushroom-field-portrayal this-ui)
         display (get-display this-ui)]
-    (.clear mushroom-field)
-    (.clear snipe-field)
-    (.setField snipe-field-portrayal snipe-field)
-    (.setField mushroom-field-portrayal mushroom-field)
 
-    (.setPortrayalForClass mushroom-field-portrayal free_agent.mushroom.Mushroom (OvalPortrayal2D. (Color. 0 0 200) 10.0)) ; NOTE UNDERSCORES NOT HYPHENS FOR JAVA
-    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe (OvalPortrayal2D. (Color. 200 0 0) 5.0))
-    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe (OvalPortrayal2D. (Color. 0 200 0) 5.0))
+    (.setField mushroom-field-portrayal mushroom-field)
+    (.setPortrayalForClass mushroom-field-portrayal free_agent.mushroom.Mushroom (OvalPortrayal2D. (Color. 0 0 200) 3.0)) ; NOTE UNDERSCORES NOT HYPHENS FOR JAVA
+
+    (.setField snipe-field-portrayal snipe-field)
+    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe (OvalPortrayal2D. (Color. 200 0 0) 2.0))
+    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe (OvalPortrayal2D. (Color. 0 200 0) 2.0))
     ;; another option: setPortrayalForAll
 
     ;; set up display

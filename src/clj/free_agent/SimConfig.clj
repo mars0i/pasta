@@ -22,9 +22,9 @@
                       [k-snipe-prior    10.0   double [1.0 50.0]]
                       [r-snipe-prior-0   5.0   double [1.0 50.0]]
                       [r-snipe-prior-1  20.0   double [1.0 50.0]]
-                      [num-k-snipes     20     long   [1 200]]
-                      [num-r-snipes     20     long   [1 200]]
-                      [mushroom-prob    0.1    double [0.0 1.0]] ; prob that a mushroom will appear in a patch
+                      [num-k-snipes     30     long   [1 200]]
+                      [num-r-snipes     30     long   [1 200]]
+                      [mushroom-prob    0.005  double [0.0 1.0]] ; prob that a mushroom will appear in a patch
                       [mushroom-mean-0  4.0    double true]      ; mean of mushroom light distribution
                       [mushroom-mean-1 16.0    double true]      ; mean of mushroom light distribution
                       [mushroom-sd      2.0    double true]
@@ -92,8 +92,9 @@
   (let [^Schedule schedule (.schedule this)
         ^SimConfigData cfg-data$ (.simConfigData this)
         ^MersenneTwisterFast rng (.-random this)]
-    ;; populate initial popenv:
-    (swap! cfg-data$ assoc :popenv (pe/make-popenv rng @cfg-data$)) ; it's ok to pass in cfg-data to update cfg-data; make-popenv will use the old version
+    ;; create and populate initial popenv:
+    (swap! cfg-data$ assoc :popenv (pe/populate rng @cfg-data$ ; it's ok to pass in cfg-data to update cfg-data; make-popenv will use the old version
+                                                (pe/make-popenv rng @cfg-data$)))
     ;; Run it:
     (.scheduleRepeating schedule Schedule/EPOCH 0
                         (reify Steppable 
