@@ -96,9 +96,24 @@
   [fields]
   (filter (comp sequential? fourth) fields))
 
+(defn make-cli-spec
+  "If a partial cli specification vector is present as the fifth element
+  of field, returns a cli specification vector completed by inserting
+  the long-option string as after the initial short-option string.  The
+  rest of the partial cli specification vector should contain a description
+  and any other keyword-based arguments allowed by clojure.tools.cli/parse-opts.
+  The constructed long-option string will have the form 
+  \"--key-sym <val-type>\"."
+  [field]
+  (let [[key-sym _ val-type _ [short-opt & rest-of-cli-spec]] field]
+    (when short-opt
+      (into [short-opt 
+             (str "--" key-sym " <" val-type ">")]
+            rest-of-cli-spec))))
+
 (defn get-cli-specs
   [fields]
-  (filter identity (map fifth-or-nil fields)))
+  (filter identity (map make-cli-spec fields)))
 
 ;; TODO add type annotations. (maybe iff they're symbols??)
 ;; TODO put data structure in its own namespace to avoid circular references
@@ -176,21 +191,20 @@
                -dom-syms# dom-keywords# ranges#)
 
         ;; DEFINE COMMANDLINE OPTIONS:
-        (def ~'commandline (atom nil))
+        (def commandline# (atom nil))
         (defn ~'record-commandline-args!
           "Temporarily store values of parameters passed on the command line."
           [args#]
           ;; These options should not conflict with MASON's.  Example: If "-h" is the single-char help option, doLoop will never see "-help" (although "-t n" doesn't conflict with "-time") (??).
-          (let [cli-options# [["-?" "--help" "Print this help message."]
-                              ~@cli-specs#]
+          (let [~'cli-options [["-?" "--help" "Print this help message."] ~@cli-specs#]
                 usage-fmt# (fn [~'options]
                             (let [~'fmt-line (fn [[~'short-opt ~'long-opt ~'desc]] (str ~'short-opt ", " ~'long-opt ": " ~'desc))]
                               (clojure.string/join "\n" (concat (map ~'fmt-line ~'options)))))
-                {:keys [~'options ~'arguments ~'errors ~'summary] :as ~'cmdline} (clojure.tools.cli/parse-opts args# cli-options#)]
-            (reset! ~'commandline ~'cmdline)
+                {:keys [~'options ~'arguments ~'errors ~'summary] :as ~'cmdline} (clojure.tools.cli/parse-opts args# ~'cli-options)]
+            (reset! commandline# ~'cmdline)
             (when (:help ~'options)
               (println "Command line options for free-agent:")
-              (println (usage-fmt# cli-options#))
+              (println (usage-fmt# ~'cli-options))
               (println "free-agent and MASON options can both be used:")
               (println "-help (note single dash): Print help message for MASON.")
               (System/exit 0))))
