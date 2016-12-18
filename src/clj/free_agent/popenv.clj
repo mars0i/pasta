@@ -4,6 +4,17 @@
             [utils.random :as ran])
   (:import [sim.field.grid ObjectGrid2D]))
 
+
+(defrecord PopEnv [snipe-field mushroom-field])
+
+(defn make-popenv
+  [rng cfg-data]
+  (let [{:keys [world-width world-height]} cfg-data
+        snipe-field    (ObjectGrid2D. world-width world-height) ; eventually make two of each
+        mushroom-field (ObjectGrid2D. world-width world-height)]
+    (PopEnv. snipe-field mushroom-field)))
+
+
 (defn add-snipe
   [rng field width height snipe]
   (loop []
@@ -44,8 +55,6 @@
       (maybe-add-mushroom rng field x y mushroom-prob
                           mushroom-mean-0 mushroom-mean-1 mushroom-sd))))
 
-(defrecord PopEnv [snipe-field mushroom-field])
-
 (defn populate
   [rng cfg-data popenv]
   (let [{:keys [world-width world-height]} cfg-data
@@ -56,13 +65,6 @@
     (.clear snipe-field)
     (add-k-snipes rng cfg-data snipe-field)
     (add-r-snipes rng cfg-data snipe-field)
-    (PopEnv. snipe-field mushroom-field)))
-
-(defn make-popenv
-  [rng cfg-data]
-  (let [{:keys [world-width world-height]} cfg-data
-        snipe-field    (ObjectGrid2D. world-width world-height) ; eventually make two of each
-        mushroom-field (ObjectGrid2D. world-width world-height)]
     (PopEnv. snipe-field mushroom-field)))
 
 (defn next-popenv
