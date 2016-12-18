@@ -74,11 +74,13 @@
         snipe-field-portrayal (get-snipe-field-portrayal this-ui)
         mushroom-field-portrayal (get-mushroom-field-portrayal this-ui)
         display (get-display this-ui)]
-    ; NOTE UNDERSCORES NOT HYPHENS IN CLASSNAMES FOR JAVA:
     (.setField mushroom-field-portrayal mushroom-field)
-    ;; TODO make size depend on underlying size:
-    (.setPortrayalForClass mushroom-field-portrayal free_agent.mushroom.Mushroom (OvalPortrayal2D. (Color. 150 150 150) 4.0))
     (.setField snipe-field-portrayal snipe-field)
+    ;(.setGridLines snipe-field-portrayal true) ; not lines separating cells, but a rep of the coordinate system
+    (.setBorder snipe-field-portrayal true) ;(.setBorder mushroom-field-portrayal true)
+    ;; TODO make size depend on underlying size:
+    ; **NOTE** UNDERSCORES NOT HYPHENS IN CLASSNAMES HERE:
+    (.setPortrayalForClass mushroom-field-portrayal free_agent.mushroom.Mushroom (OvalPortrayal2D. (Color. 150 150 150) 4.0))
     (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe (OvalPortrayal2D. (Color. 200 0 0) 2.5))
     (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe (OvalPortrayal2D. (Color. 0 0 200) 2.5))
     ;; set up display:
