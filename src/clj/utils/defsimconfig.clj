@@ -122,8 +122,7 @@
   specification, generate commandline processing code; otherwise return nil."
   [fields]
   (when (some #(> (count %) 4) fields)
-    `((def commandline# (atom nil))
-      (defn ~'record-commandline-args!
+    `((defn ~'record-commandline-args!
         "Temporarily store values of parameters passed on the command line."
         [args#]
         ;; These options should not conflict with MASON's.  Example: If "-h" is the single-char help option, doLoop will never see "-help" (although "-t n" doesn't conflict with "-time") (??).
@@ -132,7 +131,7 @@
                            (let [~'fmt-line (fn [[~'short-opt ~'long-opt ~'desc]] (str ~'short-opt ", " ~'long-opt ": " ~'desc))]
                              (clojure.string/join "\n" (concat (map ~'fmt-line ~'options)))))
               {:keys [~'options ~'arguments ~'errors ~'summary] :as ~'cmdline} (clojure.tools.cli/parse-opts args# ~'cli-options)]
-          (reset! commandline# ~'cmdline)
+          (reset! ~'commandline ~'cmdline) ; commandline should be defined previously in SimConfig
           (when (:help ~'options)
             (println "Command line options for free-agent:")
             (println (usage-fmt# ~'cli-options))

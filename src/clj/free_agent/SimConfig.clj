@@ -17,6 +17,8 @@
 ;;    (require '[utils.defsimconfig :as cfg])
 ;;    (pprint (macroexpand-1 '<insert defsimconfig call>))
 
+(def commandline (atom nil)) ; Needed by defsimconfig and other code below if we're defining commandline options
+
 ;;                 field name   initial value  type  in ui? with range?
 (defcfg/defsimconfig [[initial-energy    10.0   double [0.0 20.0] ["-e" "Initial energy for each snipe" :parse-fn #(Double. %)]]
                       [k-snipe-prior     10.0   double [1.0 50.0] ["-k" "Prior for k-snipes" :parse-fn #(Double. %)]]
@@ -64,15 +66,24 @@
 ;      (println "-help (note single dash): Print help message for MASON.")
 ;      (System/exit 0))))
 
+
 (defn set-sim-config-data-from-commandline!
   "Set fields in the SimConfig's simConfigData from parameters passed on the command line."
-  [^SimConfig state cmdline]
-  (let [{:keys [options arguments errors summary]} @cmdline]
-    ;; FIXME
-    (when-let [newval (:initial-energy options)] (.setInitialEnergy state newval))
-    (when-let [newval (:num-k-snipes options)] (.setNumKSnipes state newval))
-    (when-let [newval (:num-r-snipes options)] (.setNumRSnipes state newval)))
-  (reset! commandline nil)) ; clear it so user can set params in the gui
+  [^SimConfig sim-config cmdline]
+  (let [options (:options @cmdline)
+        sim-config-data (.simConfigData sim-config)]
+    (run! #(apply swap! sim-config-data assoc %) ; arg is a MapEntry, which is sequential? so will function like a list or vector
+          options)))
+
+;(defn set-sim-config-data-from-commandline!
+;  "Set fields in the SimConfig's simConfigData from parameters passed on the command line."
+;  [^SimConfig state cmdline]
+;  (let [{:keys [options arguments errors summary]} @cmdline]
+;    ;; FIXME
+;    (when-let [newval (:initial-energy options)] (.setInitialEnergy state newval))
+;    (when-let [newval (:num-k-snipes options)] (.setNumKSnipes state newval))
+;    (when-let [newval (:num-r-snipes options)] (.setNumRSnipes state newval)))
+;  (reset! commandline nil)) ; clear it so user can set params in the gui
 
 (defn -main
   [& args]
@@ -88,7 +99,9 @@
   [^SimConfig this]
   (.superStart this)
   ;; If user passed commandline options, use them to set parameters, rather than defaults:
-  (when @commandline (set-sim-config-data-from-commandline! this commandline))
+  (when @commandline 
+    (set-sim-config-data-from-commandline! this commandline)
+    (reset! commandline nil)) ; clear it so user can set params in the gui
   ;; Construct core data structures of the simulation:
   (let [^Schedule schedule (.schedule this)
         ^SimConfigData cfg-data$ (.simConfigData this)
