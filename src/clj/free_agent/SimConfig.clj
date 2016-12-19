@@ -34,56 +34,18 @@
                       [world-height     250     double false      ["-h" "How tall is world?" :parse-fn #(Long. %)]] ; ditto
                       [popenv            nil    free-agent.popenv.PopEnv false]])
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Command line start up
-
-(def commandline (atom nil))
-
-;(defn record-commandline-args!
-;  "Temporarily store values of parameters passed on the command line."
-;  [args]
-;  ;; These options should not conflict with MASON's.  Example: If "-h" is the single-char help option, doLoop will never see "-help" (although "-t n" doesn't conflict with "-time") (??).
-;  (let [cli-options [["-?" "--help" "Print this help message."]
-;                     ["-w" "--world-width <width>" "How wide is world?" :parse-fn #(Long. %)]
-;                     ["-h" "--world-height <height>" "How tall is world?" :parse-fn #(Long. %)]
-;                     ["-e" "--initial-energy <energy>" "Initial energy for each snipe" :parse-fn #(Double. %)]
-;                     ["-k" "--k-snipe-prior <prior>" "Prior for k-snipes" :parse-fn #(Double. %)]
-;                     ["-p" "--r-snipe-prior-0 <prio>" "One of two possible priors for r-snipes" :parse-fn #(Double. %)]
-;                     ["-q" "--r-snipe-prior-1 <prior>" "One of two possible priors for r-snipes" :parse-fn #(Double. %)]
-;                     ["-n" "--num-k-snipes <size>" "Size of k-snipe subpopulation" :parse-fn #(Long. %)]
-;                     ["-o" "--num-r-snipes <size>" "Size of r-snipe subpopulation" :parse-fn #(Long. %)]
-;                     ["-m" "--mushroom-prob <probability>" "Probability that a mushroom will appear on a given patch." :parse-fn #(Double. %)]]
-;        usage-fmt (fn [options]
-;                    (let [fmt-line (fn [[short-opt long-opt desc]] (str short-opt ", " long-opt ": " desc))]
-;                      (clojure.string/join "\n" (concat (map fmt-line options)))))
-;        {:keys [options arguments errors summary] :as cmdline} (clojure.tools.cli/parse-opts args cli-options)]
-;    (reset! commandline cmdline)
-;    (when (:help options)
-;      (println "Command line options for free-agent:")
-;      (println (usage-fmt cli-options))
-;      (println "free-agent and MASON options can both be used:")
-;      (println "-help (note single dash): Print help message for MASON.")
-;      (System/exit 0))))
-
-
+;; no good reason to put this into the defsimconfig macro since it doesn't include any
+;; field-specific code.  Easier to redefine if left here.  Note though that commandline
 (defn set-sim-config-data-from-commandline!
   "Set fields in the SimConfig's simConfigData from parameters passed on the command line."
   [^SimConfig sim-config cmdline]
   (let [options (:options @cmdline)
         sim-config-data (.simConfigData sim-config)]
     (run! #(apply swap! sim-config-data assoc %) ; arg is a MapEntry, which is sequential? so will function like a list or vector
-          options)))
+          options))
+  (reset! cmdline nil)) ; clear it so user can set params in the gui
 
-;(defn set-sim-config-data-from-commandline!
-;  "Set fields in the SimConfig's simConfigData from parameters passed on the command line."
-;  [^SimConfig state cmdline]
-;  (let [{:keys [options arguments errors summary]} @cmdline]
-;    ;; FIXME
-;    (when-let [newval (:initial-energy options)] (.setInitialEnergy state newval))
-;    (when-let [newval (:num-k-snipes options)] (.setNumKSnipes state newval))
-;    (when-let [newval (:num-r-snipes options)] (.setNumRSnipes state newval)))
-;  (reset! commandline nil)) ; clear it so user can set params in the gui
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn -main
   [& args]
@@ -91,17 +53,12 @@
   (sim.engine.SimState/doLoop free-agent.SimConfig (into-array String args)) ;; FIXME RUNTIME EXCEPTION HERE
   (System/exit 0))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Start main loop
-
 (defn -start
   "Function that's called to (re)start a new simulation run."
   [^SimConfig this]
   (.superStart this)
   ;; If user passed commandline options, use them to set parameters, rather than defaults:
-  (when @commandline 
-    (set-sim-config-data-from-commandline! this commandline)
-    (reset! commandline nil)) ; clear it so user can set params in the gui
+  (when @commandline (set-sim-config-data-from-commandline! this commandline))
   ;; Construct core data structures of the simulation:
   (let [^Schedule schedule (.schedule this)
         ^SimConfigData cfg-data$ (.simConfigData this)
