@@ -28,8 +28,8 @@
 ;; they're defined using next), while nth throws an exception in that case.  
 ;; For the principle of least surprise, and since count is O(1) in most 
 ;; cases (and all cases here), I'm reproducing the nil-if-too-short 
-;; functionality in the defs below.  Also, I positively want this behavior 
-;; in the case of some of then.
+;; functionality in the defs below.  Also, I sometimes positively want this 
+;; behavior.
 
 (defn third 
   "Returns the third element of xs or nil if xs is too short."
@@ -45,18 +45,12 @@
     (nth xs 3)
     nil))
 
-(defn fifth
-  "Returns the fifth element of xs or nil if xs is too short."
-  [xs] 
-  (if (>= (count xs) 5)
-    (nth xs 4)
-    nil))
-
-;(defn fnnnext ; maybe the name is a bad idea
-;  "Returns the fourth element of xs, or nil if it has fewer than four elements.
-;  Avoid using in time-sensitive loops."
+;(defn fifth
+;  "Returns the fifth element of xs or nil if xs is too short."
 ;  [xs] 
-;  (first (next (next (next xs)))))
+;  (if (>= (count xs) 5)
+;    (nth xs 4)
+;    nil))
 
 (defn get-class-prefix
   "Given a Java/Clojure class identifier symbol or string, or class object (found
