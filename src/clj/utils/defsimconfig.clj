@@ -45,12 +45,12 @@
     (nth xs 3)
     nil))
 
-;(defn fifth
-;  "Returns the fifth element of xs or nil if xs is too short."
-;  [xs] 
-;  (if (>= (count xs) 5)
-;    (nth xs 4)
-;    nil))
+(defn fifth
+  "Returns the fifth element of xs or nil if xs is too short."
+  [xs] 
+  (if (>= (count xs) 5)
+    (nth xs 4)
+    nil))
 
 (defn get-class-prefix
   "Given a Java/Clojure class identifier symbol or string, or class object (found
@@ -117,6 +117,30 @@
   [fields]
   (filter identity (map make-cli-spec fields)))
 
+(defn make-commandline-processing-defs
+  "If there any element of fields includes a fifth element, i.e. command-line 
+  specification, generate commandline processing code; otherwise return nil."
+  [fields]
+  (when (some #(> (count %) 4) fields)
+    `((def commandline# (atom nil))
+      (defn ~'record-commandline-args!
+        "Temporarily store values of parameters passed on the command line."
+        [args#]
+        ;; These options should not conflict with MASON's.  Example: If "-h" is the single-char help option, doLoop will never see "-help" (although "-t n" doesn't conflict with "-time") (??).
+        (let [~'cli-options [["-?" "--help" "Print this help message."] ~@(get-cli-specs fields)]
+              usage-fmt# (fn [~'options]
+                           (let [~'fmt-line (fn [[~'short-opt ~'long-opt ~'desc]] (str ~'short-opt ", " ~'long-opt ": " ~'desc))]
+                             (clojure.string/join "\n" (concat (map ~'fmt-line ~'options)))))
+              {:keys [~'options ~'arguments ~'errors ~'summary] :as ~'cmdline} (clojure.tools.cli/parse-opts args# ~'cli-options)]
+          (reset! commandline# ~'cmdline)
+          (when (:help ~'options)
+            (println "Command line options for free-agent:")
+            (println (usage-fmt# ~'cli-options))
+            (println "free-agent and MASON options can both be used:")
+            (println "-help (note single dash): Print help message for MASON.")
+            (System/exit 0)))))))
+
+
 ;; TODO add type annotations. (maybe iff they're symbols??)
 ;; TODO put data structure in its own namespace to avoid circular references
 ;; Maybe some of gensym pound signs are overkill. Can't hurt?
@@ -166,8 +190,7 @@
                          :main true
                          :methods (vec (concat (make-accessor-sigs get-syms# set-syms# ui-field-types#)
                                                (map #(vector % [] java.lang.Object) dom-syms#)))} 
-         gen-class-opts# (into gen-class-opts# (map vec (partition 2 addl-gen-class-opts)))
-         cli-specs# (get-cli-specs fields)]
+         gen-class-opts# (into gen-class-opts# (map vec (partition 2 addl-gen-class-opts)))]
      `(do
         ;; Put following in its own namespace so that other namespaces can access it without cyclicly referencing SimConfig:
         ;; DEFINE CONFIG DATA RECORD:
@@ -193,21 +216,5 @@
                -dom-syms# dom-keywords# ranges#)
 
         ;; DEFINE COMMANDLINE OPTIONS:
-        (def commandline# (atom nil))
-        (defn ~'record-commandline-args!
-          "Temporarily store values of parameters passed on the command line."
-          [args#]
-          ;; These options should not conflict with MASON's.  Example: If "-h" is the single-char help option, doLoop will never see "-help" (although "-t n" doesn't conflict with "-time") (??).
-          (let [~'cli-options [["-?" "--help" "Print this help message."] ~@cli-specs#]
-                usage-fmt# (fn [~'options]
-                            (let [~'fmt-line (fn [[~'short-opt ~'long-opt ~'desc]] (str ~'short-opt ", " ~'long-opt ": " ~'desc))]
-                              (clojure.string/join "\n" (concat (map ~'fmt-line ~'options)))))
-                {:keys [~'options ~'arguments ~'errors ~'summary] :as ~'cmdline} (clojure.tools.cli/parse-opts args# ~'cli-options)]
-            (reset! commandline# ~'cmdline)
-            (when (:help ~'options)
-              (println "Command line options for free-agent:")
-              (println (usage-fmt# ~'cli-options))
-              (println "free-agent and MASON options can both be used:")
-              (println "-help (note single dash): Print help message for MASON.")
-              (System/exit 0))))
+        ~@(make-commandline-processing-defs fields)
         )))
