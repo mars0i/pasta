@@ -22,27 +22,35 @@
 (def init-genclass-sym 'init-sim-config-data)
 (def init-defn-sym '-init-sim-config-data)
 
+
+;; Positional functions
+;; clojure.core's first and second return nil if xs is too short (because
+;; they're defined using next), while nth throws an exception in that case.  
+;; For the principle of least surprise, and since count is O(1) in most 
+;; cases (and all cases here), I'm reproducing the nil-if-too-short 
+;; functionality in the defs below.  Also, I positively want this behavior 
+;; in the case of some of then.
+
 (defn third 
-  "Returns the third element of xs.  Throws an exception if xs is too short."
+  "Returns the third element of xs or nil if xs is too short."
   [xs] 
-  (nth xs 2))
+  (if (>= (count xs) 3)
+    (nth xs 2)
+    nil))
 
 (defn fourth 
-  "Returns the fourth element of xs.  Throws an exception if xs is too short."
+  "Returns the fourth element of xs or nil if xs is too short."
   [xs] 
-  (nth xs 3))
+  (if (>= (count xs) 4)
+    (nth xs 3)
+    nil))
 
-(defn fifth-or-nil
+(defn fifth
   "Returns the fifth element of xs or nil if xs is too short."
   [xs] 
-  (first (next (next (next (next xs))))))
-
-;; note that clojure.core/fnext is defined exactly as second is.
-;(defn fnnext 
-;  "Returns the third element of xs, or nil if it has fewer than three elements.
-;  Avoid using in time-sensitive loops."
-;  [xs] 
-;  (first (next (next xs)))) ; i.e. 
+  (if (>= (count xs) 5)
+    (nth xs 4)
+    nil))
 
 ;(defn fnnnext ; maybe the name is a bad idea
 ;  "Returns the fourth element of xs, or nil if it has fewer than four elements.
