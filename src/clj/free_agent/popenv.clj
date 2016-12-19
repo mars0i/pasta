@@ -5,14 +5,15 @@
   (:import [sim.field.grid ObjectGrid2D]))
 
 
-(defrecord PopEnv [snipe-field mushroom-field])
+(defrecord PopEnv [snipe-field next-snipe-field mushroom-field])
 
 (defn make-popenv
   [rng cfg-data]
   (let [{:keys [world-width world-height]} cfg-data
-        snipe-field    (ObjectGrid2D. world-width world-height) ; eventually make two of each
-        mushroom-field (ObjectGrid2D. world-width world-height)]
-    (PopEnv. snipe-field mushroom-field)))
+        snipe-field    (ObjectGrid2D. world-width world-height)    ; eventually make two of each (for two sides of the mountain)
+        next-snipe-field  (ObjectGrid2D. world-width world-height) ; two of these, too
+        mushroom-field (ObjectGrid2D. world-width world-height)]   ; also this one
+    (PopEnv. snipe-field next-snipe-field mushroom-field)))
 
 
 (defn add-snipe
@@ -59,18 +60,29 @@
   [rng cfg-data popenv]
   (let [{:keys [world-width world-height]} cfg-data
         mushroom-field (:mushroom-field popenv)
-        snipe-field    (:snipe-field popenv)]
+        snipe-field    (:snipe-field popenv)
+        next-snipe-field (:next-snipe-field popenv)] ; passed through unchanged for now
     (.clear mushroom-field)
     (add-mushrooms rng cfg-data mushroom-field)
     (.clear snipe-field)
     (add-k-snipes rng cfg-data snipe-field)
     (add-r-snipes rng cfg-data snipe-field)
-    (PopEnv. snipe-field mushroom-field)))
+    (PopEnv. snipe-field next-snipe-field mushroom-field)))
 
 (defn next-popenv
   [popenv cfg-data] ; put popenv first so we can swap! it
-  ;; TODO
+  (let [{:keys [snipe-field next-snipe-field mushroom-field]} popenv]
   ;; snipes move and/or eat
+    ; for each filled patch in snipe-field
+    ; if unseen mushroom, decide whether to eat
+    ; else get neighbor coords and randomly pick one
+    ; add self to next-snipe-field there, or if space is already filled, add self to a set there
+    ; then
+    ; for each set in next-snipe-field, randomly pick member and replace set with it (or something like that)
+    ; then swap next-snipe-field and snipe-field
+    ; and clear the new next-snipe-field.
+    ; also replace in portrayal in gui
+    ; hmm so maybe don't do the swap.  copy back to original instead. ?
   ;; mushrooms spawn
-  popenv) 
+  popenv))
 
