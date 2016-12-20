@@ -30,8 +30,8 @@
                       [mushroom-mean-0    4.0   double true       ["-m" "Mean of mushroom light distribution" :parse-fn #(Double. %)]]
                       [mushroom-mean-1   16.0   double true       ["-n" "Mean of mushroom light distribution" :parse-fn #(Double. %)]]
                       [mushroom-sd        2.0   double true       ["-s" "Standard deviation of mushroom light distribution" :parse-fn #(Double. %)]]
-                      [world-width      250     double false      ["-w" "How wide is world?" :parse-fn #(Long. %)]] ; can be set from command line but not in running app
-                      [world-height     250     double false      ["-h" "How tall is world?" :parse-fn #(Long. %)]] ; ditto
+                      [world-width      250     double false      ["-w" "How wide is world?  Should be an even number (for hexagonal wrapping)." :parse-fn #(Long. %)]] ; can be set from command line but not in running app
+                      [world-height     250     double false      ["-h" "How tall is world? Should be an even number (for hexagonal wrapping)." :parse-fn #(Long. %)]] ; ditto
                       [popenv            nil    free-agent.popenv.PopEnv false]])
 
 ;; no good reason to put this into the defsimconfig macro since it doesn't include any
