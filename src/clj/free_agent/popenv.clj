@@ -2,8 +2,13 @@
   (:require [free-agent.snipe :as sn]
             [free-agent.mushroom :as mu]
             [utils.random :as ran])
-  (:import [sim.field.grid ObjectGrid2D]))
+  (:import [sim.field.grid Grid2D ObjectGrid2D]
+           [sim.util IntBag]))
 
+
+;; For use by getHexagonalLocations
+(def x-pos (IntBag. 6))
+(def y-pos (IntBag. 6))
 
 (defrecord PopEnv [snipe-field next-snipe-field mushroom-field])
 
@@ -77,8 +82,11 @@
   (let [{:keys [snipe-field next-snipe-field mushroom-field]} popenv
         snipes (.elements snipe-field)]
     (doseq [snipe snipes]
-      ;; TODO
-      )
+      ;; TODO if unseen mushroom, decide whether to eat, else move:
+      (.getHexagonalLocations (:x snipe) (:y snipe) Grid2D/TOROIDAL false x-pos y-pos) ; inserts coords of neighbors into x-pos and y-pos
+      (let [coords-seq (map vector x-pos y-pos)]
+      ;; TODO now what?
+      ))
   ;; snipes move and/or eat
     ; for each filled patch in snipe-field
     ; if unseen mushroom, decide whether to eat
