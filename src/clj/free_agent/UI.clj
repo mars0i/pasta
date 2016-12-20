@@ -3,10 +3,13 @@
 ;;; specified in the file LICENSE.
 
 (ns free-agent.UI
-  (:require [free-agent.SimConfig :as cfg])
+  (:require [free-agent.SimConfig :as cfg]
+            [clojure.math.numeric-tower :as math])
   (:import [free-agent mushroom snipe SimConfig]
            [sim.engine Steppable Schedule]
-           [sim.portrayal.grid ObjectGridPortrayal2D]
+           ;[sim.portrayal.grid ObjectGridPortrayal2D]
+           [sim.portrayal.grid HexaObjectGridPortrayal2D]
+           ;[sim.portrayal.grid FastHexaObjectGridPortrayal2D]
            [sim.portrayal.simple OvalPortrayal2D OrientedPortrayal2D]
            [sim.display Console Display2D]
            [java.awt Color])
@@ -23,8 +26,8 @@
   [& args]
   [(vec args) {:display (atom nil)       ; will be replaced in init because we need to pass the UI instance to it
                :display-frame (atom nil) ; will be replaced in init because we need to pass the display to it
-               :snipe-field-portrayal (ObjectGridPortrayal2D.)
-               :mushroom-field-portrayal (ObjectGridPortrayal2D.)}])
+               :snipe-field-portrayal (HexaObjectGridPortrayal2D.)
+               :mushroom-field-portrayal (HexaObjectGridPortrayal2D.)}])
 
 ;; see doc/getName.md
 (defn -getName-void [this] "free-agent") ; override method in super. Should cause this string to be displayed as title of config window of gui, but it doesn't.
@@ -77,7 +80,7 @@
     (.setField mushroom-field-portrayal mushroom-field)
     (.setField snipe-field-portrayal snipe-field)
     ;(.setGridLines snipe-field-portrayal true) ; not lines separating cells, but a rep of the coordinate system
-    (.setBorder snipe-field-portrayal true) ;(.setBorder mushroom-field-portrayal true)
+    ;(.setBorder snipe-field-portrayal true) ;(.setBorder mushroom-field-portrayal true)
     ;; TODO make size depend on underlying size:
     ; **NOTE** UNDERSCORES NOT HYPHENS IN CLASSNAMES HERE:
     (.setPortrayalForClass mushroom-field-portrayal free_agent.mushroom.Mushroom (OvalPortrayal2D. (Color. 150 150 150) 4.0))
@@ -89,12 +92,24 @@
       (.setBackdrop (Color. 0 0 0))
       (.repaint))))
 
+
+;; For hex grid, need to rescale display (based on HexaBugsWithUI.java around line 200 in Mason 19):
+(defn hex-scale-height [height] (int (+ 0.5 height)))
+(defn hex-scale-width [width] 
+  (int (* (/ 2.0 (math/sqrt 3)) 
+          (+ 1 (* (- width 1)
+                  (/ 3.0 4.0))))))
+
 (defn -init
   [this controller] ; fyi controller is called c in Java version
   (.superInit this controller)
   (let [sim-config (.getState this)
         cfg-data @(.simConfigData sim-config) ; just for world dimensions
-        display (Display2D. (:world-width cfg-data) (:world-height cfg-data) this)
+        width (:world-width cfg-data)
+        height (:world-height cfg-data)
+        width (hex-scale-width width)    ; for hexagonal grid
+        height (hex-scale-height height) ; for hexagonal grid
+        display (Display2D. width height this)
         display-frame (.createFrame display)]
     (set-display! this display)
     (doto display
