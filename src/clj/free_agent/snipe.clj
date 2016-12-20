@@ -14,15 +14,17 @@
 ;; The real difference between k- and r-snipes is in how levels is implemented,
 ;; but it will be useful to have two different wrapper classes to make it easier to
 ;; observe differences.
-(defrecord KSnipe [id levels energy]) ; levels is a sequence of free-agent.Levels
-(defrecord RSnipe [id levels energy]) ; levels is a sequence of free-agent.Levels
+(defrecord KSnipe [id levels energy x y]) ; levels is a sequence of free-agent.Levels
+(defrecord RSnipe [id levels energy x y]) ; levels is a sequence of free-agent.Levels
 
-(defn make-k-snipe [energy prior]
+(defn make-k-snipe [energy prior x y]
   (KSnipe. (next-id)
            nil ;; TODO construct levels here using prior
-           energy))
+           energy
+           x y))
 
-(defn make-r-snipe [energy prior-0 prior-1]
+(defn make-r-snipe [energy prior-0 prior-1 x y]
   (RSnipe. (next-id)
            nil ;; TODO construct levels here using prior (one of two values, randomly)
-           energy))
+           energy
+           x y))

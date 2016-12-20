@@ -17,12 +17,15 @@
 
 
 (defn add-snipe
-  [rng field width height snipe]
+  "Create and add a snipe to field using snipe-maker, which expects x and y
+  coordinates as arguments.  May be inefficient if there are the number of
+  snipes is a large proportion of the number of cells in the snipe field."
+  [rng field width height snipe-maker]
   (loop []
     (let [x (ran/rand-idx rng width)
           y (ran/rand-idx rng height)]
       (if-not (.get field x y) ; don't clobber another snipe; empty slots contain Java nulls, i.e. Clojure nils
-        (.set field x y snipe)
+        (.set field x y (snipe-maker x y))
         (recur)))))
 
 (defn add-k-snipes
@@ -30,14 +33,14 @@
   (let [{:keys [world-width world-height initial-energy k-snipe-prior num-k-snipes]} cfg-data]
     (dotimes [_ (:num-k-snipes cfg-data)] ; don't use lazy method--it may never be executed
       (add-snipe rng field world-width world-height 
-                 (sn/make-k-snipe initial-energy k-snipe-prior)))))
+                 (fn [x y] (sn/make-k-snipe initial-energy k-snipe-prior x y))))))
 
 (defn add-r-snipes
   [rng cfg-data field]
   (let [{:keys [world-width world-height initial-energy r-snipe-prior-0 r-snipe-prior-1 num-r-snipes]} cfg-data]
     (dotimes [_ num-r-snipes]
       (add-snipe rng field world-width world-height 
-                 (sn/make-r-snipe initial-energy r-snipe-prior-0 r-snipe-prior-1)))))
+                 (fn [x y] (sn/make-r-snipe initial-energy r-snipe-prior-0 r-snipe-prior-1 x y))))))
 
 (defn maybe-add-mushroom
   [rng field x y mushroom-prob mean-0 mean-1 sd]
@@ -71,7 +74,11 @@
 
 (defn next-popenv
   [popenv cfg-data] ; put popenv first so we can swap! it
-  (let [{:keys [snipe-field next-snipe-field mushroom-field]} popenv]
+  (let [{:keys [snipe-field next-snipe-field mushroom-field]} popenv
+        snipes (.elements snipe-field)]
+    (doseq [snipe snipes]
+      ;; TODO
+      )
   ;; snipes move and/or eat
     ; for each filled patch in snipe-field
     ; if unseen mushroom, decide whether to eat
