@@ -5,7 +5,7 @@
 (ns free-agent.UI
   (:require [free-agent.SimConfig :as cfg]
             [clojure.math.numeric-tower :as math])
-  (:import [free-agent mushroom snipe SimConfig]
+  (:import [free-agent mush snipe SimConfig]
            [sim.engine Steppable Schedule]
            ;[sim.portrayal.grid ObjectGridPortrayal2D]
            [sim.portrayal.grid HexaObjectGridPortrayal2D]
@@ -27,7 +27,7 @@
   [(vec args) {:display (atom nil)       ; will be replaced in init because we need to pass the UI instance to it
                :display-frame (atom nil) ; will be replaced in init because we need to pass the display to it
                :snipe-field-portrayal (HexaObjectGridPortrayal2D.)
-               :mushroom-field-portrayal (HexaObjectGridPortrayal2D.)}])
+               :mush-field-portrayal (HexaObjectGridPortrayal2D.)}])
 
 ;; see doc/getName.md
 (defn -getName-void [this] "free-agent") ; override method in super. Should cause this string to be displayed as title of config window of gui, but it doesn't.
@@ -37,7 +37,7 @@
 (defn get-display-frame [this] @(:display-frame (.uiState this)))
 (defn set-display-frame! [this newval] (reset! (:display-frame (.uiState this)) newval))
 (defn get-snipe-field-portrayal [this] (:snipe-field-portrayal (.uiState this)))
-(defn get-mushroom-field-portrayal [this] (:mushroom-field-portrayal (.uiState this)))
+(defn get-mush-field-portrayal [this] (:mush-field-portrayal (.uiState this)))
 
 ;; Override methods in sim.display.GUIState so that UI can make graphs, etc.
 (defn -getSimulationInspectedObject [this] (.state this))
@@ -73,17 +73,17 @@
         cfg-data @(.simConfigData sim-config)
         popenv (:popenv cfg-data)
         snipe-field (:snipe-field popenv)
-        mushroom-field  (:mushroom-field  popenv)
+        mush-field  (:mush-field  popenv)
         snipe-field-portrayal (get-snipe-field-portrayal this-ui)
-        mushroom-field-portrayal (get-mushroom-field-portrayal this-ui)
+        mush-field-portrayal (get-mush-field-portrayal this-ui)
         display (get-display this-ui)]
-    (.setField mushroom-field-portrayal mushroom-field)
+    (.setField mush-field-portrayal mush-field)
     (.setField snipe-field-portrayal snipe-field)
     ;(.setGridLines snipe-field-portrayal true) ; not lines separating cells, but a rep of the coordinate system
-    ;(.setBorder snipe-field-portrayal true) ;(.setBorder mushroom-field-portrayal true)
+    ;(.setBorder snipe-field-portrayal true) ;(.setBorder mush-field-portrayal true)
     ;; TODO make size depend on underlying size:
     ; **NOTE** UNDERSCORES NOT HYPHENS IN CLASSNAMES HERE:
-    (.setPortrayalForClass mushroom-field-portrayal free_agent.mushroom.Mushroom (OvalPortrayal2D. (Color. 150 150 150) 4.0))
+    (.setPortrayalForClass mush-field-portrayal free_agent.mush.Mush (OvalPortrayal2D. (Color. 150 150 150) 4.0))
     (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe (OvalPortrayal2D. (Color. 200 0 0) 3.0))
     (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe (OvalPortrayal2D. (Color. 0 0 200) 3.0))
     ;; set up display:
@@ -114,7 +114,7 @@
     (set-display! this display)
     (doto display
       (.setClipping false)
-      (.attach (get-mushroom-field-portrayal this) "mushrooms") ; The order of attaching is the order of painting.
+      (.attach (get-mush-field-portrayal this) "mushrooms") ; The order of attaching is the order of painting.
       (.attach (get-snipe-field-portrayal this) "snipes"))  ; what's attached later will appear on top of what's earlier. 
     (set-display-frame! this display-frame)
     (.registerFrame controller display-frame)

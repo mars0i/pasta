@@ -26,10 +26,10 @@
                       [r-snipe-prior-1   20.0   double [1.0 50.0] ["-r" "One of two possible priors for r-snipes" :parse-fn #(Double. %)]]
                       [num-k-snipes     200     long   [1 500]    ["-N" "Size of k-snipe subpopulation" :parse-fn #(Long. %)]]
                       [num-r-snipes     200     long   [1 500]    ["-o" "Size of r-snipe subpopulation" :parse-fn #(Long. %)]]
-                      [mushroom-prob      0.005 double [0.0 1.0]  ["-p" "Probability that a mushroom will appear on a given patch." :parse-fn #(Double. %)]]
-                      [mushroom-mean-0    4.0   double true       ["-m" "Mean of mushroom light distribution" :parse-fn #(Double. %)]]
-                      [mushroom-mean-1   16.0   double true       ["-n" "Mean of mushroom light distribution" :parse-fn #(Double. %)]]
-                      [mushroom-sd        2.0   double true       ["-s" "Standard deviation of mushroom light distribution" :parse-fn #(Double. %)]]
+                      [mush-prob      0.005 double [0.0 1.0]  ["-p" "Probability that a mushroom will appear on a given patch." :parse-fn #(Double. %)]]
+                      [mush-mean-0    4.0   double true       ["-m" "Mean of mushroom light distribution" :parse-fn #(Double. %)]]
+                      [mush-mean-1   16.0   double true       ["-n" "Mean of mushroom light distribution" :parse-fn #(Double. %)]]
+                      [mush-sd        2.0   double true       ["-s" "Standard deviation of mushroom light distribution" :parse-fn #(Double. %)]]
                       [world-width      500     double false      ["-w" "How wide is world?  Should be an even number (for hexagonal wrapping)." :parse-fn #(Long. %)]] ; can be set from command line but not in running app
                       [world-height     250     double false      ["-h" "How tall is world? Should be an even number (for hexagonal wrapping)." :parse-fn #(Long. %)]] ; ditto
                       [popenv            nil    free-agent.popenv.PopEnv false]])
