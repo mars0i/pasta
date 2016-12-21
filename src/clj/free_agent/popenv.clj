@@ -1,6 +1,5 @@
 (ns free-agent.popenv
-  (:require [clojure.algo.generic.functor :as gf]
-            [free-agent.snipe :as sn]
+  (:require [free-agent.snipe :as sn]
             [free-agent.mushroom :as mu]
             [utils.random :as ran])
   (:import [sim.field.grid Grid2D ObjectGrid2D]
