@@ -97,13 +97,13 @@
   [popenv rng cfg-data] ; put popenv first so we can swap! it
   (let [{:keys [snipe-field next-snipe-field mushroom-field]} popenv
         snipes (.elements snipe-field)
-        next-locs (for [snipe snipes  ; make seq of snipes with intended next locations filled in
+        next-loc-maps (for [snipe snipes  ; make seq of snipes with intended next locations filled in
                         :let [next-loc (choose-next-loc rng snipe-field snipe)]
                         :when next-loc] ; nil if no place to move
-                    next-loc)]
-    ;; now check whether any snipes are trying to move to the same spot
+                    next-loc)
+        next-locs-map (apply merge-width #() ; TODO ;; check whether any snipes are trying to move to the same spot
+                        next-loc-maps)]
     ;; then move 'em
-
 
 
   ;; snipes move and/or eat
