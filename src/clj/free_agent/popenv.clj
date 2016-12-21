@@ -79,27 +79,29 @@
 
 (defn choose-next-loc
   "Return a pair of field coordinates randomly selected from the empty 
-  hexagonally neighboring locations of snipe's location, or nil all
-  locations are filled."
+  hexagonally neighboring locations of snipe's location, or the current
+  location if all neighboring locations are filled."
   [rng snipe-field snipe]
-  (.getHexagonalLocations snipe-field              ; inserts coords of neighbors into x-pos and y-pos args
-                          (:x snipe) (:y snipe)    ; neighbors of this loc
-                          1 Grid2D/TOROIDAL false  ; immediate neighbors, toroidally, don't include me
-                          x-coord-bag y-coord-bag) ; will hold coords of neighbors
-  (let [candidate-locs (for [[x y] (map vector (.toIntegerArray x-coord-bag)  ; x-pos, y-pos have to be IntBags
-                                               (.toIntegerArray y-coord-bag)) ; but these are not ISeqs like Java arrays
-                             :when (not (.get snipe-field x y))] ; when cell is empty
-                         [x y])]
-    (when (seq candidate-locs) ; when not empty
-      (let [len (count candidate-locs)
-            idx (ran/rand-idx rng len)
-            [next-x next-y] (nth candidate-locs idx)]
-        {[next-x next-y] [snipe]})))) ; key is a pair of coords; val is a single-element vector containing a snipe
+  (let [curr-x (:x snipe)
+        curr-y (:y snipe)]
+    (.getHexagonalLocations snipe-field              ; inserts coords of neighbors into x-pos and y-pos args
+                            curr-x curr-y
+                            1 Grid2D/TOROIDAL false  ; immediate neighbors, toroidally, don't include me
+                            x-coord-bag y-coord-bag) ; will hold coords of neighbors
+    (let [candidate-locs (for [[x y] (map vector (.toIntegerArray x-coord-bag)  ; x-pos, y-pos have to be IntBags
+                                          (.toIntegerArray y-coord-bag)) ; but these are not ISeqs like Java arrays
+                               :when (not (.get snipe-field x y))] ; when cell is empty
+                           [x y])]
+      (if (seq candidate-locs) ; when not empty
+        (let [len (count candidate-locs)
+              idx (ran/rand-idx rng len)
+              [next-x next-y] (nth candidate-locs idx)]
+          {[next-x next-y] [snipe]}) ; key is a pair of coords; val is a single-element vector containing a snipe
+        {[curr-x curr-y] [snipe]}))))
 
 (defn sample-one
   "Given a non-empty collection, returns a single randomly-chosen element."
   [rng xs]
-  ;(println (class xs) xs) ; DEBUG
   (let [len (count xs)]
     (if (= len 1)
       (nth xs 0)
@@ -120,7 +122,7 @@
                                  :when next-loc] ; nil if no place to move
                              next-loc)
         loc-snipe-vec-map (apply merge-with concat loc-snipe-vec-maps) ; convert sec of maps to a single map where snipe-vecs with same loc are concatenated
-        ;_ (pprint loc-snipe-vec-map) ; DEBUG
+        ;; FIXME Bug: the losers disappear, rather than remaining in place:
         loc-snipe-map (gf/fmap (partial sample-one rng) loc-snipe-vec-map)] ; create map from locs to snipes randomly chosen from snipe-vecs
     ;; TODO also need to update mushroom-field with ne mushrooms, maybe destroy those eatent
     ;; TODO ? For now, update snipe-field Mason-style, i.e. modifying the same field every time:
