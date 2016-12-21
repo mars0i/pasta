@@ -6,6 +6,7 @@
   (:import [sim.field.grid Grid2D ObjectGrid2D]
            [sim.util IntBag]))
 
+;(use '[clojure.pprint]) ; DEBUG
 
 (defrecord PopEnv [snipe-field mushroom-field])
 
@@ -73,17 +74,20 @@
     (PopEnv. snipe-field mushroom-field)))
 
 ;; reusable bags
-(def x-pos (IntBag. 6))
-(def y-pos (IntBag. 6))
+(def x-coord-bag (IntBag. 6))
+(def y-coord-bag (IntBag. 6))
 
 (defn choose-next-loc
   "Return a pair of field coordinates randomly selected from the empty 
   hexagonally neighboring locations of snipe's location, or nil all
   locations are filled."
   [rng snipe-field snipe]
-  (.getHexagonalLocations (:x snipe) (:y snipe) Grid2D/TOROIDAL false x-pos y-pos) ; inserts coords of neighbors into x-pos and y-pos from above
-  (let [candidate-locs (for [[x y] (map vector (.toIntegerArray x-pos)  ; x-pos, y-pos have to be IntBags
-                                               (.toIntegerArray y-pos)) ; but these are not ISeqs like Java arrays
+  (.getHexagonalLocations snipe-field              ; inserts coords of neighbors into x-pos and y-pos args
+                          (:x snipe) (:y snipe)    ; neighbors of this loc
+                          1 Grid2D/TOROIDAL false  ; immediate neighbors, toroidally, don't include me
+                          x-coord-bag y-coord-bag) ; will hold coords of neighbors
+  (let [candidate-locs (for [[x y] (map vector (.toIntegerArray x-coord-bag)  ; x-pos, y-pos have to be IntBags
+                                               (.toIntegerArray y-coord-bag)) ; but these are not ISeqs like Java arrays
                              :when (not (.get snipe-field x y))] ; when cell is empty
                          [x y])]
     (when (seq candidate-locs) ; when not empty
@@ -95,26 +99,33 @@
 (defn sample-one
   "Given a non-empty collection, returns a single randomly-chosen element."
   [rng xs]
+  ;(println (class xs) xs) ; DEBUG
   (let [len (count xs)]
     (if (= len 1)
       (nth xs 0)
       (nth xs 
            (ran/rand-idx rng (count xs))))))
 
+(defn move-snipe
+  [snipe-field x y snipe]
+  (.set snipe-field x y (assoc snipe :x x :y y)))
+
+
 (defn next-popenv
   [popenv rng cfg-data] ; put popenv first so we can swap! it
   (let [{:keys [snipe-field mushroom-field]} popenv
         snipes (.elements snipe-field)
         loc-snipe-vec-maps (for [snipe snipes  ; make seq of snipes with intended next locations filled in
-                        :let [next-loc (choose-next-loc rng snipe-field snipe)]
-                        :when next-loc] ; nil if no place to move
-                    next-loc)
-        loc-snipe-vec-map (merge-with concat loc-snipe-vec-maps) ; convert sec of maps to a single map where snipe-vecs with same loc are concatenated
+                                 :let [next-loc (choose-next-loc rng snipe-field snipe)]
+                                 :when next-loc] ; nil if no place to move
+                             next-loc)
+        loc-snipe-vec-map (apply merge-with concat loc-snipe-vec-maps) ; convert sec of maps to a single map where snipe-vecs with same loc are concatenated
+        ;_ (pprint loc-snipe-vec-map) ; DEBUG
         loc-snipe-map (gf/fmap (partial sample-one rng) loc-snipe-vec-map)] ; create map from locs to snipes randomly chosen from snipe-vecs
     ;; TODO also need to update mushroom-field with ne mushrooms, maybe destroy those eatent
-    ;; For now, update snipe-field Mason-style, i.e. modifying the same field every time:
+    ;; TODO ? For now, update snipe-field Mason-style, i.e. modifying the same field every time:
     (.clear snipe-field)
-    (doseq [[[x y] snipe] loc-snipe-map]
-      (.set snipe-field x y snipe))
+    (doseq [[[x y] snipe] loc-snipe-map] ; will convert the map into a sequence of mapentries, which are seqs
+      (move-snipe snipe-field x y snipe))
     ;; Since we destructively modified snipe-field, we don't have to assoc it in to a new popenv (oh...)
     popenv))
