@@ -79,9 +79,9 @@
         display (get-display this-ui)]
     (.setField mushroom-field-portrayal mushroom-field)
     (.setField snipe-field-portrayal snipe-field)
-    ;(.setGridLines snipe-field-portrayal true) ; not lines separating cells, but a rep of the coordinate system
+    (.setGridLines snipe-field-portrayal true) ; not lines separating cells, but a rep of the coordinate system
     (.setBorder snipe-field-portrayal true)
-    (.setBorder mushroom-field-portrayal true)
+    ;(.setBorder mushroom-field-portrayal true)
     ;; TODO make size depend on underlying size:
     ; **NOTE** UNDERSCORES NOT HYPHENS IN CLASSNAMES HERE:
     (.setPortrayalForClass mushroom-field-portrayal free_agent.mushroom.Mushroom (OvalPortrayal2D. (Color. 150 150 150) 4.0))
@@ -116,7 +116,7 @@
     (doto display
       (.setClipping false)
       (.attach (get-mushroom-field-portrayal this) "mushrooms") ; The order of attaching is the order of painting.
-      (.attach (get-snipe-field-portrayal this) "snipes"))  ; what's attached later will appear on top of what's earlier. 
+      (.attach (get-snipe-field-portrayal this) "snipes" -50.0 -50.0 true))  ; what's attached later will appear on top of what's earlier. 
     (set-display-frame! this display-frame)
     (.registerFrame controller display-frame)
     (doto display-frame 
