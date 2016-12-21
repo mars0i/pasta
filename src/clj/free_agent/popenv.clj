@@ -6,10 +6,6 @@
            [sim.util IntBag]))
 
 
-;; For use by getHexagonalLocations
-(def x-pos (IntBag. 6))
-(def y-pos (IntBag. 6))
-
 (defrecord PopEnv [snipe-field next-snipe-field mushroom-field])
 
 (defn make-popenv
@@ -77,16 +73,39 @@
     (add-r-snipes rng cfg-data snipe-field)
     (PopEnv. snipe-field next-snipe-field mushroom-field)))
 
+;; reusable bags
+(def x-pos (IntBag. 6))
+(def y-pos (IntBag. 6))
+
+(defn choose-next-loc
+  "Return a pair of field coordinates randomly selected from the empty 
+  hexagonally neighboring locations of snipe's location, or nil all
+  locations are filled."
+  [rng snipe-field snipe]
+  (.getHexagonalLocations (:x snipe) (:y snipe) Grid2D/TOROIDAL false x-pos y-pos) ; inserts coords of neighbors into x-pos and y-pos from above
+  (let [candidate-locs (for [[x y] (map vector (.toIntegerArray x-pos)  ; x-pos, y-pos have to be IntBags
+                                               (.toIntegerArray y-pos)) ; but these are not ISeqs like Java arrays
+                             :when (not (.get snipe-field x y))] ; when cell is empty
+                         [x y])]
+    (when (seq candidate-locs) ; when not empty
+      (let [len (count candidate-locs)
+            idx (ran/rand-idx rng len)
+            [next-x next-y] (nth candidate-locs idx)]
+        {[next-x next-y] snipe}))))
+
 (defn next-popenv
-  [popenv cfg-data] ; put popenv first so we can swap! it
+  [popenv rng cfg-data] ; put popenv first so we can swap! it
   (let [{:keys [snipe-field next-snipe-field mushroom-field]} popenv
-        snipes (.elements snipe-field)]
-    (doseq [snipe snipes]
-      ;; TODO if unseen mushroom, decide whether to eat, else move:
-      (.getHexagonalLocations (:x snipe) (:y snipe) Grid2D/TOROIDAL false x-pos y-pos) ; inserts coords of neighbors into x-pos and y-pos
-      (let [coords-seq (map vector x-pos y-pos)]
-      ;; TODO now what?
-      ))
+        snipes (.elements snipe-field)
+        next-locs (for [snipe snipes  ; make seq of snipes with intended next locations filled in
+                        :let [next-loc (choose-next-loc rng snipe-field snipe)]
+                        :when next-loc] ; nil if no place to move
+                    next-loc)]
+    ;; now check whether any snipes are trying to move to the same spot
+    ;; then move 'em
+
+
+
   ;; snipes move and/or eat
     ; for each filled patch in snipe-field
     ; if unseen mushroom, decide whether to eat
