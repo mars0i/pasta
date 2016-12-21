@@ -19,3 +19,5 @@ pom.xml.asc
 .*.swp
 doc/classdocs.html
 doc/manual.pdf
+gui
+nogui
