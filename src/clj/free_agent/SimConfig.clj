@@ -71,4 +71,4 @@
                         (reify Steppable 
                           (step [this sim-state]
                             (let [^SimConfig state sim-state]
-                              (swap! cfg-data$ update-in [:popenv] pe/next-popenv @cfg-data$))))))) ; i.e. call next-popenv with old popenv and cfg-data, and replace popenv in cfg-data
+                              (swap! cfg-data$ update-in [:popenv] pe/next-popenv rng @cfg-data$))))))) ; i.e. call next-popenv with old popenv and cfg-data, and replace popenv in cfg-data
