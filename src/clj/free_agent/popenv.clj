@@ -1,20 +1,20 @@
 (ns free-agent.popenv
-  (:require [free-agent.snipe :as sn]
+  (:require [clojure.algo.generic.functor :as gf]
+            [free-agent.snipe :as sn]
             [free-agent.mushroom :as mu]
             [utils.random :as ran])
   (:import [sim.field.grid Grid2D ObjectGrid2D]
            [sim.util IntBag]))
 
 
-(defrecord PopEnv [snipe-field next-snipe-field mushroom-field])
+(defrecord PopEnv [snipe-field mushroom-field])
 
 (defn make-popenv
   [rng cfg-data]
   (let [{:keys [world-width world-height]} cfg-data
         snipe-field    (ObjectGrid2D. world-width world-height)    ; eventually make two of each (for two sides of the mountain)
-        next-snipe-field  (ObjectGrid2D. world-width world-height) ; two of these, too
         mushroom-field (ObjectGrid2D. world-width world-height)]   ; also this one
-    (PopEnv. snipe-field next-snipe-field mushroom-field)))
+    (PopEnv. snipe-field mushroom-field)))
 
 
 (defn add-snipe
@@ -64,14 +64,13 @@
   [rng cfg-data popenv]
   (let [{:keys [world-width world-height]} cfg-data
         mushroom-field (:mushroom-field popenv)
-        snipe-field    (:snipe-field popenv)
-        next-snipe-field (:next-snipe-field popenv)] ; passed through unchanged for now
+        snipe-field    (:snipe-field popenv)]
     (.clear mushroom-field)
     (add-mushrooms rng cfg-data mushroom-field)
     (.clear snipe-field)
     (add-k-snipes rng cfg-data snipe-field)
     (add-r-snipes rng cfg-data snipe-field)
-    (PopEnv. snipe-field next-snipe-field mushroom-field)))
+    (PopEnv. snipe-field mushroom-field)))
 
 ;; reusable bags
 (def x-pos (IntBag. 6))
@@ -91,39 +90,31 @@
       (let [len (count candidate-locs)
             idx (ran/rand-idx rng len)
             [next-x next-y] (nth candidate-locs idx)]
-        {[next-x next-y] snipe}))))
+        {[next-x next-y] [snipe]})))) ; key is a pair of coords; val is a single-element vector containing a snipe
+
+(defn sample-one
+  "Given a non-empty collection, returns a single randomly-chosen element."
+  [rng xs]
+  (let [len (count xs)]
+    (if (= len 1)
+      (nth xs 0)
+      (nth xs 
+           (ran/rand-idx rng (count xs))))))
 
 (defn next-popenv
   [popenv rng cfg-data] ; put popenv first so we can swap! it
-  (let [{:keys [snipe-field next-snipe-field mushroom-field]} popenv
+  (let [{:keys [snipe-field mushroom-field]} popenv
         snipes (.elements snipe-field)
-        next-loc-maps (for [snipe snipes  ; make seq of snipes with intended next locations filled in
+        loc-snipe-vec-maps (for [snipe snipes  ; make seq of snipes with intended next locations filled in
                         :let [next-loc (choose-next-loc rng snipe-field snipe)]
                         :when next-loc] ; nil if no place to move
                     next-loc)
-        next-locs-map (apply merge-width #() ; TODO ;; check whether any snipes are trying to move to the same spot
-                        next-loc-maps)]
-    ;; then move 'em
-
-
-  ;; snipes move and/or eat
-    ; for each filled patch in snipe-field
-    ; if unseen mushroom, decide whether to eat
-    ; else get neighbor coords and randomly pick one
-    ; add self to next-snipe-field there, or if space is already filled, add self to a set or seq there
-    ;    [would it be better to use a core.matrix or Clojure data structure?  A map or a vec of vecs?
-    ;    Or either a core.matrix or Mason sparse 2D structure?  Maybe fill a non-sparse 2D, but then
-    ;    something sparse like a map to hold the set?  Which could just be a sequence.  In any event,
-    ;    what you need is to be able to (a) find these sets efficiently, and (b) find their indexes
-    ;    efficiently.  So rather than using an index-to-object map such as a Mason 2D, so something else,
-    ;    like a separate coordinated sequence of coordinates, or a Clojure map that pairs the sets with
-    ;    pairs of coords maybe using the *former* as keys.]
-    ; then
-    ; for each set in next-snipe-field, randomly pick member and replace set with it (or something like that)
-    ; then swap next-snipe-field and snipe-field
-    ; and clear the new next-snipe-field.
-    ; also replace in portrayal in gui
-    ; hmm so maybe don't do the swap.  copy back to original instead. ?
-  ;; mushrooms spawn
-  popenv))
-
+        loc-snipe-vec-map (merge-with concat loc-snipe-vec-maps) ; convert sec of maps to a single map where snipe-vecs with same loc are concatenated
+        loc-snipe-map (gf/fmap (partial sample-one rng) loc-snipe-vec-map)] ; create map from locs to snipes randomly chosen from snipe-vecs
+    ;; TODO also need to update mushroom-field with ne mushrooms, maybe destroy those eatent
+    ;; For now, update snipe-field Mason-style, i.e. modifying the same field every time:
+    (.clear snipe-field)
+    (doseq [[[x y] snipe] loc-snipe-map]
+      (.set snipe-field x y snipe))
+    ;; Since we destructively modified snipe-field, we don't have to assoc it in to a new popenv (oh...)
+    popenv))
