@@ -17,7 +17,10 @@
                  [org.jfree/jfreechart "1.0.17"] ; for MASON
                  [org.beanshell/bsh "2.0b4"]]    ; for MASON
 
-  :resource-paths ["lib/itext-1.2.jar" "lib/jmf.jar" "lib/mason.19.jar" "lib/portfolio.jar"] :source-paths ["src/clj"]
+  :plugins [[lein-expand-resource-paths "0.0.1"]] ; allows wildcards in resource-paths (https://github.com/dchelimsky/lein-expand-resource-paths)
+  ;:resource-paths ["lib/itext-1.2.jar" "lib/jmf.jar" "lib/mason.19.jar" "lib/portfolio.jar"]
+  :resource-paths ["lib/*"]
+  :source-paths ["src/clj"]
   ;:main free-agent.SimConfig
   :aot [free-agent.snipe free-agent.mushroom free-agent.SimConfig free-agent.UI]
   :profiles {:nogui {:main free-agent.SimConfig} ; execute this with 'lein with-profile nogui run'
