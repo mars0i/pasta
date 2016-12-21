@@ -1,6 +1,5 @@
 (ns free-agent.popenv
-  (:require [clojure.algo.generic.functor :as gf]
-            [free-agent.snipe :as sn]
+  (:require [free-agent.snipe :as sn]
             [free-agent.mushroom :as mu]
             [utils.random :as ran])
   (:import [sim.field.grid Grid2D ObjectGrid2D]
@@ -106,7 +105,10 @@
     (if (= len 1)
       (nth xs 0)
       (nth xs 
-           (ran/rand-idx rng (count xs))))))
+           (ran/rand-idx rng len)))))
+
+;; maybe there's a more efficient way
+
 
 (defn move-snipe
   [snipe-field x y snipe]
@@ -122,8 +124,14 @@
                                  :when next-loc] ; nil if no place to move
                              next-loc)
         loc-snipe-vec-map (apply merge-with concat loc-snipe-vec-maps) ; convert sec of maps to a single map where snipe-vecs with same loc are concatenated
-        ;; FIXME Bug: the losers disappear, rather than remaining in place:
-        loc-snipe-map (gf/fmap (partial sample-one rng) loc-snipe-vec-map)] ; create map from locs to snipes randomly chosen from snipe-vecs
+        loc-snipe-map (into {}                                       ; collect several maps into one
+                            (for [[coords snipes] loc-snipe-vec-map] ; go through key-value pairs, where values are collections containing one or more snipes
+                              (let [len (count snipes)]              ; convert to key-value pairs where value is a snipe
+                                (if (= len 1)
+                                  [coords (first snipes)]                          ; when more than one
+                                  (let [mover (nth snipes (ran/rand-idx rng len))] ; randomly select one to move
+                                    (into {coords mover} (map (fn [snipe] {[(:x snipe) (:y snipe)] snipe}) ; and make key-value pairs for others to "move" to where they are
+                                                              (remove #(= mover %) snipes))))))))]         ; (could be more efficient to leave them alone)
     ;; TODO also need to update mushroom-field with ne mushrooms, maybe destroy those eatent
     ;; TODO ? For now, update snipe-field Mason-style, i.e. modifying the same field every time:
     (.clear snipe-field)
