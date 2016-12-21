@@ -84,8 +84,8 @@
     ;; TODO make size depend on underlying size:
     ; **NOTE** UNDERSCORES NOT HYPHENS IN CLASSNAMES HERE:
     (.setPortrayalForClass mushroom-field-portrayal free_agent.mushroom.Mushroom (OvalPortrayal2D. (Color. 150 150 150) 4.0))
-    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe (OvalPortrayal2D. (Color. 200 0 0) 2.5))
-    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe (OvalPortrayal2D. (Color. 0 0 200) 2.5))
+    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe (OvalPortrayal2D. (Color. 200 0 0) 3.0))
+    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe (OvalPortrayal2D. (Color. 0 0 200) 3.0))
     ;; set up display:
     (doto display
       (.reset )
