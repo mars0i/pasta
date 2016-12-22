@@ -115,10 +115,10 @@
   [this controller] ; fyi controller is called c in Java version
   (.superInit this controller)
   (let [sim-config (.getState this)
-        cfg-data @(.simConfigData sim-config) ; just for world dimensions
-        display-size (:world-display-size cfg-data)
-        width (int (* display-size (:world-width cfg-data)))
-        height (int (* display-size (:world-height cfg-data)))
+        cfg-data @(.simConfigData sim-config) ; just for env dimensions
+        display-size (:env-display-size cfg-data)
+        width (int (* display-size (:env-width cfg-data)))
+        height (int (* display-size (:env-height cfg-data)))
         width (hex-scale-width width)    ; for hexagonal grid
         height (hex-scale-height height) ; for hexagonal grid
         display (Display2D. width height this)

@@ -11,9 +11,9 @@
 
 (defn make-popenv
   [rng cfg-data]
-  (let [{:keys [world-width world-height]} cfg-data
-        snipe-field    (ObjectGrid2D. world-width world-height)    ; eventually make two of each (for two sides of the mountain)
-        mush-field (ObjectGrid2D. world-width world-height)]   ; also this one
+  (let [{:keys [env-width env-height]} cfg-data
+        snipe-field    (ObjectGrid2D. env-width env-height)    ; eventually make two of each (for two sides of the mountain)
+        mush-field (ObjectGrid2D. env-width env-height)]   ; also this one
     (PopEnv. snipe-field mush-field)))
 
 
@@ -31,38 +31,45 @@
 
 (defn add-k-snipes
   [rng cfg-data field]
-  (let [{:keys [world-width world-height initial-energy k-snipe-prior num-k-snipes]} cfg-data]
+  (let [{:keys [env-width env-height initial-energy k-snipe-prior num-k-snipes]} cfg-data]
     (dotimes [_ (:num-k-snipes cfg-data)] ; don't use lazy method--it may never be executed
-      (add-snipe rng field world-width world-height 
+      (add-snipe rng field env-width env-height 
                  (fn [x y] (sn/make-k-snipe initial-energy k-snipe-prior x y))))))
 
 (defn add-r-snipes
   [rng cfg-data field]
-  (let [{:keys [world-width world-height initial-energy r-snipe-low-prior r-snipe-high-prior num-r-snipes]} cfg-data]
+  (let [{:keys [env-width env-height initial-energy r-snipe-low-prior r-snipe-high-prior num-r-snipes]} cfg-data]
     (dotimes [_ num-r-snipes]
-      (add-snipe rng field world-width world-height 
+      (add-snipe rng field env-width env-height 
                  (fn [x y] (sn/make-r-snipe initial-energy r-snipe-low-prior r-snipe-high-prior x y))))))
 
 (defn maybe-add-mush
-  [rng field x y mush-prob low-mean high-mean sd]
-  (when (< (ran/next-double rng) mush-prob)
-    (.set field x y (mu/make-mush rng 
-                                      (if (< (ran/next-double rng) 0.5) low-mean high-mean)
-                                      sd))))
+  [rng field x y cfg-data]
+  (when (< (ran/next-double rng) (:mush-prob cfg-data)) ; flip biased coin to decide whether to grow a mushroom
+    (let [{:keys [env-center mush-low-mean mush-high-mean 
+                  mush-sd mush-pos-nutrition mush-neg-nutrition]} cfg-data
+          [low-mean-nutrition high-mean-nutrition] (if (< x env-center) ; subenv determines whether low vs high reflectance
+                                                     [mush-pos-nutrition mush-neg-nutrition]   ; paired with
+                                                     [mush-neg-nutrition mush-pos-nutrition])] ; nutritious vs poison
+      (.set field x y 
+            (if (< (ran/next-double rng) 0.5) ; half the mushrooms are of each kind in each subenv, on average
+              (mu/make-mush mush-low-mean  mush-sd low-mean-nutrition)
+              (mu/make-mush mush-high-mean mush-sd high-mean-nutrition))))))
 
 (defn add-mushs
   "For each patch in mush-field, optionally add a new mushroom, with 
   probability (:mush-prob cfg-data)."
   [rng cfg-data field]
-  (let [{:keys [world-width world-height mush-prob mush-low-mean mush-high-mean mush-sd]} cfg-data]
-    (doseq [x (range world-width)
-            y (range world-height)]
-      (maybe-add-mush rng field x y mush-prob
-                          mush-low-mean mush-high-mean mush-sd))))
+  (let [{:keys [env-width env-height mush-prob
+                mush-low-mean mush-high-mean mush-sd 
+                mush-pos-nutrition mush-neg-nutrition]} cfg-data]
+    (doseq [x (range env-width)
+            y (range env-height)]
+      (maybe-add-mush rng field x y cfg-data))))
 
 (defn populate
   [rng cfg-data popenv]
-  (let [{:keys [world-width world-height]} cfg-data
+  (let [{:keys [env-width env-height]} cfg-data
         mush-field (:mush-field popenv)
         snipe-field    (:snipe-field popenv)]
     (.clear mush-field)
