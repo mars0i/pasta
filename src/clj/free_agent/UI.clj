@@ -85,7 +85,7 @@
     (.setPortrayalForClass mush-field-portrayal free_agent.mush.Mush (OvalPortrayal2D. (Color. 150 150 150) 1.0))
     (.setPortrayalForNull  mush-field-portrayal (OvalPortrayal2D. (Color. 50 50 50) 1.0)) ; background circle displayed in cells without mushroom
     (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe (OvalPortrayal2D. (Color. 200 0 0) 0.5))
-    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe (OvalPortrayal2D. (Color. 0 0 200) 0.5))
+    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe (OvalPortrayal2D. (Color. 0 0 230) 0.5))
     ;; set up display:
     (doto display
       (.reset )
