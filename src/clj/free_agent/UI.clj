@@ -82,10 +82,10 @@
     ;(.setGridLines snipe-field-portrayal true) ; not lines separating cells, but a rep of the coordinate system
     ;(.setBorder snipe-field-portrayal true) ;(.setBorder mush-field-portrayal true)
     ; **NOTE** UNDERSCORES NOT HYPHENS IN CLASSNAMES HERE:
-    (.setPortrayalForClass mush-field-portrayal free_agent.mush.Mush (OvalPortrayal2D. (Color. 150 150 150) 1.0))
-    (.setPortrayalForNull  mush-field-portrayal (OvalPortrayal2D. (Color. 120 80 80) 1.0)) ; background circle displayed in mushroom-less patches
-    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe (OvalPortrayal2D. (Color. 200 0 0) 0.5))
-    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe (OvalPortrayal2D. (Color. 0 0 230) 0.5))
+    (.setPortrayalForClass mush-field-portrayal free_agent.mush.Mush (OvalPortrayal2D. (Color. 180 180 180) 1.0))
+    (.setPortrayalForNull  mush-field-portrayal (OvalPortrayal2D. (Color. 190 125 125) 1.0)) ; background circle displayed in mushroom-less patches
+    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe (OvalPortrayal2D. (Color. 240 0 0) 0.5))
+    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe (OvalPortrayal2D. (Color. 0 0 250) 0.5))
     ;; set up display:
     (doto display
       (.reset )
