@@ -20,19 +20,20 @@
 (def commandline (atom nil)) ; Needed by defsimconfig and other code below if we're defining commandline options
 
 ;;                 field name   initial value  type  in ui? with range?
-(defcfg/defsimconfig [[initial-energy   10.0   double [0.0 20.0] ["-e" "Initial energy for each snipe" :parse-fn #(Double. %)]]
-                      [k-snipe-prior    10.0   double [1.0 50.0] ["-k" "Prior for k-snipes" :parse-fn #(Double. %)]]
-                      [r-snipe-prior-0   5.0   double [1.0 50.0] ["-q" "One of two possible priors for r-snipes" :parse-fn #(Double. %)]]
-                      [r-snipe-prior-1  20.0   double [1.0 50.0] ["-r" "One of two possible priors for r-snipes" :parse-fn #(Double. %)]]
-                      [num-k-snipes    200     long   [1 500]    ["-N" "Size of k-snipe subpopulation" :parse-fn #(Long. %)]]
-                      [num-r-snipes    200     long   [1 500]    ["-o" "Size of r-snipe subpopulation" :parse-fn #(Long. %)]]
-                      [mush-prob         0.1   double [0.0 1.0]  ["-p" "Probability that a mushroom will appear on a given patch." :parse-fn #(Double. %)]]
-                      [mush-mean-0       4.0   double true       ["-m" "Mean of mushroom light distribution" :parse-fn #(Double. %)]]
-                      [mush-mean-1      16.0   double true       ["-n" "Mean of mushroom light distribution" :parse-fn #(Double. %)]]
-                      [mush-sd           2.0   double true       ["-s" "Standard deviation of mushroom light distribution" :parse-fn #(Double. %)]]
-                      [world-width      50     double false      ["-w" "How wide is world?  Should be an even number (for hexagonal wrapping)." :parse-fn #(Long. %)]] ; can be set from command line but not in running app
-                      [world-height     25     double false      ["-h" "How tall is world? Should be an even number (for hexagonal wrapping)." :parse-fn #(Long. %)]] ; ditto
-                      [popenv            nil    free-agent.popenv.PopEnv false]])
+(defcfg/defsimconfig [[initial-energy    10.0  double [0.0 20.0] ["-e" "Initial energy for each snipe" :parse-fn #(Double. %)]]
+                      [k-snipe-prior     10.0  double [1.0 50.0] ["-k" "Prior for k-snipes" :parse-fn #(Double. %)]]
+                      [r-snipe-prior-0    5.0  double [1.0 50.0] ["-q" "One of two possible priors for r-snipes" :parse-fn #(Double. %)]]
+                      [r-snipe-prior-1   20.0  double [1.0 50.0] ["-r" "One of two possible priors for r-snipes" :parse-fn #(Double. %)]]
+                      [num-k-snipes     200    long   [1 500]    ["-N" "Size of k-snipe subpopulation" :parse-fn #(Long. %)]]
+                      [num-r-snipes     200    long   [1 500]    ["-o" "Size of r-snipe subpopulation" :parse-fn #(Long. %)]]
+                      [mush-prob          0.1  double [0.0 1.0]  ["-p" "Probability that a mushroom will appear on a given patch." :parse-fn #(Double. %)]]
+                      [mush-mean-0        4.0  double true       ["-m" "Mean of mushroom light distribution" :parse-fn #(Double. %)]]
+                      [mush-mean-1       16.0  double true       ["-n" "Mean of mushroom light distribution" :parse-fn #(Double. %)]]
+                      [mush-sd            2.0  double true       ["-s" "Standard deviation of mushroom light distribution" :parse-fn #(Double. %)]]
+                      [world-width       80    long   false      ["-w" "How wide is world?  Should be an even number (for hexagonal wrapping)." :parse-fn #(Long. %)]] ; can be set from command line but not in running app
+                      [world-height      40    long   false      ["-h" "How tall is world? Should be an even number (for hexagonal wrapping)." :parse-fn #(Long. %)]] ; ditto
+                      [world-display-size 8.0  double false      ["-d" "How large to display the world in gui by default." :parse-fn #(Double. %)]]
+                      [popenv            nil   free-agent.popenv.PopEnv false]])
 
 ;; no good reason to put this into the defsimconfig macro since it doesn't include any
 ;; field-specific code.  Easier to redefine if left here.  Note though that commandline

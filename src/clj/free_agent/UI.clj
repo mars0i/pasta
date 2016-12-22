@@ -82,9 +82,9 @@
     ;(.setGridLines snipe-field-portrayal true) ; not lines separating cells, but a rep of the coordinate system
     ;(.setBorder snipe-field-portrayal true) ;(.setBorder mush-field-portrayal true)
     ; **NOTE** UNDERSCORES NOT HYPHENS IN CLASSNAMES HERE:
-    (.setPortrayalForClass mush-field-portrayal free_agent.mush.Mush (OvalPortrayal2D. (Color. 150 150 150) 4.0))
-    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe (OvalPortrayal2D. (Color. 200 0 0) 3.0))
-    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe (OvalPortrayal2D. (Color. 0 0 200) 3.0))
+    (.setPortrayalForClass mush-field-portrayal free_agent.mush.Mush (OvalPortrayal2D. (Color. 150 150 150) 1.0))
+    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe (OvalPortrayal2D. (Color. 200 0 0) 0.5))
+    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe (OvalPortrayal2D. (Color. 0 0 200) 0.5))
     ;; set up display:
     (doto display
       (.reset )
@@ -101,19 +101,23 @@
 
 
 ;; For hex grid, need to rescale display (based on HexaBugsWithUI.java around line 200 in Mason 19):
-(defn hex-scale-height [height] (int (+ 0.5 height)))
-(defn hex-scale-width [width] 
-  (int (* (/ 2.0 (math/sqrt 3)) 
-          (+ 1 (* (- width 1)
-                  (/ 3.0 4.0))))))
+(defn hex-scale-height
+  [height]
+  (+ 0.5 height))
+(defn hex-scale-width
+  [width] 
+  (* (/ 2.0 (math/sqrt 3)) 
+     (+ 1 (* (- width 1)
+             (/ 3.0 4.0)))))
 
 (defn -init
   [this controller] ; fyi controller is called c in Java version
   (.superInit this controller)
   (let [sim-config (.getState this)
         cfg-data @(.simConfigData sim-config) ; just for world dimensions
-        width (:world-width cfg-data)
-        height (:world-height cfg-data)
+        display-size (:world-display-size cfg-data)
+        width (int (* display-size (:world-width cfg-data)))
+        height (int (* display-size (:world-height cfg-data)))
         width (hex-scale-width width)    ; for hexagonal grid
         height (hex-scale-height height) ; for hexagonal grid
         display (Display2D. width height this)
