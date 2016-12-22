@@ -1,6 +1,5 @@
 (ns free-agent.SimConfig
   (:require [clojure.tools.cli]
-            [clojure.math.numeric-tower :as math]
             [utils.defsimconfig :as defcfg]
             [free-agent.popenv :as pe])
   (:import [sim.engine Steppable Schedule]
@@ -21,20 +20,19 @@
 (def commandline (atom nil)) ; Needed by defsimconfig and other code below if we're defining commandline options
 
 ;;                 field name   initial value  type  in ui? with range?
-(defcfg/defsimconfig [[initial-energy    10.0  double [0.0 20.0] ["-e" "Initial energy for each snipe" :parse-fn #(Double. %)]]
-                      [k-snipe-prior     10.0  double [1.0 50.0] ["-k" "Prior for k-snipes" :parse-fn #(Double. %)]]
-                      [r-snipe-prior-0    5.0  double [1.0 50.0] ["-q" "One of two possible priors for r-snipes" :parse-fn #(Double. %)]]
-                      [r-snipe-prior-1   20.0  double [1.0 50.0] ["-r" "One of two possible priors for r-snipes" :parse-fn #(Double. %)]]
-                      [num-k-snipes     200    long   [1 500]    ["-N" "Size of k-snipe subpopulation" :parse-fn #(Long. %)]]
-                      [num-r-snipes     200    long   [1 500]    ["-o" "Size of r-snipe subpopulation" :parse-fn #(Long. %)]]
-                      [global-mush-prob   0.3  double [0.0 1.0]  ["-p" "Probability that a mushroom will appear on a given patch." :parse-fn #(Double. %)]]
-                      [mush-mean-0        4.0  double true       ["-m" "Mean of mushroom light distribution" :parse-fn #(Double. %)]]
-                      [mush-mean-1       16.0  double true       ["-n" "Mean of mushroom light distribution" :parse-fn #(Double. %)]]
-                      [mush-sd            2.0  double true       ["-s" "Standard deviation of mushroom light distribution" :parse-fn #(Double. %)]]
-                      [world-width      500    double false      ["-w" "How wide is world?  Should be an even number (for hexagonal wrapping)." :parse-fn #(Long. %)]] ; can be set from command line but not in running app
-                      [world-height     250    double false      ["-h" "How tall is world? Should be an even number (for hexagonal wrapping)." :parse-fn #(Long. %)]] ; ditto
-                      [popenv            nil   free-agent.popenv.PopEnv false] ; stores current popenv
-                      [patch-mush-prob   nil   double false]]) ; stores per-patch mushroom probability, calculated from global-mushroom prob and widthXheight
+(defcfg/defsimconfig [[initial-energy    10.0   double [0.0 20.0] ["-e" "Initial energy for each snipe" :parse-fn #(Double. %)]]
+                      [k-snipe-prior     10.0   double [1.0 50.0] ["-k" "Prior for k-snipes" :parse-fn #(Double. %)]]
+                      [r-snipe-prior-0    5.0   double [1.0 50.0] ["-q" "One of two possible priors for r-snipes" :parse-fn #(Double. %)]]
+                      [r-snipe-prior-1   20.0   double [1.0 50.0] ["-r" "One of two possible priors for r-snipes" :parse-fn #(Double. %)]]
+                      [num-k-snipes     200     long   [1 500]    ["-N" "Size of k-snipe subpopulation" :parse-fn #(Long. %)]]
+                      [num-r-snipes     200     long   [1 500]    ["-o" "Size of r-snipe subpopulation" :parse-fn #(Long. %)]]
+                      [mush-prob      0.005 double [0.0 1.0]  ["-p" "Probability that a mushroom will appear on a given patch." :parse-fn #(Double. %)]]
+                      [mush-mean-0    4.0   double true       ["-m" "Mean of mushroom light distribution" :parse-fn #(Double. %)]]
+                      [mush-mean-1   16.0   double true       ["-n" "Mean of mushroom light distribution" :parse-fn #(Double. %)]]
+                      [mush-sd        2.0   double true       ["-s" "Standard deviation of mushroom light distribution" :parse-fn #(Double. %)]]
+                      [world-width      500     double false      ["-w" "How wide is world?  Should be an even number (for hexagonal wrapping)." :parse-fn #(Long. %)]] ; can be set from command line but not in running app
+                      [world-height     250     double false      ["-h" "How tall is world? Should be an even number (for hexagonal wrapping)." :parse-fn #(Long. %)]] ; ditto
+                      [popenv            nil    free-agent.popenv.PopEnv false]])
 
 ;; no good reason to put this into the defsimconfig macro since it doesn't include any
 ;; field-specific code.  Easier to redefine if left here.  Note though that commandline
@@ -52,16 +50,8 @@
 (defn -main
   [& args]
   (record-commandline-args! args) ; The SimConfig isn't available yet, so store commandline args for later access by start().
-  (sim.engine.SimState/doLoop free-agent.SimConfig (into-array String args))
+  (sim.engine.SimState/doLoop free-agent.SimConfig (into-array String args)) ;; FIXME RUNTIME EXCEPTION HERE
   (System/exit 0))
-
-(defn set-per-patch-mush-prob!
-  [cfg-data$]
-  (let [{:keys [global-mush-prob world-width world-height]} @cfg-data$]
-    (swap! cfg-data$ assoc :patch-mush-prob (- 1 (math/expt (- 1 global-mush-prob) 
-                                                            (/ 1 world-width world-height))))))
-;; i.e. patch-prob = 1 - (1-global-prob)^(1/N) since global-prob = 1 - (1 - patch-prob)^N
-
 
 (defn -start
   "Function that's called to (re)start a new simulation run."
@@ -73,8 +63,6 @@
   (let [^Schedule schedule (.schedule this)
         ^SimConfigData cfg-data$ (.simConfigData this)
         ^MersenneTwisterFast rng (.-random this)]
-    ;; initial setup routines:
-    (set-per-patch-mush-prob! cfg-data$)
     ;; create and populate initial popenv:
     (swap! cfg-data$ assoc :popenv (pe/populate rng @cfg-data$ ; it's ok to pass in cfg-data to update cfg-data; make-popenv will use the old version
                                                 (pe/make-popenv rng @cfg-data$)))

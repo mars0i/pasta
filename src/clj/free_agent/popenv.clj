@@ -16,6 +16,7 @@
         mush-field (ObjectGrid2D. world-width world-height)]   ; also this one
     (PopEnv. snipe-field mush-field)))
 
+
 (defn add-snipe
   "Create and add a snipe to field using snipe-maker, which expects x and y
   coordinates as arguments.  May be inefficient if there are the number of
@@ -43,20 +44,20 @@
                  (fn [x y] (sn/make-r-snipe initial-energy r-snipe-prior-0 r-snipe-prior-1 x y))))))
 
 (defn maybe-add-mush
-  [rng field x y patch-mush-prob mean-0 mean-1 sd]
-  (when (< (ran/next-double rng) patch-mush-prob)
+  [rng field x y mush-prob mean-0 mean-1 sd]
+  (when (< (ran/next-double rng) mush-prob)
     (.set field x y (mu/make-mush rng 
                                       (if (< (ran/next-double rng) 0.5) mean-0 mean-1)
                                       sd))))
 
 (defn add-mushs
   "For each patch in mush-field, optionally add a new mushroom, with 
-  probability (:patch-mush-prob cfg-data)."
+  probability (:mush-prob cfg-data)."
   [rng cfg-data field]
-  (let [{:keys [world-width world-height patch-mush-prob mush-mean-0 mush-mean-1 mush-sd]} cfg-data]
+  (let [{:keys [world-width world-height mush-prob mush-mean-0 mush-mean-1 mush-sd]} cfg-data]
     (doseq [x (range world-width)
             y (range world-height)]
-      (maybe-add-mush rng field x y patch-mush-prob
+      (maybe-add-mush rng field x y mush-prob
                           mush-mean-0 mush-mean-1 mush-sd))))
 
 (defn populate
