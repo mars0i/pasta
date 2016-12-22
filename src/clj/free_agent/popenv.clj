@@ -38,27 +38,27 @@
 
 (defn add-r-snipes
   [rng cfg-data field]
-  (let [{:keys [world-width world-height initial-energy r-snipe-prior-0 r-snipe-prior-1 num-r-snipes]} cfg-data]
+  (let [{:keys [world-width world-height initial-energy r-snipe-low-prior r-snipe-high-prior num-r-snipes]} cfg-data]
     (dotimes [_ num-r-snipes]
       (add-snipe rng field world-width world-height 
-                 (fn [x y] (sn/make-r-snipe initial-energy r-snipe-prior-0 r-snipe-prior-1 x y))))))
+                 (fn [x y] (sn/make-r-snipe initial-energy r-snipe-low-prior r-snipe-high-prior x y))))))
 
 (defn maybe-add-mush
-  [rng field x y mush-prob mean-0 mean-1 sd]
+  [rng field x y mush-prob low-mean high-mean sd]
   (when (< (ran/next-double rng) mush-prob)
     (.set field x y (mu/make-mush rng 
-                                      (if (< (ran/next-double rng) 0.5) mean-0 mean-1)
+                                      (if (< (ran/next-double rng) 0.5) low-mean high-mean)
                                       sd))))
 
 (defn add-mushs
   "For each patch in mush-field, optionally add a new mushroom, with 
   probability (:mush-prob cfg-data)."
   [rng cfg-data field]
-  (let [{:keys [world-width world-height mush-prob mush-mean-0 mush-mean-1 mush-sd]} cfg-data]
+  (let [{:keys [world-width world-height mush-prob mush-low-mean mush-high-mean mush-sd]} cfg-data]
     (doseq [x (range world-width)
             y (range world-height)]
       (maybe-add-mush rng field x y mush-prob
-                          mush-mean-0 mush-mean-1 mush-sd))))
+                          mush-low-mean mush-high-mean mush-sd))))
 
 (defn populate
   [rng cfg-data popenv]

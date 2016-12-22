@@ -19,12 +19,12 @@
 
 (defn make-k-snipe [energy prior x y]
   (KSnipe. (next-id)
-           nil ;; TODO construct levels here using prior
+           nil ;; TODO construct levels function here using prior
            energy
            x y))
 
-(defn make-r-snipe [energy prior-0 prior-1 x y]
+(defn make-r-snipe [energy low-prior high-prior x y]
   (RSnipe. (next-id)
-           nil ;; TODO construct levels here using prior (one of two values, randomly)
+           nil ;; TODO construct levels function here using prior (one of two values, randomly)
            energy
            x y))
