@@ -81,7 +81,6 @@
     (.setField snipe-field-portrayal snipe-field)
     ;(.setGridLines snipe-field-portrayal true) ; not lines separating cells, but a rep of the coordinate system
     ;(.setBorder snipe-field-portrayal true) ;(.setBorder mush-field-portrayal true)
-    ;; TODO make size depend on underlying size:
     ; **NOTE** UNDERSCORES NOT HYPHENS IN CLASSNAMES HERE:
     (.setPortrayalForClass mush-field-portrayal free_agent.mush.Mush (OvalPortrayal2D. (Color. 150 150 150) 4.0))
     (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe (OvalPortrayal2D. (Color. 200 0 0) 3.0))
@@ -91,6 +90,14 @@
       (.reset )
       (.setBackdrop (Color. 0 0 0))
       (.repaint))))
+
+;; This creates a subclass of OvalPortrayal with size 1.0 and random gray colors
+;(proxy [OvalPortrayal2D] [1.0]             ; note proxy auto-captures 'this'
+;  (draw [indiv graphics info]              ; override OvalPortrayal2D method
+;    (let [gray-val (ran/rand-idx rng 256)]
+;      (set! (.-paint this) (Color. gray-val gray-val gray-val))
+;      (proxy-super draw indiv graphics info))))
+
 
 
 ;; For hex grid, need to rescale display (based on HexaBugsWithUI.java around line 200 in Mason 19):
