@@ -7,10 +7,11 @@
             [clojure.math.numeric-tower :as math])
   (:import [free-agent mush snipe SimConfig]
            [sim.engine Steppable Schedule]
+           [sim.field.grid ObjectGrid2D] ; normally doesn't belong in UI: a hack to use a field portrayal to display a background pattern
            ;[sim.portrayal.grid ObjectGridPortrayal2D]
            [sim.portrayal.grid HexaObjectGridPortrayal2D]
            ;[sim.portrayal.grid FastHexaObjectGridPortrayal2D]
-           [sim.portrayal.simple OvalPortrayal2D OrientedPortrayal2D]
+           [sim.portrayal.simple OvalPortrayal2D]
            [sim.display Console Display2D]
            [java.awt Color])
   (:gen-class
@@ -19,25 +20,38 @@
     :main true
     :exposes {state {:get getState}}  ; accessor for field in superclass that will contain my SimConfig after main creates instances of this class with it.
     :exposes-methods {start superStart, quit superQuit, init superInit, getInspector superGetInspector}
-    :state uiState
+    :state getUIState
     :init init-instance-state))
+
+;; fixed display parameters:
+(def k-snipe-color (Color. 240 0 0))
+(def r-snipe-color (Color. 0 0 250))
+(def snipe-size 0.45)
+(def bg-pattern-color (Color. 200 165 165)) ; background circle displayed in mushroom-less patches
+(def mush-pos-nutrition-shade 100) ; a grayscale value in [0,255]
+(def mush-neg-nutrition-shade 255)
+(def mush-high-mean-size 1.0) ; we don't scale mushroom size to modeled size, but
+(def mush-low-mean-size 0.75)  ;  still display the low-size mushroom smaller
+
 
 (defn -init-instance-state
   [& args]
   [(vec args) {:display (atom nil)       ; will be replaced in init because we need to pass the UI instance to it
                :display-frame (atom nil) ; will be replaced in init because we need to pass the display to it
                :snipe-field-portrayal (HexaObjectGridPortrayal2D.)
-               :mush-field-portrayal (HexaObjectGridPortrayal2D.)}])
+               :mush-field-portrayal  (HexaObjectGridPortrayal2D.)
+               :bg-field-portrayal    (HexaObjectGridPortrayal2D.)}]) ; static background pattern
 
 ;; see doc/getName.md
 (defn -getName-void [this] "free-agent") ; override method in super. Should cause this string to be displayed as title of config window of gui, but it doesn't.
 
-(defn get-display [this] @(:display (.uiState this)))
-(defn set-display! [this newval] (reset! (:display (.uiState this)) newval))
-(defn get-display-frame [this] @(:display-frame (.uiState this)))
-(defn set-display-frame! [this newval] (reset! (:display-frame (.uiState this)) newval))
-(defn get-snipe-field-portrayal [this] (:snipe-field-portrayal (.uiState this)))
-(defn get-mush-field-portrayal [this] (:mush-field-portrayal (.uiState this)))
+(defn get-display [this] @(:display (.getUIState this)))
+(defn set-display! [this newval] (reset! (:display (.getUIState this)) newval))
+(defn get-display-frame [this] @(:display-frame (.getUIState this)))
+(defn set-display-frame! [this newval] (reset! (:display-frame (.getUIState this)) newval))
+(defn get-snipe-field-portrayal [this] (:snipe-field-portrayal (.getUIState this)))
+(defn get-mush-field-portrayal [this] (:mush-field-portrayal (.getUIState this)))
+(defn get-bg-field-portrayal [this] (:bg-field-portrayal (.getUIState this)))
 
 ;; Override methods in sim.display.GUIState so that UI can make graphs, etc.
 (defn -getSimulationInspectedObject [this] (.state this))
@@ -69,29 +83,36 @@
 (defn setup-portrayals
   [this-ui]  ; instead of 'this': avoid confusion with e.g. proxy below
   (let [sim-config (.getState this-ui)
+        ui-config (.getUIState this-ui)
         rng (.random sim-config)
         cfg-data @(.simConfigData sim-config)
         mush-high-mean (:mush-high-mean cfg-data)
         popenv (:popenv cfg-data)
-        snipe-field (:snipe-field popenv)
         mush-field  (:mush-field  popenv)
-        snipe-field-portrayal (get-snipe-field-portrayal this-ui)
+        snipe-field (:snipe-field popenv)
         mush-field-portrayal (get-mush-field-portrayal this-ui)
+        snipe-field-portrayal (get-snipe-field-portrayal this-ui)
+        bg-field-portrayal (get-bg-field-portrayal this-ui)
         display (get-display this-ui)
         mush-portrayal (proxy [OvalPortrayal2D] []   ; note captures 'this'
                          (draw [mush graphics info]  ; override method in super
-                           (let [size  (if (= mush-high-mean (:mean mush)) 1.0 0.8)
-                                 shade (if (neg? (:nutrition mush)) 180 130)]
-                             (set! (.-paint this) (Color. shade shade shade))
+                           (let [size  (if (= mush-high-mean (:mean mush))  ; btw: why the def has to be local to setup-portrayals
+                                         mush-high-mean-size
+                                         mush-low-mean-size)
+                                 shade (if (neg? (:nutrition mush))
+                                         mush-neg-nutrition-shade
+                                         mush-pos-nutrition-shade)]
                              (set! (.-scale this) size)
+                             (set! (.-paint this) (Color. shade shade shade))
                              (proxy-super draw mush graphics info))))]
+    (.setField bg-field-portrayal (ObjectGrid2D. (:env-width cfg-data) (:env-height cfg-data))) ; empty field portrayal just to display a background grid
     (.setField mush-field-portrayal mush-field)
     (.setField snipe-field-portrayal snipe-field)
+    (.setPortrayalForNull bg-field-portrayal (OvalPortrayal2D. bg-pattern-color 1.0)) ; background circle displayed in mushroom-less patches
     ; **NOTE** UNDERSCORES NOT HYPHENS IN free_agent CLASSNAME HERE:
-    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe (OvalPortrayal2D. (Color. 240 0 0) 0.5))
-    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe (OvalPortrayal2D. (Color. 0 0 250) 0.5))
-    (.setPortrayalForNull  mush-field-portrayal (OvalPortrayal2D. (Color. 190 125 125) 1.0)) ; background circle displayed in mushroom-less patches
     (.setPortrayalForClass mush-field-portrayal free_agent.mush.Mush mush-portrayal)  ; (OvalPortrayal2D. (Color. 180 180 180) 1.0)
+    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe (OvalPortrayal2D. k-snipe-color snipe-size))
+    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe (OvalPortrayal2D. r-snipe-color snipe-size))
     ;; set up display:
     (doto display
       (.reset )
@@ -132,8 +153,9 @@
     (set-display! this display)
     (doto display
       (.setClipping false)
-      (.attach (get-mush-field-portrayal this) "mushrooms") ; The order of attaching is the order of painting.
-      (.attach (get-snipe-field-portrayal this) "snipes"))  ; what's attached later will appear on top of what's earlier. 
+      (.attach (get-bg-field-portrayal this) "env")         ; The order of attaching is the order of painting.
+      (.attach (get-mush-field-portrayal this) "mushrooms") ; what's attached later will appear on top of what's earlier. 
+      (.attach (get-snipe-field-portrayal this) "snipes"))  
     (set-display-frame! this display-frame)
     (.registerFrame controller display-frame)
     (doto display-frame 
