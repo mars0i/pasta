@@ -71,21 +71,27 @@
   (let [sim-config (.getState this-ui)
         rng (.random sim-config)
         cfg-data @(.simConfigData sim-config)
+        mush-high-mean (:mush-high-mean cfg-data)
         popenv (:popenv cfg-data)
         snipe-field (:snipe-field popenv)
         mush-field  (:mush-field  popenv)
         snipe-field-portrayal (get-snipe-field-portrayal this-ui)
         mush-field-portrayal (get-mush-field-portrayal this-ui)
-        display (get-display this-ui)]
+        display (get-display this-ui)
+        mush-portrayal (proxy [OvalPortrayal2D] []   ; note captures 'this'
+                         (draw [mush graphics info]  ; override method in super
+                           (let [size  (if (= mush-high-mean (:mean mush)) 1.0 0.8)
+                                 shade (if (neg? (:nutrition mush)) 180 130)]
+                             (set! (.-paint this) (Color. shade shade shade))
+                             (set! (.-scale this) size)
+                             (proxy-super draw mush graphics info))))]
     (.setField mush-field-portrayal mush-field)
     (.setField snipe-field-portrayal snipe-field)
-    ;(.setGridLines snipe-field-portrayal true) ; not lines separating cells, but a rep of the coordinate system
-    ;(.setBorder snipe-field-portrayal true) ;(.setBorder mush-field-portrayal true)
-    ; **NOTE** UNDERSCORES NOT HYPHENS IN CLASSNAMES HERE:
-    (.setPortrayalForClass mush-field-portrayal free_agent.mush.Mush (OvalPortrayal2D. (Color. 180 180 180) 1.0))
-    (.setPortrayalForNull  mush-field-portrayal (OvalPortrayal2D. (Color. 190 125 125) 1.0)) ; background circle displayed in mushroom-less patches
+    ; **NOTE** UNDERSCORES NOT HYPHENS IN free_agent CLASSNAME HERE:
     (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe (OvalPortrayal2D. (Color. 240 0 0) 0.5))
     (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe (OvalPortrayal2D. (Color. 0 0 250) 0.5))
+    (.setPortrayalForNull  mush-field-portrayal (OvalPortrayal2D. (Color. 190 125 125) 1.0)) ; background circle displayed in mushroom-less patches
+    (.setPortrayalForClass mush-field-portrayal free_agent.mush.Mush mush-portrayal)  ; (OvalPortrayal2D. (Color. 180 180 180) 1.0)
     ;; set up display:
     (doto display
       (.reset )
