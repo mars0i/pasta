@@ -56,6 +56,8 @@
               (mu/make-mush mush-low-mean  mush-sd low-mean-nutrition)
               (mu/make-mush mush-high-mean mush-sd high-mean-nutrition))))))
 
+;; TODO Do I really need so many mushrooms?  They don't change.  Couldn't I just define four mushrooms,
+;; and reuse them?
 (defn add-mushs
   "For each patch in mush-field, optionally add a new mushroom, with 
   probability (:mush-prob cfg-data)."
@@ -117,16 +119,19 @@
 ;; maybe there's a more efficient way
 
 
+;; TODO also need to update mush-field with new mushrooms. or just reuse the old ones, since they have no state.
+(defn snipes-eat
+  [rng cfg-data snipes snipe-field mush-field]
+  [snipe-field mush-field]) ; FIXME
+
+
 (defn move-snipe
   [snipe-field x y snipe]
   (.set snipe-field x y (assoc snipe :x x :y y)))
 
-
-(defn next-popenv
-  [popenv rng cfg-data] ; put popenv first so we can swap! it
-  (let [{:keys [snipe-field mush-field]} popenv
-        snipes (.elements snipe-field)
-        loc-snipe-vec-maps (for [snipe snipes  ; make seq of snipes with intended next locations filled in
+(defn move-snipes
+  [rng cfg-data snipes snipe-field]
+  (let [loc-snipe-vec-maps (for [snipe snipes  ; make seq of snipes with intended next locations filled in
                                  :let [next-loc (choose-next-loc rng snipe-field snipe)]
                                  :when next-loc] ; nil if no place to move
                              next-loc)
@@ -139,10 +144,17 @@
                                   (let [mover (nth snipes (ran/rand-idx rng len))] ; randomly select one to move
                                     (into {coords mover} (map (fn [snipe] {[(:x snipe) (:y snipe)] snipe}) ; and make key-value pairs for others to "move" to where they are
                                                               (remove #(= mover %) snipes))))))))]         ; (could be more efficient to leave them alone)
-    ;; TODO also need to update mush-field with new mushrooms, maybe destroy those eatent
-    ;; TODO ? For now, update snipe-field Mason-style, i.e. modifying the same field every time:
+    ;; TODO (?) For now, update snipe-field Mason-style, i.e. modifying the same field every time:
     (.clear snipe-field)
     (doseq [[[x y] snipe] loc-snipe-map] ; will convert the map into a sequence of mapentries, which are seqs
       (move-snipe snipe-field x y snipe))
     ;; Since we destructively modified snipe-field, we don't have to assoc it in to a new popenv (oh...)
-    popenv))
+    snipe-field))
+
+(defn next-popenv
+  [popenv rng cfg-data] ; put popenv first so we can swap! it
+  (let [{:keys [snipe-field mush-field]} popenv
+        snipes (.elements snipe-field)
+        snipe-field (move-snipes rng cfg-data snipes snipe-field)
+        [snipe-field mush-field] (snipes-eat rng cfg-data snipes snipe-field mush-field)]
+    (PopEnv. snipe-field mush-field)))
