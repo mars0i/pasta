@@ -27,12 +27,13 @@
 (def k-snipe-color (Color. 240 0 0))
 (def r-snipe-color (Color. 0 0 250))
 (def snipe-size 0.45)
-(def bg-pattern-color (Color. 200 165 165)) ; background circle displayed in mushroom-less patches
 (def mush-pos-nutrition-shade 100) ; a grayscale value in [0,255]
 (def mush-neg-nutrition-shade 255)
 (def mush-high-mean-size 1.0) ; we don't scale mushroom size to modeled size, but
 (def mush-low-mean-size 0.75)  ;  still display the low-size mushroom smaller
-
+;; background circle displayed in mushroom-less patches:
+(def bg-pattern-color (Color. 210 200 195))
+;(def bg-pattern-color (Color. 200 165 165)) ; a dirty pink
 
 (defn -init-instance-state
   [& args]
