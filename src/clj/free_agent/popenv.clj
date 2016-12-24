@@ -120,10 +120,21 @@
 
 
 ;; TODO also need to update mush-field with new mushrooms. or just reuse the old ones, since they have no state.
+
+(defn appetizing? [snipe mush] [snipe nil]) ; FIXME
+
+;; FIXME:
 (defn snipes-eat
   [rng cfg-data snipes snipe-field mush-field]
   [snipe-field mush-field]) ; FIXME
-
+;(defn snipes-eat
+;  [rng cfg-data snipes snipe-field mush-field]
+;  [snipe-field mush-field]
+;  (for [snipe snipes]
+;    (let [{:keys [x y]} snipe]
+;      (if-let [mush (.get mush-field x y)]
+;        (if-appetizing-then-eat snipe mush)
+;        [snipe nil]))))
 
 (defn move-snipe
   [snipe-field x y snipe]
