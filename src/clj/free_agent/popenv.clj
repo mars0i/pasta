@@ -42,8 +42,8 @@
       (add-snipe rng field env-width env-height 
                  (fn [x y] (sn/make-r-snipe initial-energy r-snipe-low-prior r-snipe-high-prior x y))))))
 
-(defn maybe-add-mush
-  [rng field x y cfg-data]
+(defn maybe-add-mush!
+  [rng cfg-data field x y]
   (when (< (ran/next-double rng) (:mush-prob cfg-data)) ; flip biased coin to decide whether to grow a mushroom
     (let [{:keys [env-center mush-low-mean mush-high-mean 
                   mush-sd mush-pos-nutrition mush-neg-nutrition]} cfg-data
@@ -66,7 +66,7 @@
                 mush-pos-nutrition mush-neg-nutrition]} cfg-data]
     (doseq [x (range env-width)
             y (range env-height)]
-      (maybe-add-mush rng field x y cfg-data))))
+      (maybe-add-mush! rng cfg-data field x y))))
 
 (defn populate
   [rng cfg-data popenv]
@@ -83,6 +83,38 @@
 ;; reusable bags
 (def x-coord-bag (IntBag. 6))
 (def y-coord-bag (IntBag. 6))
+
+;; TODO also need to update mush-field with new mushrooms. or just reuse the old ones, since they have no state.
+
+(defn perceive-mushroom [snipe mush] [snipe true]) ; FIXME
+
+(defn if-appetizing-then-eat 
+  [snipe mush] 
+  (let [[experienced-snipe appetizing?] (perceive-mushroom snipe mush)]
+    (if appetizing?
+      [(update experienced-snipe :energy + (:nutrition mush)) true]
+      [experienced-snipe false])))
+
+;; FIXME:
+(defn snipes-eat-old
+  [rng cfg-data snipes snipe-field mush-field]
+  [snipe-field mush-field]) ; FIXME
+
+;; new version
+(defn snipes-eat
+  [rng cfg-data snipes snipe-field mush-field]
+  [snipe-field mush-field]
+  (let [snipes-plus-eaten? (for [snipe snipes    ; returns only snipes on mushrooms
+                                 :let [{:keys [x y]} snipe
+                                       mush (.get mush-field x y)]
+                                 :when mush]
+                             (if-appetizing-then-eat snipe mush))]
+    (doseq [[snipe eaten?] snipes-plus-eaten?] ;; TODO For now do it destructively (no need to clear, and leave be snipes w/out mushrooms)
+      (let [{:keys [x y]} snipe]
+        (.set snipe-field x y snipe) ; replace old snipe with new, more experienced snipe, or maybe the same one
+        (.set mush-field x y nil)
+        (maybe-add-mush! rng cfg-data mush-field x y)))) ; FIXME this probably isn't really what I want here
+  [snipe-field mush-field]) ; TODO currently returning same fields, but with modifications
 
 (defn choose-next-loc
   "Return a pair of field coordinates randomly selected from the empty 
@@ -106,35 +138,14 @@
           {[next-x next-y] [snipe]}) ; key is a pair of coords; val is a single-element vector containing a snipe
         {[curr-x curr-y] [snipe]}))))
 
-;; maybe there's a more efficient way
-
-
-;; TODO also need to update mush-field with new mushrooms. or just reuse the old ones, since they have no state.
-
-(defn appetizing? [snipe mush] [snipe nil]) ; FIXME
-
-;; FIXME:
-(defn snipes-eat
-  [rng cfg-data snipes snipe-field mush-field]
-  [snipe-field mush-field]) ; FIXME
-;(defn snipes-eat
-;  [rng cfg-data snipes snipe-field mush-field]
-;  [snipe-field mush-field]
-;  (for [snipe snipes]
-;    (let [{:keys [x y]} snipe]
-;      (if-let [mush (.get mush-field x y)]
-;        (if-appetizing-then-eat snipe mush)
-;        [snipe nil]))))
-
 (defn move-snipe
   [snipe-field x y snipe]
   (.set snipe-field x y (assoc snipe :x x :y y)))
 
 (defn move-snipes
   [rng cfg-data snipes snipe-field]
-  (let [loc-snipe-vec-maps (for [snipe snipes  ; make seq of snipes with intended next locations filled in
-                                 :let [next-loc (choose-next-loc rng snipe-field snipe)]
-                                 :when next-loc] ; nil if no place to move
+  (let [loc-snipe-vec-maps (for [snipe snipes  ; make seq of maps with a coord pair as key and singleton seq containing snipe as val
+                                 :let [next-loc (choose-next-loc rng snipe-field snipe)]] ; can be current loc
                              next-loc)
         loc-snipe-vec-map (apply merge-with concat loc-snipe-vec-maps) ; convert sec of maps to a single map where snipe-vecs with same loc are concatenated
         loc-snipe-map (into {}                                       ; collect several maps into one
@@ -143,7 +154,7 @@
                                 (if (= len 1)
                                   [coords (first snipes)]                          ; when more than one
                                   (let [mover (nth snipes (ran/rand-idx rng len))] ; randomly select one to move
-                                    (into {coords mover} (map (fn [snipe] {[(:x snipe) (:y snipe)] snipe}) ; and make key-value pairs for others to "move" to where they are
+                                    (into {coords mover} (map (fn [snipe] {[(:x snipe) (:y snipe)] snipe}) ; and make others "move" to current loc
                                                               (remove #(= mover %) snipes))))))))]         ; (could be more efficient to leave them alone)
     ;; TODO (?) For now, update snipe-field Mason-style, i.e. modifying the same field every time:
     (.clear snipe-field)
