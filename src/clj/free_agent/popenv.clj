@@ -12,10 +12,9 @@
 (defn make-popenv
   [rng cfg-data]
   (let [{:keys [env-width env-height]} cfg-data
-        snipe-field    (ObjectGrid2D. env-width env-height)    ; eventually make two of each (for two sides of the mountain)
-        mush-field (ObjectGrid2D. env-width env-height)]   ; also this one
+        snipe-field (ObjectGrid2D. env-width env-height)
+        mush-field  (ObjectGrid2D. env-width env-height)]
     (PopEnv. snipe-field mush-field)))
-
 
 (defn add-snipe
   "Create and add a snipe to field using snipe-maker, which expects x and y
@@ -57,7 +56,7 @@
               (mu/make-mush mush-high-mean mush-sd high-mean-nutrition))))))
 
 ;; TODO Do I really need so many mushrooms?  They don't change.  Couldn't I just define four mushrooms,
-;; and reuse them?
+;; and reuse them?  (If so, be careful about their deaths.)
 (defn add-mushs
   "For each patch in mush-field, optionally add a new mushroom, with 
   probability (:mush-prob cfg-data)."
@@ -106,15 +105,6 @@
               [next-x next-y] (nth candidate-locs idx)]
           {[next-x next-y] [snipe]}) ; key is a pair of coords; val is a single-element vector containing a snipe
         {[curr-x curr-y] [snipe]}))))
-
-(defn sample-one
-  "Given a non-empty collection, returns a single randomly-chosen element."
-  [rng xs]
-  (let [len (count xs)]
-    (if (= len 1)
-      (nth xs 0)
-      (nth xs 
-           (ran/rand-idx rng len)))))
 
 ;; maybe there's a more efficient way
 

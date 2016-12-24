@@ -23,6 +23,15 @@
       candidate
       (recur (apply rand-fn addl-args)))))
 
+(defn sample-one
+  "Given a non-empty collection, returns a single randomly-chosen element."
+  [rng xs]
+  (let [len (count xs)]
+    (if (= len 1)
+      (first xs)
+      (nth xs 
+           (r/rand-idx rng len)))))
+
 ;; lazy
 ;(def sample-with-repl sample-with-repl-3) ; see samplingtests2.xlsx
 (defn sample-with-repl
