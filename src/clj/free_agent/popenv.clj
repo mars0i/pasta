@@ -16,30 +16,30 @@
         mush-field  (ObjectGrid2D. env-width env-height)]
     (PopEnv. snipe-field mush-field)))
 
-(defn add-snipe
+(defn add-organism
   "Create and add a snipe to field using snipe-maker, which expects x and y
   coordinates as arguments.  May be inefficient if there are the number of
   snipes is a large proportion of the number of cells in the snipe field."
-  [rng field width height snipe-maker]
+  [rng field width height organism-maker]
   (loop []
     (let [x (ran/rand-idx rng width)
           y (ran/rand-idx rng height)]
       (if-not (.get field x y) ; don't clobber another snipe; empty slots contain Java nulls, i.e. Clojure nils
-        (.set field x y (snipe-maker x y))
+        (.set field x y (organism-maker x y))
         (recur)))))
 
 (defn add-k-snipes
   [rng cfg-data field]
   (let [{:keys [env-width env-height initial-energy k-snipe-prior num-k-snipes]} cfg-data]
     (dotimes [_ (:num-k-snipes cfg-data)] ; don't use lazy method--it may never be executed
-      (add-snipe rng field env-width env-height 
+      (add-organism rng field env-width env-height 
                  (fn [x y] (sn/make-k-snipe initial-energy k-snipe-prior x y))))))
 
 (defn add-r-snipes
   [rng cfg-data field]
   (let [{:keys [env-width env-height initial-energy r-snipe-low-prior r-snipe-high-prior num-r-snipes]} cfg-data]
     (dotimes [_ num-r-snipes]
-      (add-snipe rng field env-width env-height 
+      (add-organism rng field env-width env-height 
                  (fn [x y] (sn/make-r-snipe initial-energy r-snipe-low-prior r-snipe-high-prior x y))))))
 
 (defn maybe-add-mush!
@@ -95,25 +95,27 @@
       [(update experienced-snipe :energy + (:nutrition mush)) true]
       [experienced-snipe false])))
 
-;; FIXME:
+;; DELETE ME:
 (defn snipes-eat-old
   [rng cfg-data snipes snipe-field mush-field]
   [snipe-field mush-field]) ; FIXME
 
-;; new version
+
 (defn snipes-eat
   [rng cfg-data snipes snipe-field mush-field]
   [snipe-field mush-field]
-  (let [snipes-plus-eaten? (for [snipe snipes    ; returns only snipes on mushrooms
+  (let [{:keys [env-width env-height]} cfg-data]
+        snipes-plus-eaten? (for [snipe snipes    ; returns only snipes on mushrooms
                                  :let [{:keys [x y]} snipe
                                        mush (.get mush-field x y)]
                                  :when mush]
                              (if-appetizing-then-eat snipe mush))]
     (doseq [[snipe eaten?] snipes-plus-eaten?] ;; TODO For now do it destructively (no need to clear, and leave be snipes w/out mushrooms)
-      (let [{:keys [x y]} snipe]
+      (let [{:keys [x y]} snipe
+            mush (.get mush-field x y)]
         (.set snipe-field x y snipe) ; replace old snipe with new, more experienced snipe, or maybe the same one
         (.set mush-field x y nil)
-        (maybe-add-mush! rng cfg-data mush-field x y)))) ; FIXME this probably isn't really what I want here
+        (add-organism rng mush-field env-width env-height FIXME-fn)))
   [snipe-field mush-field]) ; TODO currently returning same fields, but with modifications
 
 (defn choose-next-loc
