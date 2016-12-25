@@ -69,11 +69,10 @@
         ^MersenneTwisterFast rng (.-random this)]
     ;; create and populate initial popenv:
     (swap! cfg-data$ assoc :env-center (/ (:env-width @cfg-data$) 2.0))
-    (swap! cfg-data$ assoc :popenv (pe/populate-env rng @cfg-data$ ; it's ok to pass in cfg-data to update cfg-data; make-popenv will use the old version
-                                                    (pe/make-popenv rng @cfg-data$)))
+    (swap! cfg-data$ assoc :popenv (pe/make-popenv rng @cfg-data$)) ; it's ok to pass in cfg-data to update cfg-data; make-popenv will use the old version
     ;; Run it:
     (.scheduleRepeating schedule Schedule/EPOCH 0
                         (reify Steppable 
                           (step [this sim-state]
                             (let [^SimConfig state sim-state]
-                              (swap! cfg-data$ update-in [:popenv] pe/next-popenv rng @cfg-data$))))))) ; i.e. call next-popenv with old popenv and cfg-data, and replace popenv in cfg-data
+                              (swap! cfg-data$ update :popenv pe/next-popenv rng @cfg-data$))))))) ; i.e. call next-popenv with old popenv and cfg-data, and replace popenv in cfg-data

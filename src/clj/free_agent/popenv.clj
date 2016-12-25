@@ -7,6 +7,11 @@
 
 ;(use '[clojure.pprint]) ; DEBUG
 
+(declare new-popenv make-popenv populate-env! organism-setter add-organism-to-rand-loc! 
+         add-k-snipes!  add-r-snipes! add-mush! maybe-add-mush! add-mushs! 
+         perceive-mushroom eat-if-appetizing snipes-eat! choose-next-loc 
+         move-snipe! move-snipes! next-popenv)
+
 (defrecord PopEnv [snipe-field mush-field])
 
 (defn make-popenv
@@ -14,6 +19,11 @@
   (let [{:keys [env-width env-height]} cfg-data
         snipe-field (ObjectGrid2D. env-width env-height)
         mush-field  (ObjectGrid2D. env-width env-height)]
+    (.clear mush-field)
+    (add-mushs! rng cfg-data mush-field)
+    (.clear snipe-field)
+    (add-k-snipes! rng cfg-data snipe-field)
+    (add-r-snipes! rng cfg-data snipe-field)
     (PopEnv. snipe-field mush-field)))
 
 (defn organism-setter
@@ -78,18 +88,6 @@
     (doseq [x (range env-width)
             y (range env-height)]
       (maybe-add-mush! rng cfg-data field x y))))
-
-(defn populate-env
-  [rng cfg-data popenv]
-  (let [{:keys [env-width env-height]} cfg-data
-        mush-field (:mush-field popenv)
-        snipe-field    (:snipe-field popenv)]
-    (.clear mush-field)
-    (add-mushs! rng cfg-data mush-field)
-    (.clear snipe-field)
-    (add-k-snipes! rng cfg-data snipe-field)
-    (add-r-snipes! rng cfg-data snipe-field)
-    (PopEnv. snipe-field mush-field)))
 
 ;    ;; DEBUG:
 ;    (doseq [x (range (:env-width cfg-data))
