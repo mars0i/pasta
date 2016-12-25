@@ -174,7 +174,7 @@
 
 (defn repl-gui
   "Convenience function to init and start GUI from the REPL.
-  Returns the new Sim object."
+  Returns the new SimConfig object."
   []
   (let [sim-config (SimConfig. (System/currentTimeMillis))]
     (.setVisible (Console. (free-agent.UI. sim-config))
