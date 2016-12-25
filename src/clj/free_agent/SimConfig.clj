@@ -67,9 +67,7 @@
   (let [^Schedule schedule (.schedule this)
         ^SimConfigData cfg-data$ (.simConfigData this)
         ^MersenneTwisterFast rng (.-random this)]
-    ;; create and populate initial popenv:
-    (swap! cfg-data$ assoc :env-center (/ (:env-width @cfg-data$) 2.0))
-    (swap! cfg-data$ assoc :popenv (pe/make-popenv rng @cfg-data$)) ; it's ok to pass in cfg-data to update cfg-data; make-popenv will use the old version
+    (pe/setup-new-popenv! rng cfg-data$) ; create and populate initial popenv
     ;; Run it:
     (.scheduleRepeating schedule Schedule/EPOCH 0
                         (reify Steppable 

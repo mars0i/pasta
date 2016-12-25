@@ -7,12 +7,18 @@
 
 ;(use '[clojure.pprint]) ; DEBUG
 
-(declare new-popenv make-popenv populate-env! organism-setter add-organism-to-rand-loc! 
-         add-k-snipes!  add-r-snipes! add-mush! maybe-add-mush! add-mushs! 
-         perceive-mushroom eat-if-appetizing snipes-eat! choose-next-loc 
-         move-snipe! move-snipes! next-popenv)
+(declare setup-popenv! new-popenv make-popenv populate-env! organism-setter 
+         add-organism-to-rand-loc!  add-k-snipes!  add-r-snipes! add-mush! 
+         maybe-add-mush! add-mushs!  perceive-mushroom eat-if-appetizing snipes-eat! 
+         choose-next-loc move-snipe! move-snipes! next-popenv)
 
 (defrecord PopEnv [snipe-field mush-field])
+
+(defn setup-new-popenv!
+  "Calculates env-center and creates a new popenv, storing them in cfg-data$."
+  [rng cfg-data$]
+  (swap! cfg-data$ assoc :env-center (/ (:env-width @cfg-data$) 2.0))
+  (swap! cfg-data$ assoc :popenv (make-popenv rng @cfg-data$)))
 
 (defn make-popenv
   [rng cfg-data]
