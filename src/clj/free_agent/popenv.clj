@@ -100,6 +100,10 @@
 (defn perceive-mushroom [snipe mush] [snipe true]) ; FIXME
 
 (defn eat-if-appetizing 
+  "Returns a pair containing (a) a new version of the snipe, with 
+  an updated cognitive state, if appropriate, and an updated 
+  energy level if eating occured; and (b) a boolean indicating
+  whether eating occurred."
   [snipe mush] 
   (let [[experienced-snipe appetizing?] (perceive-mushroom snipe mush)]
     (if appetizing?
