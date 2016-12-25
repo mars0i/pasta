@@ -9,7 +9,7 @@
 (defn next-id 
   "Returns a unique integer for use as an id."
   [] 
-  #(Long. (str (gensym ""))))
+  (Long. (str (gensym ""))))
 
 ;; The real difference between k- and r-snipes is in how levels is implemented,
 ;; but it will be useful to have two different wrapper classes to make it easier to
