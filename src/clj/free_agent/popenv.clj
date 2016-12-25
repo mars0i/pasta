@@ -16,48 +16,59 @@
         mush-field  (ObjectGrid2D. env-width env-height)]
     (PopEnv. snipe-field mush-field)))
 
-(defn add-organism
-  "Create and add a snipe to field using snipe-maker, which expects x and y
-  coordinates as arguments.  May be inefficient if there are the number of
-  snipes is a large proportion of the number of cells in the snipe field."
-  [rng field width height organism-maker]
+(defn organism-setter
+  ([organism-maker]
+  (fn [field x y]
+    (.set field x y (organism-maker x y)))))
+
+(defn add-organism-to-rand-loc!
+  "Create and add an organism to field using organism-maker, which expects 
+  x and y coordinates as arguments.  Looks for an empty field, so could
+  be inefficient if a large proportion of cells in the field are filled."
+  [rng field width height organism-setter!]
   (loop []
     (let [x (ran/rand-idx rng width)
           y (ran/rand-idx rng height)]
       (if-not (.get field x y) ; don't clobber another snipe; empty slots contain Java nulls, i.e. Clojure nils
-        (.set field x y (organism-maker x y))
+        (organism-setter! field x y)
         (recur)))))
 
-(defn add-k-snipes
+(defn add-k-snipes!
   [rng cfg-data field]
   (let [{:keys [env-width env-height initial-energy k-snipe-prior num-k-snipes]} cfg-data]
     (dotimes [_ (:num-k-snipes cfg-data)] ; don't use lazy method--it may never be executed
-      (add-organism rng field env-width env-height 
-                 (fn [x y] (sn/make-k-snipe initial-energy k-snipe-prior x y))))))
+      (add-organism-to-rand-loc! rng field env-width env-height 
+                                 (organism-setter (partial sn/make-k-snipe initial-energy k-snipe-prior))))))
 
-(defn add-r-snipes
+(defn add-r-snipes!
   [rng cfg-data field]
   (let [{:keys [env-width env-height initial-energy r-snipe-low-prior r-snipe-high-prior num-r-snipes]} cfg-data]
     (dotimes [_ num-r-snipes]
-      (add-organism rng field env-width env-height 
-                 (fn [x y] (sn/make-r-snipe initial-energy r-snipe-low-prior r-snipe-high-prior x y))))))
+      (add-organism-to-rand-loc! rng field env-width env-height 
+                                 (organism-setter (partial sn/make-r-snipe initial-energy 
+                                                           r-snipe-low-prior 
+                                                           r-snipe-high-prior))))))
+
+(defn add-mush!
+  [rng cfg-data field x y]
+  (let [{:keys [env-center mush-low-mean mush-high-mean 
+                mush-sd mush-pos-nutrition mush-neg-nutrition]} cfg-data
+        [low-mean-nutrition high-mean-nutrition] (if (< x env-center) ; subenv determines whether low vs high reflectance
+                                                   [mush-pos-nutrition mush-neg-nutrition]   ; paired with
+                                                   [mush-neg-nutrition mush-pos-nutrition])] ; nutritious vs poison
+    (.set field x y 
+          (if (< (ran/next-double rng) 0.5) ; half the mushrooms are of each kind in each subenv, on average
+            (mu/make-mush mush-low-mean  mush-sd low-mean-nutrition)
+            (mu/make-mush mush-high-mean mush-sd high-mean-nutrition)))))
 
 (defn maybe-add-mush!
   [rng cfg-data field x y]
   (when (< (ran/next-double rng) (:mush-prob cfg-data)) ; flip biased coin to decide whether to grow a mushroom
-    (let [{:keys [env-center mush-low-mean mush-high-mean 
-                  mush-sd mush-pos-nutrition mush-neg-nutrition]} cfg-data
-          [low-mean-nutrition high-mean-nutrition] (if (< x env-center) ; subenv determines whether low vs high reflectance
-                                                     [mush-pos-nutrition mush-neg-nutrition]   ; paired with
-                                                     [mush-neg-nutrition mush-pos-nutrition])] ; nutritious vs poison
-      (.set field x y 
-            (if (< (ran/next-double rng) 0.5) ; half the mushrooms are of each kind in each subenv, on average
-              (mu/make-mush mush-low-mean  mush-sd low-mean-nutrition)
-              (mu/make-mush mush-high-mean mush-sd high-mean-nutrition))))))
+    (add-mush! rng cfg-data field x y)))
 
-;; TODO Do I really need so many mushrooms?  They don't change.  Couldn't I just define four mushrooms,
+;; Do I really need so many mushrooms?  They don't change.  Couldn't I just define four mushrooms,
 ;; and reuse them?  (If so, be careful about their deaths.)
-(defn add-mushs
+(defn add-mushs!
   "For each patch in mush-field, optionally add a new mushroom, with 
   probability (:mush-prob cfg-data)."
   [rng cfg-data field]
@@ -68,16 +79,16 @@
             y (range env-height)]
       (maybe-add-mush! rng cfg-data field x y))))
 
-(defn populate
+(defn populate-env
   [rng cfg-data popenv]
   (let [{:keys [env-width env-height]} cfg-data
         mush-field (:mush-field popenv)
         snipe-field    (:snipe-field popenv)]
     (.clear mush-field)
-    (add-mushs rng cfg-data mush-field)
+    (add-mushs! rng cfg-data mush-field)
     (.clear snipe-field)
-    (add-k-snipes rng cfg-data snipe-field)
-    (add-r-snipes rng cfg-data snipe-field)
+    (add-k-snipes! rng cfg-data snipe-field)
+    (add-r-snipes! rng cfg-data snipe-field)
     (PopEnv. snipe-field mush-field)))
 
 ;; reusable bags
@@ -95,28 +106,22 @@
       [(update experienced-snipe :energy + (:nutrition mush)) true]
       [experienced-snipe false])))
 
-;; DELETE ME:
-(defn snipes-eat-old
-  [rng cfg-data snipes snipe-field mush-field]
-  [snipe-field mush-field]) ; FIXME
-
-
 (defn snipes-eat
   [rng cfg-data snipes snipe-field mush-field]
   [snipe-field mush-field]
-  (let [{:keys [env-width env-height]} cfg-data]
+  (let [{:keys [env-width env-height]} cfg-data
         snipes-plus-eaten? (for [snipe snipes    ; returns only snipes on mushrooms
                                  :let [{:keys [x y]} snipe
                                        mush (.get mush-field x y)]
                                  :when mush]
                              (if-appetizing-then-eat snipe mush))]
     (doseq [[snipe eaten?] snipes-plus-eaten?] ;; TODO For now do it destructively (no need to clear, and leave be snipes w/out mushrooms)
-      (let [{:keys [x y]} snipe
-            mush (.get mush-field x y)]
+      (let [{:keys [x y]} snipe]
         (.set snipe-field x y snipe) ; replace old snipe with new, more experienced snipe, or maybe the same one
         (.set mush-field x y nil)
-        (add-organism rng mush-field env-width env-height FIXME-fn)))
-  [snipe-field mush-field]) ; TODO currently returning same fields, but with modifications
+        (add-organism-to-rand-loc! rng mush-field env-width env-height 
+                                   (partial add-mush! rng cfg-data)))) ; can't use same procedure for mushrooms as for snipes
+    [snipe-field mush-field])) ; TODO currently returning same fields, but with destructive modifications
 
 (defn choose-next-loc
   "Return a pair of field coordinates randomly selected from the empty 
