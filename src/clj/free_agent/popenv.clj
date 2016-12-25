@@ -180,11 +180,12 @@
     ;; Since we destructively modified snipe-field, we don't have to assoc it in to a new popenv (oh...)
     snipe-field))
 
+;; NOTE Although move-snipes! and snipes-eat! may destructively modify the fields,
+;; they create *new snipes*, so you have to get a new collection of snipes after
+;; running one; you have to make sure the other one gets the new snipes.
 (defn next-popenv
   [popenv rng cfg-data] ; put popenv first so we can swap! it
   (let [{:keys [snipe-field mush-field]} popenv
-        snipes (.elements snipe-field)
-        snipe-field (move-snipes! rng cfg-data snipes snipe-field)                         ; replaces with snipes with new snipes with new positions
-        snipes (.elements snipe-field) ; old version of snipes contains invalid snipes (TODO maybe avoid this by returning snipes)
-        [snipe-field mush-field] (snipes-eat! rng cfg-data snipes snipe-field mush-field)] ; replaces snipes with new snipes with same positions
+        snipe-field (move-snipes! rng cfg-data (.elements snipe-field) snipe-field)                         ; replaces with snipes with new snipes with new positions
+        [snipe-field mush-field] (snipes-eat! rng cfg-data (.elements snipe-field) snipe-field mush-field)] ; replaces snipes with new snipes with same positions
     (PopEnv. snipe-field mush-field)))
