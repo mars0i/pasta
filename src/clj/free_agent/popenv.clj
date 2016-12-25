@@ -91,39 +91,46 @@
     (add-r-snipes! rng cfg-data snipe-field)
     (PopEnv. snipe-field mush-field)))
 
-;; reusable bags
-(def x-coord-bag (IntBag. 6))
-(def y-coord-bag (IntBag. 6))
+;    ;; DEBUG:
+;    (doseq [x (range (:env-width cfg-data))
+;            y (range (:env-height cfg-data))]
+;      (when-let [snipe (.get snipe-field x y)]
+;        (println (and (= x (:x snipe)) (= y (:y snipe))))))
 
 ;; TODO also need to update mush-field with new mushrooms. or just reuse the old ones, since they have no state.
 
 (defn perceive-mushroom [snipe mush] [snipe true]) ; FIXME
 
-(defn if-appetizing-then-eat 
+(defn eat-if-appetizing 
   [snipe mush] 
   (let [[experienced-snipe appetizing?] (perceive-mushroom snipe mush)]
     (if appetizing?
       [(update experienced-snipe :energy + (:nutrition mush)) true]
       [experienced-snipe false])))
 
-(defn snipes-eat
+;(when-not (.get snipe-field (:x snipe) (:y snipe)) (println "Whoaa! No snipe at" (:x snipe) (:y snipe))) ; DEBUG
+
+(defn snipes-eat!
   [rng cfg-data snipes snipe-field mush-field]
-  [snipe-field mush-field]
   (let [{:keys [env-width env-height]} cfg-data
         snipes-plus-eaten? (for [snipe snipes    ; returns only snipes on mushrooms
                                  :let [{:keys [x y]} snipe
                                        mush (.get mush-field x y)]
                                  :when mush]
-                             (if-appetizing-then-eat snipe mush))]
+                             (eat-if-appetizing snipe mush))]
     ;; TODO Later create new fields here; for now do it destructively (no need to clear since only replacing)
-    (doseq [[snipe eaten?] snipes-plus-eaten?]
-      (when eaten?
+    (doseq [[snipe ate?] snipes-plus-eaten?]
+      (when ate?
         (let [{:keys [x y]} snipe]
           (.set snipe-field x y snipe) ; replace old snipe with new, more experienced snipe, or maybe the same one
           (.set mush-field x y nil)
           (add-organism-to-rand-loc! rng mush-field env-width env-height 
                                      (partial add-mush! rng cfg-data))))) ; can't use same procedure for mushrooms as for snipes
     [snipe-field mush-field]))
+
+;; reusable bags for choose-next-loc
+(def x-coord-bag (IntBag. 6))
+(def y-coord-bag (IntBag. 6))
 
 (defn choose-next-loc
   "Return a pair of field coordinates randomly selected from the empty 
@@ -147,11 +154,12 @@
           {[next-x next-y] [snipe]}) ; key is a pair of coords; val is a single-element vector containing a snipe
         {[curr-x curr-y] [snipe]}))))
 
-(defn move-snipe
+;; doesn't delete old snipe ref--designed to be used only after clearing snipe-field
+(defn move-snipe!
   [snipe-field x y snipe]
   (.set snipe-field x y (assoc snipe :x x :y y)))
 
-(defn move-snipes
+(defn move-snipes!
   [rng cfg-data snipes snipe-field]
   (let [loc-snipe-vec-maps (for [snipe snipes  ; make seq of maps with a coord pair as key and singleton seq containing snipe as val
                                  :let [next-loc (choose-next-loc rng snipe-field snipe)]] ; can be current loc
@@ -168,7 +176,7 @@
     ;; TODO (?) For now, update snipe-field Mason-style, i.e. modifying the same field every time:
     (.clear snipe-field)
     (doseq [[[x y] snipe] loc-snipe-map] ; will convert the map into a sequence of mapentries, which are seqs
-      (move-snipe snipe-field x y snipe))
+      (move-snipe! snipe-field x y snipe))
     ;; Since we destructively modified snipe-field, we don't have to assoc it in to a new popenv (oh...)
     snipe-field))
 
@@ -176,6 +184,7 @@
   [popenv rng cfg-data] ; put popenv first so we can swap! it
   (let [{:keys [snipe-field mush-field]} popenv
         snipes (.elements snipe-field)
-        snipe-field (move-snipes rng cfg-data snipes snipe-field)
-        [snipe-field mush-field] (snipes-eat rng cfg-data snipes snipe-field mush-field)]
+        snipe-field (move-snipes! rng cfg-data snipes snipe-field)                         ; replaces with snipes with new snipes with new positions
+        snipes (.elements snipe-field) ; old version of snipes contains invalid snipes (TODO maybe avoid this by returning snipes)
+        [snipe-field mush-field] (snipes-eat! rng cfg-data snipes snipe-field mush-field)] ; replaces snipes with new snipes with same positions
     (PopEnv. snipe-field mush-field)))
