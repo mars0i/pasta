@@ -9,8 +9,8 @@
 
 (declare setup-popenv! new-popenv make-popenv populate-env! organism-setter 
          add-organism-to-rand-loc!  add-k-snipes!  add-r-snipes! add-mush! 
-         maybe-add-mush! add-mushs!  perceive-mushroom eat-if-appetizing snipes-eat! 
-         choose-next-loc move-snipe! move-snipes! next-popenv)
+         maybe-add-mush! add-mushs!  perceive-mushroom eat-if-appetizing snipes-eat 
+         choose-next-loc move-snipe! move-snipes next-popenv)
 
 (defrecord PopEnv [snipe-field mush-field])
 
@@ -35,14 +35,11 @@
     (add-r-snipes! rng cfg-data snipe-field)
     (PopEnv. snipe-field mush-field)))
 
-;; NOTE Although move-snipes! and snipes-eat! may destructively modify the fields,
-;; they create *new snipes*, so you have to get a new collection of snipes after
-;; running one; you have to make sure the other one gets the new snipes.
 (defn next-popenv
   [popenv rng cfg-data] ; put popenv first so we can swap! it
   (let [{:keys [snipe-field mush-field]} popenv
-        snipe-field (move-snipes! rng snipe-field)                         ; replaces with snipes with new snipes with new positions
-        [snipe-field mush-field] (snipes-eat! rng cfg-data snipe-field mush-field)] ; replaces snipes with new snipes with same positions
+        snipe-field (move-snipes rng cfg-data snipe-field)                         ; replaces with snipes with new snipes with new positions
+        [snipe-field mush-field] (snipes-eat rng cfg-data snipe-field mush-field)] ; replaces snipes with new snipes with same positions
     (PopEnv. snipe-field mush-field)))
 
 (defn organism-setter
@@ -129,7 +126,7 @@
 
 ;(when-not (.get snipe-field (:x snipe) (:y snipe)) (println "Whoaa! No snipe at" (:x snipe) (:y snipe))) ; DEBUG
 
-(defn snipes-eat!
+(defn snipes-eat
   [rng cfg-data snipe-field mush-field]
   (let [{:keys [env-width env-height]} cfg-data
         snipes (.elements snipe-field)
@@ -137,14 +134,16 @@
                                  :let [{:keys [x y]} snipe
                                        mush (.get mush-field x y)]
                                  :when mush]
-                             (eat-if-appetizing snipe mush))]
-    ;; TODO Later create new fields here; for now do it destructively (no need to clear since only replacing)
+                             (eat-if-appetizing snipe mush))
+        new-snipe-field (ObjectGrid2D. env-width env-height)
+        new-mush-field  (ObjectGrid2D. env-width env-height)]
+    ;; FIXME NOT RIGHT since unchanged mushrooms and snipes are not copied over to new fields
     (doseq [[snipe ate?] snipes-plus-eaten?]
       (when ate?
         (let [{:keys [x y]} snipe]
-          (.set snipe-field x y snipe) ; replace old snipe with new, more experienced snipe, or maybe the same one
-          (.set mush-field x y nil)
-          (add-organism-to-rand-loc! rng mush-field env-width env-height 
+          (.set new-snipe-field x y snipe) ; replace old snipe with new, more experienced snipe, or maybe the same one
+          (.set new-mush-field x y nil)
+          (add-organism-to-rand-loc! rng new-mush-field env-width env-height 
                                      (partial add-mush! rng cfg-data))))) ; can't use same procedure for mushrooms as for snipes
     [snipe-field mush-field]))
 
@@ -179,10 +178,10 @@
   [snipe-field x y snipe]
   (.set snipe-field x y (assoc snipe :x x :y y)))
 
-;; we don't need cfg-data for width and height since using toroidal movement
-(defn move-snipes!
-  [rng snipe-field]
-  (let [snipes (.elements snipe-field)
+(defn move-snipes
+  [rng cfg-data snipe-field]
+  (let [{:keys [env-width env-height]} cfg-data
+        snipes (.elements snipe-field)
         loc-snipe-vec-maps (for [snipe snipes  ; make seq of maps with a coord pair as key and singleton seq containing snipe as val
                                  :let [next-loc (choose-next-loc rng snipe-field snipe)]] ; can be current loc
                              next-loc)
@@ -194,10 +193,14 @@
                                   [coords (first snipes)]                          ; when more than one
                                   (let [mover (nth snipes (ran/rand-idx rng len))] ; randomly select one to move
                                     (into {coords mover} (map (fn [snipe] {[(:x snipe) (:y snipe)] snipe}) ; and make others "move" to current loc
-                                                              (remove #(= mover %) snipes))))))))]         ; (could be more efficient to leave them alone)
-    ;; TODO (?) For now, update snipe-field Mason-style, i.e. modifying the same field every time:
-    (.clear snipe-field)
+                                                              (remove #(= mover %) snipes))))))))         ; (could be more efficient to leave them alone)
+        new-snipe-field (ObjectGrid2D. env-width env-height)]
+    ;; non-functional version:
+        ;new-snipe-field snipe-field]
+    ;(.clear snipe-field)
+    ;; Since we have a collection of all new snipe positions, including those
+    ;; who remained in place, we can just place them on a fresh snipe-field:
     (doseq [[[x y] snipe] loc-snipe-map] ; will convert the map into a sequence of mapentries, which are seqs
-      (move-snipe! snipe-field x y snipe))
-    ;; Since we destructively modified snipe-field, we don't have to assoc it in to a new popenv (oh...)
-    snipe-field))
+      (move-snipe! new-snipe-field x y snipe))
+    ;; FIXME Since we destructively modified snipe-field, we don't have to assoc it in to a new popenv (oh...)
+    new-snipe-field))
