@@ -32,7 +32,7 @@
 (def mush-high-mean-size 1.0) ; we don't scale mushroom size to modeled size, but
 (def mush-low-mean-size 0.75)  ;  still display the low-size mushroom smaller
 ;; background circle displayed in mushroom-less patches:
-(def bg-pattern-color (Color. 210 200 195))
+(def bg-pattern-color (Color. 210 195 190))
 ;(def bg-pattern-color (Color. 200 165 165)) ; a dirty pink
 
 (defn -init-instance-state
