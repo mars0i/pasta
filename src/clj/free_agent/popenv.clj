@@ -115,13 +115,15 @@
                                        mush (.get mush-field x y)]
                                  :when mush]
                              (if-appetizing-then-eat snipe mush))]
-    (doseq [[snipe eaten?] snipes-plus-eaten?] ;; TODO For now do it destructively (no need to clear, and leave be snipes w/out mushrooms)
-      (let [{:keys [x y]} snipe]
-        (.set snipe-field x y snipe) ; replace old snipe with new, more experienced snipe, or maybe the same one
-        (.set mush-field x y nil)
-        (add-organism-to-rand-loc! rng mush-field env-width env-height 
-                                   (partial add-mush! rng cfg-data)))) ; can't use same procedure for mushrooms as for snipes
-    [snipe-field mush-field])) ; TODO currently returning same fields, but with destructive modifications
+    ;; TODO Later create new fields here; for now do it destructively (no need to clear since only replacing)
+    (doseq [[snipe eaten?] snipes-plus-eaten?]
+      (when eaten?
+        (let [{:keys [x y]} snipe]
+          (.set snipe-field x y snipe) ; replace old snipe with new, more experienced snipe, or maybe the same one
+          (.set mush-field x y nil)
+          (add-organism-to-rand-loc! rng mush-field env-width env-height 
+                                     (partial add-mush! rng cfg-data))))) ; can't use same procedure for mushrooms as for snipes
+    [snipe-field mush-field]))
 
 (defn choose-next-loc
   "Return a pair of field coordinates randomly selected from the empty 
