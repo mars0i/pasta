@@ -97,8 +97,6 @@
 ;      (when-let [snipe (.get snipe-field x y)]
 ;        (println (and (= x (:x snipe)) (= y (:y snipe))))))
 
-;; TODO also need to update mush-field with new mushrooms. or just reuse the old ones, since they have no state.
-
 (defn perceive-mushroom [snipe mush] [snipe true]) ; FIXME
 
 (defn eat-if-appetizing 
@@ -111,8 +109,9 @@
 ;(when-not (.get snipe-field (:x snipe) (:y snipe)) (println "Whoaa! No snipe at" (:x snipe) (:y snipe))) ; DEBUG
 
 (defn snipes-eat!
-  [rng cfg-data snipes snipe-field mush-field]
+  [rng cfg-data snipe-field mush-field]
   (let [{:keys [env-width env-height]} cfg-data
+        snipes (.elements snipe-field)
         snipes-plus-eaten? (for [snipe snipes    ; returns only snipes on mushrooms
                                  :let [{:keys [x y]} snipe
                                        mush (.get mush-field x y)]
@@ -159,9 +158,11 @@
   [snipe-field x y snipe]
   (.set snipe-field x y (assoc snipe :x x :y y)))
 
+;; we don't need cfg-data for width and height since using toroidal movement
 (defn move-snipes!
-  [rng cfg-data snipes snipe-field]
-  (let [loc-snipe-vec-maps (for [snipe snipes  ; make seq of maps with a coord pair as key and singleton seq containing snipe as val
+  [rng snipe-field]
+  (let [snipes (.elements snipe-field)
+        loc-snipe-vec-maps (for [snipe snipes  ; make seq of maps with a coord pair as key and singleton seq containing snipe as val
                                  :let [next-loc (choose-next-loc rng snipe-field snipe)]] ; can be current loc
                              next-loc)
         loc-snipe-vec-map (apply merge-with concat loc-snipe-vec-maps) ; convert sec of maps to a single map where snipe-vecs with same loc are concatenated
@@ -186,6 +187,6 @@
 (defn next-popenv
   [popenv rng cfg-data] ; put popenv first so we can swap! it
   (let [{:keys [snipe-field mush-field]} popenv
-        snipe-field (move-snipes! rng cfg-data (.elements snipe-field) snipe-field)                         ; replaces with snipes with new snipes with new positions
-        [snipe-field mush-field] (snipes-eat! rng cfg-data (.elements snipe-field) snipe-field mush-field)] ; replaces snipes with new snipes with same positions
+        snipe-field (move-snipes! rng snipe-field)                         ; replaces with snipes with new snipes with new positions
+        [snipe-field mush-field] (snipes-eat! rng cfg-data snipe-field mush-field)] ; replaces snipes with new snipes with same positions
     (PopEnv. snipe-field mush-field)))
