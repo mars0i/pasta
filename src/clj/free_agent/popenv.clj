@@ -14,10 +14,13 @@
 
 (defrecord PopEnv [snipe-field mush-field])
 
+;; This seems to introduce a required non-functional-style element to 
+;; initialization, but it can be avoided by simply constructing a 
+;; non-atom-ic cfg-data structure, passing it to make-popenv and next-popenv.
 (defn setup-new-popenv!
   "Calculates env-center and creates a new popenv, storing them in cfg-data$."
   [rng cfg-data$]
-  (swap! cfg-data$ assoc :env-center (/ (:env-width @cfg-data$) 2.0))
+  (swap! cfg-data$ assoc :env-center (/ (:env-width @cfg-data$) 2.0)) ; this number has to be used repeatedly both from make-popenv and next-popenv
   (swap! cfg-data$ assoc :popenv (make-popenv rng @cfg-data$)))
 
 (defn make-popenv
@@ -30,6 +33,16 @@
     (.clear snipe-field)
     (add-k-snipes! rng cfg-data snipe-field)
     (add-r-snipes! rng cfg-data snipe-field)
+    (PopEnv. snipe-field mush-field)))
+
+;; NOTE Although move-snipes! and snipes-eat! may destructively modify the fields,
+;; they create *new snipes*, so you have to get a new collection of snipes after
+;; running one; you have to make sure the other one gets the new snipes.
+(defn next-popenv
+  [popenv rng cfg-data] ; put popenv first so we can swap! it
+  (let [{:keys [snipe-field mush-field]} popenv
+        snipe-field (move-snipes! rng snipe-field)                         ; replaces with snipes with new snipes with new positions
+        [snipe-field mush-field] (snipes-eat! rng cfg-data snipe-field mush-field)] ; replaces snipes with new snipes with same positions
     (PopEnv. snipe-field mush-field)))
 
 (defn organism-setter
@@ -188,13 +201,3 @@
       (move-snipe! snipe-field x y snipe))
     ;; Since we destructively modified snipe-field, we don't have to assoc it in to a new popenv (oh...)
     snipe-field))
-
-;; NOTE Although move-snipes! and snipes-eat! may destructively modify the fields,
-;; they create *new snipes*, so you have to get a new collection of snipes after
-;; running one; you have to make sure the other one gets the new snipes.
-(defn next-popenv
-  [popenv rng cfg-data] ; put popenv first so we can swap! it
-  (let [{:keys [snipe-field mush-field]} popenv
-        snipe-field (move-snipes! rng snipe-field)                         ; replaces with snipes with new snipes with new positions
-        [snipe-field mush-field] (snipes-eat! rng cfg-data snipe-field mush-field)] ; replaces snipes with new snipes with same positions
-    (PopEnv. snipe-field mush-field)))
