@@ -150,18 +150,27 @@
         width (hex-scale-width width)    ; for hexagonal grid
         height (hex-scale-height height) ; for hexagonal grid
         display (Display2D. width height this)
-        display-frame (.createFrame display)]
+        display-frame (.createFrame display)
+        bg-field-portrayal (get-bg-field-portrayal this)
+        mush-field-portrayal (get-mush-field-portrayal this)
+        snipe-field-portrayal (get-snipe-field-portrayal this)]
     (set-display! this display)
     (doto display
       (.setClipping false)
-      (.attach (get-bg-field-portrayal this) "env")         ; The order of attaching is the order of painting.
-      (.attach (get-mush-field-portrayal this) "mushrooms") ; what's attached later will appear on top of what's earlier. 
-      (.attach (get-snipe-field-portrayal this) "snipes"))  
+      (.attach bg-field-portrayal "env")         ; The order of attaching is the order of painting.
+      (.attach mush-field-portrayal "mushrooms") ; what's attached later will appear on top of what's earlier. 
+      (.attach snipe-field-portrayal "snipes"))  
     (set-display-frame! this display-frame)
     (.registerFrame controller display-frame)
     (doto display-frame 
       (.setTitle "free-agent")
-      (.setVisible true))))
+      (.setVisible true))
+    (.scheduleRepeatingImmediatelyAfter this
+                                        (reify Steppable 
+                                          (step [this sim-state]
+                                            (let [{:keys [snipe-field mush-field]} (:popenv cfg-data)]
+                                            (.setField snipe-field-portrayal snipe-field)
+                                            (.setField mush-field-portrayal mush-field)))))))
 
 (defn -quit
   [this]
