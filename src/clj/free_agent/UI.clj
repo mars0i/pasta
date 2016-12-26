@@ -86,7 +86,8 @@
   (let [sim-config (.getState this-ui)
         ui-config (.getUIState this-ui)
         rng (.random sim-config)
-        cfg-data @(.simConfigData sim-config)
+        cfg-data$ (.simConfigData sim-config)
+        cfg-data @cfg-data$
         mush-high-mean (:mush-high-mean cfg-data)
         popenv (:popenv cfg-data)
         mush-field  (:mush-field  popenv)
@@ -114,6 +115,13 @@
     (.setPortrayalForClass mush-field-portrayal free_agent.mush.Mush mush-portrayal)  ; (OvalPortrayal2D. (Color. 180 180 180) 1.0)
     (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe (OvalPortrayal2D. k-snipe-color snipe-size))
     (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe (OvalPortrayal2D. r-snipe-color snipe-size))
+    ;; Since popenvs are updated functionally, have to tell the ui about the new popenv on every timestep:
+    (.scheduleRepeatingImmediatelyAfter this-ui
+                                        (reify Steppable 
+                                          (step [this sim-state]
+                                            (let [{:keys [snipe-field mush-field]} (:popenv @cfg-data$)]
+                                            (.setField snipe-field-portrayal snipe-field)
+                                            (.setField mush-field-portrayal mush-field)))))
     ;; set up display:
     (doto display
       (.reset )
@@ -164,13 +172,7 @@
     (.registerFrame controller display-frame)
     (doto display-frame 
       (.setTitle "free-agent")
-      (.setVisible true))
-    (.scheduleRepeatingImmediatelyAfter this
-                                        (reify Steppable 
-                                          (step [this sim-state]
-                                            (let [{:keys [snipe-field mush-field]} (:popenv cfg-data)]
-                                            (.setField snipe-field-portrayal snipe-field)
-                                            (.setField mush-field-portrayal mush-field)))))))
+      (.setVisible true))))
 
 (defn -quit
   [this]
