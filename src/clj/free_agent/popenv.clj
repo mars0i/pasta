@@ -12,6 +12,11 @@
          maybe-add-mush! add-mushs!  perceive-mushroom eat-if-appetizing snipes-eat 
          choose-next-loc move-snipe! move-snipes next-popenv)
 
+(defn setup-popenv-config!
+  [cfg-data$]
+  (let [{:keys [env-width]} @cfg-data$]
+    (swap! cfg-data$ assoc :env-center (/ env-width 2.0))))
+
 (defrecord PopEnv [snipe-field mush-field])
 
 (defn make-popenv
@@ -32,6 +37,8 @@
         snipe-field (move-snipes rng cfg-data snipe-field)                         ; replaces with snipes with new snipes with new positions
         [snipe-field mush-field] (snipes-eat rng cfg-data snipe-field mush-field)] ; replaces snipes with new snipes with same positions
     (PopEnv. snipe-field mush-field)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn organism-setter
   ([organism-maker]
@@ -102,7 +109,8 @@
 ;      (when-let [snipe (.get snipe-field x y)]
 ;        (println (and (= x (:x snipe)) (= y (:y snipe))))))
 
-(defn perceive-mushroom [snipe mush] [snipe true]) ; FIXME
+(defn perceive-mushroom [snipe mush]
+  [snipe true]) ; FIXME
 
 (defn eat-if-appetizing 
   "Returns a pair containing (a) a new version of the snipe, with 
@@ -126,17 +134,18 @@
                                        mush (.get mush-field x y)]
                                  :when mush]
                              (eat-if-appetizing snipe mush))
-        new-snipe-field (ObjectGrid2D. env-width env-height)
-        new-mush-field  (ObjectGrid2D. env-width env-height)]
+        new-snipe-field (ObjectGrid2D. snipe-field) ; new field that's a copy of old one
+        new-mush-field  (ObjectGrid2D. mush-field)] ; TODO does this full copy (slower) rather than pointer-copy?
     ;; FIXME NOT RIGHT since unchanged mushrooms and snipes are not copied over to new fields
     (doseq [[snipe ate?] snipes-plus-eaten?]
       (when ate?
         (let [{:keys [x y]} snipe]
           (.set new-snipe-field x y snipe) ; replace old snipe with new, more experienced snipe, or maybe the same one
-          (.set new-mush-field x y nil)
+          (.set new-mush-field x y nil)    ; mushroom has been eaten
+          ;; a new mushroom grows elsewhere:
           (add-organism-to-rand-loc! rng new-mush-field env-width env-height 
                                      (partial add-mush! rng cfg-data))))) ; can't use same procedure for mushrooms as for snipes
-    [snipe-field mush-field]))
+    [new-snipe-field new-mush-field]))
 
 ;; reusable bags for choose-next-loc
 (def x-coord-bag (IntBag. 6))
