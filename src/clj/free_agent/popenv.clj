@@ -14,15 +14,6 @@
 
 (defrecord PopEnv [snipe-field mush-field])
 
-;; This seems to introduce a required non-functional-style element to 
-;; initialization, but it can be avoided by simply constructing a 
-;; non-atom-ic cfg-data structure, passing it to make-popenv and next-popenv.
-(defn setup-new-popenv!
-  "Calculates env-center and creates a new popenv, storing them in cfg-data$."
-  [rng cfg-data$]
-  (swap! cfg-data$ assoc :env-center (/ (:env-width @cfg-data$) 2.0)) ; this number has to be used repeatedly both from make-popenv and next-popenv
-  (swap! cfg-data$ assoc :popenv (make-popenv rng @cfg-data$)))
-
 (defn make-popenv
   [rng cfg-data]
   (let [{:keys [env-width env-height]} cfg-data
