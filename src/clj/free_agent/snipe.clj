@@ -11,11 +11,21 @@
   [] 
   (Long. (str (gensym ""))))
 
+(defprotocol InspectedSnipe
+  "Methods to allow MASON to inspect snipe states."
+  (getEnergy [this]))
+
 ;; The real difference between k- and r-snipes is in how levels is implemented,
 ;; but it will be useful to have two different wrapper classes to make it easier to
 ;; observe differences.
-(defrecord KSnipe [id levels energy x y]) ; levels is a sequence of free-agent.Levels
-(defrecord RSnipe [id levels energy x y]) ; levels is a sequence of free-agent.Levels
+
+(defrecord KSnipe [id levels energy x y] ; levels is a sequence of free-agent.Levels
+  InspectedSnipe
+  (getEnergy [this] (:energy this)))
+
+(defrecord RSnipe [id levels energy x y] ; levels is a sequence of free-agent.Levels
+  InspectedSnipe
+  (getEnergy [this] (:energy this)))
 
 (defn make-k-snipe [energy prior x y]
   (KSnipe. (next-id)
