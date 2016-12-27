@@ -112,28 +112,35 @@
 (defn perceive-mushroom [snipe mush]
   [snipe true]) ; FIXME
 
+(defn add-to-energy
+  [snipe-energy max-energy mush-nutrition]
+  (max 0 
+       (min max-energy 
+            (+ snipe-energy mush-nutrition))))
+
+
 (defn eat-if-appetizing 
   "Returns a pair containing (a) a new version of the snipe, with 
   an updated cognitive state, if appropriate, and an updated 
   energy level if eating occured; and (b) a boolean indicating
   whether eating occurred."
-  [snipe mush] 
+  [max-energy snipe mush] 
   (let [[experienced-snipe appetizing?] (perceive-mushroom snipe mush)]
     (if appetizing?
-      [(update experienced-snipe :energy + (:nutrition mush)) true]
+      [(update experienced-snipe :energy add-to-energy max-energy (:nutrition mush)) true]
       [experienced-snipe false])))
 
 ;(when-not (.get snipe-field (:x snipe) (:y snipe)) (println "Whoaa! No snipe at" (:x snipe) (:y snipe))) ; DEBUG
 
 (defn snipes-eat
   [rng cfg-data snipe-field mush-field]
-  (let [{:keys [env-width env-height]} cfg-data
+  (let [{:keys [env-width env-height max-energy]} cfg-data
         snipes (.elements snipe-field)
         snipes-plus-eaten? (for [snipe snipes    ; returns only snipes on mushrooms
                                  :let [{:keys [x y]} snipe
                                        mush (.get mush-field x y)]
                                  :when mush]
-                             (eat-if-appetizing snipe mush))
+                             (eat-if-appetizing  max-energy snipe mush))
         new-snipe-field (ObjectGrid2D. snipe-field) ; new field that's a copy of old one
         new-mush-field  (ObjectGrid2D. mush-field)] ; TODO does this full copy (slower) rather than pointer-copy?
     ;; FIXME NOT RIGHT since unchanged mushrooms and snipes are not copied over to new fields

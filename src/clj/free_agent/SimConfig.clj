@@ -31,7 +31,8 @@
                       [mush-high-mean     16.0  double true        ["-h" "Mean of mushroom light distribution" :parse-fn #(Double. %)]]
                       [mush-sd             2.0  double true        ["-s" "Standard deviation of mushroom light distribution" :parse-fn #(Double. %)]]
                       [mush-pos-nutrition  1.0  double [0.0 20.0]  ["-m" "Energy from eating a nutritious mushroom" :parse-fn #(Double. %)]]
-                      [mush-neg-nutrition -0.1  double [-10.0 0.0] ["-n" "Energy from eating a nutritious mushroom" :parse-fn #(Double. %)]]
+                      [mush-neg-nutrition -1.0  double [-10.0 0.0] ["-n" "Energy from eating a nutritious mushroom" :parse-fn #(Double. %)]]
+                      [max-energy         30    double [1.0 100.0] ["-x" "Max energy that a snipe can have." :parse-fn #(Double. %)]]
                       [env-width          80    long   false       ["-w" "How wide is env?  Must be an even number." :parse-fn #(Long. %)]] ; can be set from command line but not in running app
                       [env-height         40    long   false       ["-t" "How tall is env? Should be an even number." :parse-fn #(Long. %)]] ; ditto
                       [env-display-size   12.0  double false       ["-d" "How large to display the env in gui by default." :parse-fn #(Double. %)]]
