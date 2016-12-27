@@ -11,9 +11,15 @@
   [] 
   (Long. (str (gensym ""))))
 
-(defprotocol InspectedSnipe
-  "Methods to allow MASON to inspect snipe states."
-  (getEnergy [this]))
+;(defprotocol InspectedSnipe
+;  "Methods to allow MASON to inspect snipe states."
+;  (getEnergy ^double [this]))
+
+(definterface InspectedSnipe
+  (^double getEnergy []))
+
+;; to see that this method is visible for snipes, try this:
+;; (pprint (.getDeclaredMethods (class k)))
 
 ;; The real difference between k- and r-snipes is in how levels is implemented,
 ;; but it will be useful to have two different wrapper classes to make it easier to
