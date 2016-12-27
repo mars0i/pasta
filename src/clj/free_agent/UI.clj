@@ -8,9 +8,8 @@
   (:import [free-agent mush snipe SimConfig]
            [sim.engine Steppable Schedule]
            [sim.field.grid ObjectGrid2D] ; normally doesn't belong in UI: a hack to use a field portrayal to display a background pattern
-           ;[sim.portrayal.grid ObjectGridPortrayal2D]
-           [sim.portrayal.grid HexaObjectGridPortrayal2D]
-           ;[sim.portrayal.grid FastHexaObjectGridPortrayal2D]
+           [sim.portrayal DrawInfo2D]
+           [sim.portrayal.grid HexaObjectGridPortrayal2D] ;[sim.portrayal.grid FastHexaObjectGridPortrayal2D]
            [sim.portrayal.simple OvalPortrayal2D RectanglePortrayal2D ShapePortrayal2D HexagonalPortrayal2D]
            [sim.display Console Display2D]
            [java.awt Color])
@@ -23,17 +22,19 @@
     :state getUIState
     :init init-instance-state))
 
-;; fixed display parameters:
-(def k-snipe-color (Color. 240 0 0))
-(def r-snipe-color (Color. 0 0 250))
-(def snipe-size 0.42)
+;; display parameters:
 (def mush-pos-nutrition-shade 100) ; a grayscale value in [0,255]
 (def mush-neg-nutrition-shade 255)
 (def mush-high-mean-size 1.0) ; we don't scale mushroom size to modeled size, but
 (def mush-low-mean-size 0.70)  ;  still display the low-size mushroom smaller
-;; background circle displayed in mushroom-less patches:
-(def bg-pattern-color (Color. 200 200 200))
-;(def bg-pattern-color (Color. 200 165 165)) ; a dirty pink
+;; background portrayal displayed in mushroom-less patches:
+(def bg-pattern-color (Color. 210 210 210)) ; or: a dirty pink: (def bg-pattern-color (Color. 200 165 165)) 
+(def bg-border-color (Color. 140 140 140)) ; what shows through around the edges of simple portrayals in the background field portrayal
+(def snipe-size 0.45)
+(defn snipe-shade-fn [max-energy snipe] (int (* 255 (/ (:energy snipe) max-energy))))
+(defn k-snipe-color-fn [max-energy snipe] (Color. (snipe-shade-fn max-energy snipe) 0 0))
+(defn r-snipe-color-fn [max-energy snipe] (Color. 0 0 (snipe-shade-fn max-energy snipe)))
+(def org-offset 0.6) ; with simple hex portrayals to display grid, organisms off center; pass this to DrawInfo2D to correct.
 
 (defn -init-instance-state
   [& args]
@@ -81,14 +82,6 @@
 
 ;; Possibly also define a load() method. See manual.
 
-(defn k-snipe-color-fn
-  [shade]
-  (Color. shade 0 0))
-
-(defn r-snipe-color-fn
-  [shade]
-  (Color. 0 0 shade))
-
 (defn setup-portrayals
   [this-ui]  ; instead of 'this': avoid confusion with e.g. proxy below
   (let [sim-config (.getState this-ui)
@@ -105,43 +98,31 @@
         snipe-field-portrayal (get-snipe-field-portrayal this-ui)
         bg-field-portrayal (get-bg-field-portrayal this-ui)
         display (get-display this-ui)
-        mush-portrayal (proxy [OvalPortrayal2D] []   ; note captures 'this'
+        ;; These portrayals should be local to setup-portrayals because 
+        ;; proxy needs to capture the correct 'this', and we need cfg-data:
+        mush-portrayal (proxy [OvalPortrayal2D] []
                          (draw [mush graphics info]  ; override method in super
-                           (let [size  (if (= mush-high-mean (:mean mush))  ; btw: why the def has to be local to setup-portrayals
-                                         mush-high-mean-size
-                                         mush-low-mean-size)
-                                 shade (if (neg? (:nutrition mush))
-                                         mush-neg-nutrition-shade
-                                         mush-pos-nutrition-shade)]
-                             (set! (.-scale this) size)
+                           (let [size  (if (= mush-high-mean (:mean mush)) mush-high-mean-size mush-low-mean-size)
+                                 shade (if (neg? (:nutrition mush)) mush-neg-nutrition-shade mush-pos-nutrition-shade)]
+                             (set! (.-scale this) size)                       ; superclass vars
                              (set! (.-paint this) (Color. shade shade shade))
-                             (proxy-super draw mush graphics info))))
-        make-snipe-portrayal (fn [max-energy color-fn]
-                               (proxy [OvalPortrayal2D] [snipe-size]
-                                 (draw [snipe graphics info]          ; override OvalPortrayal2D method
-                                   (let [shade (int (* 255 (/ (:energy snipe) max-energy)))]
-                                     (set! (.-paint this) (color-fn shade)) ; paint var is in OvalPortrayal2D
-                                     (proxy-super draw snipe graphics info)))))
-        k-snipe-portrayal (make-snipe-portrayal max-energy k-snipe-color-fn)
-        r-snipe-portrayal (make-snipe-portrayal max-energy r-snipe-color-fn)]
-    (.setField bg-field-portrayal (ObjectGrid2D. (:env-width cfg-data) (:env-height cfg-data))) ; empty field portrayal just to display a background grid
+                             (proxy-super draw mush graphics (DrawInfo2D. info org-offset org-offset))))) ; last arg centers organism in hex cell
+        k-snipe-portrayal (proxy [RectanglePortrayal2D] [(* 0.9 snipe-size)] ; squares are bigger than circles
+                                 (draw [snipe graphics info] ; orverride method in super
+                                     (set! (.-paint this) (k-snipe-color-fn max-energy snipe)) ; paint var is in superclass
+                                     (proxy-super draw snipe graphics (DrawInfo2D. info (* 1.5 org-offset) (* 1.5 org-offset))))) ; see above re last arg
+        r-snipe-portrayal (proxy [OvalPortrayal2D] [snipe-size]
+                                 (draw [snipe graphics info] ; override method in super
+                                     (set! (.-paint this) (r-snipe-color-fn max-energy snipe)) ; superclass var
+                                     (proxy-super draw snipe graphics (DrawInfo2D. info org-offset org-offset))))] ; see above re last arg
+    (.setField bg-field-portrayal (ObjectGrid2D. (:env-width cfg-data) (:env-height cfg-data))) ; displays a background grid
     (.setField mush-field-portrayal mush-field)
     (.setField snipe-field-portrayal snipe-field)
-
-    (.setPortrayalForNull bg-field-portrayal (OvalPortrayal2D. bg-pattern-color 1.0)) ; background circle displayed in mushroom-less patches
-    ;(.setPortrayalForNull bg-field-portrayal (HexagonalPortrayal2D. bg-pattern-color 0.925)) ; or hexagons, smaller than cell to show edges
-
     ; **NOTE** UNDERSCORES NOT HYPHENS IN free_agent CLASSNAMES BELOW:
+    (.setPortrayalForNull bg-field-portrayal (HexagonalPortrayal2D. bg-pattern-color 0.90)) ; show patches as such (or use OvalPortrayal2D with scale 1.0)
     (.setPortrayalForClass mush-field-portrayal free_agent.mush.Mush mush-portrayal)
-
     (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe k-snipe-portrayal)
-    ;(.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe (OvalPortrayal2D. k-snipe-color snipe-size))
-    ;(.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe (ShapePortrayal2D. ShapePortrayal2D/X_POINTS_BOWTIE ShapePortrayal2D/Y_POINTS_BOWTIE k-snipe-color snipe-size))
-
     (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe r-snipe-portrayal)
-    ;(.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe (OvalPortrayal2D. r-snipe-color snipe-size))
-    ;(.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe (RectanglePortrayal2D. r-snipe-color snipe-size))
-
     ;; Since popenvs are updated functionally, have to tell the ui about the new popenv on every timestep:
     (.scheduleRepeatingImmediatelyAfter this-ui
                                         (reify Steppable 
@@ -152,9 +133,19 @@
     ;; set up display:
     (doto display
       (.reset )
-      (.setBackdrop (Color. 0 0 0))
+      (.setBackdrop bg-border-color)
       (.repaint))))
 
+;; other options:
+;(.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe (ShapePortrayal2D. ShapePortrayal2D/X_POINTS_BOWTIE ShapePortrayal2D/Y_POINTS_BOWTIE k-snipe-color snipe-size))
+;make-snipe-portrayal (fn [max-energy color-fn]
+;                       (proxy [OvalPortrayal2D] [snipe-size]
+;                         (draw [snipe graphics info]          ; override OvalPortrayal2D method
+;                           (let [shade (int (* 255 (/ (:energy snipe) max-energy)))]
+;                             (set! (.-paint this) (color-fn shade)) ; paint var is in OvalPortrayal2D
+;                             (proxy-super draw snipe graphics info)))))
+;k-snipe-portrayal (make-snipe-portrayal max-energy k-snipe-color-fn)
+;r-snipe-portrayal (make-snipe-portrayal max-energy r-snipe-color-fn)
 
 
 ;; For hex grid, need to rescale display (based on HexaBugsWithUI.java around line 200 in Mason 19):
