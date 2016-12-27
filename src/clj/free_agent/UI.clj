@@ -89,14 +89,6 @@
   [shade]
   (Color. 0 0 shade))
 
-(defn make-snipe-portrayal
-  [max-energy color-fn]
-  (proxy [OvalPortrayal2D] [snipe-size]
-    (draw [snipe graphics info]          ; override OvalPortrayal2D method
-      (let [shade (int (* 255 (/ (:energy snipe) max-energy)))]
-        (set! (.-paint this) (color-fn shade)) ; paint var is in OvalPortrayal2D
-        (proxy-super draw snipe graphics info)))))
-
 (defn setup-portrayals
   [this-ui]  ; instead of 'this': avoid confusion with e.g. proxy below
   (let [sim-config (.getState this-ui)
@@ -124,6 +116,12 @@
                              (set! (.-scale this) size)
                              (set! (.-paint this) (Color. shade shade shade))
                              (proxy-super draw mush graphics info))))
+        make-snipe-portrayal (fn [max-energy color-fn]
+                               (proxy [OvalPortrayal2D] [snipe-size]
+                                 (draw [snipe graphics info]          ; override OvalPortrayal2D method
+                                   (let [shade (int (* 255 (/ (:energy snipe) max-energy)))]
+                                     (set! (.-paint this) (color-fn shade)) ; paint var is in OvalPortrayal2D
+                                     (proxy-super draw snipe graphics info)))))
         k-snipe-portrayal (make-snipe-portrayal max-energy k-snipe-color-fn)
         r-snipe-portrayal (make-snipe-portrayal max-energy r-snipe-color-fn)]
     (.setField bg-field-portrayal (ObjectGrid2D. (:env-width cfg-data) (:env-height cfg-data))) ; empty field portrayal just to display a background grid
