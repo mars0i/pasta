@@ -20,19 +20,22 @@
 (def commandline (atom nil)) ; Needed by defsimconfig and other code below if we're defining commandline options
 
 ;;                 field name      initial-value type  in ui? with range?
-(defcfg/defsimconfig [[initial-energy     10.0  double [0.0 20.0]  ["-e" "Initial energy for each snipe" :parse-fn #(Double. %)]]
+(defcfg/defsimconfig [
+                      [num-k-snipes       50    long   [1 500]     ["-N" "Size of k-snipe subpopulation" :parse-fn #(Long. %)]]
+                      [num-r-snipes       50    long   [1 500]     ["-o" "Size of r-snipe subpopulation" :parse-fn #(Long. %)]]
                       [k-snipe-prior      10.0  double [1.0 50.0]  ["-k" "Prior for k-snipes" :parse-fn #(Double. %)]]
                       [r-snipe-low-prior   5.0  double [1.0 50.0]  ["-q" "One of two possible priors for r-snipes" :parse-fn #(Double. %)]]
                       [r-snipe-high-prior 20.0  double [1.0 50.0]  ["-r" "One of two possible priors for r-snipes" :parse-fn #(Double. %)]]
-                      [num-k-snipes       50    long   [1 500]     ["-N" "Size of k-snipe subpopulation" :parse-fn #(Long. %)]]
-                      [num-r-snipes       50    long   [1 500]     ["-o" "Size of r-snipe subpopulation" :parse-fn #(Long. %)]]
-                      [mush-prob           0.1  double [0.0 1.0]   ["-p" "Average frequency of mushrooms." :parse-fn #(Double. %)]]
+                      [mush-prob           0.1  double [0.0 1.0]   ["-f" "Average frequency of mushrooms." :parse-fn #(Double. %)]]
                       [mush-low-mean       4.0  double true        ["-l" "Mean of mushroom light distribution" :parse-fn #(Double. %)]]
                       [mush-high-mean     16.0  double true        ["-h" "Mean of mushroom light distribution" :parse-fn #(Double. %)]]
                       [mush-sd             2.0  double true        ["-s" "Standard deviation of mushroom light distribution" :parse-fn #(Double. %)]]
-                      [mush-pos-nutrition  1.0  double [0.0 20.0]  ["-m" "Energy from eating a nutritious mushroom" :parse-fn #(Double. %)]]
-                      [mush-neg-nutrition -1.0  double [-10.0 0.0] ["-n" "Energy from eating a nutritious mushroom" :parse-fn #(Double. %)]]
-                      [max-energy         30    double [1.0 100.0] ["-x" "Max energy that a snipe can have." :parse-fn #(Double. %)]]
+                      [mush-pos-nutrition  1.0  double [0.0 20.0]  ["-n" "Energy from eating a nutritious mushroom" :parse-fn #(Double. %)]]
+                      [mush-neg-nutrition -1.0  double [-20.0 0.0] ["-p" "Energy from eating a poisonous mushroom" :parse-fn #(Double. %)]]
+                      [initial-energy     10.0  double [0.0 50.0]  ["-e" "Initial energy for each snipe" :parse-fn #(Double. %)]]
+                      [birth-threshold    15.0  double [1.0 50.0]  ["-b" "Energy level at which birth takes place" :parse-fn #(Double. %)]]
+                      [birth-cost          1.0  double [0.0 10.0]  ["-c" "Energetic cost of giving birth to one offspring" :parse-fn #(Double. %)]]
+                      [max-energy         30.0  double [1.0 100.0] ["-x" "Max energy that a snipe can have." :parse-fn #(Double. %)]]
                       [env-width          80    long   false       ["-w" "How wide is env?  Must be an even number." :parse-fn #(Long. %)]] ; can be set from command line but not in running app
                       [env-height         40    long   false       ["-t" "How tall is env? Should be an even number." :parse-fn #(Long. %)]] ; ditto
                       [env-display-size   12.0  double false       ["-d" "How large to display the env in gui by default." :parse-fn #(Double. %)]]
