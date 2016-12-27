@@ -93,8 +93,7 @@
   [max-energy color-fn]
   (proxy [OvalPortrayal2D] [snipe-size]
     (draw [snipe graphics info]          ; override OvalPortrayal2D method
-      (let [shade (int (* 255 (/ (min (:energy snipe) max-energy)
-                                 max-energy)))]
+      (let [shade (int (* 255 (/ (:energy snipe) max-energy)))]
         (set! (.-paint this) (color-fn shade)) ; paint var is in OvalPortrayal2D
         (proxy-super draw snipe graphics info)))))
 
