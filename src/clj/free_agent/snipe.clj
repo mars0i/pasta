@@ -33,14 +33,26 @@
   InspectedSnipe
   (getEnergy [this] (:energy this)))
 
-(defn make-k-snipe [energy prior x y]
-  (KSnipe. (next-id)
-           nil ;; TODO construct levels function here using prior
-           energy
-           x y))
+(defn make-k-snipe 
+  ([cfg-data x y]
+   (let [{:keys [energy k-snipe-prior]} cfg-data]
+     (make-k-snipe energy k-snipe-prior x y)))
+  ([energy prior x y]
+   (KSnipe. (next-id)
+            nil ;; TODO construct levels function here using prior
+            energy
+            x y)))
 
-(defn make-r-snipe [energy low-prior high-prior x y]
-  (RSnipe. (next-id)
-           nil ;; TODO construct levels function here using prior (one of two values, randomly)
-           energy
-           x y))
+(defn make-r-snipe
+  ([cfg-data x y]
+   (let [{:keys [energy r-snipe-low-prior r-snipe-high-prior]} cfg-data]
+     (make-r-snipe energy r-snipe-low-prior r-snipe-high-prior x y)))
+  ([energy low-prior high-prior x y]
+   (RSnipe. (next-id)
+            nil ;; TODO construct levels function here using prior (one of two values, randomly)
+            energy
+            x y)))
+
+;; note underscores
+(defn is-k-snipe? [s] (instance? free_agent.KSnipe s))
+(defn is-r-snipe? [s] (instance? free_agent.RSnipe s))
