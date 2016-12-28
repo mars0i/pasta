@@ -28,7 +28,7 @@
 (def mush-high-mean-size 1.0) ; we don't scale mushroom size to modeled size, but
 (def mush-low-mean-size 0.65)  ;  still display the low-size mushroom smaller
 ;; background portrayal displayed in mushroom-less patches:
-(def bg-pattern-color (Color. 220 220 220)) ; or: a dirty pink: (def bg-pattern-color (Color. 200 165 165)) 
+(def bg-pattern-color (Color. 215 215 215)) ; or: a dirty pink: (def bg-pattern-color (Color. 200 165 165)) 
 (def bg-border-color (Color. 140 140 140)) ; what shows through around the edges of simple portrayals in the background field portrayal
 (def snipe-size 0.45)
 (defn snipe-shade-fn [max-energy snipe] (int (* 255 (/ (:energy snipe) max-energy))))
@@ -117,7 +117,8 @@
         r-snipe-portrayal (proxy [OvalPortrayal2D] [snipe-size]
                             (draw [snipe graphics info] ; override method in super
                               (set! (.-paint this) (r-snipe-color-fn max-energy snipe)) ; superclass var
-                              (proxy-super draw snipe graphics (DrawInfo2D. info org-offset org-offset))))] ; see above re last arg
+                              (proxy-super draw snipe graphics (DrawInfo2D. info org-offset org-offset)))) ; see above re last arg
+        r-snipe-portrayal (CircledPortrayal2D. r-snipe-portrayal Color/blue true)] ; NOT WORKING. 
     (.setField bg-field-portrayal (ObjectGrid2D. (:env-width cfg-data) (:env-height cfg-data))) ; displays a background grid
     (.setField mush-field-portrayal mush-field)
     (.setField snipe-field-portrayal snipe-field)
