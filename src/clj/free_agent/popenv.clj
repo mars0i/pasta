@@ -7,10 +7,11 @@
 
 ;(use '[clojure.pprint]) ; DEBUG
 
-(declare setup-popenv! new-popenv make-popenv populate-env! organism-setter 
-         add-organism-to-rand-loc!  add-k-snipes!  add-r-snipes! add-mush! 
-         maybe-add-mush! add-mushs!  perceive-mushroom eat-if-appetizing snipes-eat 
-         choose-next-loc move-snipe! move-snipes next-popenv snipes-die)
+(declare setup-popenv-config! make-popenv next-popenv organism-setter 
+         add-organism-to-rand-loc! add-k-snipes! add-r-snipes! add-mush! 
+         maybe-add-mush! add-mushs! move-snipes move-snipe! choose-next-loc
+         perceive-mushroom add-to-energy eat-if-appetizing snipes-eat 
+         snipes-die snipes-reproduce)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TOP LEVEL FUNCTIONS
@@ -37,10 +38,23 @@
 (defn next-popenv
   [popenv rng cfg-data] ; put popenv first so we can swap! it
   (let [{:keys [snipe-field mush-field]} popenv
-        snipe-field (snipes-die cfg-data snipe-field)
-        snipe-field (move-snipes rng cfg-data snipe-field)                         ; replaces with snipes with new snipes with new positions
-        [snipe-field mush-field] (snipes-eat rng cfg-data snipe-field mush-field)] ; replaces snipes with new snipes with same positions
-    (PopEnv. snipe-field mush-field)))
+        new-snipe-field (->> snipe-field                     ; even I like a thread macro sometimes
+                             (snipes-reproduce rng cfg-data) ; birth before death in case birth uses remaining energy
+                             (snipes-die cfg-data)
+                             (move-snipes rng cfg-data)) ; only the living get to move
+        [newer-snipe-field new-mush-field] (snipes-eat rng 
+                                                       cfg-data 
+                                                       new-snipe-field 
+                                                       mush-field)]
+    (PopEnv. newer-snipe-field new-mush-field)))
+
+;(defn next-popenv
+;  [popenv rng cfg-data] ; put popenv first so we can swap! it
+;  (let [{:keys [snipe-field mush-field]} popenv
+;        snipe-field (snipes-die cfg-data snipe-field)
+;        snipe-field (move-snipes rng cfg-data snipe-field)                         ; replaces with snipes with new snipes with new positions
+;        [snipe-field mush-field] (snipes-eat rng cfg-data snipe-field mush-field)] ; replaces snipes with new snipes with same positions
+;    (PopEnv. snipe-field mush-field)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; CREATE AND PLACE ORGANISMS
@@ -64,19 +78,17 @@
 
 (defn add-k-snipes!
   [rng cfg-data field]
-  (let [{:keys [env-width env-height initial-energy k-snipe-prior num-k-snipes]} cfg-data]
-    (dotimes [_ (:num-k-snipes cfg-data)] ; don't use lazy method--it may never be executed
+  (let [{:keys [env-width env-height num-k-snipes]} cfg-data]
+    (dotimes [_ num-k-snipes] ; don't use lazy method--it may never be executed
       (add-organism-to-rand-loc! rng field env-width env-height 
-                                 (organism-setter (partial sn/make-k-snipe initial-energy k-snipe-prior))))))
+                                 (organism-setter (partial sn/make-k-snipe cfg-data))))))
 
 (defn add-r-snipes!
   [rng cfg-data field]
-  (let [{:keys [env-width env-height initial-energy r-snipe-low-prior r-snipe-high-prior num-r-snipes]} cfg-data]
+  (let [{:keys [env-width env-height num-r-snipes]} cfg-data]
     (dotimes [_ num-r-snipes]
       (add-organism-to-rand-loc! rng field env-width env-height 
-                                 (organism-setter (partial sn/make-r-snipe initial-energy 
-                                                           r-snipe-low-prior 
-                                                           r-snipe-high-prior))))))
+                                 (organism-setter (partial sn/make-r-snipe cfg-data))))))
 
 (defn add-mush!
   [rng cfg-data field x y]
@@ -231,3 +243,19 @@
     (doseq [snipe live-snipes]
       (.set new-snipe-field (:x snipe) (:y snipe) snipe))
     new-snipe-field))
+
+(defn snipes-reproduce
+  [rng cfg-data snipe-field]
+  (let [{:keys [env-width env-height birth-threshold birth-cost]} cfg-data
+        old-snipes (.elements snipe-field)
+        new-snipe-field (ObjectGrid2D. snipe-field)] ; new field that's a copy of old one
+    (doseq [snipe old-snipes]
+      (when (>= (:energy snipe) birth-threshold)
+        (.set new-snipe-field (:x snipe) (:y snipe)  ; replace with energy reduced due to birth
+              (update snipe :energy - birth-cost))
+        (add-organism-to-rand-loc! rng new-snipe-field env-width env-height ; add newborn
+                                   (organism-setter (if (sn/is-k-snipe? snipe)  ; newborn should be like parent
+                                                      (partial sn/make-k-snipe cfg-data)
+                                                      (partial sn/make-r-snipe cfg-data))))))
+    new-snipe-field))
+
