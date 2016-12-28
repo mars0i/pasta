@@ -35,8 +35,8 @@
 
 (defn make-k-snipe 
   ([cfg-data x y]
-   (let [{:keys [energy k-snipe-prior]} cfg-data]
-     (make-k-snipe energy k-snipe-prior x y)))
+   (let [{:keys [initial-energy k-snipe-prior]} cfg-data]
+     (make-k-snipe initial-energy k-snipe-prior x y)))
   ([energy prior x y]
    (KSnipe. (next-id)
             nil ;; TODO construct levels function here using prior
@@ -45,8 +45,8 @@
 
 (defn make-r-snipe
   ([cfg-data x y]
-   (let [{:keys [energy r-snipe-low-prior r-snipe-high-prior]} cfg-data]
-     (make-r-snipe energy r-snipe-low-prior r-snipe-high-prior x y)))
+   (let [{:keys [initial-energy r-snipe-low-prior r-snipe-high-prior]} cfg-data]
+     (make-r-snipe initial-energy r-snipe-low-prior r-snipe-high-prior x y)))
   ([energy low-prior high-prior x y]
    (RSnipe. (next-id)
             nil ;; TODO construct levels function here using prior (one of two values, randomly)
@@ -54,5 +54,5 @@
             x y)))
 
 ;; note underscores
-(defn is-k-snipe? [s] (instance? free_agent.KSnipe s))
-(defn is-r-snipe? [s] (instance? free_agent.RSnipe s))
+(defn is-k-snipe? [s] (instance? free_agent.snipe.KSnipe s))
+(defn is-r-snipe? [s] (instance? free_agent.snipe.RSnipe s))
