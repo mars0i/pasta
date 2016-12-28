@@ -10,7 +10,7 @@
            [sim.field.grid ObjectGrid2D] ; normally doesn't belong in UI: a hack to use a field portrayal to display a background pattern
            [sim.portrayal DrawInfo2D]
            [sim.portrayal.grid HexaObjectGridPortrayal2D] ;[sim.portrayal.grid FastHexaObjectGridPortrayal2D]
-           [sim.portrayal.simple OvalPortrayal2D RectanglePortrayal2D ShapePortrayal2D HexagonalPortrayal2D]
+           [sim.portrayal.simple OvalPortrayal2D RectanglePortrayal2D HexagonalPortrayal2D CircledPortrayal2D LabelledPortrayal2D]
            [sim.display Console Display2D]
            [java.awt Color])
   (:gen-class
@@ -109,13 +109,15 @@
                              (set! (.-paint this) (Color. shade shade shade))
                              (proxy-super draw mush graphics (DrawInfo2D. info org-offset org-offset))))) ; last arg centers organism in hex cell
         k-snipe-portrayal (proxy [RectanglePortrayal2D] [(* 0.9 snipe-size)] ; squares are bigger than circles
-                                 (draw [snipe graphics info] ; orverride method in super
-                                     (set! (.-paint this) (k-snipe-color-fn max-energy snipe)) ; paint var is in superclass
-                                     (proxy-super draw snipe graphics (DrawInfo2D. info (* 1.5 org-offset) (* 1.5 org-offset))))) ; see above re last arg
+                            (draw [snipe graphics info] ; orverride method in super
+                              (set! (.-paint this) (k-snipe-color-fn max-energy snipe)) ; paint var is in superclass
+                              (proxy-super draw snipe graphics (DrawInfo2D. info (* 1.5 org-offset) (* 1.5 org-offset))))) ; see above re last arg
+        k-snipe-portrayal (CircledPortrayal2D. k-snipe-portrayal Color/blue true) ; NOT WORKING. 
+        ;k-snipe-portrayal (LabelledPortrayal2D. k-snipe-portrayal 5.0 nil Color/green true)
         r-snipe-portrayal (proxy [OvalPortrayal2D] [snipe-size]
-                                 (draw [snipe graphics info] ; override method in super
-                                     (set! (.-paint this) (r-snipe-color-fn max-energy snipe)) ; superclass var
-                                     (proxy-super draw snipe graphics (DrawInfo2D. info org-offset org-offset))))] ; see above re last arg
+                            (draw [snipe graphics info] ; override method in super
+                              (set! (.-paint this) (r-snipe-color-fn max-energy snipe)) ; superclass var
+                              (proxy-super draw snipe graphics (DrawInfo2D. info org-offset org-offset))))] ; see above re last arg
     (.setField bg-field-portrayal (ObjectGrid2D. (:env-width cfg-data) (:env-height cfg-data))) ; displays a background grid
     (.setField mush-field-portrayal mush-field)
     (.setField snipe-field-portrayal snipe-field)
@@ -129,8 +131,8 @@
                                         (reify Steppable 
                                           (step [this sim-state]
                                             (let [{:keys [snipe-field mush-field]} (:popenv @cfg-data$)]
-                                            (.setField snipe-field-portrayal snipe-field)
-                                            (.setField mush-field-portrayal mush-field)))))
+                                              (.setField snipe-field-portrayal snipe-field)
+                                              (.setField mush-field-portrayal mush-field)))))
     ;; set up display:
     (doto display
       (.reset )
