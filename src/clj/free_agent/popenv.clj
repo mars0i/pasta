@@ -38,15 +38,15 @@
 (defn next-popenv
   [popenv rng cfg-data] ; put popenv first so we can swap! it
   (let [{:keys [snipe-field mush-field]} popenv
-        new-snipe-field (->> snipe-field                     ; even I like a thread macro sometimes
+        [new-snipe-field new-mush-field] (snipes-eat rng 
+                                                     cfg-data 
+                                                     snipe-field 
+                                                     mush-field)
+        new-snipe-field (->> new-snipe-field                     ; even I like a thread macro sometimes
                              (snipes-reproduce rng cfg-data) ; birth before death in case birth uses remaining energy
                              (snipes-die cfg-data)
-                             (move-snipes rng cfg-data)) ; only the living get to move
-        [newer-snipe-field new-mush-field] (snipes-eat rng 
-                                                       cfg-data 
-                                                       new-snipe-field 
-                                                       mush-field)]
-    (PopEnv. newer-snipe-field new-mush-field)))
+                             (move-snipes rng cfg-data))] ; only the living get to move
+    (PopEnv. new-snipe-field new-mush-field)))
 
 ;(defn next-popenv
 ;  [popenv rng cfg-data] ; put popenv first so we can swap! it
