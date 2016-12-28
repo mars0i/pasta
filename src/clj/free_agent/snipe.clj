@@ -11,27 +11,13 @@
   [] 
   (Long. (str (gensym ""))))
 
-;(defprotocol InspectedSnipe
-;  "Methods to allow MASON to inspect snipe states."
-;  (getEnergy ^double [this]))
-
-(definterface InspectedSnipe
-  (^double getEnergy []))
-
-;; to see that this method is visible for snipes, try this:
-;; (pprint (.getDeclaredMethods (class k)))
-
 ;; The real difference between k- and r-snipes is in how levels is implemented,
 ;; but it will be useful to have two different wrapper classes to make it easier to
 ;; observe differences.
 
-(defrecord KSnipe [id levels energy x y] ; levels is a sequence of free-agent.Levels
-  InspectedSnipe
-  (getEnergy [this] (:energy this)))
-
-(defrecord RSnipe [id levels energy x y] ; levels is a sequence of free-agent.Levels
-  InspectedSnipe
-  (getEnergy [this] (:energy this)))
+;; The fields are apparently automatically visible to the MASON inspector system. (!)
+(defrecord KSnipe [id levels energy x y]) ; levels is a sequence of free-agent.Levels
+(defrecord RSnipe [id levels energy x y])
 
 (defn make-k-snipe [energy prior x y]
   (KSnipe. (next-id)
@@ -44,3 +30,12 @@
            nil ;; TODO construct levels function here using prior (one of two values, randomly)
            energy
            x y))
+
+;; Incredibly, the following is not needed in order for snipes to be inspectable.
+;; MASON simply sees the record fields as properties.
+;; Thank you Clojure and MASON.
+;;
+;;     (defprotocol InspectedSnipe (getEnergy [this]))
+;;     (definterface InspectedSnipe (^double getEnergy []))
+;;     To see that this method is visible for snipes, try this:
+;;     (pprint (.getDeclaredMethods (class k)))
