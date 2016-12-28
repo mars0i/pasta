@@ -1,5 +1,6 @@
 (ns free-agent.snipe
   (:require [free-agent.level :as l])
+  ;(:import [sim.engine Steppable])
   (:gen-class                 ; so it can be aot-compiled
      :name free-agent.snipe)) ; without :name other aot classes won't find it
 
@@ -16,9 +17,15 @@
 ;; but it will be useful to have two different wrapper classes to make it easier to
 ;; observe differences.
 
+;; Note levels is a sequence of free-agent.Levels
 ;; The fields are apparently automatically visible to the MASON inspector system. (!)
-(defrecord KSnipe [id levels energy x y]) ; levels is a sequence of free-agent.Levels
-(defrecord RSnipe [id levels energy x y])
+(defrecord KSnipe [id levels energy x y]
+  Object
+  (toString [this] (str "<KSnipe #" (:id this) " energy: " (:energy this) ">")))
+
+(defrecord RSnipe [id levels energy x y]
+  Object
+  (toString [this] (str "<RSnipe #" (:id this) " energy: " (:energy this) ">")))
 
 (defn make-k-snipe 
   ([cfg-data x y]
