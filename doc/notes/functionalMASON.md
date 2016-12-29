@@ -147,3 +147,72 @@ grid to connect to a new grid each time?
 
 A: It looks like I just have to call `.setField` on the Portrayal
 to assign it the new grid each time.
+
+### outcome:
+
+*In the end* I decided to update all fields functionally--i.e. each
+major step in `next-popenv` returns a new snipe field and/or mushroom
+field.  snipes also are updated functionally using `assoc` or
+`update`.
+
+Then in the schedule loop in `SimConfig/start`, I `swap!` in the new
+popenv on every tick, and (this is the crucial step) in
+`UI/setup-portrayals`, I use `scheduleRepeatingImmediatelyAfter` to add
+a task to the UI part of the scheduling system that calls `setField` on
+the snipe field portrayal and mushroom field portrayal on every tick.
+
+
+## Difficulties with purely functional style
+
+### crossover complications
+
+In a functional-style ABM updating indvididual agents on their own is
+easy.  Dealing with with interactions between agents is trickier, and
+can be more difficult than what you'd normally write in non-functional
+style ABMs.
+
+In `free-agent.popenv`, some of the operations are awkward and a bit
+complicated because of the need to simultaneously update the snipe
+field, the mushroom field, and snipe's internal states.  This would be
+simpler with in-place modifications of data structures.  For
+illustrations, look at `move-snipes` or `snipes-eat` and the functions
+they call.  (The complications are greater than what I dealt with in
+popco2, where I simply had to reorganize messages from agents in order
+to deliver them to other agents.)
+
+### inspectors
+
+The default MASON inspectors for agents work, up to a point, without any special
+treatement on my part.  Amazingly, I didn't even have to define bean methods!
+Between Clojure and MASON, somehow MASON knew that defrecord fields
+hold properties.
+
+In particular, agent inspectors work for one-time, static inspection of
+snipes, and it's easy to write a toString that will automatically
+display id and energy.
+
+However, the properties won't update in the inspector tab.  This is
+apparently because of functional updating.  What the inspector system is
+watching is a single object, it seems.  When a snipe moves or changes
+energy, that's a brand new object, and MASON can't be expected to know
+about it.  I created a quick-and-dirty non-functional-style version in
+branch `non-fnl` and saw that snipe properties update properly there.
+
+I think that I can work around this by passing special arguments to or
+writing a subclass of `SimpleInspector` or extending `Inspector` some
+other way, maybe using atoms or maps or other lookups by `id` to keep
+track of what snipe is being watched.
+
+This is potentially a big drawback of functional style for agent-based
+modeling--worse than crossover problems, in a sense.  Even though
+crossover issues are fundamental to an ABM but and it's not fundamental
+to an ABM that individual agents be watched, in practice watching
+individual states can be very useful.  You might "blame" (but not fault)
+MASON for the additional complexity because it's not designed for
+functional programming, but if you think about it, providing inspector
+functionality for a functional-style ABM is by its nature not really
+trivial:  You're trying  to watch a "thing" over time, that's thing
+isn't actually a single thing in functional style.  So inspection
+requires special handling that isn't needed if you just maintain a
+pointer to single concrete data structure, as you can easily do in a
+non-functional style system.
