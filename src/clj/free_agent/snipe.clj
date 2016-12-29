@@ -17,15 +17,37 @@
 ;; but it will be useful to have two different wrapper classes to make it easier to
 ;; observe differences.
 
+(defprotocol SnipeP
+  (get-energy [this])
+  (get-x [this])
+  (get-y [this])
+  (set-energy! [this new-val])
+  (set-x! [this new-val])
+  (set-y! [this new-val]))
+
 ;; Note levels is a sequence of free-agent.Levels
 ;; The fields are apparently automatically visible to the MASON inspector system. (!)
-(defrecord KSnipe [id levels energy x y]
+(deftype KSnipe [id levels ^:unsynchronized-mutable energy ^:unsynchronized-mutable x ^:unsynchronized-mutable y]
+  SnipeP
+  (get-energy [this] energy)
+  (get-x [this] x)
+  (get-y [this] y)
+  (set-energy! [this new-val] (set! energy new-val))
+  (set-x! [this new-val] (set! x new-val))
+  (set-y! [this new-val] (set! y new-val))
   Object
-  (toString [this] (str "<KSnipe #" (:id this) " energy: " (:energy this) ">")))
+  (toString [this] (str "<KSnipe #" id " energy: " energy ">")))
 
-(defrecord RSnipe [id levels energy x y]
+(deftype RSnipe [id levels ^:unsynchronized-mutable energy ^:unsynchronized-mutable x ^:unsynchronized-mutable y]
+  SnipeP
+  (get-energy [this] energy)
+  (get-x [this] x)
+  (get-y [this] y)
+  (set-energy! [this new-val] (set! energy new-val))
+  (set-x! [this new-val] (set! x new-val))
+  (set-y! [this new-val] (set! y new-val))
   Object
-  (toString [this] (str "<RSnipe #" (:id this) " energy: " (:energy this) ">")))
+  (toString [this] (str "<RSnipe #" id " energy: " energy ">")))
 
 (defn make-k-snipe 
   ([cfg-data x y]

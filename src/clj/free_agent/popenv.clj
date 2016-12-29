@@ -144,7 +144,7 @@
                                 (if (= len 1)
                                   [coords (first snipes)]                          ; when more than one
                                   (let [mover (nth snipes (ran/rand-idx rng len))] ; randomly select one to move
-                                    (into {coords mover} (map (fn [snipe] {[(:x snipe) (:y snipe)] snipe}) ; and make others "move" to current loc
+                                    (into {coords mover} (map (fn [snipe] {[(sn/get-x snipe) (sn/get-y snipe)] snipe}) ; and make others "move" to current loc
                                                               (remove #(= mover %) snipes))))))))         ; (could be more efficient to leave them alone)
         new-snipe-field snipe-field] ; FOR NON-FNL TEST (ObjectGrid2D. env-width env-height)]
     (.clear new-snipe-field)
@@ -157,7 +157,9 @@
 ;; doesn't delete old snipe ref--designed to be used on an empty snipe-field:
 (defn move-snipe!
   [snipe-field x y snipe]
-  (.set snipe-field x y (assoc snipe :x x :y y)))
+  (sn/set-x! snipe x)
+  (sn/set-y! snipe y)
+  (.set snipe-field x y snipe)) ; FOR NON-FNL TEST (assoc snipe :x x :y y)))
 
 ;; reusable bags for choose-next-loc
 (def x-coord-bag (IntBag. 6))
@@ -168,8 +170,8 @@
   hexagonally neighboring locations of snipe's location, or the current
   location if all neighboring locations are filled."
   [rng snipe-field snipe]
-  (let [curr-x (:x snipe)
-        curr-y (:y snipe)]
+  (let [curr-x (sn/get-x snipe)
+        curr-y (sn/get-y snipe)]
     (.getHexagonalLocations snipe-field              ; inserts coords of neighbors into x-pos and y-pos args
                             curr-x curr-y
                             1 Grid2D/TOROIDAL false  ; immediate neighbors, toroidally, don't include me
@@ -188,6 +190,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; PERCEPTION AND EATING
 
+;; re NON-FNL TEST: Would have to be modified if it did anything
 (defn perceive-mushroom [snipe mush]
   [snipe true]) ; FIXME
 
@@ -205,7 +208,12 @@
   [max-energy snipe mush] 
   (let [[experienced-snipe appetizing?] (perceive-mushroom snipe mush)]
     (if appetizing?
-      [(update experienced-snipe :energy add-to-energy max-energy (:nutrition mush)) true]
+      (do
+        (sn/set-energy! experienced-snipe  ; FOR NON-FNL TEST (update experienced-snipe :energy add-to-energy max-energy (:nutrition mush)) 
+                        (add-to-energy (sn/get-energy experienced-snipe)
+                                       max-energy 
+                                       (:nutrition mush)))
+        [experienced-snipe true])
       [experienced-snipe false])))
 
 ;(when-not (.get snipe-field (:x snipe) (:y snipe)) (println "Whoaa! No snipe at" (:x snipe) (:y snipe))) ; DEBUG
@@ -215,7 +223,8 @@
   (let [{:keys [env-width env-height max-energy]} cfg-data
         snipes (.elements snipe-field)
         snipes-plus-eaten? (for [snipe snipes    ; returns only snipes on mushrooms
-                                 :let [{:keys [x y]} snipe
+                                 :let [x (sn/get-x snipe) ; FOR NON-FNL TEST {:keys [x y]} snipe
+                                       y (sn/get-y snipe) ; FOR NON-FNL TEST
                                        mush (.get mush-field x y)]
                                  :when mush]
                              (eat-if-appetizing  max-energy snipe mush))
@@ -224,7 +233,8 @@
     ;; FIXME NOT RIGHT since unchanged mushrooms and snipes are not copied over to new fields
     (doseq [[snipe ate?] snipes-plus-eaten?]
       (when ate?
-        (let [{:keys [x y]} snipe]
+        (let [x (sn/get-x snipe)  ; FOR NON-FNL TEST {:keys [x y]} snipe]
+              y (sn/get-y snipe)] ; FOR NON-FNL TEST
           (.set new-snipe-field x y snipe) ; replace old snipe with new, more experienced snipe, or maybe the same one
           (.set new-mush-field x y nil)    ; mushroom has been eaten
           ;; a new mushroom grows elsewhere:
@@ -240,10 +250,10 @@
   [cfg-data snipe-field]
   (let [{:keys [env-width env-height]} cfg-data
         new-snipe-field snipe-field  ; FOR NON-FNL TEST (ObjectGrid2D. env-width env-height) 
-        live-snipes (remove #(<= (:energy %) 0) (.elements snipe-field))]
+        live-snipes (remove #(<= (sn/get-energy %) 0) (.elements snipe-field))]
     (.clear new-snipe-field) ; FOR NON-FNL TEST
     (doseq [snipe live-snipes]
-      (.set new-snipe-field (:x snipe) (:y snipe) snipe))
+      (.set new-snipe-field (sn/get-x snipe) (sn/get-y snipe) snipe))
     new-snipe-field))
 
 (defn snipes-reproduce!
@@ -252,9 +262,10 @@
         old-snipes (.elements snipe-field)
         new-snipe-field snipe-field] ; FOR NON-FNL TEST  (ObjectGrid2D. snipe-field)] ; new field that's a copy of old one
     (doseq [snipe old-snipes]
-      (when (>= (:energy snipe) birth-threshold)
-        (.set new-snipe-field (:x snipe) (:y snipe)  ; replace with energy reduced due to birth
-              (update snipe :energy - birth-cost))
+      (when (>= (sn/get-energy snipe) birth-threshold)
+        (sn/set-energy! snipe (- (sn/get-energy snipe) birth-cost)) ; FOR NON-FNL TEST
+        (.set new-snipe-field (sn/get-x snipe) (sn/get-y snipe)  ; replace with energy reduced due to birth
+              snipe) ; FOR NON-FNL TEST (update snipe :energy - birth-cost))
         (add-organism-to-rand-loc! rng new-snipe-field env-width env-height ; add newborn
                                    (organism-setter (if (sn/is-k-snipe? snipe)  ; newborn should be like parent
                                                       (partial sn/make-k-snipe cfg-data)

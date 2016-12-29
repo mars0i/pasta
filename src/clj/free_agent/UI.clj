@@ -4,7 +4,8 @@
 
 (ns free-agent.UI
   (:require [free-agent.SimConfig :as cfg]
-            [clojure.math.numeric-tower :as math])
+            [clojure.math.numeric-tower :as math]
+            [free-agent.snipe :as sn])
   (:import [free-agent mush snipe SimConfig]
            [sim.engine Steppable Schedule]
            [sim.field.grid ObjectGrid2D] ; normally doesn't belong in UI: a hack to use a field portrayal to display a background pattern
@@ -31,7 +32,7 @@
 (def bg-pattern-color (Color. 215 215 215)) ; or: a dirty pink: (def bg-pattern-color (Color. 200 165 165)) 
 (def bg-border-color (Color. 140 140 140)) ; what shows through around the edges of simple portrayals in the background field portrayal
 (def snipe-size 0.45)
-(defn snipe-shade-fn [max-energy snipe] (int (+ 55 (* 200 (/ (:energy snipe) max-energy))))) ; cut off darkest shades
+(defn snipe-shade-fn [max-energy snipe] (int (+ 55 (* 200 (/ (sn/get-energy snipe) max-energy))))) ; cut off darkest shades
 (defn k-snipe-color-fn [max-energy snipe] (Color. (snipe-shade-fn max-energy snipe) 0 0))
 (defn r-snipe-color-fn [max-energy snipe] (Color. 0 0 (snipe-shade-fn max-energy snipe)))
 (def org-offset 0.6) ; with simple hex portrayals to display grid, organisms off center; pass this to DrawInfo2D to correct.
