@@ -9,7 +9,7 @@
            [sim.engine Steppable Schedule]
            [sim.field.grid ObjectGrid2D] ; normally doesn't belong in UI: a hack to use a field portrayal to display a background pattern
            [sim.portrayal DrawInfo2D]
-           [sim.portrayal.grid HexaObjectGridPortrayal2D] ;[sim.portrayal.grid FastHexaObjectGridPortrayal2D]
+           [sim.portrayal.grid HexaObjectGridPortrayal2D] ; ObjectGridPortrayal2D FastHexaObjectGridPortrayal2D
            [sim.portrayal.simple OvalPortrayal2D RectanglePortrayal2D HexagonalPortrayal2D CircledPortrayal2D LabelledPortrayal2D]
            [sim.display Console Display2D]
            [java.awt Color])
