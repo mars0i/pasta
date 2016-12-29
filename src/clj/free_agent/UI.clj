@@ -134,6 +134,7 @@
                                           (step [this sim-state]
                                             (let [{:keys [snipe-field mush-field]} (:popenv @cfg-data$)]
                                               (.setField snipe-field-portrayal snipe-field)
+                                              ;(.setDirtyField snipe-field-portrayal true) ; I thought that maybe this would affect inspector-tracking; nope.
                                               (.setField mush-field-portrayal mush-field)))))
     ;; set up display:
     (doto display
