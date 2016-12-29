@@ -21,11 +21,11 @@
 ;; The fields are apparently automatically visible to the MASON inspector system. (!)
 (defrecord KSnipe [id levels energy x y]
   Object
-  (toString [this] (str "<KSnipe #" (:id this) " energy: " (:energy this) ">")))
+  (toString [this] (str "<KSnipe #" id " energy: " energy ">")))
 
 (defrecord RSnipe [id levels energy x y]
   Object
-  (toString [this] (str "<RSnipe #" (:id this) " energy: " (:energy this) ">")))
+  (toString [this] (str "<RSnipe #" id " energy: " energy ">")))
 
 (defn make-k-snipe 
   ([cfg-data x y]
