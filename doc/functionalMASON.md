@@ -241,3 +241,13 @@ isn't actually a single thing in functional style.  So inspection
 requires special handling that isn't needed if you just maintain a
 pointer to single concrete data structure, as you can easily do in a
 non-functional style system.
+
+On the other hand, Clojure makes functional updating very easy, and
+imperative updating verbose: You have to use `deftype` with special
+annoations *and then* add accessor functions both in a protocol and in
+the `deftype` definition, or stick atoms inside the fields in a
+`defrecord`, and then either write accessor functions or use `@`,
+`swap!`, etc. constantly--but you'd better write the accessor functions
+and stick them in protocols too, because otherwise MASON won't know what
+to do with them anyway.  This is kind of only verbose, only partially
+idiomatic, Java-esque programming is what I want to avoid.
