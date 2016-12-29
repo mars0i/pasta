@@ -9,9 +9,9 @@
 
 (declare setup-popenv-config! make-popenv next-popenv organism-setter 
          add-organism-to-rand-loc! add-k-snipes! add-r-snipes! add-mush! 
-         maybe-add-mush! add-mushs! move-snipes move-snipe! choose-next-loc
-         perceive-mushroom add-to-energy eat-if-appetizing snipes-eat 
-         snipes-die snipes-reproduce)
+         maybe-add-mush! add-mushs! move-snipes! move-snipe! choose-next-loc
+         perceive-mushroom add-to-energy eat-if-appetizing snipes-eat! 
+         snipes-die! snipes-reproduce!)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TOP LEVEL FUNCTIONS
@@ -38,14 +38,14 @@
 (defn next-popenv
   [popenv rng cfg-data] ; put popenv first so we can swap! it
   (let [{:keys [snipe-field mush-field]} popenv
-        [new-snipe-field new-mush-field] (snipes-eat rng 
+        [new-snipe-field new-mush-field] (snipes-eat! rng 
                                                      cfg-data 
                                                      snipe-field 
                                                      mush-field)
         new-snipe-field (->> new-snipe-field                     ; even I like a thread macro sometimes
-                             (snipes-reproduce rng cfg-data) ; birth before death in case birth uses remaining energy
-                             (snipes-die cfg-data)
-                             (move-snipes rng cfg-data))] ; only the living get to move
+                             (snipes-reproduce! rng cfg-data) ; birth before death in case birth uses remaining energy
+                             (snipes-die! cfg-data)
+                             (move-snipes! rng cfg-data))] ; only the living get to move
     (PopEnv. new-snipe-field new-mush-field)))
 
 ;(defn next-popenv
@@ -130,7 +130,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MOVEMENT
 
-(defn move-snipes
+(defn move-snipes!
   [rng cfg-data snipe-field]
   (let [{:keys [env-width env-height]} cfg-data
         snipes (.elements snipe-field)
@@ -146,7 +146,8 @@
                                   (let [mover (nth snipes (ran/rand-idx rng len))] ; randomly select one to move
                                     (into {coords mover} (map (fn [snipe] {[(:x snipe) (:y snipe)] snipe}) ; and make others "move" to current loc
                                                               (remove #(= mover %) snipes))))))))         ; (could be more efficient to leave them alone)
-        new-snipe-field (ObjectGrid2D. env-width env-height)]
+        new-snipe-field snipe-field] ; FOR NON-FNL TEST (ObjectGrid2D. env-width env-height)]
+    (.clear new-snipe-field)
     ;; Since we have a collection of all new snipe positions, including those
     ;; who remained in place, we can just place them on a fresh snipe-field:
     (doseq [[[x y] snipe] loc-snipe-map] ; will convert the map into a sequence of mapentries, which are seqs
@@ -209,7 +210,7 @@
 
 ;(when-not (.get snipe-field (:x snipe) (:y snipe)) (println "Whoaa! No snipe at" (:x snipe) (:y snipe))) ; DEBUG
 
-(defn snipes-eat
+(defn snipes-eat!
   [rng cfg-data snipe-field mush-field]
   (let [{:keys [env-width env-height max-energy]} cfg-data
         snipes (.elements snipe-field)
@@ -218,8 +219,8 @@
                                        mush (.get mush-field x y)]
                                  :when mush]
                              (eat-if-appetizing  max-energy snipe mush))
-        new-snipe-field (ObjectGrid2D. snipe-field) ; new field that's a copy of old one
-        new-mush-field  (ObjectGrid2D. mush-field)] ; TODO does this full copy (slower) rather than pointer-copy?
+        new-snipe-field snipe-field ; FOR NON-FNL TEST (ObjectGrid2D. snipe-field) ; new field that's a copy of old one
+        new-mush-field  mush-field] ; FOR NON-FNL TEST (ObjectGrid2D. mush-field)] ; TODO does this full copy (slower) rather than pointer-copy?
     ;; FIXME NOT RIGHT since unchanged mushrooms and snipes are not copied over to new fields
     (doseq [[snipe ate?] snipes-plus-eaten?]
       (when ate?
@@ -234,21 +235,22 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; BIRTH AND DEATH
 
-(defn snipes-die
+(defn snipes-die!
   "Returns a new snipe-field with zero-energy snipes removed."
   [cfg-data snipe-field]
   (let [{:keys [env-width env-height]} cfg-data
-        new-snipe-field (ObjectGrid2D. env-width env-height)
+        new-snipe-field snipe-field  ; FOR NON-FNL TEST (ObjectGrid2D. env-width env-height) 
         live-snipes (remove #(<= (:energy %) 0) (.elements snipe-field))]
+    (.clear new-snipe-field) ; FOR NON-FNL TEST
     (doseq [snipe live-snipes]
       (.set new-snipe-field (:x snipe) (:y snipe) snipe))
     new-snipe-field))
 
-(defn snipes-reproduce
+(defn snipes-reproduce!
   [rng cfg-data snipe-field]
   (let [{:keys [env-width env-height birth-threshold birth-cost]} cfg-data
         old-snipes (.elements snipe-field)
-        new-snipe-field (ObjectGrid2D. snipe-field)] ; new field that's a copy of old one
+        new-snipe-field snipe-field] ; FOR NON-FNL TEST  (ObjectGrid2D. snipe-field)] ; new field that's a copy of old one
     (doseq [snipe old-snipes]
       (when (>= (:energy snipe) birth-threshold)
         (.set new-snipe-field (:x snipe) (:y snipe)  ; replace with energy reduced due to birth

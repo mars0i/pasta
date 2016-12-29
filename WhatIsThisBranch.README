@@ -1,0 +1,2 @@
+This is an experiment in which I revised back to a non-fnl, destructive
+updating of fields.  I can't as easily make snipe updating destructive.
