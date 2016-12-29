@@ -200,9 +200,12 @@
     (set-display-frame! nil)
     (set-display! nil)))
 
+;; Try this:
+;; (let [snipes (.elements (:snipe-field (:popenv @cfg-data$))) N (count snipes) energies (map :energy snipes)] [N (/ (apply + energies) N)])
 (defn repl-gui
   "Convenience function to init and start GUI from the REPL.
-  Returns the new SimConfig object."
+  Returns the new SimConfig object.  Usage e.g.:
+  (use 'free-agent.UI) (def cfg (repl-gui))."
   []
   (let [sim-config (SimConfig. (System/currentTimeMillis))]
     (.setVisible (Console. (free-agent.UI. sim-config))
