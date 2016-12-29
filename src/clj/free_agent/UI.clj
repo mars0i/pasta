@@ -130,13 +130,13 @@
     (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe k-snipe-portrayal)
     (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe r-snipe-portrayal)
     ;; Since popenvs are updated functionally, have to tell the ui about the new popenv on every timestep:
-    (.scheduleRepeatingImmediatelyAfter this-ui
-                                        (reify Steppable 
-                                          (step [this sim-state]
-                                            (let [{:keys [snipe-field mush-field]} (:popenv @cfg-data$)]
-                                              (.setField snipe-field-portrayal snipe-field)
-                                              ;(.setDirtyField snipe-field-portrayal true) ; I thought that maybe this would affect inspector-tracking; nope.
-                                              (.setField mush-field-portrayal mush-field)))))
+    ;(.scheduleRepeatingImmediatelyAfter this-ui
+    ;                                    (reify Steppable 
+    ;                                      (step [this sim-state]
+    ;                                        (let [{:keys [snipe-field mush-field]} (:popenv @cfg-data$)]
+    ;                                          (.setField snipe-field-portrayal snipe-field)
+    ;                                          ;(.setDirtyField snipe-field-portrayal true) ; I thought that maybe this would affect inspector-tracking; nope.
+    ;                                          (.setField mush-field-portrayal mush-field)))))
     ;; set up display:
     (doto display
       (.reset )
