@@ -66,7 +66,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;
 
-(declare setup-portrayals schedule-talk-links)
+(declare setup-portrayals)
 
 (defn -main
   [& args]
