@@ -162,6 +162,31 @@ a task to the UI part of the scheduling system that calls `setField` on
 the snipe field portrayal and mushroom field portrayal on every tick.
 
 
+## Is functional style slower?
+
+So far in free-agent, the speed difference between non-functional and
+functional versions are so small that I'm not sure there's even a
+difference.  If there is a difference, it's less than 1%.  I observed
+this at an early stage, before implementing birth, death, and eating,
+when I switched over to functional style from my initial in-place
+modification version.  I also observed this at a later stage when I
+created a non-functional version to test a hypothesis about why
+inspected snipes weren't updating the inspector.  (December 2016: Note
+however that I haven't yet started adding type hints all over the place
+to avoid reflection.  If avoiding reflection created a big speed
+increase, maybe it would reveal a bigger difference between functional
+and non-functional styles.  How big could the difference be, though,
+given that it's so small now?)
+
+(YMMV.  e.g. in my experiments with Clojure implementations of the
+Student ABM from the MASON manual in the `majure` repo, there were big
+speed differences between defrecord and deftype because a Continuous2D
+field is a hashtable, and hashing is handled differently for these data
+structures.  In free-agent I use an ObjectGrid2D field, which is just an
+array for Objects, so access speed will be the same no matter what you
+stick in there.)
+
+
 ## Difficulties with purely functional style
 
 ### crossover complications
