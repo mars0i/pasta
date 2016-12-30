@@ -1,2 +1,3 @@
-This is an experiment in which I revised back to a non-fnl, destructive
-updating of fields.  I can't as easily make snipe updating destructive.
+Experiment in which I took branch non-fnl and moved snipe and popenv
+code into SimConfig to see if that allowed inspection of snipes.
+Didn't work.
