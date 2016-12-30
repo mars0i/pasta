@@ -17,13 +17,23 @@
 ;; but it will be useful to have two different wrapper classes to make it easier to
 ;; observe differences.
 
+(defprotocol InspectedSnipeP
+  (getEnergy [this]))
+
+;(definterface InspectedSnipeI
+;  (getEnergy []))
+
 ;; Note levels is a sequence of free-agent.Levels
 ;; The fields are apparently automatically visible to the MASON inspector system. (!)
 (defrecord KSnipe [id levels energy x y]
+  InspectedSnipeP
+  (getEnergy [this] energy)
   Object
   (toString [this] (str "<KSnipe #" id " energy: " energy ">")))
 
 (defrecord RSnipe [id levels energy x y]
+  InspectedSnipeP
+  (getEnergy [this] energy)
   Object
   (toString [this] (str "<RSnipe #" id " energy: " energy ">")))
 
