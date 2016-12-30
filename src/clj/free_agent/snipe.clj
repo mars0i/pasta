@@ -18,6 +18,7 @@
 ;; observe differences.
 
 (defprotocol SnipeP
+  (getEnergy [this])
   (get-energy [this])
   (get-x [this])
   (get-y [this])
@@ -29,6 +30,7 @@
 ;; The fields are apparently automatically visible to the MASON inspector system. (!)
 (deftype KSnipe [id levels ^:unsynchronized-mutable energy ^:unsynchronized-mutable x ^:unsynchronized-mutable y]
   SnipeP
+  (getEnergy [this] energy)
   (get-energy [this] energy)
   (get-x [this] x)
   (get-y [this] y)
@@ -40,6 +42,7 @@
 
 (deftype RSnipe [id levels ^:unsynchronized-mutable energy ^:unsynchronized-mutable x ^:unsynchronized-mutable y]
   SnipeP
+  (getEnergy [this] energy)
   (get-energy [this] energy)
   (get-x [this] x)
   (get-y [this] y)
