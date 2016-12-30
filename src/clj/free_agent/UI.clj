@@ -5,7 +5,7 @@
 (ns free-agent.UI
   (:require [free-agent.SimConfig :as cfg]
             [clojure.math.numeric-tower :as math])
-  (:import [free-agent mush snipe SimConfig]
+  (:import [free-agent mush SimConfig] ; snipe
            [sim.engine Steppable Schedule]
            [sim.field.grid ObjectGrid2D] ; normally doesn't belong in UI: a hack to use a field portrayal to display a background pattern
            [sim.portrayal DrawInfo2D]
@@ -124,8 +124,8 @@
     ; **NOTE** UNDERSCORES NOT HYPHENS IN free_agent CLASSNAMES BELOW:
     (.setPortrayalForNull bg-field-portrayal (HexagonalPortrayal2D. bg-pattern-color 0.90)) ; show patches as such (or use OvalPortrayal2D with scale 1.0)
     (.setPortrayalForClass mush-field-portrayal free_agent.mush.Mush mush-portrayal)
-    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe k-snipe-portrayal)
-    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe r-snipe-portrayal)
+    (.setPortrayalForClass snipe-field-portrayal free_agent.SimConfig.KSnipe k-snipe-portrayal)
+    (.setPortrayalForClass snipe-field-portrayal free_agent.SimConfig.RSnipe r-snipe-portrayal)
     ;; Since popenvs are updated functionally, have to tell the ui about the new popenv on every timestep:
     (.scheduleRepeatingImmediatelyAfter this-ui
                                         (reify Steppable 
@@ -139,17 +139,6 @@
       (.reset )
       (.setBackdrop bg-border-color)
       (.repaint))))
-
-;; other options:
-;(.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe (ShapePortrayal2D. ShapePortrayal2D/X_POINTS_BOWTIE ShapePortrayal2D/Y_POINTS_BOWTIE k-snipe-color snipe-size))
-;make-snipe-portrayal (fn [max-energy color-fn]
-;                       (proxy [OvalPortrayal2D] [snipe-size]
-;                         (draw [snipe graphics info]          ; override OvalPortrayal2D method
-;                           (let [shade (int (* 255 (/ (:energy snipe) max-energy)))]
-;                             (set! (.-paint this) (color-fn shade)) ; paint var is in OvalPortrayal2D
-;                             (proxy-super draw snipe graphics info)))))
-;k-snipe-portrayal (make-snipe-portrayal max-energy k-snipe-color-fn)
-;r-snipe-portrayal (make-snipe-portrayal max-energy r-snipe-color-fn)
 
 
 ;; For hex grid, need to rescale display (based on HexaBugsWithUI.java around line 200 in Mason 19):
