@@ -1,0 +1,3 @@
+In this branch I started from master, but moved the code from snipe.clj
+and popenv.clj into SimConfig.clj.  I was hoping that this would allow
+snipes to be inspected by double-clicking, rather than getting an NPE.
