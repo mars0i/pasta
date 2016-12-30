@@ -45,7 +45,7 @@ What's different about Intermittran?
 subclass.  And the gen-class is bigger.
 
 2. It uses deftype rather than defrecord.  No, I have deftype
-in branch non-fnl
+in branch non-fnl, so that's not it.
 
 Note that I am importing snipe and all that into free-agent.UI
 already.  Adding snipe as a require doesn't help.
@@ -54,3 +54,10 @@ I tried adding "-" to getEnergy.  Had to do that in the interface,
 too, and got the same error when double-clicking.
 
 aot-compiling free-agent.snipe didn't help.
+
+I tried moving snipe.clj and popenv.clj into SimConfig.clj.
+See branches snipes-in-simconfig and non-fnl-in-simconfig.
+Nothing!  This didn't help at all.  I get the same NPE on
+line 642 in SimplePortrayal2D.java.
+
+So both #2 and #1 above seem to be red herrings.  !
