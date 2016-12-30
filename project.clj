@@ -23,7 +23,7 @@
   :resource-paths ["lib/*"]
   :source-paths ["src/clj"]
   ;:main free-agent.SimConfig
-  :aot [free-agent.SimConfig free-agent.UI]
+  :aot [free-agent.snipe free-agent.SimConfig free-agent.UI]
   :profiles {:nogui {:main free-agent.SimConfig} ; execute this with 'lein with-profile nogui run'
              :gui   {:main free-agent.UI}})      ; execute this with 'lein with-profile gui run'
              
