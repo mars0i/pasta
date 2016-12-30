@@ -41,9 +41,11 @@ I tried adding getEnergy with a protocoal and an interface.  No help.
 
 What's different about Intermittran?
 
-1. It uses deftype rather than defrecord.
-2. The agent defs are in the same namespace as the main SimState
+1. The agent defs are in the same namespace as the main SimState
 subclass.  And the gen-class is bigger.
+
+2. It uses deftype rather than defrecord.  No, I have deftype
+in branch non-fnl
 
 Note that I am importing snipe and all that into free-agent.UI
 already.  Adding snipe as a require doesn't help.
