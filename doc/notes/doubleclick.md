@@ -48,3 +48,7 @@ subclass.  And the gen-class is bigger.
 Note that I am importing snipe and all that into free-agent.UI
 already.  Adding snipe as a require doesn't help.
 
+I tried adding "-" to getEnergy.  Had to do that in the interface,
+too, and got the same error when double-clicking.
+
+aot-compiling free-agent.snipe didn't help.
