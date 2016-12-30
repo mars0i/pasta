@@ -18,7 +18,8 @@
                  [org.beanshell/bsh "2.0b4"]]    ; for MASON
 
   :plugins [[lein-expand-resource-paths "0.0.1"]] ; allows wildcards in resource-paths (https://github.com/dchelimsky/lein-expand-resource-paths)
-   jvm-opts ["-Xms2g"]
+  :jvm-opts ["-Xms2g"]
+  ;:javac-opts ["-target" "1.5" "-source" "1.5"] ; This is what's used to compile MASON.
   :resource-paths ["lib/*"]
   :source-paths ["src/clj"]
   ;:main free-agent.SimConfig
