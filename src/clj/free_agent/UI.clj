@@ -32,7 +32,7 @@
 (def bg-pattern-color (Color. 215 215 215)) ; or: a dirty pink: (def bg-pattern-color (Color. 200 165 165)) 
 (def bg-border-color (Color. 140 140 140)) ; what shows through around the edges of simple portrayals in the background field portrayal
 (def snipe-size 0.45)
-(defn snipe-shade-fn [max-energy snipe] (int (+ 55 (* 200 (/ (sn/get-energy snipe) max-energy))))) ; cut off darkest shades
+(defn snipe-shade-fn [max-energy snipe] (int (+ 55 (* 200 (/ (cfg/get-energy snipe) max-energy))))) ; cut off darkest shades
 (defn k-snipe-color-fn [max-energy snipe] (Color. (snipe-shade-fn max-energy snipe) 0 0))
 (defn r-snipe-color-fn [max-energy snipe] (Color. 0 0 (snipe-shade-fn max-energy snipe)))
 (def org-offset 0.6) ; with simple hex portrayals to display grid, organisms off center; pass this to DrawInfo2D to correct.
@@ -127,8 +127,8 @@
     (.setPortrayalForNull bg-field-portrayal (HexagonalPortrayal2D. bg-pattern-color 0.90)) ; show patches as such (or use OvalPortrayal2D with scale 1.0)
     (.setPortrayalForClass mush-field-portrayal free_agent.mush.Mush mush-portrayal)
     ;(.setPortrayalForAll snipe-field-portrayal k-snipe-portrayal)
-    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe k-snipe-portrayal)
-    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe r-snipe-portrayal)
+    (.setPortrayalForClass snipe-field-portrayal free_agent.SimConfig.KSnipe k-snipe-portrayal)
+    (.setPortrayalForClass snipe-field-portrayal free_agent.SimConfig.RSnipe r-snipe-portrayal)
     ;; Since popenvs are updated functionally, have to tell the ui about the new popenv on every timestep:
     ;(.scheduleRepeatingImmediatelyAfter this-ui
     ;                                    (reify Steppable 
