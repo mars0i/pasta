@@ -9,7 +9,7 @@
            [sim.engine Steppable Schedule]
            [sim.field.grid ObjectGrid2D] ; normally doesn't belong in UI: a hack to use a field portrayal to display a background pattern
            [sim.portrayal DrawInfo2D]
-           [sim.portrayal.grid HexaObjectGridPortrayal2D] ; ObjectGridPortrayal2D FastHexaObjectGridPortrayal2D
+           [sim.portrayal.grid HexaObjectGridPortrayal2D ObjectGridPortrayal2D]; FastHexaObjectGridPortrayal2D
            [sim.portrayal.simple OvalPortrayal2D RectanglePortrayal2D HexagonalPortrayal2D CircledPortrayal2D LabelledPortrayal2D]
            [sim.display Console Display2D]
            [java.awt Color])
@@ -41,9 +41,9 @@
   [& args]
   [(vec args) {:display (atom nil)       ; will be replaced in init because we need to pass the UI instance to it
                :display-frame (atom nil) ; will be replaced in init because we need to pass the display to it
-               :snipe-field-portrayal (HexaObjectGridPortrayal2D.)
-               :mush-field-portrayal  (HexaObjectGridPortrayal2D.)
-               :bg-field-portrayal    (HexaObjectGridPortrayal2D.)}]) ; static background pattern
+               :snipe-field-portrayal (HexaObjectGridPortrayal2D.) :mush-field-portrayal (HexaObjectGridPortrayal2D.) :bg-field-portrayal (HexaObjectGridPortrayal2D.)
+               ;:snipe-field-portrayal (ObjectGridPortrayal2D.) :mush-field-portrayal (ObjectGridPortrayal2D.) :bg-field-portrayal (ObjectGridPortrayal2D.)
+               }]) ; static background pattern
 
 ;; see doc/getName.md
 (defn -getName-void [this] "free-agent") ; override method in super. Should cause this string to be displayed as title of config window of gui, but it doesn't.
