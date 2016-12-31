@@ -207,10 +207,10 @@ to deliver them to other agents.)
 
 ### inspectors
 
-The default MASON inspectors for agents work, up to a point, without any special
-treatement on my part.  Amazingly, I didn't even have to define bean methods!
-Between Clojure and MASON, somehow MASON knew that defrecord fields
-hold properties.
+The default MASON inspectors for agents work, up to a point, without any
+special treatement on my part.  Amazingly, I didn't even have to define
+bean methods!  Between Clojure and MASON, somehow MASON knew that
+defrecord fields hold properties.
 
 In particular, agent inspectors work for one-time, static inspection of
 snipes, and it's easy to write a toString that will automatically
@@ -222,11 +222,6 @@ watching is a single object, it seems.  When a snipe moves or changes
 energy, that's a brand new object, and MASON can't be expected to know
 about it.  I created a quick-and-dirty non-functional-style version in
 branch `non-fnl` and saw that snipe properties update properly there.
-
-I think that I can work around this by passing special arguments to or
-writing a subclass of `SimpleInspector` or extending `Inspector` some
-other way, maybe using atoms or maps or other lookups by `id` to keep
-track of what snipe is being watched.
 
 This is potentially a big drawback of functional style for agent-based
 modeling--worse than crossover problems, in a sense.  Even though
@@ -251,3 +246,42 @@ the `deftype` definition, or stick atoms inside the fields in a
 and stick them in protocols too, because otherwise MASON won't know what
 to do with them anyway.  This is kind of only verbose, only partially
 idiomatic, Java-esque programming is what I want to avoid.
+
+### inspector workarounds
+
+I think that I can work around this by passing special arguments to or
+writing a subclass of `SimpleInspector` or extending `Inspector` some
+other way, maybe using atoms or maps or other lookups by `id` to keep
+track of what snipe is being watched.
+
+e.g. a map from ids to snipes.  For any inspected snipe--for any snipe
+in that map--on each tick, update it with the new snipe.  When?  How
+to find the new snipe among the bunch?  Can this task be performed at
+the moment when the snipe is being replaced?
+
+Could I do something like this?  Add a field to the snipes.  Each
+inspector has an atom containing snipe, *and the snipe also has a
+pointer to this atom in its special field.  Incestuous.  Can it be
+done?  Then at the end of next-popenv, for any such snipe, the atom
+will be pulled out and the new snipe swapped in to it.  Yes, I think,
+although it's tricky at the repl:
+
+```
+user=> (defrecord R [x])
+user.R
+user=> (def r (R. (atom nil)))
+#'user/r
+user=> (reset! (:x r) r)
+StackOverflowError   java.util.Formatter.parse (Formatter.java:2547)
+user=> (reset! (:x r) 14)
+14
+user=> r
+#user.R{:x #object[clojure.lang.Atom 0x54439d52 {:status :ready, :val 14}]}
+```
+
+The stack overflow appears to be due to the REPL trying to print out
+r, which contained r, which contained ...
+
+This might be very bad if an inspector tries to display that field.
+So it must be hidden.  This is sounding nasty.  Maybe stick with the
+map.
