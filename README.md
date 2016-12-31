@@ -38,6 +38,9 @@ src/java/ec/util, and uncomment this line in project.clj:
 
     :java-source-paths ["src/java"]
 
+You'll also need Leiningen (http://leiningen.org).  Then you can run
+the model with one of the scripts in src/scripts.  `gui` will run the
+GUI version of the model, and `nogui` will run it without a GUI.
 
 ## License
 
