@@ -62,6 +62,10 @@ line 642 in SimplePortrayal2D.java.
 
 So both #2 and #1 above seem to be red herrings.  !
 
+## stack traces
+
+The following stack traces are identical.
+
 ### free-agent stackdump:
 
 Exception in thread "AWT-EventQueue-0" java.lang.NullPointerException
