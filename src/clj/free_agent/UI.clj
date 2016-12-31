@@ -113,46 +113,29 @@
                             (draw [snipe graphics info] ; orverride method in super
                               (set! (.-paint this) (k-snipe-color-fn max-energy snipe)) ; paint var is in superclass
                               (proxy-super draw snipe graphics (DrawInfo2D. info (* 1.5 org-offset) (* 1.5 org-offset))))) ; see above re last arg
-        k-snipe-portrayal (CircledPortrayal2D. k-snipe-portrayal Color/blue true)
-        ;k-snipe-portrayal (LabelledPortrayal2D. k-snipe-portrayal 5.0 nil Color/green true)
+        k-snipe-portrayal (CircledPortrayal2D. k-snipe-portrayal Color/red false)
         r-snipe-portrayal (proxy [OvalPortrayal2D] [snipe-size]
                             (draw [snipe graphics info] ; override method in super
                               (set! (.-paint this) (r-snipe-color-fn max-energy snipe)) ; superclass var
                               (proxy-super draw snipe graphics (DrawInfo2D. info org-offset org-offset)))) ; see above re last arg
-        r-snipe-portrayal (CircledPortrayal2D. r-snipe-portrayal Color/blue false)]
+        r-snipe-portrayal (CircledPortrayal2D. r-snipe-portrayal Color/blue true)
+        ;r-snipe-portrayal (CircledPortrayal2D. r-snipe-portrayal 0.0 3.0 Color/blue true)
+        ;r-snipe-portrayal (CircledPortrayal2D. (OvalPortrayal2D. 1.0) Color/blue true)
+        ]
     (.setField bg-field-portrayal (ObjectGrid2D. (:env-width cfg-data) (:env-height cfg-data))) ; displays a background grid
     (.setField mush-field-portrayal mush-field)
     (.setField snipe-field-portrayal snipe-field)
     ; **NOTE** UNDERSCORES NOT HYPHENS IN free_agent CLASSNAMES BELOW:
     (.setPortrayalForNull bg-field-portrayal (HexagonalPortrayal2D. bg-pattern-color 0.90)) ; show patches as such (or use OvalPortrayal2D with scale 1.0)
     (.setPortrayalForClass mush-field-portrayal free_agent.mush.Mush mush-portrayal)
-    ;(.setPortrayalForAll snipe-field-portrayal k-snipe-portrayal)
+    ;(.setPortrayalForAll snipe-field-portrayal r-snipe-portrayal)
     (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe k-snipe-portrayal)
     (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe r-snipe-portrayal)
-    ;; Since popenvs are updated functionally, have to tell the ui about the new popenv on every timestep:
-    ;(.scheduleRepeatingImmediatelyAfter this-ui
-    ;                                    (reify Steppable 
-    ;                                      (step [this sim-state]
-    ;                                        (let [{:keys [snipe-field mush-field]} (:popenv @cfg-data$)]
-    ;                                          (.setField snipe-field-portrayal snipe-field)
-    ;                                          ;(.setDirtyField snipe-field-portrayal true) ; I thought that maybe this would affect inspector-tracking; nope.
-    ;                                          (.setField mush-field-portrayal mush-field)))))
     ;; set up display:
     (doto display
       (.reset )
       (.setBackdrop bg-border-color)
       (.repaint))))
-
-;; other options:
-;(.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe (ShapePortrayal2D. ShapePortrayal2D/X_POINTS_BOWTIE ShapePortrayal2D/Y_POINTS_BOWTIE k-snipe-color snipe-size))
-;make-snipe-portrayal (fn [max-energy color-fn]
-;                       (proxy [OvalPortrayal2D] [snipe-size]
-;                         (draw [snipe graphics info]          ; override OvalPortrayal2D method
-;                           (let [shade (int (* 255 (/ (:energy snipe) max-energy)))]
-;                             (set! (.-paint this) (color-fn shade)) ; paint var is in OvalPortrayal2D
-;                             (proxy-super draw snipe graphics info)))))
-;k-snipe-portrayal (make-snipe-portrayal max-energy k-snipe-color-fn)
-;r-snipe-portrayal (make-snipe-portrayal max-energy r-snipe-color-fn)
 
 
 ;; For hex grid, need to rescale display (based on HexaBugsWithUI.java around line 200 in Mason 19):
@@ -170,27 +153,27 @@
   (.superInit this controller)
   (let [sim-config (.getState this)
         cfg-data @(.simConfigData sim-config) ; just for env dimensions
+        bg-field-portrayal (get-bg-field-portrayal this)
+        mush-field-portrayal (get-mush-field-portrayal this)
+        snipe-field-portrayal (get-snipe-field-portrayal this)
         display-size (:env-display-size cfg-data)
         width (int (* display-size (:env-width cfg-data)))
         height (int (* display-size (:env-height cfg-data)))
         width (hex-scale-width width)    ; for hexagonal grid
         height (hex-scale-height height) ; for hexagonal grid
         display (Display2D. width height this)
-        display-frame (.createFrame display)
-        bg-field-portrayal (get-bg-field-portrayal this)
-        mush-field-portrayal (get-mush-field-portrayal this)
-        snipe-field-portrayal (get-snipe-field-portrayal this)]
-    (set-display! this display)
+        display-frame (.createFrame display)]
     (doto display
       (.setClipping false)
       (.attach bg-field-portrayal "env")         ; The order of attaching is the order of painting.
       (.attach mush-field-portrayal "mushrooms") ; what's attached later will appear on top of what's earlier. 
       (.attach snipe-field-portrayal "snipes"))  
-    (set-display-frame! this display-frame)
     (.registerFrame controller display-frame)
     (doto display-frame 
       (.setTitle "free-agent")
-      (.setVisible true))))
+      (.setVisible true))
+    (set-display! this display)
+    (set-display-frame! this display-frame)))
 
 (defn -quit
   [this]
