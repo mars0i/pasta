@@ -255,9 +255,10 @@ other way, maybe using atoms or maps or other lookups by `id` to keep
 track of what snipe is being watched.
 
 e.g. a map from ids to snipes.  For any inspected snipe--for any snipe
-in that map--on each tick, update it with the new snipe.  When?  How
-to find the new snipe among the bunch?  Can this task be performed at
-the moment when the snipe is being replaced?
+in that map--on each tick, update it with the new snipe.  This is just
+like what I'm doing with the popenv.  But when?  How to find the new
+snipe among the bunch?  Can this task be performed at the moment when
+the snipe is being replaced?
 
 Could I do something like this?  Add a field to the snipes.  Each
 inspector has an atom containing snipe, *and the snipe also has a
@@ -282,6 +283,12 @@ user=> r
 The stack overflow appears to be due to the REPL trying to print out
 r, which contained r, which contained ...
 
-This might be very bad if an inspector tries to display that field.
-So it must be hidden.  This is sounding nasty.  Maybe stick with the
-map.
+This might be very bad if an inspector tries to display that field.  So
+it must be hidden.  This is sounding nasty.  Maybe stick with the map.
+Maybe just have a boolean flag field that says "I'm inspected-- go look
+for me in the inspected map."  e.g.:
+
+```
+(when (:inspected? new-snipe)
+  (swap! inspected-snipes-map assoc (:id new-snipe) new-snipe))
+```
