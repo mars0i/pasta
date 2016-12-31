@@ -113,13 +113,13 @@
                             (draw [snipe graphics info] ; orverride method in super
                               (set! (.-paint this) (k-snipe-color-fn max-energy snipe)) ; paint var is in superclass
                               (proxy-super draw snipe graphics (DrawInfo2D. info (* 1.5 org-offset) (* 1.5 org-offset))))) ; see above re last arg
-        k-snipe-portrayal (CircledPortrayal2D. k-snipe-portrayal Color/blue true) ; NOT WORKING. 
+        k-snipe-portrayal (CircledPortrayal2D. k-snipe-portrayal Color/blue true)
         ;k-snipe-portrayal (LabelledPortrayal2D. k-snipe-portrayal 5.0 nil Color/green true)
         r-snipe-portrayal (proxy [OvalPortrayal2D] [snipe-size]
                             (draw [snipe graphics info] ; override method in super
                               (set! (.-paint this) (r-snipe-color-fn max-energy snipe)) ; superclass var
                               (proxy-super draw snipe graphics (DrawInfo2D. info org-offset org-offset)))) ; see above re last arg
-        r-snipe-portrayal (CircledPortrayal2D. r-snipe-portrayal Color/blue true)] ; NOT WORKING. 
+        r-snipe-portrayal (CircledPortrayal2D. r-snipe-portrayal Color/blue false)]
     (.setField bg-field-portrayal (ObjectGrid2D. (:env-width cfg-data) (:env-height cfg-data))) ; displays a background grid
     (.setField mush-field-portrayal mush-field)
     (.setField snipe-field-portrayal snipe-field)
