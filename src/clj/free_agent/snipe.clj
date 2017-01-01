@@ -17,6 +17,45 @@
 ;; but it will be useful to have two different wrapper classes to make it easier to
 ;; observe differences.
 
+(defn get-curr-snipe
+  [id cfg-data$]
+  (let [snipe-field (:snipe-field (:popenv @cfg-data$))]
+    (some #(= id (:id %)) (.elements snipe-field))))
+
+(defn record-curr-snipe!
+  [id cfg-data$ snipe$]
+  (swap! snipe$ assoc :snipe (get-curr-snipe id cfg-data$)))
+
+(def num-snipe-now-accs 3)
+
+(defn maybe-clear-snipe!
+  [accs-called$ snipe$]
+  (when (= @accs-called$ num-snipe-now-accs)
+    (reset! snipe$ nil)
+    (reset! accs-called$ 0)))
+
+(defn get-field!
+  [k id cfg-data$ snipe$ accs-called$]
+  (when-not @snipe$ (record-curr-snipe! id cfg-data$ snipe$)) ; if snipe$ empty, go get current snipe
+  (let [data (k @snipe$)]    ; read data from current snipe
+    (swap! accs-called$ inc) ; count how many methods called
+    (maybe-clear-snipe! accs-called$ snipe$) ; if all called, flush out the curr snipe for next time
+    data))
+
+(defprotocol InspectedSnipeP
+  (getEnergy [this])
+  (getX [this])
+  (getY [this]))
+
+;; An inspector proxy that will go out and get the current snipe for a given id and return its data
+(defrecord SnipeNow [serialVersionUID id cfg-data$ snipe$ accs-called$] ; first arg required by Mason for serialization
+  InspectedSnipeP
+  (getEnergy [this] (get-field! :energy id cfg-data$ snipe$ accs-called$))
+  (getX [this] (get-field! :x id cfg-data$ snipe$ accs-called$))
+  (getY [this] (get-field! :y id cfg-data$ snipe$ accs-called$))
+  Object
+  (toString [this] (str "<SnipeNow #" id ">")))
+
 (defprotocol SnipeP
   (getEnergy [this])
   (get-energy [this])
@@ -28,7 +67,9 @@
 
 ;; Note levels is a sequence of free-agent.Levels
 ;; The fields are apparently automatically visible to the MASON inspector system. (!)
-(deftype KSnipe [id levels ^:unsynchronized-mutable energy ^:unsynchronized-mutable x ^:unsynchronized-mutable y]
+(deftype KSnipe [id levels energy x y]
+  Proxiable ; for inspectors
+  (propertiesProxy [this] (println "called propertiesProxy") (SnipeNow. 1 id cfg-data$ nil 0))
   SnipeP
   (getEnergy [this] energy)
   (get-energy [this] energy)
@@ -40,7 +81,9 @@
   Object
   (toString [this] (str "<KSnipe #" id " energy: " energy ">")))
 
-(deftype RSnipe [id levels ^:unsynchronized-mutable energy ^:unsynchronized-mutable x ^:unsynchronized-mutable y]
+(deftype RSnipe [id levels energy x y]
+  Proxiable ; for inspectors
+  (propertiesProxy [this] (println "called propertiesProxy") (SnipeNow. 1 id cfg-data$ nil 0))
   SnipeP
   (getEnergy [this] energy)
   (get-energy [this] energy)
