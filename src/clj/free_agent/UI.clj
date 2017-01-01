@@ -23,12 +23,12 @@
     :init init-instance-state))
 
 ;; display parameters:
-(def mush-pos-nutrition-shade 100) ; a grayscale value in [0,255]
+(def mush-pos-nutrition-shade 90) ; a grayscale value in [0,255]
 (def mush-neg-nutrition-shade 255)
 (def mush-high-mean-size 1.0) ; we don't scale mushroom size to modeled size, but
-(def mush-low-mean-size 0.65)  ;  still display the low-size mushroom smaller
+(def mush-low-mean-size 0.70) ;  still display the low-size mushroom smaller
 ;; background portrayal displayed in mushroom-less patches:
-(def bg-pattern-color (Color. 215 215 215)) ; or: a dirty pink: (def bg-pattern-color (Color. 200 165 165)) 
+(def bg-pattern-color (Color. 200 200 200)) ; or: a dirty pink: (def bg-pattern-color (Color. 200 165 165)) 
 (def bg-border-color (Color. 140 140 140)) ; what shows through around the edges of simple portrayals in the background field portrayal
 (def snipe-size 0.45)
 (defn snipe-shade-fn [max-energy snipe] (int (+ 55 (* 200 (/ (:energy snipe) max-energy))))) ; cut off darkest shades
