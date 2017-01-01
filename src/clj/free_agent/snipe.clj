@@ -1,6 +1,6 @@
 (ns free-agent.snipe
   (:require [free-agent.level :as l])
-  ;(:import [sim.engine Steppable])
+  (:import [sim.util Proxiable])
   (:gen-class                 ; so it can be aot-compiled
      :name free-agent.snipe)) ; without :name other aot classes won't find it
 
@@ -67,7 +67,7 @@
 
 ;; Note levels is a sequence of free-agent.Levels
 ;; The fields are apparently automatically visible to the MASON inspector system. (!)
-(deftype KSnipe [id levels energy x y]
+(deftype KSnipe [id levels ^:unsyncronized-mutable energy ^:unsyncronized-mutable x ^:unsyncronized-mutable y cfg-data$]
   Proxiable ; for inspectors
   (propertiesProxy [this] (println "called propertiesProxy") (SnipeNow. 1 id cfg-data$ nil 0))
   SnipeP
@@ -81,7 +81,7 @@
   Object
   (toString [this] (str "<KSnipe #" id " energy: " energy ">")))
 
-(deftype RSnipe [id levels energy x y]
+(deftype RSnipe [id levels ^:unsyncronized-mutable energy ^:unsyncronized-mutable x ^:unsyncronized-mutable y cfg-data$]
   Proxiable ; for inspectors
   (propertiesProxy [this] (println "called propertiesProxy") (SnipeNow. 1 id cfg-data$ nil 0))
   SnipeP
