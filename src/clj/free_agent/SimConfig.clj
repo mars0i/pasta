@@ -71,9 +71,9 @@
         ^SimConfigData cfg-data$ (.simConfigData this)
         ^MersenneTwisterFast rng (.-random this)]
     (pe/setup-popenv-config! cfg-data$)
-    (swap! cfg-data$ assoc :popenv (pe/make-popenv rng @cfg-data$)) ; create new popenv
+    (swap! cfg-data$ assoc :popenv (pe/make-popenv rng cfg-data$)) ; create new popenv
     ;; Run it:
     (.scheduleRepeating schedule Schedule/EPOCH 0
                         (reify Steppable 
                           (step [this sim-state]
-                            (swap! cfg-data$ update :popenv pe/next-popenv rng @cfg-data$))))))
+                            (swap! cfg-data$ update :popenv pe/next-popenv rng cfg-data$))))))
