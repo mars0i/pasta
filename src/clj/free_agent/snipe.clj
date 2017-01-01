@@ -57,7 +57,6 @@
   (toString [this] (str "<SnipeNow #" id ">")))
 
 (defprotocol SnipeP
-  (getEnergy [this])
   (get-energy [this])
   (get-x [this])
   (get-y [this])
@@ -67,11 +66,10 @@
 
 ;; Note levels is a sequence of free-agent.Levels
 ;; The fields are apparently automatically visible to the MASON inspector system. (!)
-(deftype KSnipe [id levels ^:unsyncronized-mutable energy ^:unsyncronized-mutable x ^:unsyncronized-mutable y cfg-data$]
+(deftype KSnipe [id levels ^:unsynchronized-mutable energy ^:unsynchronized-mutable x ^:unsynchronized-mutable y cfg-data$]
   Proxiable ; for inspectors
   (propertiesProxy [this] (println "called propertiesProxy") (SnipeNow. 1 id cfg-data$ nil 0))
   SnipeP
-  (getEnergy [this] energy)
   (get-energy [this] energy)
   (get-x [this] x)
   (get-y [this] y)
@@ -81,11 +79,10 @@
   Object
   (toString [this] (str "<KSnipe #" id " energy: " energy ">")))
 
-(deftype RSnipe [id levels ^:unsyncronized-mutable energy ^:unsyncronized-mutable x ^:unsyncronized-mutable y cfg-data$]
+(deftype RSnipe [id levels ^:unsynchronized-mutable energy ^:unsynchronized-mutable x ^:unsynchronized-mutable y cfg-data$]
   Proxiable ; for inspectors
   (propertiesProxy [this] (println "called propertiesProxy") (SnipeNow. 1 id cfg-data$ nil 0))
   SnipeP
-  (getEnergy [this] energy)
   (get-energy [this] energy)
   (get-x [this] x)
   (get-y [this] y)
@@ -96,24 +93,26 @@
   (toString [this] (str "<RSnipe #" id " energy: " energy ">")))
 
 (defn make-k-snipe 
-  ([cfg-data x y]
-   (let [{:keys [initial-energy k-snipe-prior]} cfg-data]
-     (make-k-snipe initial-energy k-snipe-prior x y)))
-  ([energy prior x y]
+  ([cfg-data$ x y]
+   (let [{:keys [initial-energy k-snipe-prior]} @cfg-data$]
+     (make-k-snipe initial-energy k-snipe-prior x y cfg-data$)))
+  ([energy prior x y cfg-data$]
    (KSnipe. (next-id)
             nil ;; TODO construct levels function here using prior
             energy
-            x y)))
+            x y
+            cfg-data$)))
 
 (defn make-r-snipe
-  ([cfg-data x y]
-   (let [{:keys [initial-energy r-snipe-low-prior r-snipe-high-prior]} cfg-data]
-     (make-r-snipe initial-energy r-snipe-low-prior r-snipe-high-prior x y)))
-  ([energy low-prior high-prior x y]
+  ([cfg-data$ x y]
+   (let [{:keys [initial-energy r-snipe-low-prior r-snipe-high-prior]} @cfg-data$]
+     (make-r-snipe initial-energy r-snipe-low-prior r-snipe-high-prior x y cfg-data$)))
+  ([energy low-prior high-prior x y cfg-data$]
    (RSnipe. (next-id)
             nil ;; TODO construct levels function here using prior (one of two values, randomly)
             energy
-            x y)))
+            x y
+            cfg-data$)))
 
 ;; note underscores
 (defn is-k-snipe? [s] (instance? free_agent.snipe.KSnipe s))
