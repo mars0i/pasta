@@ -17,32 +17,56 @@
 ;; but it will be useful to have two different wrapper classes to make it easier to
 ;; observe differences.
 
-(defprotocol InspectedSnipeP (getEnergy [this]))
-;(definterface InspectedSnipeI (getEnergy []))
+;; TODO: OPTIMIZE (currently does linear search)
+(defn get-curr-snipe
+  [id cfg-data$]
+  (let [snipe-field (:snipe-field (:popenv @cfg-data$))]
+    (some #(= id (:id %)) (.elements snipe-field))))
 
-;(defrecord SnipeLineage [id curr-snipe cfg-data])
+(defn record-curr-snipe!
+  [id cfg-data$ snipe$]
+  (swap! snipe$ assoc :snipe (get-curr-snipe id cfg-data$)))
 
-;; TODO: OPTIMIZE: currently does linear search through all snipes on every tick when an inspector is used
-(defn find-curr-snipe-stage
-  [id snipe-field]
-  (some #(= id (:id %)) (.elements snipe-field)))
+(def num-snipe-now-accs 3)
 
-;; Note levels is a sequence of free-agent.Levels
-;; The fields are apparently automatically visible to the MASON inspector system. (!)
+(defn maybe-clear-snipe!
+  [accs-called$ snipe$]
+  (when (= @accs-called$ num-snipe-now-accs)
+    (reset! snipe$ nil)
+    (reset! accs-called$ 0)))
 
+(defn get-field!
+  [k id cfg-data$ snipe$ accs-called$]
+  (when-not @snipe$ (record-curr-snipe! id cfg-data$ snipe$)) ; if snipe$ empty, go get current snipe
+  (let [data (k @snipe$)]    ; read data from current snipe
+    (swap! accs-called$ inc) ; count how many methods called
+    (maybe-clear-snipe! accs-called$ snipe$) ; if all called, flush out the curr snipe for next time
+    data))
+
+(defprotocol InspectedSnipeP
+  (getEnergy [this])
+  (getX [this])
+  (getY [this]))
+
+;; An inspector proxy that will go out and get the current snipe for a given id and return its data
+(defrecord SnipeNow [serialVersionUID id cfg-data$ snipe$ accs-called$] ; first arg required by Mason for serialization
+  InspectedSnipeP
+  (getEnergy [this] (get-field! :energy id cfg-data$ snipe$ accs-called$))
+  (getX [this] (get-field! :x id cfg-data$ snipe$ accs-called$))
+  (getY [this] (get-field! :y id cfg-data$ snipe$ accs-called$))
+  Object
+  (toString [this] (str "<SnipeNow #" id ">")))
+
+;; Note levels is supposed to be a sequence of free-agent.Levels
 (defrecord KSnipe [id levels energy x y cfg-data$]
   Proxiable ; for inspectors
-  (propertiesProxy [this] (find-curr-snipe-stage id (:snipe-field (:popenv @cfg-data$)))) ; find current snipe "stage" with the same id
-  InspectedSnipeP
-  (getEnergy [this] energy)
+  (propertiesProxy [this] (println "called propertiesProxy") (SnipeNow. 1 id cfg-data$ nil 0))
   Object
   (toString [this] (str "<KSnipe #" id " energy: " energy ">")))
 
 (defrecord RSnipe [id levels energy x y cfg-data$]
   Proxiable ; for inspectors
-  (propertiesProxy [this] (find-curr-snipe-stage id (:snipe-field (:popenv @cfg-data$)))) ; find current snipe "stage" with the same id
-  InspectedSnipeP
-  (getEnergy [this] energy)
+  (propertiesProxy [this] (SnipeNow. 1 id cfg-data$ nil 0))
   Object
   (toString [this] (str "<RSnipe #" id " energy: " energy ">")))
 
