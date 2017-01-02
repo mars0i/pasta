@@ -113,7 +113,7 @@
                             (draw [snipe graphics info] ; orverride method in super
                               (set! (.-paint this) (k-snipe-color-fn max-energy snipe)) ; paint var is in superclass
                               (proxy-super draw snipe graphics (DrawInfo2D. info (* 1.5 org-offset) (* 1.5 org-offset))))) ; see above re last arg
-        k-snipe-portrayal (CircledPortrayal2D. k-snipe-portrayal Color/red false)
+        k-snipe-portrayal (CircledPortrayal2D. k-snipe-portrayal Color/red true)
         r-snipe-portrayal (proxy [OvalPortrayal2D] [snipe-size]
                             (draw [snipe graphics info] ; override method in super
                               (set! (.-paint this) (r-snipe-color-fn max-energy snipe)) ; superclass var
