@@ -7,11 +7,10 @@
 ;; PROOF OF CONCEPT FOR INSPECTOR PROXIES
 ;; NOT EFFICIENT, NOT COHERENT, AND NOT NECESSARY
 ;; REAL NEED IS FOR A FUNCTIONAL IMPLEMENTATION OF SNIPES.
-;; DOESN'T WORK IN THE END, I THINK BECAUSE POPENV METHODS
-;; USE ASSOC OR UPDATE AND END UP MAKING SNIPES INTO MAPS,
-;; WHICH THEN COME BACK HERE AND DON'T WORK.
+;; DOESN'T WORK IN THE END, SOMETHING'S MAKING SNIPES INTO MAPS,
+;; WHICH THEN DON'T WORK.
 
-(declare next-id get-curr-snipe record-curr-snipe!  maybe-clear-snipe!  get-field!  make-k-snipe make-r-snipe is-k-snipe?  is-r-snipe?)
+(declare next-id make-k-snipe make-r-snipe is-k-snipe? is-r-snipe?)
 
 (defprotocol SnipeP
   (get-id [this])
@@ -28,46 +27,17 @@
   [] 
   (Long. (str (gensym ""))))
 
-(defn get-curr-snipe
-  [id cfg-data$]
-  (let [snipe-field (:snipe-field (:popenv @cfg-data$))]
-    (some #(= id (get-id %)) (.elements snipe-field))))
-
-(defn record-curr-snipe!
-  [id cfg-data$ snipe$]
-  (swap! snipe$ assoc :snipe (get-curr-snipe id cfg-data$)))
-
-(def num-snipe-now-accs 3)
-
-(defn maybe-clear-snipe!
-  [meths-called$ snipe$]
-  (when (= @meths-called$ num-snipe-now-accs)
-    (reset! snipe$ nil)
-    (reset! meths-called$ 0)))
-
-(defn get-snipe!
-  [id cfg-data$ snipe$ meths-called$]
-  (when-not @snipe$ (record-curr-snipe! id cfg-data$ snipe$)) ; if snipe$ empty, go get current snipe
-  (swap! meths-called$ inc)) ; count how many methods called
-
-
 (defprotocol InspectedSnipeP
   (getEnergy [this])
   (getX [this])
   (getY [this]))
 
 ;; An inspector proxy that will go out and get the current snipe for a given id and return its data
-(defrecord SnipeNow [serialVersionUID id cfg-data$ snipe$ meths-called$] ; first arg required by Mason for serialization
+(defrecord SnipeNow [serialVersionUID id cfg-data$] ; first arg required by Mason for serialization
   InspectedSnipeP
-  (getEnergy [this]
-    (get-snipe! id cfg-data$ snipe$ meths-called$)
-    (get-energy ^SnipeP @snipe$))
-  (getX [this]
-    (get-snipe! id cfg-data$ snipe$ meths-called$)
-    (get-x ^SnipeP @snipe$))
-  (getY [this]
-    (get-snipe! id cfg-data$ snipe$ meths-called$)
-    (get-y ^SnipeP @snipe$))
+  (getEnergy [this] (get-energy (some #(and (= id (get-id %)) %) (.elements (:snipe-field (:popenv @cfg-data$)))))) ; a HORRIBLY inefficient method
+  (getX [this] (get-x (some #(and (= id (get-id %)) %) (.elements (:snipe-field (:popenv @cfg-data$)))))) ; a HORRIBLY inefficient method
+  (getY [this] (get-y (some #(and (= id (get-id %)) %) (.elements (:snipe-field (:popenv @cfg-data$)))))) ; a HORRIBLY inefficient method
   Object
   (toString [this] (str "<SnipeNow #" id ">")))
 
@@ -75,7 +45,7 @@
 ;; The fields are apparently automatically visible to the MASON inspector system. (!)
 (deftype KSnipe [id levels ^:unsynchronized-mutable energy ^:unsynchronized-mutable x ^:unsynchronized-mutable y cfg-data$]
   Proxiable ; for inspectors
-  (propertiesProxy [this] (SnipeNow. 1 id cfg-data$ (atom nil) (atom 0)))
+  (propertiesProxy [this] (SnipeNow. 1 id cfg-data$))
   SnipeP
   (get-id [this] id)
   (get-energy [this] energy)
@@ -89,7 +59,7 @@
 
 (deftype RSnipe [id levels ^:unsynchronized-mutable energy ^:unsynchronized-mutable x ^:unsynchronized-mutable y cfg-data$]
   Proxiable ; for inspectors
-  (propertiesProxy [this] (SnipeNow. 1 id cfg-data$ (atom nil) (atom 0)))
+  (propertiesProxy [this] (SnipeNow. 1 id cfg-data$))
   SnipeP
   (get-id [this] id)
   (get-energy [this] energy)
