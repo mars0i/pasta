@@ -4,8 +4,23 @@
   (:gen-class                 ; so it can be aot-compiled
      :name free-agent.snipe)) ; without :name other aot classes won't find it
 
-;; Could be a bottleneck if reproduction starts happening in different threads.
-;(def prev-snipe-id (atom -1)) ; first inc'ed value will be 0
+;; PROOF OF CONCEPT FOR INSPECTOR PROXIES
+;; NOT EFFICIENT, NOT COHERENT, AND NOT NECESSARY
+;; REAL NEED IS FOR A FUNCTIONAL IMPLEMENTATION OF SNIPES.
+;; DOESN'T WORK IN THE END, I THINK BECAUSE POPENV METHODS
+;; USE ASSOC OR UPDATE AND END UP MAKING SNIPES INTO MAPS,
+;; WHICH THEN COME BACK HERE AND DON'T WORK.
+
+(declare next-id get-curr-snipe record-curr-snipe!  maybe-clear-snipe!  get-field!  make-k-snipe make-r-snipe is-k-snipe?  is-r-snipe?)
+
+(defprotocol SnipeP
+  (get-id [this])
+  (get-energy [this])
+  (get-x [this])
+  (get-y [this])
+  (set-energy! [this new-val])
+  (set-x! [this new-val])
+  (set-y! [this new-val]))
 
 ;; Does gensym avoid the bottleneck??
 (defn next-id 
@@ -13,14 +28,10 @@
   [] 
   (Long. (str (gensym ""))))
 
-;; The real difference between k- and r-snipes is in how levels is implemented,
-;; but it will be useful to have two different wrapper classes to make it easier to
-;; observe differences.
-
 (defn get-curr-snipe
   [id cfg-data$]
   (let [snipe-field (:snipe-field (:popenv @cfg-data$))]
-    (some #(= id (:id %)) (.elements snipe-field))))
+    (some #(= id (get-id %)) (.elements snipe-field))))
 
 (defn record-curr-snipe!
   [id cfg-data$ snipe$]
@@ -29,18 +40,16 @@
 (def num-snipe-now-accs 3)
 
 (defn maybe-clear-snipe!
-  [accs-called$ snipe$]
-  (when (= @accs-called$ num-snipe-now-accs)
+  [meths-called$ snipe$]
+  (when (= @meths-called$ num-snipe-now-accs)
     (reset! snipe$ nil)
-    (reset! accs-called$ 0)))
+    (reset! meths-called$ 0)))
 
-(defn get-field!
-  [k id cfg-data$ snipe$ accs-called$]
+(defn get-snipe!
+  [id cfg-data$ snipe$ meths-called$]
   (when-not @snipe$ (record-curr-snipe! id cfg-data$ snipe$)) ; if snipe$ empty, go get current snipe
-  (let [data (k @snipe$)]    ; read data from current snipe
-    (swap! accs-called$ inc) ; count how many methods called
-    (maybe-clear-snipe! accs-called$ snipe$) ; if all called, flush out the curr snipe for next time
-    data))
+  (swap! meths-called$ inc)) ; count how many methods called
+
 
 (defprotocol InspectedSnipeP
   (getEnergy [this])
@@ -48,28 +57,27 @@
   (getY [this]))
 
 ;; An inspector proxy that will go out and get the current snipe for a given id and return its data
-(defrecord SnipeNow [serialVersionUID id cfg-data$ snipe$ accs-called$] ; first arg required by Mason for serialization
+(defrecord SnipeNow [serialVersionUID id cfg-data$ snipe$ meths-called$] ; first arg required by Mason for serialization
   InspectedSnipeP
-  (getEnergy [this] (get-field! :energy id cfg-data$ snipe$ accs-called$))
-  (getX [this] (get-field! :x id cfg-data$ snipe$ accs-called$))
-  (getY [this] (get-field! :y id cfg-data$ snipe$ accs-called$))
+  (getEnergy [this]
+    (get-snipe! id cfg-data$ snipe$ meths-called$)
+    (get-energy ^SnipeP @snipe$))
+  (getX [this]
+    (get-snipe! id cfg-data$ snipe$ meths-called$)
+    (get-x ^SnipeP @snipe$))
+  (getY [this]
+    (get-snipe! id cfg-data$ snipe$ meths-called$)
+    (get-y ^SnipeP @snipe$))
   Object
   (toString [this] (str "<SnipeNow #" id ">")))
-
-(defprotocol SnipeP
-  (get-energy [this])
-  (get-x [this])
-  (get-y [this])
-  (set-energy! [this new-val])
-  (set-x! [this new-val])
-  (set-y! [this new-val]))
 
 ;; Note levels is a sequence of free-agent.Levels
 ;; The fields are apparently automatically visible to the MASON inspector system. (!)
 (deftype KSnipe [id levels ^:unsynchronized-mutable energy ^:unsynchronized-mutable x ^:unsynchronized-mutable y cfg-data$]
   Proxiable ; for inspectors
-  (propertiesProxy [this] (println "called propertiesProxy") (SnipeNow. 1 id cfg-data$ nil 0))
+  (propertiesProxy [this] (SnipeNow. 1 id cfg-data$ (atom nil) (atom 0)))
   SnipeP
+  (get-id [this] id)
   (get-energy [this] energy)
   (get-x [this] x)
   (get-y [this] y)
@@ -81,8 +89,9 @@
 
 (deftype RSnipe [id levels ^:unsynchronized-mutable energy ^:unsynchronized-mutable x ^:unsynchronized-mutable y cfg-data$]
   Proxiable ; for inspectors
-  (propertiesProxy [this] (println "called propertiesProxy") (SnipeNow. 1 id cfg-data$ nil 0))
+  (propertiesProxy [this] (SnipeNow. 1 id cfg-data$ (atom nil) (atom 0)))
   SnipeP
+  (get-id [this] id)
   (get-energy [this] energy)
   (get-x [this] x)
   (get-y [this] y)
@@ -127,3 +136,4 @@
 ;;     (definterface InspectedSnipe (^double getEnergy []))
 ;;     To see that this method is visible for snipes, try this:
 ;;     (pprint (.getDeclaredMethods (class k)))
+
