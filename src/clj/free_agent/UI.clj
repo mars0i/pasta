@@ -28,7 +28,7 @@
 (def mush-high-mean-size 1.0) ; we don't scale mushroom size to modeled size, but
 (def mush-low-mean-size 0.65)  ;  still display the low-size mushroom smaller
 ;; background portrayal displayed in mushroom-less patches:
-(def bg-pattern-color (Color. 215 215 215)) ; or: a dirty pink: (def bg-pattern-color (Color. 200 165 165)) 
+(def bg-pattern-color (Color. 220 220 220)) ; or: a dirty pink: (def bg-pattern-color (Color. 200 165 165)) 
 (def bg-border-color (Color. 140 140 140)) ; what shows through around the edges of simple portrayals in the background field portrayal
 (def snipe-size 0.45)
 (defn snipe-shade-fn [max-energy snipe] (int (+ 55 (* 200 (/ (:energy snipe) max-energy))))) ; cut off darkest shades
@@ -91,6 +91,7 @@
         cfg-data$ (.simConfigData sim-config)
         cfg-data @cfg-data$
         max-energy (:max-energy cfg-data)
+        birth-threshold (:birth-threshold cfg-data)
         mush-high-mean (:mush-high-mean cfg-data)
         popenv (:popenv cfg-data)
         mush-field  (:mush-field  popenv)
@@ -104,13 +105,13 @@
         mush-portrayal (proxy [OvalPortrayal2D] []
                          (draw [mush graphics info]  ; override method in super
                            (let [size  (if (= mush-high-mean (:mean mush)) mush-high-mean-size mush-low-mean-size)
-                                 shade (if (neg? (:nutrition mush)) mush-neg-nutrition-shade mush-pos-nutrition-shade)]
+                                 shade (int (* 0.95 (if (neg? (:nutrition mush)) mush-neg-nutrition-shade mush-pos-nutrition-shade)))]
                              (set! (.-scale this) size)                       ; superclass vars
-                             (set! (.-paint this) (Color. shade shade shade))
+                             (set! (.-paint this) (Color. shade shade (int (* 0.2 shade))))
                              (proxy-super draw mush graphics (DrawInfo2D. info org-offset org-offset))))) ; last arg centers organism in hex cell
         k-snipe-portrayal (proxy [RectanglePortrayal2D] [(* 0.9 snipe-size)] ; squares are bigger than circles
                             (draw [snipe graphics info] ; orverride method in super
-                              (set! (.-paint this) (k-snipe-color-fn max-energy snipe)) ; paint var is in superclass
+                              (set! (.-paint this) (k-snipe-color-fn (min max-energy birth-threshold) snipe)) ; paint var is in superclass
                               (proxy-super draw snipe graphics (DrawInfo2D. info (* 1.5 org-offset) (* 1.5 org-offset))))) ; see above re last arg
         k-snipe-portrayal (CircledPortrayal2D. k-snipe-portrayal Color/red true) ; NOT WORKING. 
         r-snipe-portrayal (proxy [OvalPortrayal2D] [snipe-size]
