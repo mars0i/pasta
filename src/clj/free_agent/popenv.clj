@@ -26,31 +26,31 @@
     (swap! cfg-data$ assoc :env-center (/ env-width 2.0))))
 
 (defn make-popenv
-  [rng cfg-data]
-  (let [{:keys [env-width env-height]} cfg-data
+  [rng cfg-data$]
+  (let [{:keys [env-width env-height]} @cfg-data$
         snipe-field (ObjectGrid2D. env-width env-height)
         mush-field  (ObjectGrid2D. env-width env-height)]
     (.clear mush-field)
-    (add-mushs! rng cfg-data mush-field)
+    (add-mushs! rng @cfg-data$ mush-field)
     (.clear snipe-field)
-    (add-k-snipes! rng cfg-data snipe-field)
-    (add-r-snipes! rng cfg-data snipe-field)
+    (add-k-snipes! rng cfg-data$ snipe-field)
+    (add-r-snipes! rng cfg-data$ snipe-field)
     (PopEnv. snipe-field mush-field nil)))
 
 (defn next-popenv
-  [popenv rng cfg-data] ; put popenv first so we can swap! it
+  [popenv rng cfg-data$] ; put popenv first so we can swap! it
   (let [{:keys [snipe-field mush-field]} popenv
         [new-snipe-field new-mush-field] (snipes-eat rng 
-                                                     cfg-data 
+                                                     @cfg-data$
                                                      snipe-field 
                                                      mush-field)
         new-snipe-field (->> new-snipe-field                 ; even I like a thread macro sometimes
-                             (snipes-reproduce rng cfg-data) ; birth before death in case birth uses remaining energy
-                             (snipes-die cfg-data)
-                             (move-snipes rng cfg-data))     ; only the living get to move
-        new-snipes (into {} (map #(vector (:id %) %))        ; transducer w/ vector: may be slightly faster than alternatives
-                            (.elements new-snipe-field))]    ; btw cost compared to not constructing a snipes map is trivial
-    (PopEnv. new-snipe-field new-mush-field new-snipes)))
+                             (snipes-reproduce rng cfg-data$) ; birth before death in case birth uses remaining energy
+                             (snipes-die @cfg-data$)
+                             (move-snipes rng @cfg-data$))     ; only the living get to move
+        snipes (into {} (map #(vector (:id %) %))        ; transducer w/ vector: may be slightly faster than alternatives
+                        (.elements new-snipe-field))]    ; btw cost compared to not constructing a snipes map is trivial
+    (PopEnv. new-snipe-field new-mush-field snipes)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; CREATE AND PLACE ORGANISMS
@@ -73,18 +73,18 @@
         (recur)))))
 
 (defn add-k-snipes!
-  [rng cfg-data field]
-  (let [{:keys [env-width env-height num-k-snipes]} cfg-data]
+  [rng cfg-data$ field]
+  (let [{:keys [env-width env-height num-k-snipes]} @cfg-data$]
     (dotimes [_ num-k-snipes] ; don't use lazy method--it may never be executed
       (add-organism-to-rand-loc! rng field env-width env-height 
-                                 (organism-setter (partial sn/make-k-snipe cfg-data))))))
+                                 (organism-setter (partial sn/make-k-snipe cfg-data$))))))
 
 (defn add-r-snipes!
-  [rng cfg-data field]
-  (let [{:keys [env-width env-height num-r-snipes]} cfg-data]
+  [rng cfg-data$ field]
+  (let [{:keys [env-width env-height num-r-snipes]} @cfg-data$]
     (dotimes [_ num-r-snipes]
       (add-organism-to-rand-loc! rng field env-width env-height 
-                                 (organism-setter (partial sn/make-r-snipe cfg-data))))))
+                                 (organism-setter (partial sn/make-r-snipe cfg-data$))))))
 
 (defn add-mush!
   [rng cfg-data field x y]
@@ -241,8 +241,8 @@
     new-snipe-field))
 
 (defn snipes-reproduce
-  [rng cfg-data snipe-field]
-  (let [{:keys [env-width env-height birth-threshold birth-cost]} cfg-data
+  [rng cfg-data$ snipe-field]
+  (let [{:keys [env-width env-height birth-threshold birth-cost]} @cfg-data$
         old-snipes (.elements snipe-field)
         new-snipe-field (ObjectGrid2D. snipe-field)] ; new field that's a copy of old one
     (doseq [snipe old-snipes]
@@ -251,7 +251,7 @@
               (update snipe :energy - birth-cost))
         (add-organism-to-rand-loc! rng new-snipe-field env-width env-height ; add newborn
                                    (organism-setter (if (sn/is-k-snipe? snipe)  ; newborn should be like parent
-                                                      (partial sn/make-k-snipe cfg-data)
-                                                      (partial sn/make-r-snipe cfg-data))))))
+                                                      (partial sn/make-k-snipe cfg-data$)
+                                                      (partial sn/make-r-snipe cfg-data$))))))
     new-snipe-field))
 

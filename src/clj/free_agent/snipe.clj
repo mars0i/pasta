@@ -1,61 +1,78 @@
 (ns free-agent.snipe
   (:require [free-agent.level :as l])
-  ;(:import [sim.engine Steppable])
+  (:import [sim.util Properties SimpleProperties Propertied])
   (:gen-class                 ; so it can be aot-compiled
      :name free-agent.snipe)) ; without :name other aot classes won't find it
-
-;; Could be a bottleneck if reproduction starts happening in different threads.
-;(def prev-snipe-id (atom -1)) ; first inc'ed value will be 0
-
-;; Does gensym avoid the bottleneck??
-(defn next-id 
-  "Returns a unique integer for use as an id."
-  [] 
-  (Long. (str (gensym ""))))
 
 ;; The real difference between k- and r-snipes is in how levels is implemented,
 ;; but it will be useful to have two different wrapper classes to make it easier to
 ;; observe differences.
 
-(defprotocol InspectedSnipeP
-  (getEnergy [this]))
+;; Does gensym avoid bottleneck??
+(defn next-id 
+  "Returns a unique integer for use as an id."
+  [] 
+  (Long. (str (gensym ""))))
 
-;(definterface InspectedSnipeI
-;  (getEnergy []))
+;(defprotocol InspectedSnipeP
+;  (getEnergy [this]))
 
-;; Note levels is a sequence of free-agent.Levels
-;; The fields are apparently automatically visible to the MASON inspector system. (!)
-(defrecord KSnipe [id levels energy x y]
-  InspectedSnipeP
-  (getEnergy [this] energy)
+(defn get-current-snipe
+  "Returns the snipe in the current PopEnv with id."
+  [id cfg-data$]
+  ((:snipes 
+     (:popenv
+       (.simConfigData @cfg-data$)))
+   id))
+
+;; TODO: add Propertied to RSnipe
+;; levels is a sequence of free-agent.Levels
+(defrecord KSnipe [id levels energy x y cfg-data$]
+  Propertied
+  (properties [original-snipe] 
+    (proxy [SimpleProperties] [(get-current-snipe id cfg-data$)]
+                                 (getObject [properties] original-snipe)
+                                 (getDescription [properties i] (["energy"] 0))
+                                 (getName [properties i] (["energy"] 0))
+                                 (getType [properties i] ([double] i))
+                                 (getValue [properties i]
+                                   (let [curr-snipe (.-object properties)]
+                                     ([(:energy curr-snipe)] i)))
+                                 (isHidden [properties i] ([false] i))
+                                 (isReadWrite [properties i] ([false] i))
+                                 (isVolatile [properties] false)
+                                 (numProperties [properties] 1)
+                                 (toString [properties] 
+                                   (str "SimpleProperties: snipe id=" id " snipe=" (.-object properties)))))
   Object
-  (toString [this] (str "<KSnipe #" id " energy: " energy ">")))
+  (toString [_] (str "<KSnipe #" id " energy: " energy ">")))
 
-(defrecord RSnipe [id levels energy x y]
-  InspectedSnipeP
-  (getEnergy [this] energy)
+;; TODO: add Propertied to RSnipe
+(defrecord RSnipe [id levels energy x y cfg-data$]
   Object
   (toString [this] (str "<RSnipe #" id " energy: " energy ">")))
 
 (defn make-k-snipe 
-  ([cfg-data x y]
-   (let [{:keys [initial-energy k-snipe-prior]} cfg-data]
-     (make-k-snipe initial-energy k-snipe-prior x y)))
-  ([energy prior x y]
+  ([cfg-data$ x y]
+   (let [{:keys [initial-energy k-snipe-prior]} @cfg-data$]
+     (make-k-snipe cfg-data$ initial-energy k-snipe-prior x y)))
+  ([cfg-data$ energy prior x y]
    (KSnipe. (next-id)
             nil ;; TODO construct levels function here using prior
             energy
-            x y)))
+            x y
+            cfg-data$)))
 
 (defn make-r-snipe
-  ([cfg-data x y]
-   (let [{:keys [initial-energy r-snipe-low-prior r-snipe-high-prior]} cfg-data]
-     (make-r-snipe initial-energy r-snipe-low-prior r-snipe-high-prior x y)))
-  ([energy low-prior high-prior x y]
+  ([cfg-data$ x y]
+   (let [{:keys [initial-energy r-snipe-low-prior r-snipe-high-prior]} @cfg-data$]
+     (make-r-snipe cfg-data$ initial-energy r-snipe-low-prior r-snipe-high-prior x y)))
+  ([cfg-data$ energy low-prior high-prior x y]
    (RSnipe. (next-id)
             nil ;; TODO construct levels function here using prior (one of two values, randomly)
             energy
-            x y)))
+            x y
+            cfg-data$)))
 
 ;; note underscores
 (defn is-k-snipe? [s] (instance? free_agent.snipe.KSnipe s))
