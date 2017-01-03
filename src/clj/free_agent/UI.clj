@@ -91,6 +91,7 @@
         cfg-data$ (.simConfigData sim-config)
         cfg-data @cfg-data$
         max-energy (:max-energy cfg-data)
+        birth-threshold (:birth-threshold cfg-data)
         mush-high-mean (:mush-high-mean cfg-data)
         popenv (:popenv cfg-data)
         mush-field  (:mush-field  popenv)
@@ -110,12 +111,12 @@
                              (proxy-super draw mush graphics (DrawInfo2D. info org-offset org-offset))))) ; last arg centers organism in hex cell
         k-snipe-portrayal (proxy [RectanglePortrayal2D] [(* 0.9 snipe-size)] ; squares are bigger than circles
                             (draw [snipe graphics info] ; orverride method in super
-                              (set! (.-paint this) (k-snipe-color-fn max-energy snipe)) ; paint var is in superclass
+                              (set! (.-paint this) (k-snipe-color-fn (min birth-threshold max-energy) snipe)) ; paint var is in superclass
                               (proxy-super draw snipe graphics (DrawInfo2D. info (* 1.5 org-offset) (* 1.5 org-offset))))) ; see above re last arg
         k-snipe-portrayal (CircledPortrayal2D. k-snipe-portrayal Color/red true) ; NOT WORKING. 
         r-snipe-portrayal (proxy [OvalPortrayal2D] [snipe-size]
                             (draw [snipe graphics info] ; override method in super
-                              (set! (.-paint this) (r-snipe-color-fn max-energy snipe)) ; superclass var
+                              (set! (.-paint this) (r-snipe-color-fn (min birth-threshold max-energy) snipe)) ; superclass var
                               (proxy-super draw snipe graphics (DrawInfo2D. info org-offset org-offset)))) ; see above re last arg
         r-snipe-portrayal (CircledPortrayal2D. r-snipe-portrayal Color/blue true)] ; NOT WORKING. 
     (.setField bg-field-portrayal (ObjectGrid2D. (:env-width cfg-data) (:env-height cfg-data))) ; displays a background grid
