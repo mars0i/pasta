@@ -16,19 +16,28 @@
 ;; Since these next three functions run on every tick, maybe slightly
 ;; faster not to use ar/col-mat:
 
-(defn gen [phi] (let [x1 (m/mget phi 0 0)
-                      x2 (m/mget phi 1 0)]
-                  (m/matrix [[(* x1 x1 x2)]
-                             [(* x2 x2 x1)]])))
+;; WHY THESE FUNCTIONS?
+(defn gen [phi] (let [x1 (m/mget phi 0 0)  ; phi is a column matrix
+                      x2 (m/mget phi 1 0)] ; 2nd index gets the sole column
+                  (m/matrix [[x1]            ; x1 estimates nutrition (???)
+                             [(* x2 x2)]]))) ; x2 estimates radius (?)
+;; old version:
+; (m/matrix [[(* x1 x1 x2)]    
+;            [(* x2 x2 x1)]])
 
-(defn gen' [phi] (let [x1 (m/mget phi 0 0)
+;; derivative of gen:
+(defn gen' [phi] (let [;x1 (m/mget phi 0 0)
                        x2 (m/mget phi 1 0)]
-                   (m/matrix [[(* x2 2.0 x1)]
-                              [(* x1 2.0 x2)]])))
+                   (m/matrix [[1]
+                              [(* 2.0 x2)]])))
+;; old version:
+; (m/matrix [[(* x2 2.0 x1)]
+ ;           [(* x1 2.0 x2)]])))
 
+;; THIS WILL BE REPLACED BY MUSHROOM EFFECTS:
 (def next-bottom (lvl/make-next-bottom 
-                   #(m/matrix [[(ran/next-gaussian fc/rng 2 5)]
-                               [(ran/next-gaussian fc/rng -1 3)]])))
+                   #(m/matrix [[(ran/next-gaussian fc/rng 2 5)]       ; replace with mushroom nutritiousness 
+                               [(ran/next-gaussian fc/rng -1 3)]])))  ; replace with mushroom size signal
 
 (def init-theta (m/identity-matrix 2)) ; i.e. initially pass value of gen(phi) through unchanged
 
@@ -42,15 +51,15 @@
               :theta init-theta
               :gen  nil
               :gen' nil
-              :phi-dt    0.01
+              :phi-dt  0.01
               :epsilon-dt    0.01
               :sigma-dt  0.0
               :theta-dt 0.0})
 
 (def mid-map {:phi v-p
               :epsilon (fm/col-mat [0.0 0.0])
-              :sigma (m/matrix [[2.0  0.25]
-                                [0.25 2.0]])
+              :sigma (m/matrix [[0.5 0.5]
+                                [0.5 0.5]])
               :theta init-theta
               :gen  gen
               :gen' gen'
