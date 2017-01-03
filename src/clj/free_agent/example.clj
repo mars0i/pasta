@@ -19,12 +19,12 @@
 (defn gen [phi] (let [x1 (m/mget phi 0 0)
                       x2 (m/mget phi 1 0)]
                   (m/matrix [[(* x1 x1 x2)]
-                              [(* x2 x2 x1)]])))
+                             [(* x2 x2 x1)]])))
 
 (defn gen' [phi] (let [x1 (m/mget phi 0 0)
                        x2 (m/mget phi 1 0)]
                    (m/matrix [[(* x2 2.0 x1)]
-                               [(* x1 2.0 x2)]])))
+                              [(* x1 2.0 x2)]])))
 
 (def next-bottom (lvl/make-next-bottom 
                    #(m/matrix [[(ran/next-gaussian fc/rng 2 5)]
@@ -38,7 +38,7 @@
 (def bot-map {:phi   (fm/col-mat [0.0 0.0]) ; immediately replaced by next-bottom
               :epsilon   (fm/col-mat [0.0 0.0])
               :sigma (m/matrix [[2.0  0.25]  ; it's a covariance matrix, so
-                                 [0.25 2.0]]) ; should be symmetric
+                                [0.25 2.0]]) ; should be symmetric
               :theta init-theta
               :gen  nil
               :gen' nil
