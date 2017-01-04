@@ -8,10 +8,12 @@
   (:require [free-agent.level :as lvl]
             [clojure.core.matrix :as m] ; needed for arithmetic macros even if not used explicitly
             [free-agent.matrix :as fm]
-            [free-agent.core :as fc]
-            [utils.random :as ran]))
+            [utils.random :as ran])
+  (:import [free-agent SimConfig]))
 
 (m/set-current-implementation :vectorz)
+
+(def rng (.-random (SimConfig. (System/currentTimeMillis))))
 
 ;; Since these next three functions run on every tick, maybe slightly
 ;; faster not to use ar/col-mat:
@@ -27,8 +29,8 @@
                                [(* x1 2.0 x2)]])))
 
 (def next-bottom (lvl/make-next-bottom 
-                   #(m/matrix [[(ran/next-gaussian fc/rng 2 5)]
-                               [(ran/next-gaussian fc/rng -1 3)]])))
+                   #(m/matrix [[(ran/next-gaussian rng 2 5)]
+                               [(ran/next-gaussian rng -1 3)]])))
 
 (def init-theta (m/identity-matrix 2)) ; i.e. initially pass value of gen(phi) through unchanged
 
