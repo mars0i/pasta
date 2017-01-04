@@ -76,4 +76,4 @@
     (.scheduleRepeating schedule Schedule/EPOCH 0
                         (reify Steppable 
                           (step [this sim-state]
-                            (swap! cfg-data$ update :popenv pe/next-popenv rng cfg-data$))))))
+                            (swap! cfg-data$ update :popenv (partial pe/next-popenv rng cfg-data$)))))))

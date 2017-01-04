@@ -21,8 +21,7 @@
   "Returns the snipe in the current PopEnv with id."
   [id cfg-data$]
   ((:snipes 
-     (:popenv
-       (.simConfigData @cfg-data$)))
+     (:popenv @cfg-data$))
    id))
 
 ;; TODO: add Propertied to RSnipe
