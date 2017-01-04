@@ -107,7 +107,7 @@
                            (let [size  (if (= mush-high-mean (:mean mush)) mush-high-mean-size mush-low-mean-size)
                                  shade (int (* 0.95 (if (neg? (:nutrition mush)) mush-neg-nutrition-shade mush-pos-nutrition-shade)))]
                              (set! (.-scale this) size)                       ; superclass vars
-                             (set! (.-paint this) (Color. shade shade (int (* 0.2 shade))))
+                             (set! (.-paint this) (Color. shade shade (int (* 0.1 shade))))
                              (proxy-super draw mush graphics (DrawInfo2D. info org-offset org-offset))))) ; last arg centers organism in hex cell
         k-snipe-portrayal (proxy [RectanglePortrayal2D] [(* 0.9 snipe-size)] ; squares are bigger than circles
                             (draw [snipe graphics info] ; orverride method in super
