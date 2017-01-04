@@ -40,7 +40,7 @@
 (defn next-popenv
   "Given an rng, a simConfigData atom, and a PopEnv, return
   a new PopEnv.  (popenv is last for convenience with iterate.
-  You can use partial use next-popenv with swap!.)
+  You can use partial use next-popenv with swap!.)"
   [rng cfg-data$ popenv]
   (let [{:keys [snipe-field mush-field]} popenv
         [new-snipe-field new-mush-field] (snipes-eat rng 
