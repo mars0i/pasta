@@ -26,7 +26,7 @@
 (def mush-pos-nutrition-shade 100) ; a grayscale value in [0,255]
 (def mush-neg-nutrition-shade 255)
 (def mush-high-mean-size 1.0) ; we don't scale mushroom size to modeled size, but
-(def mush-low-mean-size 0.65)  ;  still display the low-size mushroom smaller
+(def mush-low-mean-size 0.70) ; we display the low-size mushroom smaller
 ;; background portrayal displayed in mushroom-less patches:
 (def bg-pattern-color (Color. 220 220 220)) ; or: a dirty pink: (def bg-pattern-color (Color. 200 165 165)) 
 (def bg-border-color (Color. 140 140 140)) ; what shows through around the edges of simple portrayals in the background field portrayal
@@ -107,7 +107,7 @@
                            (let [size  (if (= mush-high-mean (:mean mush)) mush-high-mean-size mush-low-mean-size)
                                  shade (int (* 0.95 (if (neg? (:nutrition mush)) mush-neg-nutrition-shade mush-pos-nutrition-shade)))]
                              (set! (.-scale this) size)                       ; superclass vars
-                             (set! (.-paint this) (Color. shade shade (int (* 0.1 shade))))
+                             (set! (.-paint this) (Color. shade shade (int (* 0.5 shade))))
                              (proxy-super draw mush graphics (DrawInfo2D. info org-offset org-offset))))) ; last arg centers organism in hex cell
         k-snipe-portrayal (proxy [RectanglePortrayal2D] [(* 0.9 snipe-size)] ; squares are bigger than circles
                             (draw [snipe graphics info] ; orverride method in super
