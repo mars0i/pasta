@@ -25,6 +25,13 @@
   (let [{:keys [env-width]} @cfg-data$]
     (swap! cfg-data$ assoc :env-center (/ env-width 2.0))))
 
+(defn make-snipes-map
+  "Make a map from snipe ids to snipes."
+  [snipe-field]
+  (into {} (map #(vector (:id %) %)) ; transducer w/ vector: may be slightly faster than alternatives
+        (.elements snipe-field)))    ; btw cost compared to not constructing a snipes map is trivial
+
+
 (defn make-popenv
   [rng cfg-data$]
   (let [{:keys [env-width env-height]} @cfg-data$
@@ -35,7 +42,7 @@
     (.clear snipe-field)
     (add-k-snipes! rng cfg-data$ snipe-field)
     (add-r-snipes! rng cfg-data$ snipe-field)
-    (PopEnv. snipe-field mush-field nil)))
+    (PopEnv. snipe-field mush-field (make-snipes-map snipe-field))))
 
 (defn next-popenv
   "Given an rng, a simConfigData atom, and a PopEnv, return
@@ -51,8 +58,7 @@
                              (snipes-reproduce rng cfg-data$) ; birth before death in case birth uses remaining energy
                              (snipes-die @cfg-data$)
                              (move-snipes rng @cfg-data$))     ; only the living get to move
-        snipes (into {} (map #(vector (:id %) %))        ; transducer w/ vector: may be slightly faster than alternatives
-                        (.elements new-snipe-field))]    ; btw cost compared to not constructing a snipes map is trivial
+        snipes (make-snipes-map new-snipe-field)]
     (PopEnv. new-snipe-field new-mush-field snipes)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
