@@ -83,6 +83,15 @@
 
 ;; Possibly also define a load() method. See manual.
 
+(defn make-fnl-circled-portrayal
+  "Create a subclass of CircledPortrayal2D that tracks snipes by id
+  rather than by pointer identity."
+  [child-portrayal color]
+  (proxy [CircledPortrayal2D] [child-portrayal color false]
+    (draw [snipe graphics info]
+      (.setCircleShowing this @(:inspected$ snipe))
+      (proxy-super draw snipe graphics info))))
+
 (defn setup-portrayals
   [this-ui]  ; instead of 'this': avoid confusion with e.g. proxy below
   (let [sim-config (.getState this-ui)
@@ -113,19 +122,12 @@
                             (draw [snipe graphics info] ; orverride method in super
                               (set! (.-paint this) (k-snipe-color-fn (min max-energy birth-threshold) snipe)) ; paint var is in superclass
                               (proxy-super draw snipe graphics (DrawInfo2D. info (* 1.5 org-offset) (* 1.5 org-offset))))) ; see above re last arg
-        ;k-snipe-portrayal (CircledPortrayal2D. k-snipe-portrayal Color/red true)
-        k-snipe-portrayal (proxy [CircledPortrayal2D] [k-snipe-portrayal Color/red true]
-                            (draw [snipe graphics info]
-                              (let [id (:id snipe)
-                                    cfg-data$ (:cfg-data$ snipe)
-                                    get-curr-snipe (fn [] ((:snipes (:popenv @cfg-data$)) id))]
-                                (.setCircleShowing this @(:inspected$ (get-curr-snipe)))
-                                (proxy-super draw snipe graphics info))))
+        k-snipe-portrayal (make-fnl-circled-portrayal k-snipe-portrayal Color/red)
         r-snipe-portrayal (proxy [OvalPortrayal2D] [snipe-size]
                             (draw [snipe graphics info] ; override method in super
                               (set! (.-paint this) (r-snipe-color-fn max-energy snipe)) ; superclass var
                               (proxy-super draw snipe graphics (DrawInfo2D. info org-offset org-offset)))) ; see above re last arg
-        r-snipe-portrayal (CircledPortrayal2D. r-snipe-portrayal Color/blue true)]
+        r-snipe-portrayal (make-fnl-circled-portrayal r-snipe-portrayal Color/blue)]
     (.setField bg-field-portrayal (ObjectGrid2D. (:env-width cfg-data) (:env-height cfg-data))) ; displays a background grid
     (.setField mush-field-portrayal mush-field)
     (.setField snipe-field-portrayal snipe-field)
