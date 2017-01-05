@@ -20,54 +20,46 @@
 (defn get-current-snipe
   "Returns the snipe in the current PopEnv with id."
   [id cfg-data$]
-  ((:snipes 
-     (:popenv @cfg-data$))
-   id))
+  ((:snipes (:popenv @cfg-data$)) id))
+
+;; Create the Propertied proxy in a separate function so we don't have
+;; to duplicate code in KSnipe and RSnipe.
+(defn make-properties
+  "Return a Properties subclass for use by Propertied's properties method."
+  [id cfg-data$]
+  ;; These definitions need to be coordinated by hand:
+  (let [kys [:energy :x :y]
+        descriptions ["Energy is what snipes get from mushrooms."
+                      "x coordinate in underlying grid"
+                      "y coordinate in underlying grid"]
+        types [java.lang.Double java.lang.Integer java.lang.Integer]
+        names (mapv name kys)
+        num-properties (count kys)
+        hidden     (vec (repeat num-properties false))
+        read-write (vec (repeat num-properties false))
+        get-curr-snipe (fn [] ((:snipes (:popenv @cfg-data$)) id))]
+    (proxy [Properties] []
+      (getObject [] (get-curr-snipe))
+      (getName [i] (names i))
+      (getDescription [i] (descriptions i))
+      (getType [i] (types i))
+      (getValue [i] ((kys i) (get-curr-snipe)))
+      (isHidden [i] (hidden i))
+      (isReadWrite [i] (read-write i))
+      (isVolatile [] false)
+      (numProperties [] num-properties)
+      (toString [] (str "SimpleProperties: snipe id=" id)))))
 
 ;; levels is a sequence of free-agent.Levels
 (defrecord KSnipe [id levels energy x y cfg-data$]
   Propertied
-  (properties [original-snipe] 
-    (proxy [Properties] []
-      (getObject [] (get-current-snipe id cfg-data$))
-      (getDescription [i] (["Energy is what snipes get from mushrooms."
-                            "x coordinate in underlying grid"
-                            "y coordinate in underlying grid"] i))
-      (getName [i] (["energy" "x" "y"] i))
-      (getType [i] ([java.lang.Double java.lang.Integer java.lang.Integer] i))
-      (getValue [i]
-        (let [curr-snipe (get-current-snipe id cfg-data$)] ; TODO can I abstract this out so not on every call to getValue?
-          ([(:energy curr-snipe)
-            (:x curr-snipe)
-            (:y curr-snipe)] i)))
-      (isHidden [i] ([false false false] i))
-      (isReadWrite [i] ([false false false] i))
-      (isVolatile [] false)
-      (numProperties [] 3)
-      (toString [] (str "SimpleProperties: snipe id=" id))))
+  (properties [original-snipe] (make-properties id cfg-data$))
   Object
   (toString [_] (str "<KSnipe #" id">")))
 
 (defrecord RSnipe [id levels energy x y cfg-data$]
   Propertied
-  (properties [original-snipe] 
-    (proxy [Properties] []
-      (getObject [] (get-current-snipe id cfg-data$))
-      (getDescription [i] (["Energy is what snipes get from mushrooms."
-                            "x coordinate in underlying grid"
-                            "y coordinate in underlying grid"] i))
-      (getName [i] (["energy" "x" "y"] i))
-      (getType [i] ([java.lang.Double java.lang.Integer java.lang.Integer] i))
-      (getValue [i]
-        (let [curr-snipe (get-current-snipe id cfg-data$)] ; TODO can I abstract this out so not on every call to getValue?
-          ([(:energy curr-snipe)
-            (:x curr-snipe)
-            (:y curr-snipe)] i)))
-      (isHidden [i] ([false false false] i))
-      (isReadWrite [i] ([false false false] i))
-      (isVolatile [] false)
-      (numProperties [] 3)
-      (toString [] (str "SimpleProperties: snipe id=" id))))
+  (properties [original-snipe] (make-properties id cfg-data$))
   Object
   (toString [this] (str "<RSnipe #" id ">")))
 
