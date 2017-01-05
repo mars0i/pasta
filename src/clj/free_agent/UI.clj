@@ -113,12 +113,16 @@
                             (draw [snipe graphics info] ; orverride method in super
                               (set! (.-paint this) (k-snipe-color-fn (min max-energy birth-threshold) snipe)) ; paint var is in superclass
                               (proxy-super draw snipe graphics (DrawInfo2D. info (* 1.5 org-offset) (* 1.5 org-offset))))) ; see above re last arg
-        k-snipe-portrayal (CircledPortrayal2D. k-snipe-portrayal Color/red true) ; NOT WORKING. 
+        ;k-snipe-portrayal (CircledPortrayal2D. k-snipe-portrayal Color/red true)
+        k-snipe-portrayal (proxy [CircledPortrayal2D] [k-snipe-portrayal Color/red true]
+                            (draw [snipe graphics info]
+                              (.setCircleShowing this @(:inspected$ snipe))
+                              (proxy-super draw snipe graphics info)))
         r-snipe-portrayal (proxy [OvalPortrayal2D] [snipe-size]
                             (draw [snipe graphics info] ; override method in super
                               (set! (.-paint this) (r-snipe-color-fn max-energy snipe)) ; superclass var
                               (proxy-super draw snipe graphics (DrawInfo2D. info org-offset org-offset)))) ; see above re last arg
-        r-snipe-portrayal (CircledPortrayal2D. r-snipe-portrayal Color/blue true)] ; NOT WORKING. 
+        r-snipe-portrayal (CircledPortrayal2D. r-snipe-portrayal Color/blue true)]
     (.setField bg-field-portrayal (ObjectGrid2D. (:env-width cfg-data) (:env-height cfg-data))) ; displays a background grid
     (.setField mush-field-portrayal mush-field)
     (.setField snipe-field-portrayal snipe-field)

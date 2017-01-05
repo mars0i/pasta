@@ -8,56 +8,16 @@
 ;; but it will be useful to have two different wrapper classes to make it easier to
 ;; observe differences.
 
-;; Does gensym avoid bottleneck??
-(defn next-id 
-  "Returns a unique integer for use as an id."
-  [] 
-  (Long. (str (gensym ""))))
-
-;(defprotocol InspectedSnipeP
-;  (getEnergy [this]))
-
-(defn get-current-snipe
-  "Returns the snipe in the current PopEnv with id."
-  [id cfg-data$]
-  ((:snipes (:popenv @cfg-data$)) id))
-
-;; Create the Propertied proxy in a separate function so we don't have
-;; to duplicate code in KSnipe and RSnipe.
-(defn make-properties
-  "Return a Properties subclass for use by Propertied's properties method."
-  [id cfg-data$]
-  ;; These definitions need to be coordinated by hand:
-  (let [kys [:energy :x :y]
-        descriptions ["Energy is what snipes get from mushrooms."
-                      "x coordinate in underlying grid"
-                      "y coordinate in underlying grid"]
-        types [java.lang.Double java.lang.Integer java.lang.Integer]
-        names (mapv name kys)
-        num-properties (count kys)
-        hidden     (vec (repeat num-properties false))
-        read-write (vec (repeat num-properties false))
-        get-curr-snipe (fn [] ((:snipes (:popenv @cfg-data$)) id))]
-    (proxy [Properties] []
-      (getObject [] (get-curr-snipe))
-      (getName [i] (names i))
-      (getDescription [i] (descriptions i))
-      (getType [i] (types i))
-      (getValue [i] ((kys i) (get-curr-snipe)))
-      (isHidden [i] (hidden i))
-      (isReadWrite [i] (read-write i))
-      (isVolatile [] false)
-      (numProperties [] num-properties)
-      (toString [] (str "SimpleProperties: snipe id=" id)))))
+(declare next-id make-properties make-k-snipe make-r-snipe is-k-snipe? is-r-snipe?)
 
 ;; levels is a sequence of free-agent.Levels
-(defrecord KSnipe [id levels energy x y cfg-data$]
+(defrecord KSnipe [id levels energy x y inspected$ cfg-data$]
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Object
   (toString [_] (str "<KSnipe #" id">")))
 
-(defrecord RSnipe [id levels energy x y cfg-data$]
+(defrecord RSnipe [id levels energy x y inspected$ cfg-data$]
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Object
@@ -72,6 +32,7 @@
             nil ;; TODO construct levels function here using prior
             energy
             x y
+            (atom false)
             cfg-data$)))
 
 (defn make-r-snipe
@@ -83,18 +44,53 @@
             nil ;; TODO construct levels function here using prior (one of two values, randomly)
             energy
             x y
+            (atom false)
             cfg-data$)))
+
+;; Does gensym avoid bottleneck??
+(defn next-id 
+  "Returns a unique integer for use as an id."
+  [] 
+  (Long. (str (gensym ""))))
+
+;; This is unlikely to become part of clojure.core: http://dev.clojure.org/jira/browse/CLJ-1298
+(defn atom? [x] (instance? clojure.lang.Atom x))
+
+;; Create the Propertied proxy in a separate function so we don't have
+;; to duplicate code in KSnipe and RSnipe.
+;; (The code below makes heavy use of the fact that in Clojure, vectors
+;; can be treated as functions of indexes, returning the indexed item;
+;; that keywords (such as :x) can be treated of functions of maps;
+;; and that defrecords such as snipes can be treated as maps.)
+(defn make-properties
+  "Return a Properties subclass for use by Propertied's properties method."
+  [id cfg-data$]
+  ;; These definitions need to be coordinated by hand:
+  (let [kys [:energy :x :y :inspected$]
+        descriptions ["Energy is what snipes get from mushrooms."
+                      "x coordinate in underlying grid"
+                      "y coordinate in underlying grid" "yo"]
+        types [java.lang.Double java.lang.Integer java.lang.Integer java.lang.Boolean]
+        names (mapv name kys)
+        num-properties (count kys)
+        hidden     (vec (repeat num-properties false))
+        read-write (vec (repeat num-properties false))
+        get-curr-snipe (fn [] ((:snipes (:popenv @cfg-data$)) id))]
+    (reset! (:inspected$ (get-curr-snipe)) true)
+    (proxy [Properties] []
+      (getObject [] (get-curr-snipe))
+      (getName [i] (names i))
+      (getDescription [i] (descriptions i))
+      (getType [i] (types i))
+      (getValue [i] (let [v ((kys i) (get-curr-snipe))]
+                      (if (atom? v) @v v)))
+      (isHidden [i] (hidden i))
+      (isReadWrite [i] (read-write i))
+      (isVolatile [] false)
+      (numProperties [] num-properties)
+      (toString [] (str "<SimpleProperties: snipe id=" id ">")))))
+
 
 ;; note underscores
 (defn is-k-snipe? [s] (instance? free_agent.snipe.KSnipe s))
 (defn is-r-snipe? [s] (instance? free_agent.snipe.RSnipe s))
-
-
-;; Incredibly, the following is not needed in order for snipes to be inspectable.
-;; MASON simply sees the record fields as properties.
-;; Thank you Clojure and MASON.
-;;
-;;     (defprotocol InspectedSnipe (getEnergy [this]))
-;;     (definterface InspectedSnipe (^double getEnergy []))
-;;     To see that this method is visible for snipes, try this:
-;;     (pprint (.getDeclaredMethods (class k)))
