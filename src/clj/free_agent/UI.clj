@@ -116,8 +116,11 @@
         ;k-snipe-portrayal (CircledPortrayal2D. k-snipe-portrayal Color/red true)
         k-snipe-portrayal (proxy [CircledPortrayal2D] [k-snipe-portrayal Color/red true]
                             (draw [snipe graphics info]
-                              (.setCircleShowing this @(:inspected$ snipe))
-                              (proxy-super draw snipe graphics info)))
+                              (let [id (:id snipe)
+                                    cfg-data$ (:cfg-data$ snipe)
+                                    get-curr-snipe (fn [] ((:snipes (:popenv @cfg-data$)) id))]
+                                (.setCircleShowing this @(:inspected$ (get-curr-snipe)))
+                                (proxy-super draw snipe graphics info))))
         r-snipe-portrayal (proxy [OvalPortrayal2D] [snipe-size]
                             (draw [snipe graphics info] ; override method in super
                               (set! (.-paint this) (r-snipe-color-fn max-energy snipe)) ; superclass var
