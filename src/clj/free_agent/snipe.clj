@@ -11,6 +11,7 @@
 (declare next-id make-properties make-k-snipe make-r-snipe is-k-snipe? is-r-snipe?)
 
 ;; levels is a sequence of free-agent.Levels
+;; Propertied/properties is used by GUI so inspectors will follow a fnlly updated agent
 (defrecord KSnipe [id levels energy x y inspected$ cfg-data$]
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
