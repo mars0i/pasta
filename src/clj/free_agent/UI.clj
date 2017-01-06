@@ -89,21 +89,8 @@
   [child-portrayal color]
   (proxy [CircledPortrayal2D] [child-portrayal color false]
     (draw [snipe graphics info]
-      (.setCircleShowing this @(:inspected$ snipe))
-      (proxy-super draw snipe graphics info))
-    ;; AN ATTEMPT TO RESET THE INSPECTED FLAG IN SNIPE but reviseStopper() is never called. What calls that?
-    ;; Based on classdocs for Inspector and source in tutorial4withUI.java
-    (getInspector [wrapper state]
-      (println "gettin' an inspector") ; DEBUG
-      (proxy [SimpleInspector] [(.getObject wrapper) state]
-        ;(updateInspector [] (println "Yaow. In the special inspector.") (proxy-super updateInspector)) ; DEBUG
-        (reviseStopper [stopper]
-          (println "revisin' stopper") ; DEBUG
-          (let [new-stopper (proxy-super reviseStopper stopper)]
-            (reify Stoppable
-              (stop [this]
-                (when new-stopper (.stop new-stopper))
-                (println "stop o rama!"))))))))) ; ; DEBUG ; TODO Replace with snipe inspected$ reset code
+      (.setCircleShowing this @(:circled$ snipe))
+      (proxy-super draw snipe graphics info))))
 
 (defn setup-portrayals
   [this-ui]  ; instead of 'this': avoid confusion with e.g. proxy below

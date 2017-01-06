@@ -12,13 +12,13 @@
 
 ;; levels is a sequence of free-agent.Levels
 ;; Propertied/properties is used by GUI so inspectors will follow a fnlly updated agent
-(defrecord KSnipe [id levels energy x y inspected$ cfg-data$]
+(defrecord KSnipe [id levels energy x y circled$ cfg-data$]
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Object
   (toString [_] (str "<KSnipe #" id">")))
 
-(defrecord RSnipe [id levels energy x y inspected$ cfg-data$]
+(defrecord RSnipe [id levels energy x y circled$ cfg-data$]
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Object
@@ -67,24 +67,31 @@
   "Return a Properties subclass for use by Propertied's properties method."
   [id cfg-data$]
   ;; These definitions need to be coordinated by hand:
-  (let [kys [:energy :x :y :inspected$]
+  (let [kys [:energy :x :y :circled$]
+        circled-idx 3 ; HARDCODED INDEX for circled$ field
         descriptions ["Energy is what snipes get from mushrooms."
                       "x coordinate in underlying grid"
-                      "y coordinate in underlying grid" "yo"]
+                      "y coordinate in underlying grid"
+                      "Boolean indicating whether circled in GUI"]
         types [java.lang.Double java.lang.Integer java.lang.Integer java.lang.Boolean]
         names (mapv name kys)
         num-properties (count kys)
         hidden     (vec (repeat num-properties false))
-        read-write (vec (repeat num-properties false))
+        read-write [false false false true]
         get-curr-snipe (fn [] ((:snipes (:popenv @cfg-data$)) id))]
-    (reset! (:inspected$ (get-curr-snipe)) true)
+    (reset! (:circled$ (get-curr-snipe)) true)
     (proxy [Properties] []
       (getObject [] (get-curr-snipe))
       (getName [i] (names i))
       (getDescription [i] (descriptions i))
       (getType [i] (types i))
-      (getValue [i] (let [v ((kys i) (get-curr-snipe))]
-                      (if (atom? v) @v v)))
+      (getValue [i]
+        (let [v ((kys i) (get-curr-snipe))]
+          (if (atom? v) @v v)))
+      (setValue [i newval]
+        (when (= i circled-idx)             ; returns nil/null for other fields
+          (reset! (:circled$ (get-curr-snipe))
+                  (Boolean/valueOf newval))))
       (isHidden [i] (hidden i))
       (isReadWrite [i] (read-write i))
       (isVolatile [] false)
