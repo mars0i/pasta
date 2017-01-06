@@ -23,13 +23,14 @@
     :init init-instance-state))
 
 ;; display parameters:
-(def mush-pos-nutrition-shade 175) ; a grayscale value in [0,255]
-(def mush-neg-nutrition-shade 255)
+(def mush-pos-nutrition-shade 255) ; a grayscale value in [0,255]
+(def mush-neg-nutrition-shade 175)
+(defn mush-color-fn [shade] (Color. shade (int (* 0.9 shade)) 0))
 (def mush-high-mean-size 1.0) ; we don't scale mushroom size to modeled size, but
 (def mush-low-mean-size 0.725) ; we display the low-size mushroom smaller
 ;; background portrayal displayed in mushroom-less patches:
-(def bg-pattern-color (Color. 220 220 220)) ; or: a dirty pink: (def bg-pattern-color (Color. 200 165 165)) 
-(def bg-border-color (Color. 140 140 140)) ; what shows through around the edges of simple portrayals in the background field portrayal
+(def bg-pattern-color (Color. 255 255 255)) ; (Color. 220 220 220)) ; or: a dirty pink: (def bg-pattern-color (Color. 200 165 165)) 
+(def bg-border-color (Color. 185 185 185)) ; what shows through around the edges of simple portrayals in the background field portrayal
 (def snipe-size 0.45)
 (defn snipe-shade-fn [max-energy snipe] (int (+ 55 (* 200 (/ (:energy snipe) max-energy))))) ; cut off darkest shades
 (defn k-snipe-color-fn [max-energy snipe] (Color. (snipe-shade-fn max-energy snipe) 0 0))
@@ -114,9 +115,9 @@
         mush-portrayal (proxy [OvalPortrayal2D] []
                          (draw [mush graphics info]  ; override method in super
                            (let [size  (if (= mush-high-mean (:mean mush)) mush-high-mean-size mush-low-mean-size)
-                                 shade (int (* 0.95 (if (neg? (:nutrition mush)) mush-neg-nutrition-shade mush-pos-nutrition-shade)))]
+                                 shade (if (neg? (:nutrition mush)) mush-neg-nutrition-shade mush-pos-nutrition-shade)]
                              (set! (.-scale this) size)                       ; superclass vars
-                             (set! (.-paint this) (Color. shade shade (int (* 0.5 shade))))
+                             (set! (.-paint this) (mush-color-fn shade))
                              (proxy-super draw mush graphics (DrawInfo2D. info org-offset org-offset))))) ; last arg centers organism in hex cell
         k-snipe-portrayal (proxy [RectanglePortrayal2D] [(* 0.9 snipe-size)] ; squares are bigger than circles
                             (draw [snipe graphics info] ; orverride method in super
@@ -132,7 +133,7 @@
     (.setField mush-field-portrayal mush-field)
     (.setField snipe-field-portrayal snipe-field)
     ; **NOTE** UNDERSCORES NOT HYPHENS IN free_agent CLASSNAMES BELOW:
-    (.setPortrayalForNull bg-field-portrayal (HexagonalPortrayal2D. bg-pattern-color 0.90)) ; show patches as such (or use OvalPortrayal2D with scale 1.0)
+    (.setPortrayalForNull bg-field-portrayal (HexagonalPortrayal2D. bg-pattern-color 0.91)) ; show patches as such (or use OvalPortrayal2D with scale 1.0)
     (.setPortrayalForClass mush-field-portrayal free_agent.mush.Mush mush-portrayal)
     (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe k-snipe-portrayal)
     (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe r-snipe-portrayal)
