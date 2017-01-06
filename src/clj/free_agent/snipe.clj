@@ -10,14 +10,16 @@
 
 (declare next-id make-properties make-k-snipe make-r-snipe is-k-snipe? is-r-snipe?)
 
-;; levels is a sequence of free-agent.Levels
-;; Propertied/properties is used by GUI so inspectors will follow a fnlly updated agent
+;; levels is a sequence of free-agent.Levels.
+;; The two atom fields at the end are there solely for interactions with the UI.
+;; Propertied/properties is used by GUI to allow inspectors to follow a fnlly updated agent.
 (defrecord KSnipe [id levels energy x y circled$ cfg-data$]
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Object
   (toString [_] (str "<KSnipe #" id">")))
 
+;; See comments on KSnipe.
 (defrecord RSnipe [id levels energy x y circled$ cfg-data$]
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
@@ -57,12 +59,10 @@
 ;; This is unlikely to become part of clojure.core: http://dev.clojure.org/jira/browse/CLJ-1298
 (defn atom? [x] (instance? clojure.lang.Atom x))
 
-;; Create the Propertied proxy in a separate function so we don't have
-;; to duplicate code in KSnipe and RSnipe.
-;; (The code below makes heavy use of the fact that in Clojure, vectors
-;; can be treated as functions of indexes, returning the indexed item;
-;; that keywords (such as :x) can be treated of functions of maps;
-;; and that defrecords such as snipes can be treated as maps.)
+;; Used by GUI to allow inspectors to follow a fnlly updated agent.
+;; (Code below makes use of the fact that in Clojure, vectors can be treated as functions
+;; of indexes, returning the indexed item; that keywords such as :x can be treated as 
+;; functions of maps; and that defrecords such as snipes can be treated as maps.)
 (defn make-properties
   "Return a Properties subclass for use by Propertied's properties method."
   [id cfg-data$]
@@ -77,9 +77,9 @@
         names (mapv name kys)
         num-properties (count kys)
         hidden     (vec (repeat num-properties false))
-        read-write [false false false true]
+        read-write [false false false true] ; allow user to turn off circled in UI
         get-curr-snipe (fn [] ((:snipes (:popenv @cfg-data$)) id))]
-    (reset! (:circled$ (get-curr-snipe)) true)
+    (reset! (:circled$ (get-curr-snipe)) true) ; make-properties only called by inspector, in which case highlight snipe in UI
     (proxy [Properties] []
       (getObject [] (get-curr-snipe))
       (getName [i] (names i))
@@ -88,10 +88,10 @@
       (getValue [i]
         (let [v ((kys i) (get-curr-snipe))]
           (if (atom? v) @v v)))
-      (setValue [i newval]
+      (setValue [i newval]                  ; allow user to turn off circled in UI
         (when (= i circled-idx)             ; returns nil/null for other fields
           (reset! (:circled$ (get-curr-snipe))
-                  (Boolean/valueOf newval))))
+                  (Boolean/valueOf newval)))) ; for some reason a string is returned from UI. (Do *not* use (Boolean. newval); it's always truthy in Clojure.)
       (isHidden [i] (hidden i))
       (isReadWrite [i] (read-write i))
       (isVolatile [] false)
