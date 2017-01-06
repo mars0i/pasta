@@ -91,7 +91,7 @@
       (setValue [i newval]                  ; allow user to turn off circled in UI
         (when (= i circled-idx)             ; returns nil/null for other fields
           (reset! (:circled$ (get-curr-snipe))
-                  (Boolean/valueOf newval)))) ; for some reason a string is returned from UI. (Do *not* use (Boolean. newval); it's always truthy in Clojure.)
+                  (Boolean/valueOf newval)))) ; it's always a string that's returned from UI. (Do *not* use (Boolean. newval); it's always truthy in Clojure.)
       (isHidden [i] (hidden i))
       (isReadWrite [i] (read-write i))
       (isVolatile [] false)
