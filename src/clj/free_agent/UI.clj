@@ -6,9 +6,9 @@
   (:require [free-agent.SimConfig :as cfg]
             [clojure.math.numeric-tower :as math])
   (:import [free-agent mush snipe SimConfig]
-           [sim.engine Steppable Schedule]
+           [sim.engine Steppable Schedule Stoppable]
            [sim.field.grid ObjectGrid2D] ; normally doesn't belong in UI: a hack to use a field portrayal to display a background pattern
-           [sim.portrayal DrawInfo2D]
+           [sim.portrayal DrawInfo2D SimpleInspector]
            [sim.portrayal.grid HexaObjectGridPortrayal2D ObjectGridPortrayal2D]; FastHexaObjectGridPortrayal2D
            [sim.portrayal.simple OvalPortrayal2D RectanglePortrayal2D HexagonalPortrayal2D CircledPortrayal2D LabelledPortrayal2D]
            [sim.display Console Display2D]
@@ -90,7 +90,20 @@
   (proxy [CircledPortrayal2D] [child-portrayal color false]
     (draw [snipe graphics info]
       (.setCircleShowing this @(:inspected$ snipe))
-      (proxy-super draw snipe graphics info))))
+      (proxy-super draw snipe graphics info))
+    ;; AN ATTEMPT TO RESET THE INSPECTED FLAG IN SNIPE but reviseStopper() is never called. What calls that?
+    ;; Based on classdocs for Inspector and source in tutorial4withUI.java
+    (getInspector [wrapper state]
+      (println "gettin' an inspector") ; DEBUG
+      (proxy [SimpleInspector] [(.getObject wrapper) state]
+        ;(updateInspector [] (println "Yaow. In the special inspector.") (proxy-super updateInspector)) ; DEBUG
+        (reviseStopper [stopper]
+          (println "revisin' stopper") ; DEBUG
+          (let [new-stopper (proxy-super reviseStopper stopper)]
+            (reify Stoppable
+              (stop [this]
+                (when new-stopper (.stop new-stopper))
+                (println "stop o rama!"))))))))) ; ; DEBUG ; TODO Replace with snipe inspected$ reset code
 
 (defn setup-portrayals
   [this-ui]  ; instead of 'this': avoid confusion with e.g. proxy below
