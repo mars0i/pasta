@@ -43,8 +43,9 @@
 
 ;; lazy if more than one sample
 ;; (deal with license issues)
+; Derived from Incanter's algorithm from sample-uniform for sampling without replacement."
 (defn sample-without-repl
-  "Derived from Incanter's algorithm from sample-uniform for sampling without replacement."
+  "Return num-samples from coll, sampled without replacement."
   [rng num-samples coll]
   (let [size (count coll)
         max-idx size]
