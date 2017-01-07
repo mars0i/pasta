@@ -197,8 +197,8 @@
 
 (defn add-to-energy
   [snipe-energy max-energy mush-nutrition]
-  (max 0 
-       (min max-energy 
+  (max 0                ; negative energy is impossible
+       (min max-energy  ; can't exceed max energy
             (+ snipe-energy mush-nutrition))))
 
 (defn eat-if-appetizing 
@@ -212,8 +212,6 @@
       [(update experienced-snipe :energy add-to-energy max-energy (:nutrition mush)) true]
       [experienced-snipe false])))
 
-;(when-not (.get snipe-field (:x snipe) (:y snipe)) (println "Whoaa! No snipe at" (:x snipe) (:y snipe))) ; DEBUG
-
 (defn snipes-eat
   [rng cfg-data snipe-field mush-field]
   (let [{:keys [env-width env-height max-energy]} cfg-data
@@ -222,10 +220,9 @@
                                  :let [{:keys [x y]} snipe
                                        mush (.get mush-field x y)]
                                  :when mush]
-                             (eat-if-appetizing  max-energy snipe mush))
+                             (eat-if-appetizing max-energy snipe mush))
         new-snipe-field (ObjectGrid2D. snipe-field) ; new field that's a copy of old one
-        new-mush-field  (ObjectGrid2D. mush-field)] ; TODO does this full copy (slower) rather than pointer-copy?
-    ;; FIXME NOT RIGHT since unchanged mushrooms and snipes are not copied over to new fields
+        new-mush-field  (ObjectGrid2D. mush-field)]
     (doseq [[snipe ate?] snipes-plus-eaten?]
       (when ate?
         (let [{:keys [x y]} snipe]
@@ -249,6 +246,16 @@
       (.set new-snipe-field (:x snipe) (:y snipe) snipe))
     new-snipe-field))
 
+(defn count-litter
+  [cfg-data snipe]
+  (let [{:keys [birth-threshold birth-cost]} cfg-data
+        old-energy (:energy snipe)]
+    (if (< old-energy birth-threshold)
+      [0 snipe]
+      (let [num-births (+ 1 (quot (- old-energy birth-threshold) birth-cost)) ; one birth, plus as many allowed by energy that exceeds threshold
+            remaining-energy (- old-energy (* num-births birth-cost))]
+        [num-births (assoc snipe :energy remaining-energy)]))))
+
 (defn snipes-reproduce
   [rng cfg-data$ snipe-field]
   (let [{:keys [env-width env-height birth-threshold birth-cost]} @cfg-data$
@@ -256,11 +263,28 @@
         new-snipe-field (ObjectGrid2D. snipe-field)] ; new field that's a copy of old one
     (doseq [snipe old-snipes]
       (when (>= (:energy snipe) birth-threshold)
-        (.set new-snipe-field (:x snipe) (:y snipe)  ; replace with energy reduced due to birth
-              (update snipe :energy - birth-cost))
-        (add-organism-to-rand-loc! rng new-snipe-field env-width env-height ; add newborn
-                                   (organism-setter (if (sn/is-k-snipe? snipe)  ; newborn should be like parent
-                                                      (partial sn/make-k-snipe cfg-data$)
-                                                      (partial sn/make-r-snipe cfg-data$))))))
+        (let [[num-births snipe] (count-litter @cfg-data$ snipe)]
+          (.set new-snipe-field (:x snipe) (:y snipe) snipe)
+          (dotimes [_ num-births]
+            (add-organism-to-rand-loc! rng new-snipe-field env-width env-height ; add newborn
+                                       (organism-setter (if (sn/is-k-snipe? snipe)  ; newborn should be like parent
+                                                          (partial sn/make-k-snipe cfg-data$)
+                                                          (partial sn/make-r-snipe cfg-data$))))))))
     new-snipe-field))
+
+
+;(defn snipes-reproduce
+;  [rng cfg-data$ snipe-field]
+;  (let [{:keys [env-width env-height birth-threshold birth-cost]} @cfg-data$
+;        old-snipes (.elements snipe-field)
+;        new-snipe-field (ObjectGrid2D. snipe-field)] ; new field that's a copy of old one
+;    (doseq [snipe old-snipes]
+;      (when (>= (:energy snipe) birth-threshold)
+;        (.set new-snipe-field (:x snipe) (:y snipe)  ; replace with energy reduced due to birth
+;              (update snipe :energy - birth-cost))
+;        (add-organism-to-rand-loc! rng new-snipe-field env-width env-height ; add newborn
+;                                   (organism-setter (if (sn/is-k-snipe? snipe)  ; newborn should be like parent
+;                                                      (partial sn/make-k-snipe cfg-data$)
+;                                                      (partial sn/make-r-snipe cfg-data$))))))
+;    new-snipe-field))
 
