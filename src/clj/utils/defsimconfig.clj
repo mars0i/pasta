@@ -147,7 +147,7 @@
   "fields is a sequence of 3- or 4-element sequences starting with names of 
   fields in which configuration data will be stored and accessed, followed
   by initial values and a Java type identifiers for the field.  The fourth
-  element either false to indicate that the field should not be configurable
+  element is either false to indicate that the field should not be configurable
   from the UI, or truthy if it is.  In the latter case, it may be a two-element 
   sequence containing default min and max values to be used for sliders in the
   UI.  (This range doesn't constraint fields' values in any other respect.) 
