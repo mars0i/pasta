@@ -35,8 +35,10 @@
                       [birth-threshold    15.0  double [1.0 50.0]  ["-b" "Energy level at which birth takes place" :parse-fn #(Double. %)]]
                       [birth-cost          5.0  double [0.0 10.0]  ["-c" "Energetic cost of giving birth to one offspring" :parse-fn #(Double. %)]]
                       [max-energy         30.0  double [1.0 100.0] ["-x" "Max energy that a snipe can have." :parse-fn #(Double. %)]]
+                      [max-proportion      0.25 double [0.1 0.9]   ["-m" "Snipes are randomly culled when number exceed this times # of cells." :parse-fn #(Double. %)]]
                       [env-width          88    long   false       ["-w" "How wide is env?  Must be an even number." :parse-fn #(Long. %)]] ; can be set from command line but not in running app
                       [env-height         40    long   false       ["-t" "How tall is env? Should be an even number." :parse-fn #(Long. %)]] ; ditto
+                      [max-pop-size        0    long   false]
                       [env-display-size   12.0  double false       ["-d" "How large to display the env in gui by default." :parse-fn #(Double. %)]]
                       [env-center         nil   double false]
                       [popenv             nil   free-agent.popenv.PopEnv false]])
@@ -60,6 +62,12 @@
   (sim.engine.SimState/doLoop free-agent.SimConfig (into-array String args)) ;; FIXME RUNTIME EXCEPTION HERE
   (System/exit 0))
 
+(defn report-params
+  "Print parameters in cfg-data to standard output."
+  [cfg-data]
+  (let [kys (sort (keys cfg-data))]
+    (println (map #(str (name %) "=" (% cfg-data)) kys))))
+
 (defn -start
   "Function that's called to (re)start a new simulation run."
   [^SimConfig this]
@@ -71,6 +79,7 @@
         ^SimConfigData cfg-data$ (.simConfigData this)
         ^MersenneTwisterFast rng (.-random this)]
     (pe/setup-popenv-config! cfg-data$)
+    (report-params @cfg-data$)
     (swap! cfg-data$ assoc :popenv (pe/make-popenv rng cfg-data$)) ; create new popenv
     ;; Run it:
     (.scheduleRepeating schedule Schedule/EPOCH 0
