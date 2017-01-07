@@ -32,10 +32,17 @@
 (def bg-pattern-color (Color. 255 255 255)) ; (Color. 220 220 220)) ; or: a dirty pink: (def bg-pattern-color (Color. 200 165 165)) 
 (def bg-border-color (Color. 185 185 185)) ; what shows through around the edges of simple portrayals in the background field portrayal
 (def snipe-size 0.45)
-(defn snipe-shade-fn [max-energy snipe] (int (+ 55 (* 200 (/ (:energy snipe) max-energy))))) ; cut off darkest shades
+(defn snipe-shade-fn [max-energy snipe] (int (+ 54 (* 200 (/ (:energy snipe) max-energy)))))
 (defn k-snipe-color-fn [max-energy snipe] (Color. (snipe-shade-fn max-energy snipe) 0 0))
 (defn r-snipe-color-fn [max-energy snipe] (Color. 0 0 (snipe-shade-fn max-energy snipe)))
 (def org-offset 0.6) ; with simple hex portrayals to display grid, organisms off center; pass this to DrawInfo2D to correct.
+
+; DEBUG:
+;(defn snipe-shade-fn [max-energy snipe] 
+;  (let [shade (int (+ 54 (* 200 (/ (:energy snipe) max-energy))))]
+;    (when (> shade 255)
+;      (println "SHADE:" shade (dissoc snipe :cfg-data$)))
+;    shade))
 
 
 (defn -init-instance-state
@@ -150,17 +157,6 @@
       (.reset )
       (.setBackdrop bg-border-color)
       (.repaint))))
-
-;; other options:
-;(.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe (ShapePortrayal2D. ShapePortrayal2D/X_POINTS_BOWTIE ShapePortrayal2D/Y_POINTS_BOWTIE k-snipe-color snipe-size))
-;make-snipe-portrayal (fn [max-energy color-fn]
-;                       (proxy [OvalPortrayal2D] [snipe-size]
-;                         (draw [snipe graphics info]          ; override OvalPortrayal2D method
-;                           (let [shade (int (* 255 (/ (:energy snipe) max-energy)))]
-;                             (set! (.-paint this) (color-fn shade)) ; paint var is in OvalPortrayal2D
-;                             (proxy-super draw snipe graphics info)))))
-;k-snipe-portrayal (make-snipe-portrayal max-energy k-snipe-color-fn)
-;r-snipe-portrayal (make-snipe-portrayal max-energy r-snipe-color-fn)
 
 
 ;; For hex grid, need to rescale display (based on HexaBugsWithUI.java around line 200 in Mason 19):
