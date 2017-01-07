@@ -1,7 +1,8 @@
 (ns free-agent.popenv
   (:require [free-agent.snipe :as sn]
             [free-agent.mush :as mu]
-            [utils.random :as ran])
+            [utils.random :as ran]
+            [utils.random-utils :as ranu])
   (:import [sim.field.grid Grid2D ObjectGrid2D]
            [sim.util IntBag]))
 
@@ -11,7 +12,7 @@
          add-organism-to-rand-loc! add-k-snipes! add-r-snipes! add-mush! 
          maybe-add-mush! add-mushs! move-snipes move-snipe! choose-next-loc
          perceive-mushroom add-to-energy eat-if-appetizing snipes-eat 
-         snipes-die snipes-reproduce)
+         snipes-die snipes-reproduce cull-snipes)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TOP LEVEL FUNCTIONS
@@ -22,8 +23,10 @@
 
 (defn setup-popenv-config!
   [cfg-data$]
-  (let [{:keys [env-width]} @cfg-data$]
-    (swap! cfg-data$ assoc :env-center (/ env-width 2.0))))
+  (let [{:keys [env-width env-height max-proportion]} @cfg-data$]
+    (swap! cfg-data$ assoc :env-center (/ env-width 2.0))
+    (swap! cfg-data$ assoc :max-pop-size 
+                            (int (* env-width env-height max-proportion)))))
 
 (defn make-snipes-map
   "Make a map from snipe ids to snipes."
@@ -57,6 +60,7 @@
         new-snipe-field (->> new-snipe-field                 ; even I like a thread macro sometimes
                              (snipes-reproduce rng cfg-data$) ; birth before death in case birth uses remaining energy
                              (snipes-die @cfg-data$)
+                             (cull-snipes rng @cfg-data$)
                              (move-snipes rng @cfg-data$))     ; only the living get to move
         snipes (make-snipes-map new-snipe-field)]
     (PopEnv. new-snipe-field new-mush-field snipes)))
@@ -245,6 +249,22 @@
     (doseq [snipe live-snipes]
       (.set new-snipe-field (:x snipe) (:y snipe) snipe))
     new-snipe-field))
+
+(defn cull-snipes
+  "If number of snipes exceeds max-pop-size calculated during initialization,
+  randomly remove enough snipes that the pop size is now equal to max-pop-size."
+  [rng cfg-data snipe-field]
+  (let [{:keys [max-pop-size]} cfg-data
+        snipes (.elements snipe-field)
+        pop-size (count snipes)
+        excess-count (- pop-size max-pop-size)]
+    (if (pos? excess-count)
+      (let [excess-snipes (ranu/sample-without-repl rng excess-count (seq snipes)) ; choose random snipes for removal
+            new-snipe-field (ObjectGrid2D. snipe-field)]
+        (doseq [snipe excess-snipes]
+          (.set new-snipe-field (:x snipe) (:y snipe) nil)) ; remove chosen snipes
+        new-snipe-field)
+      snipe-field)))
 
 (defn count-litter
   [cfg-data snipe]
