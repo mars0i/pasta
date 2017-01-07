@@ -43,6 +43,14 @@
                       [env-center         nil   double false]
                       [popenv             nil   free-agent.popenv.PopEnv false]])
 
+;; Not available for plotting from UI. Need to revise defsimconfig?
+(defn -getPopSize
+  [^SimConfig this]
+  (count (:snipes     ; would it be faster to use (.elements snipe-field)?
+           (:popenv 
+             (.simConfigData this))))) 
+
+
 ;; no good reason to put this into the defsimconfig macro since it doesn't include any
 ;; field-specific code.  Easier to redefine if left here.  Note though that commandline
 (defn set-sim-config-data-from-commandline!
