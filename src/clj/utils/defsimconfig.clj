@@ -151,14 +151,20 @@
   sequence containing default min and max values to be used for sliders in the
   UI.  (This range doesn't constraint fields' values in any other respect.) 
   The following gen-class options will automatically be provided: :state, 
-  :exposes-methods, :init, :main, :methods.  Additional options can be provided 
-  in addl-gen-class-opts.  The generated class will be named 
-  <namespace prefix>.SimConfig, where <namespace prefix> is the path before the 
-  last dot of the current namespace.  Java bean style and other MASON-style 
-  accessors will be defined.  Note: SimConfig must be aot-compiled in order 
-  for gen-class to work."
+  :exposes-methods, :init, :main, :methods.  The fifth element, if present,
+  specifies short commandline option lists for use by cli-options, except that
+  the second, long option specifier should be left out; it will be generated
+  from the parameter name.  Additional options can be provided 
+  in addl-gen-class-opts by alternating gen-class option keywords with their
+  intended values.  If addl-gen-class-opts includes :exposes-methods or :methods,
+  the value(s) will be combined with automatically generated values for these
+  gen-class options.  The generated class will be named <namespace prefix>.SimConfig,
+  where <namespace prefix> is the path before the last dot of the current namespace.
+  Java-bean style and other MASON-style accessors will be defined.  
+  Note: SimConfig must be aot-compiled in order for gen-class to work."
   [fields & addl-gen-class-opts]
-   (let [field-syms# (map first fields)
+   (let [addl-opts-map (apply hash-map addl-gen-class-opts)
+         field-syms# (map first fields)
          field-inits# (map second fields)
          ui-fields# (get-ui-fields fields)
          ui-field-syms# (map first ui-fields#)
@@ -183,12 +189,13 @@
          gen-class-opts# {:name qualified-cfg-class#
                          :extends 'sim.engine.SimState
                          :state data-field-sym
-                         :exposes-methods '{start superStart}
+                         :exposes-methods (into '{start superStart} (:exploses-methods addl-opts-map))
                          :init init-genclass-sym
                          :main true
                          :methods (vec (concat (make-accessor-sigs get-syms# set-syms# ui-field-types#)
-                                               (map #(vector % [] java.lang.Object) dom-syms#)))} 
-         gen-class-opts# (into gen-class-opts# (map vec (partition 2 addl-gen-class-opts)))]
+                                               (map #(vector % [] java.lang.Object) dom-syms#)
+                                               (:methods addl-opts-map)))} 
+         gen-class-opts# (into gen-class-opts# (dissoc addl-opts-map :exposes-methods :methods))]
      `(do
         ;; Put following in its own namespace so that other namespaces can access it without cyclicly referencing SimConfig:
         ;; DEFINE CONFIG DATA RECORD:
