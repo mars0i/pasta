@@ -42,13 +42,10 @@
                       [env-display-size   12.0  double false       ["-d" "How large to display the env in gui by default." :parse-fn #(Double. %)]]
                       [env-center         nil   double false]
                       [popenv             nil   free-agent.popenv.PopEnv false]]
-  :methods [[getPopSize [] long]])
+  :methods [[getPopSize [] long]]) ; additional options here. this one is for def below; it will get merged into the generated :methods component.
 
-;; Not available for plotting from UI. Need to revise defsimconfig?
 (defn -getPopSize
   [^SimConfig this]
-  (println this)
-  (println (class @(.simConfigData this)))
   (count (:snipes     ; would it be faster to use (.elements snipe-field)?
            (:popenv 
              @(.simConfigData this))))) 
