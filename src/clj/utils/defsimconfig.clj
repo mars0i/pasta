@@ -141,7 +141,6 @@
 
 
 ;; TODO add type annotations. (maybe iff they're symbols??)
-;; TODO put data structure in its own namespace to avoid circular references
 ;; Maybe some of gensym pound signs are overkill. Can't hurt?
 (defmacro defsimconfig
   "fields is a sequence of 3- or 4-element sequences starting with names of 
