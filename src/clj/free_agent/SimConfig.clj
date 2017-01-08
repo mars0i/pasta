@@ -41,7 +41,8 @@
                       [max-pop-size        0    long   false]
                       [env-display-size   12.0  double false       ["-d" "How large to display the env in gui by default." :parse-fn #(Double. %)]]
                       [env-center         nil   double false]
-                      [popenv             nil   free-agent.popenv.PopEnv false]])
+                      [popenv             nil   free-agent.popenv.PopEnv false]]
+  :methods [[getPopSize [] long]])
 
 ;; Not available for plotting from UI. Need to revise defsimconfig?
 (defn -getPopSize
