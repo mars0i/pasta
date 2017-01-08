@@ -47,13 +47,15 @@
 ;; Not available for plotting from UI. Need to revise defsimconfig?
 (defn -getPopSize
   [^SimConfig this]
+  (println this)
+  (println (class @(.simConfigData this)))
   (count (:snipes     ; would it be faster to use (.elements snipe-field)?
            (:popenv 
-             (.simConfigData this))))) 
+             @(.simConfigData this))))) 
 
 
 ;; no good reason to put this into the defsimconfig macro since it doesn't include any
-;; field-specific code.  Easier to redefine if left here.  Note though that commandline
+;; field-specific code.  Easier to redefine if left here.
 (defn set-sim-config-data-from-commandline!
   "Set fields in the SimConfig's simConfigData from parameters passed on the command line."
   [^SimConfig sim-config cmdline]
