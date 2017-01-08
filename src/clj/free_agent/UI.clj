@@ -25,7 +25,7 @@
 ;; display parameters:
 (def mush-pos-nutrition-shade 255) ; a grayscale value in [0,255]
 (def mush-neg-nutrition-shade 175)
-(defn mush-color-fn [shade] (Color. shade (int (* 0.9 shade)) 0))
+(defn mush-color-fn [shade] (Color. shade (int (* 0.8 shade)) (int (* 0.2 shade))))
 (def mush-high-mean-size 1.0) ; we don't scale mushroom size to modeled size, but
 (def mush-low-mean-size 0.725) ; we display the low-size mushroom smaller
 ;; background portrayal displayed in mushroom-less patches:
