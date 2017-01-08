@@ -30,7 +30,7 @@
 (def mush-low-mean-size 0.725) ; we display the low-size mushroom smaller
 ;; background portrayal displayed in mushroom-less patches:
 (def bg-pattern-color (Color. 255 255 255)) ; (Color. 220 220 220)) ; or: a dirty pink: (def bg-pattern-color (Color. 200 165 165)) 
-(def bg-border-color (Color. 185 185 185)) ; what shows through around the edges of simple portrayals in the background field portrayal
+(def bg-border-color (Color. 200 200 200)) ; what shows through around the edges of simple portrayals in the background field portrayal
 (def snipe-size 0.45)
 (defn snipe-shade-fn [max-energy snipe] (int (+ 54 (* 200 (/ (:energy snipe) max-energy)))))
 (defn k-snipe-color-fn [max-energy snipe] (Color. (snipe-shade-fn max-energy snipe) 0 0))
