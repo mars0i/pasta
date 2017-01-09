@@ -1,6 +1,7 @@
 (ns free-agent.SimConfig
   (:require [clojure.tools.cli]
             [utils.defsimconfig :as defcfg]
+            [free-agent.snipe :as sn]
             [free-agent.popenv :as pe])
   (:import [sim.engine Steppable Schedule]
            [sim.util Interval]
@@ -42,13 +43,24 @@
                       [env-display-size   12.0  double false       ["-d" "How large to display the env in gui by default." :parse-fn #(Double. %)]]
                       [env-center         nil   double false]
                       [popenv             nil   free-agent.popenv.PopEnv false]]
-  :methods [[getPopSize [] long]]) ; additional options here. this one is for def below; it will get merged into the generated :methods component.
+  :methods [[getPopSize [] long] ; additional options here. this one is for def below; it will get merged into the generated :methods component.
+            [getRSnipeFreq [] double]])
 
 (defn -getPopSize
   [^SimConfig this]
   (count (:snipes     ; would it be faster to use (.elements snipe-field)?
-           (:popenv 
-             @(.simConfigData this))))) 
+           (:popenv @(.simConfigData this))))) 
+
+(defn -getRSnipeFreq
+  [^SimConfig this]
+  (let [count-r-snipes (fn [n snipe] (if (sn/is-r-snipe? snipe) (inc n) n))
+        snipes (vals (:snipes (:popenv @(.simConfigData this))))
+        pop-size (count snipes)
+        r-snipe-count (reduce count-r-snipes 0 snipes)]
+    (if (pos? pop-size)                   ; when UI first starts, it tries to calc this even though there's no pop, and divs by zero
+      (double (/ r-snipe-count pop-size)) 
+      0))) ; avoid spurious div by zero
+
 
 
 ;; no good reason to put this into the defsimconfig macro since it doesn't include any
