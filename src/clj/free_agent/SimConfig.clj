@@ -53,13 +53,23 @@
 
 (defn -getRSnipeFreq
   [^SimConfig this]
-  (let [count-r-snipes (fn [n snipe] (if (sn/is-r-snipe? snipe) (inc n) n))
-        snipes (vals (:snipes (:popenv @(.simConfigData this))))
+  (let [count-r-snipes (fn [n id snipe] (if (sn/is-r-snipe? snipe) (inc n) n))
+        snipes (:snipes (:popenv @(.simConfigData this)))
         pop-size (count snipes)
-        r-snipe-count (reduce count-r-snipes 0 snipes)]
+        r-snipe-count (reduce-kv count-r-snipes 0 snipes)]
     (if (pos? pop-size)                   ; when UI first starts, it tries to calc this even though there's no pop, and divs by zero
       (double (/ r-snipe-count pop-size)) 
       0))) ; avoid spurious div by zero
+
+;(defn -getRSnipeFreq
+;  [^SimConfig this]
+;  (let [count-r-snipes (fn [n snipe] (if (sn/is-r-snipe? snipe) (inc n) n))
+;        snipes (vals (:snipes (:popenv @(.simConfigData this))))
+;        pop-size (count snipes)
+;        r-snipe-count (reduce count-r-snipes 0 snipes)]
+;    (if (pos? pop-size)                   ; when UI first starts, it tries to calc this even though there's no pop, and divs by zero
+;      (double (/ r-snipe-count pop-size)) 
+;      0))) ; avoid spurious div by zero
 
 
 
