@@ -4,7 +4,7 @@
   (:gen-class                 ; so it can be aot-compiled
      :name free-agent.snipe)) ; without :name other aot classes won't find it
 
-;; The real difference between k- and r-snipes is in how params is implemented,
+;; The real difference between k- and r-snipes is in how levels is implemented,
 ;; but it will be useful to have two different wrapper classes to make it easier to
 ;; observe differences.
 
@@ -12,14 +12,14 @@
 
 ;; The two atom fields at the end are there solely for interactions with the UI.
 ;; Propertied/properties is used by GUI to allow inspectors to follow a fnlly updated agent.
-(defrecord KSnipe [id params energy x y circled$ cfg-data$]
+(defrecord KSnipe [id levels energy x y circled$ cfg-data$]
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Object
   (toString [_] (str "<KSnipe #" id">")))
 
 ;; See comments on KSnipe.
-(defrecord RSnipe [id params energy x y circled$ cfg-data$]
+(defrecord RSnipe [id levels energy x y circled$ cfg-data$]
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Object
