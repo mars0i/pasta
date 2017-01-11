@@ -7,6 +7,7 @@
             ;[clojure.math.numeric-tower :as math]
             [free-agent.level :as lvl]
             [free-agent.matrix :as fm]
+            [free-agent.mush] ; temporary--for testing
             [utils.random :as ran]))
 
 (m/set-current-implementation :vectorz)
@@ -39,10 +40,18 @@
                    (m/matrix [[new-size-phi']
                               [new-nutr-mult']])))
 
-;; THIS WILL BE REPLACED BY MUSHROOM EFFECTS:
-(defn next-bottom [rng] (lvl/make-next-bottom 
-                          #(m/matrix [[(ran/next-gaussian rng 2 5)]       ; replace with mushroom size 
-                                      [(ran/next-gaussian rng -1 3)]])))  ; replace with mushroom nutritiousness
+;; FOR TESTING will be replaced by mushroom effects:
+;(defn next-bottom [rng] (lvl/make-next-bottom 
+;                          #(m/matrix [[(ran/next-gaussian rng 2 5)]       ; replace with mushroom size 
+;                                      [(ran/next-gaussian rng -1 3)]])))  ; replace with mushroom nutritiousness
+
+;; FOR TESTING; will be replaced by mushroom effects from mushrooms in locations:
+(defn next-bottom [rng] 
+  (let [mush (free-agent.mush/make-mush 16.0 2.0 1 rng)
+        appear (free-agent.mush/appearance mush)
+        nutr (:nutrition mush)]
+    (lvl/make-next-bottom #(m/matrix [[appear]
+                                      [nutr]]))))
 
 (def init-theta (m/identity-matrix 2)) ; i.e. initially pass value of gen(phi) through unchanged
 

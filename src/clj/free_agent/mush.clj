@@ -16,8 +16,7 @@
 (defn make-mush [mean sd nutrition rng]
   (Mush. (next-id) mean sd nutrition rng))
 
-
-(defn mush-appearance
+(defn appearance
   [mush]
   (let [{:keys [mean sd rng]} mush]
     (ran/next-gaussian rng mean sd)))
