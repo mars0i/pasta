@@ -108,8 +108,8 @@
                                                    [mush-neg-nutrition mush-pos-nutrition])] ; nutritious vs poison
     (.set field x y 
           (if (< (ran/next-double rng) 0.5) ; half the mushrooms are of each kind in each subenv, on average
-            (mu/make-mush mush-low-mean  mush-sd low-mean-nutrition)
-            (mu/make-mush mush-high-mean mush-sd high-mean-nutrition)))))
+            (mu/make-mush mush-low-mean  mush-sd low-mean-nutrition rng)
+            (mu/make-mush mush-high-mean mush-sd high-mean-nutrition rng)))))
 
 (defn maybe-add-mush!
   [rng cfg-data field x y]

@@ -1,5 +1,5 @@
 (ns free-agent.mush
-  ;(:require [utils.random :as ran])
+  (:require [utils.random :as ran])
   (:gen-class                ; so it can be aot-compiled
     :name free-agent.mush))  ; without :name other aot classes won't find it
 
@@ -10,7 +10,14 @@
   [] 
   (Long. (str (gensym ""))))
 
-(defrecord Mush [id mean sd nutrition])
 
-(defn make-mush [mean sd nutrition]
-  (Mush. (next-id) mean sd nutrition))
+(defrecord Mush [id mean sd nutrition rng])
+
+(defn make-mush [mean sd nutrition rng]
+  (Mush. (next-id) mean sd nutrition rng))
+
+
+(defn mush-appearance
+  [mush]
+  (let [{:keys [mean sd rng]} mush]
+    (ran/next-gaussian rng mean sd)))
