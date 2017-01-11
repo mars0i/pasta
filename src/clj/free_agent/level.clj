@@ -189,8 +189,10 @@
   matrix inversion for vector/matrix calcualtions, a non-Hebbian calculation,
   rather than the local update methods of section 5.)"
   [epsilon sigma]
-  (m/mul 0.5 (m/sub (m-square epsilon)
-                    (m/inverse sigma))))
+  (if-let [sigma-inv (m/inverse sigma)]
+    (m/mul 0.5 (m/sub (m-square epsilon)
+                      (m/inverse sigma)))
+    (throw (Exception. (str "free-agent.levels/sigma-inc: " "Can't invert singular matrix " sigma)))))
 
 (defn limit-sigma
   "If sigma is a scalar variance or a single-element vector or matrix, then clip the
