@@ -2,12 +2,11 @@
 ;; under the Gnu General Public License version 3.0 as specified in the
 ;; the file LICENSE.
 
-(ns free-agent.example
+(ns free-agent.snipe-levels
   (:require [clojure.core.matrix :as m] ; needed for arithmetic macros even if not used explicitly
             [clojure.math.numeric-tower :as math]
             [free-agent.level :as lvl]
             [free-agent.matrix :as fm]
-            [free-agent.core :as fc]
             [utils.random :as ran]))
 
 (m/set-current-implementation :vectorz)
@@ -41,9 +40,9 @@
                               [new-nutr-mult']])))
 
 ;; THIS WILL BE REPLACED BY MUSHROOM EFFECTS:
-;(def next-bottom (lvl/make-next-bottom 
-;                   #(m/matrix [[(ran/next-gaussian fc/rng 2 5)]       ; replace with mushroom nutritiousness 
-;                               [(ran/next-gaussian fc/rng -1 3)]])))  ; replace with mushroom size signal
+(defn next-bottom [rng] (lvl/make-next-bottom 
+                          #(m/matrix [[(ran/next-gaussian rng 2 5)]       ; replace with mushroom nutritiousness 
+                                      [(ran/next-gaussian rng -1 3)]])))  ; replace with mushroom size signal
 
 (def init-theta (m/identity-matrix 2)) ; i.e. initially pass value of gen(phi) through unchanged
 
@@ -64,8 +63,8 @@
 
 (def mid-map {:phi v-p
               :epsilon (fm/col-mat [0.0 0.0])
-              :sigma (m/matrix [[0.5 0.5]
-                                [0.5 0.5]])
+              :sigma (m/matrix [[0.5 0.0]
+                                [0.0 0.5]])
               :theta init-theta
               :gen  gen
               :gen' gen'
@@ -78,5 +77,5 @@
 (def init-mid (lvl/map->Level mid-map))
 (def top      (lvl/make-top-level v-p))
 
-(defn make-stages [] (iterate (partial lvl/next-levels next-bottom)
-                              [init-bot init-mid top]))
+(defn make-stages [rng] (iterate (partial lvl/next-levels (next-bottom rng))
+                                 [init-bot init-mid top]))
