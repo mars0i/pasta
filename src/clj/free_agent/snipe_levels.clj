@@ -3,15 +3,15 @@
 ;; the file LICENSE.
 
 (ns free-agent.snipe-levels
-  (:require [clojure.core.matrix :as m] ; needed for arithmetic macros even if not used explicitly
-            [clojure.math.numeric-tower :as math]
+  (:require [clojure.core.matrix :as m]
+            ;[clojure.math.numeric-tower :as math]
             [free-agent.level :as lvl]
             [free-agent.matrix :as fm]
             [utils.random :as ran]))
 
 (m/set-current-implementation :vectorz)
 
-;; What I'm doing, at least with k-snipes, is (a) estimateing whether
+;; What I'm doing, at least with k-snipes, is (a) estimating whether
 ;; this is a big or small mushroom I'm on, and then (b) estimating what
 ;; nutritional value I *will get* when I eat.
 ;; So the first part is just regular single-parameter estimation as in
@@ -41,8 +41,8 @@
 
 ;; THIS WILL BE REPLACED BY MUSHROOM EFFECTS:
 (defn next-bottom [rng] (lvl/make-next-bottom 
-                          #(m/matrix [[(ran/next-gaussian rng 2 5)]       ; replace with mushroom nutritiousness 
-                                      [(ran/next-gaussian rng -1 3)]])))  ; replace with mushroom size signal
+                          #(m/matrix [[(ran/next-gaussian rng 2 5)]       ; replace with mushroom size 
+                                      [(ran/next-gaussian rng -1 3)]])))  ; replace with mushroom nutritiousness
 
 (def init-theta (m/identity-matrix 2)) ; i.e. initially pass value of gen(phi) through unchanged
 
