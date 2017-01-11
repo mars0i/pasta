@@ -190,7 +190,7 @@
   rather than the local update methods of section 5.)"
   [epsilon sigma]
   (m/mul 0.5 (m/sub (m-square epsilon)
-              (m/inverse sigma))))
+                    (m/inverse sigma))))
 
 (defn limit-sigma
   "If sigma is a scalar variance or a single-element vector or matrix, then clip the
