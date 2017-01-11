@@ -191,7 +191,7 @@
   [epsilon sigma]
   (if-let [sigma-inv (m/inverse sigma)]
     (m/mul 0.5 (m/sub (m-square epsilon)
-                      (m/inverse sigma)))
+                      sigma-inv))
     (throw (Exception. (str "free-agent.levels/sigma-inc: " "Can't invert singular matrix " sigma)))))
 
 (defn limit-sigma
