@@ -47,11 +47,13 @@
 
 ;; FOR TESTING; will be replaced by mushroom effects from mushrooms in locations:
 (defn next-bottom [rng] 
-  (let [mush (free-agent.mush/make-mush 16.0 2.0 1 rng)
-        appear (free-agent.mush/appearance mush)
-        nutr (:nutrition mush)]
-    (lvl/make-next-bottom #(m/matrix [[appear]
-                                      [nutr]]))))
+  (lvl/make-next-bottom 
+    (fn []
+      (let [mush (free-agent.mush/make-mush 16.0 2.0 1 rng)
+            appear (free-agent.mush/appearance mush)
+            nutr (:nutrition mush)]
+        (m/matrix [[appear]
+                   [nutr]])))))
 
 (def init-theta (m/identity-matrix 2)) ; i.e. initially pass value of gen(phi) through unchanged
 
