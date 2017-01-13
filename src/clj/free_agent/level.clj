@@ -32,14 +32,17 @@
 
 (def Level-docstring
   "\n  A Level records values at one level of a prediction-error/free-energy
-  minimization model.  
-  hypoth:     Current value of input at this level, or generative function parameter.
-  err: Epsilon--the error at this level.
+  minimization model.  Variable names in Bogacz's paper are in parentheses.
+  hypoth:  Current value of input at this level, or generative function parameter.
+           At the first (zeroth) level this is sensory data which may vary quite 
+           a lot from one timestep to another.  At higher levels this represents 
+           parameters of hypotheses, or hypotheses about parameter values. (phi)
+  err:     The error at this level. (epsilon)
   covar:   Covariance matrix or variance of assumed distribution over inputs 
-           at this level.  Variance should usually be >= 1 (p. 5 col 2).
+           at this level.  Variance should usually be >= 1 (p. 5 col 2).  (Sigma)
   learn-adj:  Scaling factor learn-adj (scalar or matrix) for generative function.  When 
            learn-adj is multiplied by result of gen(hypoth), the result is the current 
-           estimated mean of the assumed distrubtion.  
+           estimated mean of the assumed distrubtion.  (theta)
            i.e. g(hypoth) = learn-adj * gen(hypoth), where '*' here is scalar or matrix 
            multiplication as appropriate.
   <x>-dt:  A scalar multiplier (e.g. 0.01) determining how fast <x> is updated.
