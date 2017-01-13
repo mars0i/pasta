@@ -188,18 +188,19 @@
                       covar-inv))
     (throw (Exception. (str "free-agent.levels/covar-inc: " "Can't invert singular matrix " covar)))))
 
-(defn limit-covar
-  "If covar is a scalar variance or a single-element vector or matrix, then clip the
-  value to be no less than covar-min.  If covar is a covariance matrix of at least 
-  2x2 size, just return it as is, because I'm not yet sure how to limit it.  
-  (Using determinant > n? positive definite? Neither's widely implemented in core.matrix.)"
-  [covar]
-  (letfn [(mat-max [x y] (m/matrix [[(max x y)]]))]
-    (case (m/shape covar)
-      nil   (max     covar scalar-covar-min)
-      [1]   (mat-max covar scalar-covar-min)
-      [[1]] (mat-max covar scalar-covar-min)
-      covar)))
+(def limit-covar identity) ; FIXME for matrix covar (see docstring below)
+;(defn limit-covar
+;  "If covar is a scalar variance or a single-element vector or matrix, then clip the
+;  value to be no less than covar-min.  If covar is a covariance matrix of at least 
+;  2x2 size, just return it as is, because I'm not yet sure how to limit it.  
+;  (Using determinant > n? positive definite? Neither's widely implemented in core.matrix.)"
+;  [covar]
+;  (letfn [(mat-max [x y] (m/matrix [[(max x y)]]))]
+;    (case (m/shape covar)
+;      nil   (max     covar scalar-covar-min)
+;      [1]   (mat-max covar scalar-covar-min)
+;      [[1]] (mat-max covar scalar-covar-min)
+;      covar)))
 
 (defn next-covar
   "Calculates the next-timestep covar, i.e. the variance or the covariance 
