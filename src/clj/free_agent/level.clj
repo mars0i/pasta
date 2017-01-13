@@ -34,17 +34,17 @@
   "\n  A Level records values at one level of a prediction-error/free-energy
   minimization model.  Variable names in Bogacz's paper are in parentheses.
   hypoth:  Current value of input at this level, or generative function parameter.
-           At the first (zeroth) level this is sensory data which may vary quite 
-           a lot from one timestep to another.  At higher levels this represents 
-           parameters of hypotheses, or hypotheses about parameter values. (phi)
+  At the first (zeroth) level this is sensory data which may vary quite 
+  a lot from one timestep to another.  At higher levels this represents 
+  parameters of hypotheses, or hypotheses about parameter values. (phi)
   err:     The error at this level. (epsilon)
   covar:   Covariance matrix or variance of assumed distribution over inputs 
-           at this level.  Variance should usually be >= 1 (p. 5 col 2).  (Sigma)
+  at this level.  Variance should usually be >= 1 (p. 5 col 2).  (Sigma)
   learn-adj:  Scaling factor learn-adj (scalar or matrix) for generative function.  When 
-           learn-adj is multiplied by result of gen(hypoth), the result is the current 
-           estimated mean of the assumed distrubtion.  (theta)
-           i.e. g(hypoth) = learn-adj * gen(hypoth), where '*' here is scalar or matrix 
-           multiplication as appropriate.
+  learn-adj is multiplied by result of gen(hypoth), the result is the current 
+  estimated mean of the assumed distrubtion.  (theta)
+  i.e. g(hypoth) = learn-adj * gen(hypoth), where '*' here is scalar or matrix 
+  multiplication as appropriate.
   <x>-dt:  A scalar multiplier (e.g. 0.01) determining how fast <x> is updated.
   gen, gen': See learn-adj; gen' is the derivative of gen.  These never change.
 
@@ -80,7 +80,7 @@
   (cons (next-bottom [level-0 level-1])     ; Bottom level is special case.
         (conj
           (vec (map next-level            ; Each middle level depends on levels
-                 (partition 3 1 levels))) ;  immediately below and above it.
+                    (partition 3 1 levels))) ;  immediately below and above it.
           (last levels))))                ; Top is carried forward as is
 
 (defn next-levels-3
@@ -117,8 +117,8 @@
   Other fields will be nil."
   [hypoth]
   (map->Level {:hypoth hypoth :gen identity})) ; other fields will be nil, normally
-              ;; DEBUG: 
-              ; :error 0.01 :covar 0.01 :learn-adj 0.01 :gen' identity :hypoth-dt 0.01 :error-dt 0.01 :covar-dt 0.01 :learn-adj-dt 0.01}))
+;; DEBUG: 
+; :error 0.01 :covar 0.01 :learn-adj 0.01 :gen' identity :hypoth-dt 0.01 :error-dt 0.01 :covar-dt 0.01 :learn-adj-dt 0.01}))
 
 
 
@@ -133,8 +133,8 @@
   this level.  See equations (44), (53) in Bogacz's \"Tutorial\"."
   [hypoth error -error -learn-adj gen']
   (m/sub (m/mul (gen' hypoth)
-          (m/mmul (m/transpose -learn-adj) -error))
-      error))
+                (m/mmul (m/transpose -learn-adj) -error))
+         error))
 
 (defn next-hypoth 
   "Calculates the next-timestep 'hypothesis' hypoth from this level 
@@ -144,8 +144,8 @@
         -error (:error -level)
         -learn-adj (:learn-adj -level)]
     (m/add hypoth 
-        (m/mul hypoth-dt
-            (hypoth-inc hypoth error -error -learn-adj gen')))))
+           (m/mul hypoth-dt
+                  (hypoth-inc hypoth error -error -learn-adj gen')))))
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;; error/epsilon update
@@ -153,14 +153,13 @@
 (defn error-inc 
   "Calculates the slope/increment to the next 'error' error from 
   the current error, using the mean of the generative model at the
-  next level up, but scaling the current error error by the
-  variance/cov-matrix at this level, and making the whole thing
-  relative to hypoth at this level. See equation (54) in Bogacz's \"Tutorial\", 
-  where this is represented by epsilon."
+  next level up, but scaling the current error by the variance/cov-matrix
+  at this level, and making the whole thing relative to hypoth at this level.
+  See equation (54) in Bogacz's \"Tutorial\", where this value is epsilon."
   [error hypoth +hypoth covar learn-adj +gen]
   (m/sub hypoth 
-      (m/mmul learn-adj (+gen +hypoth))
-      (m/mmul covar error)))
+         (m/mmul learn-adj (+gen +hypoth))
+         (m/mmul covar error)))
 
 (defn next-error
   "Calculates the next-timestep 'error' error from this level and the one
@@ -174,19 +173,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;; covar/Sigma update
-
-(defn covar-inc
-  "Calculates the slope/increment to the next covar from the current covar,
-  i.e. the variance or the covariance matrix of the distribution of inputs 
-  at this level.  See equation (55) in Bogacz's \"Tutorial\", where this term
-  is represented by a capital Sigma.  (Note this function uses matrix inversion 
-  for vector/matrix calcualtions, a non-Hebbian calculation, rather than the 
-  local update methods of Bogactz section 5.)"
-  [error covar]
-  (if-let [covar-inv (m/inverse covar)]
-    (m/mul 0.5 (m/sub (m-square error)
-                      covar-inv))
-    (throw (Exception. (str "free-agent.levels/covar-inc: " "Can't invert singular matrix " covar)))))
 
 (def limit-covar identity) ; FIXME for matrix covar (see docstring below)
 ;(defn limit-covar
@@ -202,6 +188,19 @@
 ;      [[1]] (mat-max covar scalar-covar-min)
 ;      covar)))
 
+(defn covar-inc
+  "Calculates the slope/increment to the next covar from the current covar,
+  i.e. the variance or the covariance matrix of the distribution of inputs 
+  at this level.  See equation (55) in Bogacz's \"Tutorial\", where this term
+  is represented by a capital Sigma.  (Note this function uses matrix inversion 
+  for vector/matrix calcualtions, a non-Hebbian calculation, rather than the 
+  local update methods of Bogactz section 5.)"
+  [error covar]
+  (if-let [covar-inverse (m/inverse covar)] ; inverse returns nil if singular
+    (m/mul 0.5 (m/sub (m-square error)
+                      covar-inverse))
+    (throw (Exception. (str "free-agent.levels/covar-inc: Can't invert singular matrix " covar)))))
+
 (defn next-covar
   "Calculates the next-timestep covar, i.e. the variance or the covariance 
   matrix of the distribution of inputs at this level.  Sigma in Bogacz."
@@ -209,8 +208,8 @@
   (let [{:keys [error covar covar-dt]} level]
     (limit-covar
       (m/add covar
-          (m/mul covar-dt
-              (covar-inc error covar))))))
+             (m/mul covar-dt
+                    (covar-inc error covar))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;
@@ -223,7 +222,7 @@
   See equation (56) in Bogacz's \"Tutorial\", where it is represente by theta."
   [error +hypoth +gen]
   (m/mmul error 
-      (m/transpose (+gen +hypoth))))
+          (m/transpose (+gen +hypoth))))
 
 (defn next-learn-adj
   "Calculates the next-timestep learn-adj component of the mean value function
@@ -233,8 +232,8 @@
         +hypoth (:hypoth +level)
         +gen (:gen +level)]
     (m/add learn-adj
-        (m/mul learn-adj-dt
-            (learn-adj-inc error +hypoth +gen)))))
+           (m/mul learn-adj-dt
+                  (learn-adj-inc error +hypoth +gen)))))
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;; Utility functions
