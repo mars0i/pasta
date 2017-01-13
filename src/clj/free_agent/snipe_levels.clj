@@ -12,6 +12,17 @@
 
 (m/set-current-implementation :vectorz)
 
+;; FOR TESTING; will be replaced by mushroom effects from mushrooms in locations:
+(defn next-bottom [rng] 
+  (lvl/make-next-bottom 
+    (fn []
+      (let [nutr (if (> (ran/next-double rng) 0.5) 1 -1)
+            mean (if (= 1 nutr) 16 4) ; big mushrooms are nutritious
+            mush (free-agent.mush/make-mush mean 2.0 nutr rng)
+            appear (free-agent.mush/appearance mush)] ; random data
+        (m/matrix [[appear]
+                   [nutr]])))))
+
 ;; What I'm doing, at least with k-snipes, is (a) estimating whether
 ;; this is a big or small mushroom I'm on, and then (b) estimating what
 ;; nutritional value I *will get* when I eat.
@@ -44,16 +55,6 @@
 ;(defn next-bottom [rng] (lvl/make-next-bottom 
 ;                          #(m/matrix [[(ran/next-gaussian rng 2 5)]       ; replace with mushroom size 
 ;                                      [(ran/next-gaussian rng -1 3)]])))  ; replace with mushroom nutritiousness
-
-;; FOR TESTING; will be replaced by mushroom effects from mushrooms in locations:
-(defn next-bottom [rng] 
-  (lvl/make-next-bottom 
-    (fn []
-      (let [mush (free-agent.mush/make-mush 16.0 2.0 1 rng)
-            appear (free-agent.mush/appearance mush)
-            nutr (:nutrition mush)]
-        (m/matrix [[appear]
-                   [nutr]])))))
 
 (def init-theta (m/identity-matrix 2)) ; i.e. initially pass value of gen(phi) through unchanged
 
