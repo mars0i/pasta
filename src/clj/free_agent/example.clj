@@ -17,8 +17,8 @@
 ;; faster not to use ar/col-mat:
 
 ;; WHY THESE FUNCTIONS?
-(defn gen [phi] (let [x1 (m/mget phi 0 0)  ; phi is a column matrix
-                      x2 (m/mget phi 1 0)] ; 2nd index gets the sole column
+(defn gen [hypoth] (let [x1 (m/mget hypoth 0 0)  ; hypoth is a column matrix
+                      x2 (m/mget hypoth 1 0)] ; 2nd index gets the sole column
                   (m/matrix [[x1]            ; x1 estimates nutrition (???)
                              [(* x2 x2)]]))) ; x2 estimates radius (?)
 ;; old version:
@@ -26,8 +26,8 @@
 ;            [(* x2 x2 x1)]])
 
 ;; derivative of gen:
-(defn gen' [phi] (let [;x1 (m/mget phi 0 0)
-                       x2 (m/mget phi 1 0)]
+(defn gen' [hypoth] (let [;x1 (m/mget hypoth 0 0)
+                       x2 (m/mget hypoth 1 0)]
                    (m/matrix [[1]
                               [(* 2.0 x2)]])))
 ;; old version:
@@ -39,34 +39,34 @@
                    #(m/matrix [[(ran/next-gaussian fc/rng 2 5)]       ; replace with mushroom nutritiousness 
                                [(ran/next-gaussian fc/rng -1 3)]])))  ; replace with mushroom size signal
 
-(def init-theta (m/identity-matrix 2)) ; i.e. initially pass value of gen(phi) through unchanged
+(def init-learn-adj (m/identity-matrix 2)) ; i.e. initially pass value of gen(hypoth) through unchanged
 
-; what phi is initialized to, and prior mean at top:
+; what hypoth is initialized to, and prior mean at top:
 (def v-p (fm/col-mat [3.0 3.0]))
 
-(def bot-map {:phi   (fm/col-mat [0.0 0.0]) ; immediately replaced by next-bottom
-              :epsilon   (fm/col-mat [0.0 0.0])
-              :sigma (m/matrix [[2.0  0.25]  ; it's a covariance matrix, so
+(def bot-map {:hypoth   (fm/col-mat [0.0 0.0]) ; immediately replaced by next-bottom
+              :error   (fm/col-mat [0.0 0.0])
+              :covar (m/matrix [[2.0  0.25]  ; it's a covariance matrix, so
                                 [0.25 2.0]]) ; should be symmetric
-              :theta init-theta
+              :learn-adj init-learn-adj
               :gen  nil
               :gen' nil
-              :phi-dt  0.01
-              :epsilon-dt    0.01
-              :sigma-dt  0.0
-              :theta-dt 0.0})
+              :hypoth-dt  0.01
+              :error-dt    0.01
+              :covar-dt  0.0
+              :learn-adj-dt 0.0})
 
-(def mid-map {:phi v-p
-              :epsilon (fm/col-mat [0.0 0.0])
-              :sigma (m/matrix [[0.5 0.5]
+(def mid-map {:hypoth v-p
+              :error (fm/col-mat [0.0 0.0])
+              :covar (m/matrix [[0.5 0.5]
                                 [0.5 0.5]])
-              :theta init-theta
+              :learn-adj init-learn-adj
               :gen  gen
               :gen' gen'
-              :phi-dt 0.0001
-              :epsilon-dt 0.01
-              :sigma-dt 0.0001
-              :theta-dt 0.01})
+              :hypoth-dt 0.0001
+              :error-dt 0.01
+              :covar-dt 0.0001
+              :learn-adj-dt 0.01})
 
 (def init-bot (lvl/map->Level bot-map))
 (def init-mid (lvl/map->Level mid-map))
