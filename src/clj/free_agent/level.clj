@@ -123,7 +123,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;
-;; hypoth update
+;; hypoth/phi update
 
 (defn hypoth-inc
   "Calculates slope/increment to the next 'hypothesis' parameter hypoth from 
@@ -148,7 +148,7 @@
             (hypoth-inc hypoth error -error -learn-adj gen')))))
 
 ;;;;;;;;;;;;;;;;;;;;;
-;; error update
+;; error/epsilon update
 
 (defn error-inc 
   "Calculates the slope/increment to the next 'error' error from 
@@ -173,7 +173,7 @@
     (m/add error scaled-increment)))
 
 ;;;;;;;;;;;;;;;;;;;;;
-;; covar update
+;; covar/Sigma update
 
 (defn covar-inc
   "Calculates the slope/increment to the next covar from the current covar,
@@ -213,7 +213,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;
-;; learn-adj update
+;; learn-adj/theta update
 
 (defn learn-adj-inc
   "Calculates the slope/increment to the next learn-adj component of the mean
