@@ -68,6 +68,7 @@
               :learn init-learn
               :gen  nil
               :gen' nil
+              :attn (fn [_ covar] covar)
               :hypoth-dt  0.01
               :error-dt    0.01
               :covar-dt  0.0
@@ -80,6 +81,7 @@
               :learn init-learn
               :gen  gen
               :gen' gen'
+              :attn (fn [_ covar] covar)
               :hypoth-dt 0.0001
               :error-dt 0.01
               :covar-dt 0.0001

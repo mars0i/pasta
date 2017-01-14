@@ -14,8 +14,8 @@
             [utils.string :as us]))
 
 ;;;;;;;;;;;;;;;;;;;;;
-(declare hypoth-inc   next-hypoth 
-         error-inc   next-error 
+(declare hypoth-inc next-hypoth 
+         error-inc next-error 
          covar-inc next-covar
          learn-inc next-learn
          next-level next-levels
@@ -28,6 +28,7 @@
 
 (defrecord Level [hypoth error covar learn ; names from Bogacz
                   gen gen'             ; h, h'
+                  attn
                   hypoth-dt error-dt covar-dt learn-dt]) ; increment sizes for approaching limit
 
 (def Level-docstring
@@ -37,14 +38,15 @@
   At the first (zeroth) level this is sensory data which may vary quite 
   a lot from one timestep to another.  At higher levels this represents 
   parameters of hypotheses, or hypotheses about parameter values. (phi)
-  err:     The error at this level. (epsilon)
-  covar:   Covariance matrix or variance of assumed distribution over inputs 
-  at this level.  Variance should usually be >= 1 (p. 5 col 2).  (Sigma)
+  err:    The error at this level. (epsilon)
+  covar:  Covariance matrix or variance of assumed distribution over inputs 
+          at this level.  Variance should usually be >= 1 (p. 5 col 2).  (Sigma)
   learn:  Scaling factor learn (scalar or matrix) for generative function.  When 
-  learn is multiplied by result of gen(hypoth), the result is the current 
-  estimated mean of the assumed distrubtion.  (theta)
-  i.e. g(hypoth) = learn * gen(hypoth), where '*' here is scalar or matrix 
-  multiplication as appropriate.
+          learn is multiplied by result of gen(hypoth), the result is the current 
+          estimated mean of the assumed distrubtion.  (theta)
+          i.e. g(hypoth) = learn * gen(hypoth), where '*' here is scalar or matrix 
+          multiplication as appropriate.
+  attn:   Function that can be used to adjust the value of covar in error-inc.
   <x>-dt:  A scalar multiplier (e.g. 0.01) determining how fast <x> is updated.
   gen, gen': See learn; gen' is the derivative of gen.  These never change.
 
@@ -64,10 +66,10 @@
   "Returns the value of this level for the next timestep."
   [[-level level +level]]
   (assoc level 
-         :hypoth     (next-hypoth -level level)
-         :error (next-error    level +level)
-         :covar   (next-covar      level)
-         :learn   (next-learn      level +level)))
+         :hypoth (next-hypoth -level level)
+         :error  (next-error   level +level)
+         :covar  (next-covar   level)
+         :learn  (next-learn   level +level)))
 
 ;; See notes in levels.md on this function.
 (defn next-levels
@@ -82,18 +84,6 @@
           (vec (map next-level            ; Each middle level depends on levels
                     (partition 3 1 levels))) ;  immediately below and above it.
           (last levels))))                ; Top is carried forward as is
-
-(defn next-levels-3
-  "Version of next-levels that may be more efficient with exactly three levels.
-  Given a functions for updating gen, gen', and a bottom-level creation function
-  that accepts two levels (its level and the next up), along with a sequence of 
-  levels at one timestep, returns a vector of levels at the next timestep.  
-  The top level will be used to calculate the next level down, but won't be 
-  remade; it will be used again, as is, as the new top level."
-  [next-bottom [level-0 level-1 :as levels]]
-  [(next-bottom [level-0 level-1]) ; Bottom level is special case.
-   (next-level levels)             ; Each middle level depends on levels immediately below and above it.
-   (last levels)])                 ; top is carried forward as-is
 
 ;; To see that it's necessary to calculate the error in the usual way
 ;; at the bottom level, cf. e.g. eq (14) in Bogacz.
@@ -119,6 +109,19 @@
   (map->Level {:hypoth hypoth :gen identity})) ; other fields will be nil, normally
 ;; DEBUG: 
 ; :error 0.01 :covar 0.01 :learn 0.01 :gen' identity :hypoth-dt 0.01 :error-dt 0.01 :covar-dt 0.01 :learn-dt 0.01}))
+
+
+;(defn next-levels-3
+;  "Version of next-levels that may be more efficient with exactly three levels.
+;  Given a functions for updating gen, gen', and a bottom-level creation function
+;  that accepts two levels (its level and the next up), along with a sequence of 
+;  levels at one timestep, returns a vector of levels at the next timestep.  
+;  The top level will be used to calculate the next level down, but won't be 
+;  remade; it will be used again, as is, as the new top level."
+;  [next-bottom [level-0 level-1 :as levels]]
+;  [(next-bottom [level-0 level-1]) ; Bottom level is special case.
+;   (next-level levels)             ; Each middle level depends on levels immediately below and above it.
+;   (last levels)])                 ; top is carried forward as-is
 
 
 
@@ -156,33 +159,31 @@
   next level up, but scaling the current error by the variance/cov-matrix
   at this level, and making the whole thing relative to hypoth at this level.
   See equation (54) in Bogacz's \"Tutorial\", where this value is epsilon.
-  attn-fn adjust the value of covar to in order to implement attention."
-  [error hypoth +hypoth covar learn +gen attn-fn]
+  attn adjust the value of covar to in order to implement attention."
+  [error hypoth +hypoth covar learn +gen attn]
   (m/sub hypoth 
          (m/mmul learn (+gen +hypoth))
-         (m/mmul (attn-fn covar) error)))
+         (m/mmul (attn covar) error)))
 
 (defn next-error
   "Calculates the next-timestep 'error' error from this level and the one
-  above.  If attn-fn is present, it will be passed to error-inc in order to
-  scale covar.  Error is epsilon in Bogacz."
-  ([level +level]
-   (next-error level +level identity))
-  ([level +level attn-fn]
-   (let [{:keys [hypoth error error-dt covar learn]} level
-         +hypoth (:hypoth +level)
-         +gen (:gen +level)
-         increment (error-inc error hypoth +hypoth covar learn +gen attn-fn)]
-     (m/add error (m/mul error-dt increment)))))
+  above.  If attn is present, it will be passed to error-inc with level as its
+  first argument in order to scale covar.  (Error is epsilon in Bogacz.)"
+  [level +level]
+  (let [{:keys [hypoth error error-dt covar learn attn]} level
+        +hypoth (:hypoth +level)
+        +gen (:gen +level)
+        increment (error-inc error hypoth +hypoth covar learn +gen (partial attn level))]
+    (m/add error (m/mul error-dt increment))))
 
 ;(defn old-next-error
 ;  "Calculates the next-timestep 'error' error from this level and the one
 ;  above.  epsilon in Bogacz."
-;  ([level +level attn-fn]
+;  ([level +level attn]
 ;  (let [{:keys [hypoth error error-dt covar learn]} level
 ;        +hypoth (:hypoth +level)
 ;        +gen (:gen +level)
-;        scaled-increment (m/mul error-dt (error-inc error hypoth +hypoth covar learn +gen attn-fn))]
+;        scaled-increment (m/mul error-dt (error-inc error hypoth +hypoth covar learn +gen attn))]
 ;    (m/add error scaled-increment)))
 
 ;;;;;;;;;;;;;;;;;;;;;
