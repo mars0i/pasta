@@ -156,20 +156,32 @@
   next level up, but scaling the current error by the variance/cov-matrix
   at this level, and making the whole thing relative to hypoth at this level.
   See equation (54) in Bogacz's \"Tutorial\", where this value is epsilon."
-  [error hypoth +hypoth covar learn-adj +gen]
+  [error hypoth +hypoth covar learn-adj +gen attn-fn]
   (m/sub hypoth 
          (m/mmul learn-adj (+gen +hypoth))
-         (m/mmul covar error)))
+         (m/mmul (attn-fn covar) error)))
 
 (defn next-error
   "Calculates the next-timestep 'error' error from this level and the one
   above.  epsilon in Bogacz."
-  [level +level]
-  (let [{:keys [hypoth error error-dt covar learn-adj]} level
-        +hypoth (:hypoth +level)
-        +gen (:gen +level)
-        scaled-increment (m/mul error-dt (error-inc error hypoth +hypoth covar learn-adj +gen))]
-    (m/add error scaled-increment)))
+  ([level +level]
+   (next-error level +level identity))
+  ([level +level attn-fn]
+   (let [{:keys [hypoth error error-dt covar learn-adj]} level
+         +hypoth (:hypoth +level)
+         +gen (:gen +level)
+         increment (error-inc error hypoth +hypoth covar learn-adj +gen attn-fn)]
+     (m/add error (m/mul error-dt increment)))))
+
+;(defn old-next-error
+;  "Calculates the next-timestep 'error' error from this level and the one
+;  above.  epsilon in Bogacz."
+;  ([level +level attn-fn]
+;  (let [{:keys [hypoth error error-dt covar learn-adj]} level
+;        +hypoth (:hypoth +level)
+;        +gen (:gen +level)
+;        scaled-increment (m/mul error-dt (error-inc error hypoth +hypoth covar learn-adj +gen attn-fn))]
+;    (m/add error scaled-increment)))
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;; covar/Sigma update
