@@ -12,16 +12,17 @@
 
 (m/set-current-implementation :vectorz)
 
-;; FOR TESTING; will be replaced by mushroom effects from mushrooms in locations:
+;; FOR TESTING; will be replaced by mushroom effects from mushrooms in locations (or not? This could be the simulation, almost.):
 (defn next-bottom [rng] 
   (lvl/make-next-bottom 
     (fn []
       (let [nutr (if (> (ran/next-double rng) 0.5) 1 -1)
-            mean (if (= 1 nutr) 16 4) ; big mushrooms are nutritious
-            mush (free-agent.mush/make-mush mean 2.0 nutr rng)
+            size (if (= 1 nutr) 16 4) ; big mushrooms are nutritious
+            mush (free-agent.mush/make-mush size 2.0 nutr rng)
             appear (free-agent.mush/appearance mush)] ; random data
+        ;(println nutr size appear)
         (m/matrix [[appear]
-                   [nutr]])))))
+                   [nutr]]))))) ; nutrition perception is not noisy
 
 ;; What I'm doing, at least with k-snipes, is (a) estimating whether
 ;; this is a big or small mushroom I'm on, and then (b) estimating what
@@ -66,27 +67,27 @@
 
 (def bot-map {:hypoth     (fm/col-mat [0.0 0.0]) ; immediately replaced by next-bottom
               :error (fm/col-mat [0.0 0.0])
-              :covar (m/matrix [[2.0  0.25]  ; it's a covariance matrix, so
-                                [0.25 2.0]]) ; should be symmetric
+              :covar (m/matrix [[2.0  1.0]  ; it's a covariance matrix, so
+                                [1.0 2.0]]) ; should be symmetric
               :learn init-learn
               :gen  nil
               :gen' nil
-              :attn (fn [level covar] (m/mmul covar (if (pos? (get-nutr (:hypoth level))) ; simplistic.  can't be right.
-                                                      1
-                                                      0)))
+              ;:attn (fn [_ covar] covar)
+              :attn (fn [level covar] (m/mmul covar (if (pos? (get-nutr (:hypoth level))) 1 0))) ; simplistic. can't be right.
               :hypoth-dt  0.01
               :error-dt    0.01
-              :covar-dt  0.0
+              :covar-dt 0.0001
               :learn-dt 0.0})
 
 (def mid-map {:hypoth v-p
               :error (fm/col-mat [0.0 0.0])
-              :covar (m/matrix [[0.5 0.0]
-                                [0.0 0.5]])
+              :covar (m/matrix [[1.0 0.5]
+                                [0.5 1.0]])
               :learn init-learn
               :gen  gen
               :gen' gen'
               :attn (fn [_ covar] covar)
+              ;:attn (fn [level covar] (m/mmul covar (if (pos? (get-nutr (:hypoth level))) 1 0))) ; simplistic. can't be right.
               :hypoth-dt 0.0001
               :error-dt 0.01
               :covar-dt 0.0001
