@@ -32,24 +32,27 @@
 ;; So there's the scalar adjustment with a radius parameter and of course
 ;; learn and all that.  And then a second multiplier parameter. 
 
+(defn get-size [mat] (m/mget mat 0 0))
+(defn get-nutr [mat] (m/mget mat 1 0))
+
 (defn size-gen  [size-hypoth] (* size-hypoth size-hypoth))
 (defn size-gen' [size-hypoth] (* size-hypoth 2.0))
 (defn nutr-gen  [size-hypoth nutr-mult] (* nutr-mult (size-gen size-hypoth)))
 (defn nutr-gen' [size-hypoth nutr-mult] (* 2.0 nutr-mult size-hypoth))
 
-(defn gen [hypoth] (let [size-hypoth  (m/mget hypoth 0 0) ; hypoth is a column matrix
-                      nutr-mult (m/mget hypoth 1 0) ; 2nd index gets the sole column
-                      new-size-hypoth  (size-gen size-hypoth)
-                      new-nutr-mult (nutr-gen size-hypoth nutr-mult)]
-                  (m/matrix [[new-size-hypoth]
-                             [new-nutr-mult]])))
+(defn gen [hypoth] (let [size-hypoth (get-size hypoth ) ; hypoth is a column matrix
+                         nutr-mult   (get-nutr hypoth) ; 2nd index gets the sole column
+                         new-size-hypoth (size-gen size-hypoth)
+                         new-nutr-mult   (nutr-gen size-hypoth nutr-mult)]
+                     (m/matrix [[new-size-hypoth]
+                                [new-nutr-mult]])))
 
-(defn gen' [hypoth] (let [size-hypoth  (m/mget hypoth 0 0) ; hypoth is a column matrix
-                       nutr-mult (m/mget hypoth 1 0) ; 2nd index gets the sole column
-                       new-size-hypoth'  (size-gen' size-hypoth)
-                       new-nutr-mult' (nutr-gen' size-hypoth nutr-mult)]
-                   (m/matrix [[new-size-hypoth']
-                              [new-nutr-mult']])))
+(defn gen' [hypoth] (let [size-hypoth (get-size hypoth) ; hypoth is a column matrix
+                          nutr-mult   (get-nutr hypoth) ; 2nd index gets the sole column
+                          new-size-hypoth' (size-gen' size-hypoth)
+                          new-nutr-mult'   (nutr-gen' size-hypoth nutr-mult)]
+                      (m/matrix [[new-size-hypoth']
+                                 [new-nutr-mult']])))
 
 ;; FOR TESTING will be replaced by mushroom effects:
 ;(defn next-bottom [rng] (lvl/make-next-bottom 
@@ -68,7 +71,9 @@
               :learn init-learn
               :gen  nil
               :gen' nil
-              :attn (fn [_ covar] covar)
+              :attn (fn [level covar] (m/mmul covar (if (pos? (get-nutr (:hypoth level))) ; simplistic.  can't be right.
+                                                      1
+                                                      0)))
               :hypoth-dt  0.01
               :error-dt    0.01
               :covar-dt  0.0
