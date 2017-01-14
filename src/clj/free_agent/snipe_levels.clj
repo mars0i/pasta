@@ -75,7 +75,7 @@
               ;:attn (fn [_ covar] covar)
               :attn (fn [level covar] (m/mmul covar (if (pos? (get-nutr (:hypoth level))) 1 0))) ; simplistic. can't be right.
               :hypoth-dt  0.01
-              :error-dt    0.01
+              :error-dt   0.01
               :covar-dt 0.0001
               :learn-dt 0.0})
 
