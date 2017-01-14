@@ -155,7 +155,8 @@
   the current error, using the mean of the generative model at the
   next level up, but scaling the current error by the variance/cov-matrix
   at this level, and making the whole thing relative to hypoth at this level.
-  See equation (54) in Bogacz's \"Tutorial\", where this value is epsilon."
+  See equation (54) in Bogacz's \"Tutorial\", where this value is epsilon.
+  attn-fn adjust the value of covar to in order to implement attention."
   [error hypoth +hypoth covar learn-adj +gen attn-fn]
   (m/sub hypoth 
          (m/mmul learn-adj (+gen +hypoth))
@@ -163,7 +164,8 @@
 
 (defn next-error
   "Calculates the next-timestep 'error' error from this level and the one
-  above.  epsilon in Bogacz."
+  above.  If attn-fn is present, it will be passed to error-inc in order to
+  scale covar.  Error is epsilon in Bogacz."
   ([level +level]
    (next-error level +level identity))
   ([level +level attn-fn]
