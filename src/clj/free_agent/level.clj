@@ -126,7 +126,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;
-;; hypoth/phi update
+;; HYPOTH, PHI update
 
 (defn hypoth-inc
   "Calculates slope/increment to the next 'hypothesis' parameter hypoth from 
@@ -135,9 +135,9 @@
   the generative function gen at this level, and subtracting the error at 
   this level.  See equations (44), (53) in Bogacz's \"Tutorial\"."
   [hypoth error -error -learn gen']
-  (m/sub (m/mul (gen' hypoth)
-                (m/mmul (m/transpose -learn) -error))
-         error))
+  (m/sub (m/mul (gen' hypoth)                          ; From the generative value of the hypoth at this level
+                (m/mmul (m/transpose -learn) -error))  ; scaled by the learn-multiplied error from the level below,
+         error))                                       ; subtract the error at this level.
 
 (defn next-hypoth 
   "Calculates the next-timestep 'hypothesis' hypoth from this level 
@@ -151,7 +151,7 @@
                   (hypoth-inc hypoth error -error -learn gen')))))
 
 ;;;;;;;;;;;;;;;;;;;;;
-;; error/epsilon update
+;; ERROR, EPSILON update
 
 (defn error-inc 
   "Calculates the slope/increment to the next 'error' error from 
@@ -187,7 +187,7 @@
 ;    (m/add error scaled-increment)))
 
 ;;;;;;;;;;;;;;;;;;;;;
-;; covar/Sigma update
+;; COVAR, SIGMA update
 
 (def limit-covar identity) ; FIXME for matrix covar (see docstring below)
 ;(defn limit-covar
@@ -203,6 +203,9 @@
 ;      [[1]] (mat-max covar scalar-covar-min)
 ;      covar)))
 
+
+;; TODO IS THIS RIGHT? IS THIS THE CORRECT INTERPRETATION OF (55)?
+;; Well also cf. 71 and the answer to exercise 5.
 (defn covar-inc
   "Calculates the slope/increment to the next covar from the current covar,
   i.e. the variance or the covariance matrix of the distribution of inputs 
@@ -228,8 +231,9 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;
-;; learn/theta update
+;; LEARN, THETA update
 
+;; TODO IS THIS RIGHT? IS THIS THE CORRECT INTERPRETATION OF (56)?
 (defn learn-inc
   "Calculates the slope/increment to the next learn component of the mean
   value function from the current learn using the error error at this level
@@ -257,6 +261,23 @@
   "Calculates the matrix or scalar square of a value."
   [x]
   (m/mmul x (m/transpose x)))
+
+(defn fmt-level
+  "Transform a Level containing vectorz matrices into one
+  containing persistent-vector matrices (i.e. Clojure vectors)
+  for easier readability at the repl."
+  [x]
+  (if (sequential? x)
+    (map fmt-level x)
+    (reduce-kv (fn [m k v] 
+                 (assoc m k 
+                   (if (m/matrix? v)
+                     (m/matrix :persistent-vector v)
+                     v)))
+               {}
+               x)))
+ 
+(def fl fmt-level)
 
 ;(defn print-level
 ;  [level]
