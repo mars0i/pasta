@@ -30,7 +30,7 @@
 ;; Bogacz and my scalar models.  AND THEN you calculate the nutrition from
 ;; that, and adjust a nutrition function to get that right.
 ;; So there's the scalar adjustment with a radius parameter and of course
-;; learn-adj and all that.  And then a second multiplier parameter. 
+;; learn and all that.  And then a second multiplier parameter. 
 
 (defn size-gen  [size-hypoth] (* size-hypoth size-hypoth))
 (defn size-gen' [size-hypoth] (* size-hypoth 2.0))
@@ -56,7 +56,7 @@
 ;                          #(m/matrix [[(ran/next-gaussian rng 2 5)]       ; replace with mushroom size 
 ;                                      [(ran/next-gaussian rng -1 3)]])))  ; replace with mushroom nutritiousness
 
-(def init-learn-adj (m/identity-matrix 2)) ; i.e. initially pass value of gen(hypoth) through unchanged
+(def init-learn (m/identity-matrix 2)) ; i.e. initially pass value of gen(hypoth) through unchanged
 
 ; what hypoth is initialized to, and prior mean at top:
 (def v-p (fm/col-mat [3.0 3.0]))
@@ -65,25 +65,25 @@
               :error (fm/col-mat [0.0 0.0])
               :covar (m/matrix [[2.0  0.25]  ; it's a covariance matrix, so
                                 [0.25 2.0]]) ; should be symmetric
-              :learn-adj init-learn-adj
+              :learn init-learn
               :gen  nil
               :gen' nil
               :hypoth-dt  0.01
               :error-dt    0.01
               :covar-dt  0.0
-              :learn-adj-dt 0.0})
+              :learn-dt 0.0})
 
 (def mid-map {:hypoth v-p
               :error (fm/col-mat [0.0 0.0])
               :covar (m/matrix [[0.5 0.0]
                                 [0.0 0.5]])
-              :learn-adj init-learn-adj
+              :learn init-learn
               :gen  gen
               :gen' gen'
               :hypoth-dt 0.0001
               :error-dt 0.01
               :covar-dt 0.0001
-              :learn-adj-dt 0.01})
+              :learn-dt 0.01})
 
 (def init-bot (lvl/map->Level bot-map))
 (def init-mid (lvl/map->Level mid-map))

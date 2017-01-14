@@ -17,7 +17,7 @@
 (declare hypoth-inc   next-hypoth 
          error-inc   next-error 
          covar-inc next-covar
-         learn-adj-inc next-learn-adj
+         learn-inc next-learn
          next-level next-levels
          m-square)
 
@@ -26,9 +26,9 @@
 ;;;;;;;;;;;;;;;;;;;;;
 ;; Level
 
-(defrecord Level [hypoth error covar learn-adj ; names from Bogacz
+(defrecord Level [hypoth error covar learn ; names from Bogacz
                   gen gen'             ; h, h'
-                  hypoth-dt error-dt covar-dt learn-adj-dt]) ; increment sizes for approaching limit
+                  hypoth-dt error-dt covar-dt learn-dt]) ; increment sizes for approaching limit
 
 (def Level-docstring
   "\n  A Level records values at one level of a prediction-error/free-energy
@@ -40,17 +40,17 @@
   err:     The error at this level. (epsilon)
   covar:   Covariance matrix or variance of assumed distribution over inputs 
   at this level.  Variance should usually be >= 1 (p. 5 col 2).  (Sigma)
-  learn-adj:  Scaling factor learn-adj (scalar or matrix) for generative function.  When 
-  learn-adj is multiplied by result of gen(hypoth), the result is the current 
+  learn:  Scaling factor learn (scalar or matrix) for generative function.  When 
+  learn is multiplied by result of gen(hypoth), the result is the current 
   estimated mean of the assumed distrubtion.  (theta)
-  i.e. g(hypoth) = learn-adj * gen(hypoth), where '*' here is scalar or matrix 
+  i.e. g(hypoth) = learn * gen(hypoth), where '*' here is scalar or matrix 
   multiplication as appropriate.
   <x>-dt:  A scalar multiplier (e.g. 0.01) determining how fast <x> is updated.
-  gen, gen': See learn-adj; gen' is the derivative of gen.  These never change.
+  gen, gen': See learn; gen' is the derivative of gen.  These never change.
 
   All of these notations are defined in Bogacz's \"Tutorial\" paper.
-  hypoth and error can be scalars, in which case learn-adj and covar are as well.  
-  Or hypoth and error can be vectors of length n, in which case covar and learn-adj
+  hypoth and error can be scalars, in which case learn and covar are as well.  
+  Or hypoth and error can be vectors of length n, in which case covar and learn
   are n x n square matrices.  gen and gen' are functions that can be applied to 
   hypoth.  See doc/level.md for more information.")
 
@@ -67,7 +67,7 @@
          :hypoth     (next-hypoth -level level)
          :error (next-error    level +level)
          :covar   (next-covar      level)
-         :learn-adj   (next-learn-adj      level +level)))
+         :learn   (next-learn      level +level)))
 
 ;; See notes in levels.md on this function.
 (defn next-levels
@@ -109,7 +109,7 @@
            :hypoth (hypoth-generator)
            :error (next-error level +level)
            :covar (next-covar level)
-           :learn-adj (next-learn-adj level +level))))
+           :learn (next-learn level +level))))
 
 (defn make-top-level
   "Makes a top level with constant value hypoth for :hypoth.  Also sets :gen to
@@ -118,7 +118,7 @@
   [hypoth]
   (map->Level {:hypoth hypoth :gen identity})) ; other fields will be nil, normally
 ;; DEBUG: 
-; :error 0.01 :covar 0.01 :learn-adj 0.01 :gen' identity :hypoth-dt 0.01 :error-dt 0.01 :covar-dt 0.01 :learn-adj-dt 0.01}))
+; :error 0.01 :covar 0.01 :learn 0.01 :gen' identity :hypoth-dt 0.01 :error-dt 0.01 :covar-dt 0.01 :learn-dt 0.01}))
 
 
 
@@ -128,12 +128,12 @@
 (defn hypoth-inc
   "Calculates slope/increment to the next 'hypothesis' parameter hypoth from 
   the current hypoth using the error -error from the level below, scaled by
-  the generative function scaling factor learn-adj and the derivative gen' of 
+  the generative function scaling factor learn and the derivative gen' of 
   the generative function gen at this level, and subtracting the error at 
   this level.  See equations (44), (53) in Bogacz's \"Tutorial\"."
-  [hypoth error -error -learn-adj gen']
+  [hypoth error -error -learn gen']
   (m/sub (m/mul (gen' hypoth)
-                (m/mmul (m/transpose -learn-adj) -error))
+                (m/mmul (m/transpose -learn) -error))
          error))
 
 (defn next-hypoth 
@@ -142,10 +142,10 @@
   [-level level]
   (let [{:keys [hypoth hypoth-dt error gen']} level
         -error (:error -level)
-        -learn-adj (:learn-adj -level)]
+        -learn (:learn -level)]
     (m/add hypoth 
            (m/mul hypoth-dt
-                  (hypoth-inc hypoth error -error -learn-adj gen')))))
+                  (hypoth-inc hypoth error -error -learn gen')))))
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;; error/epsilon update
@@ -157,9 +157,9 @@
   at this level, and making the whole thing relative to hypoth at this level.
   See equation (54) in Bogacz's \"Tutorial\", where this value is epsilon.
   attn-fn adjust the value of covar to in order to implement attention."
-  [error hypoth +hypoth covar learn-adj +gen attn-fn]
+  [error hypoth +hypoth covar learn +gen attn-fn]
   (m/sub hypoth 
-         (m/mmul learn-adj (+gen +hypoth))
+         (m/mmul learn (+gen +hypoth))
          (m/mmul (attn-fn covar) error)))
 
 (defn next-error
@@ -169,20 +169,20 @@
   ([level +level]
    (next-error level +level identity))
   ([level +level attn-fn]
-   (let [{:keys [hypoth error error-dt covar learn-adj]} level
+   (let [{:keys [hypoth error error-dt covar learn]} level
          +hypoth (:hypoth +level)
          +gen (:gen +level)
-         increment (error-inc error hypoth +hypoth covar learn-adj +gen attn-fn)]
+         increment (error-inc error hypoth +hypoth covar learn +gen attn-fn)]
      (m/add error (m/mul error-dt increment)))))
 
 ;(defn old-next-error
 ;  "Calculates the next-timestep 'error' error from this level and the one
 ;  above.  epsilon in Bogacz."
 ;  ([level +level attn-fn]
-;  (let [{:keys [hypoth error error-dt covar learn-adj]} level
+;  (let [{:keys [hypoth error error-dt covar learn]} level
 ;        +hypoth (:hypoth +level)
 ;        +gen (:gen +level)
-;        scaled-increment (m/mul error-dt (error-inc error hypoth +hypoth covar learn-adj +gen attn-fn))]
+;        scaled-increment (m/mul error-dt (error-inc error hypoth +hypoth covar learn +gen attn-fn))]
 ;    (m/add error scaled-increment)))
 
 ;;;;;;;;;;;;;;;;;;;;;
@@ -227,27 +227,27 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;
-;; learn-adj/theta update
+;; learn/theta update
 
-(defn learn-adj-inc
-  "Calculates the slope/increment to the next learn-adj component of the mean
-  value function from the current learn-adj using the error error at this level
+(defn learn-inc
+  "Calculates the slope/increment to the next learn component of the mean
+  value function from the current learn using the error error at this level
   along with the mean of the generative function at the next level up.  
   See equation (56) in Bogacz's \"Tutorial\", where it is represente by theta."
   [error +hypoth +gen]
   (m/mmul error 
           (m/transpose (+gen +hypoth))))
 
-(defn next-learn-adj
-  "Calculates the next-timestep learn-adj component of the mean value function
+(defn next-learn
+  "Calculates the next-timestep learn component of the mean value function
   from this level and the one above.  theta in Bogacz."
   [level +level]
-  (let [{:keys [error learn-adj learn-adj-dt]} level
+  (let [{:keys [error learn learn-dt]} level
         +hypoth (:hypoth +level)
         +gen (:gen +level)]
-    (m/add learn-adj
-           (m/mul learn-adj-dt
-                  (learn-adj-inc error +hypoth +gen)))))
+    (m/add learn
+           (m/mul learn-dt
+                  (learn-inc error +hypoth +gen)))))
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;; Utility functions
@@ -279,13 +279,13 @@
 ;; (s/def ::hypoth number?)
 ;; (s/def ::error number?)
 ;; (s/def ::covar ::pos-num)
-;; (s/def ::learn-adj number?)
+;; (s/def ::learn number?)
 ;; 
 ;; (s/def ::hypoth-dt ::pos-num)
 ;; (s/def ::error-dt ::pos-num)
 ;; (s/def ::covar-dt ::pos-num)
-;; (s/def ::learn-adj-dt ::pos-num)
+;; (s/def ::learn-dt ::pos-num)
 ;; 
 ;; (s/def ::level-params 
-;;   (s/keys :req-un [::hypoth ::error ::covar ::learn-adj
-;;                    ::hypoth-dt ::error-dt ::covar-dt ::learn-adj-dt]))
+;;   (s/keys :req-un [::hypoth ::error ::covar ::learn
+;;                    ::hypoth-dt ::error-dt ::covar-dt ::learn-dt]))

@@ -10,7 +10,7 @@
 (def hypoth-base-color    (java.awt.Color. 0   0   0))
 (def error-base-color    (java.awt.Color. 255 0   0))
 (def covar-base-color  (java.awt.Color. 0   255 0))
-(def learn-adj-base-color (java.awt.Color. 0   0   255))
+(def learn-base-color (java.awt.Color. 0   0   255))
 (def no-color (java.awt.Color. 0 0 0 0))
 ;; Can use java.awt.Color.brighter() and .darker() to get 5-10 variations:
 ;; wrap Java methods in functions so they can be passed:
@@ -55,7 +55,7 @@
          line-num (plot-param-stages chart hypoth-color         identity 1        first-plot-fn level-stages :hypoth) ; number 0 used up in scatter-plot call
          line-num (plot-param-stages chart error-base-color    identity line-num ch/add-lines* level-stages :error)
          line-num (plot-param-stages chart covar-base-color  identity line-num ch/add-lines* level-stages :covar)]
-     (plot-param-stages              chart learn-adj-base-color identity line-num ch/add-lines* level-stages :learn-adj)
+     (plot-param-stages              chart learn-base-color identity line-num ch/add-lines* level-stages :learn)
      (ch/set-stroke-color chart no-color :dataset 0) ; set spurious nil/nil dataset to no color so it's invisible in legend
      (co/view chart :width 800 :height 600)
      chart)))
