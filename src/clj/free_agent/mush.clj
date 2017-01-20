@@ -11,12 +11,12 @@
   (Long. (str (gensym ""))))
 
 
-(defrecord Mush [id mean sd nutrition rng])
+(defrecord Mush [id size sd nutrition rng])
 
-(defn make-mush [mean sd nutrition rng]
-  (Mush. (next-id) mean sd nutrition rng))
+(defn make-mush [size sd nutrition rng]
+  (Mush. (next-id) size sd nutrition rng))
 
 (defn appearance
   [mush]
-  (let [{:keys [mean sd rng]} mush]
+  (let [{:keys [size sd rng]} mush]
     (ran/next-gaussian rng mean sd)))
