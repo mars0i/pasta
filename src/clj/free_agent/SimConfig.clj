@@ -29,7 +29,8 @@
                       [mush-prob           0.1  double [0.0 1.0]   ["-f" "Average frequency of mushrooms." :parse-fn #(Double. %)]]
                       [mush-low-size       4.0  double true        ["-l" "Mean of mushroom light distribution" :parse-fn #(Double. %)]]
                       [mush-high-size     16.0  double true        ["-h" "Mean of mushroom light distribution" :parse-fn #(Double. %)]]
-                      [mush-mean-size      0    double false] ; calculated from the previous values
+                      [mush-diff           0    double false] ; calculated from the previous values
+                      [mush-size-diff      0    double false] ; calculated from the previous values
                       [mush-sd             2.0  double true        ["-s" "Standard deviation of mushroom light distribution" :parse-fn #(Double. %)]]
                       [mush-pos-nutrition  1.0  double [0.0 20.0]  ["-p" "Energy from eating a nutritious mushroom" :parse-fn #(Double. %)]]
                       [mush-neg-nutrition -1.0  double [-20.0 0.0] ["-n" "Energy from eating a poisonous mushroom" :parse-fn #(Double. %)]]
