@@ -19,4 +19,4 @@
 (defn appearance
   [mush]
   (let [{:keys [size sd rng]} mush]
-    (ran/next-gaussian rng mean sd)))
+    (ran/next-gaussian rng size sd))) ; size used as mean
