@@ -23,7 +23,8 @@
 
 (defn setup-popenv-config!
   [cfg-data$]
-  (let [{:keys [env-width env-height max-proportion]} @cfg-data$]
+  (let [{:keys [env-width env-height max-proportion mush-low-size mush-high-size]} @cfg-data$]
+    (swap! cfg-data$ assoc :mush-mean-size (/ (+ mush-low-size mush-high-size) 2.0))
     (swap! cfg-data$ assoc :env-center (/ env-width 2.0))
     (swap! cfg-data$ assoc :max-pop-size 
                             (int (* env-width env-height max-proportion)))))
@@ -101,15 +102,15 @@
 
 (defn add-mush!
   [rng cfg-data field x y]
-  (let [{:keys [env-center mush-low-mean mush-high-mean 
+  (let [{:keys [env-center mush-low-size mush-high-size 
                 mush-sd mush-pos-nutrition mush-neg-nutrition]} cfg-data
         [low-mean-nutrition high-mean-nutrition] (if (< x env-center) ; subenv determines whether low vs high reflectance
                                                    [mush-pos-nutrition mush-neg-nutrition]   ; paired with
                                                    [mush-neg-nutrition mush-pos-nutrition])] ; nutritious vs poison
     (.set field x y 
           (if (< (ran/next-double rng) 0.5) ; half the mushrooms are of each kind in each subenv, on average
-            (mu/make-mush mush-low-mean  mush-sd low-mean-nutrition rng)
-            (mu/make-mush mush-high-mean mush-sd high-mean-nutrition rng)))))
+            (mu/make-mush mush-low-size  mush-sd low-mean-nutrition rng)
+            (mu/make-mush mush-high-size mush-sd high-mean-nutrition rng)))))
 
 (defn maybe-add-mush!
   [rng cfg-data field x y]
@@ -123,7 +124,7 @@
   probability (:mush-prob cfg-data)."
   [rng cfg-data field]
   (let [{:keys [env-width env-height mush-prob
-                mush-low-mean mush-high-mean mush-sd 
+                mush-low-size mush-high-size mush-sd 
                 mush-pos-nutrition mush-neg-nutrition]} cfg-data]
     (doseq [x (range env-width)
             y (range env-height)]

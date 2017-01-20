@@ -26,8 +26,8 @@
 (def mush-pos-nutrition-shade 255) ; a grayscale value in [0,255]
 (def mush-neg-nutrition-shade 175)
 (defn mush-color-fn [shade] (Color. shade (int (* 0.8 shade)) (int (* 0.2 shade))))
-(def mush-high-mean-size 1.0) ; we don't scale mushroom size to modeled size, but
-(def mush-low-mean-size 0.725) ; we display the low-size mushroom smaller
+(def mush-high-size-appearance 1.0) ; we don't scale mushroom size to modeled size, but
+(def mush-low-size-appearance 0.725) ; we display the low-size mushroom smaller
 ;; background portrayal displayed in mushroom-less patches:
 (def bg-pattern-color (Color. 255 255 255)) ; (Color. 220 220 220)) ; or: a dirty pink: (def bg-pattern-color (Color. 200 165 165)) 
 (def bg-border-color (Color. 200 200 200)) ; what shows through around the edges of simple portrayals in the background field portrayal
@@ -109,7 +109,7 @@
         cfg-data @cfg-data$
         max-energy (:max-energy cfg-data)
         birth-threshold (:birth-threshold cfg-data)
-        mush-high-mean (:mush-high-mean cfg-data)
+        mush-high-size (:mush-high-size cfg-data)
         popenv (:popenv cfg-data)
         mush-field  (:mush-field  popenv)
         snipe-field (:snipe-field popenv)
@@ -121,7 +121,7 @@
         ;; proxy needs to capture the correct 'this', and we need cfg-data:
         mush-portrayal (proxy [OvalPortrayal2D] []
                          (draw [mush graphics info]  ; override method in super
-                           (let [size  (if (= mush-high-mean (:mean mush)) mush-high-mean-size mush-low-mean-size)
+                           (let [size  (if (= mush-high-size (:mean mush)) mush-high-size-appearance mush-low-size-appearance)
                                  shade (if (neg? (:nutrition mush)) mush-neg-nutrition-shade mush-pos-nutrition-shade)]
                              (set! (.-scale this) size)                       ; superclass vars
                              (set! (.-paint this) (mush-color-fn shade))
