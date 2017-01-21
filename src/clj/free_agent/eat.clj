@@ -20,5 +20,6 @@
   (let [{:keys [size nutrition]} mush
         {:keys [eat cfg-data$]} snipe
         {:keys [mush-mean-size mush-size-scale]} @cfg-data$
-        eat-inc (* eat-dt nutrition mush-size-scale (- size mush-mean-size))]
+        eat-inc (* eat-dt nutrition mush-size-scale 
+                   (- size mush-mean-size))]
     (+ eat eat-inc)))
