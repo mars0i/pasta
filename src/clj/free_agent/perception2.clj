@@ -19,38 +19,42 @@
 ;; k-snipes learn.
 
 ;; See free-fn.nt9 for motivation, analysis, derivations, etc.
+;; (mush-pref is called 'eat' there.)
 
-(def eat-dt 0.001) ; TODO PUT THIS SOMEWHERE ELSE?
-(def eat-noise-sd (double 1/16))
 
-(defn eat-noise [rng]
-  (ran/next-gaussian rng 0 eat-noise-sd))
+;; Put these somewhere else?
+(def pref-dt 0.001)
+(def pref-noise-sd (double 1/16))
+
+(defn pref-noise [rng]
+  (ran/next-gaussian rng 0 pref-noise-sd))
 
 ;; See free-fn.nt9 for discussion
-(defn calc-k-eat
+(defn calc-k-pref
   [rng snipe mush appearance]
   (let [appearance (mu/appearance mush)
         {:keys [nutrition]} mush
-        {:keys [eat cfg-data$]} snipe
+        {:keys [mush-pref cfg-data$]} snipe
         {:keys [mush-mean-size mush-size-scale]} @cfg-data$
-        eat-inc (* eat-dt
+        pref-inc (* pref-dt
                    nutrition
                    (- appearance mush-mean-size)
                    mush-size-scale)]
-    (+ eat eat-inc (eat-noise rng))))
+    (+ mush-pref pref-inc (pref-noise rng))))
 
 ;; SIMPLIFY this stuff?
 
-(defn k-snipe-eat
-  "Updates eat field and decides whether to eat."
+(defn k-snipe-pref
+  "Updates mush-pref field and decides whether to eat."
   [rng snipe mush]
   (let [{:keys [cfg-data$]} snipe
         {:keys [mush-mean-size]} @cfg-data$
-        scaled-appearance (- (mu/appearance mush) mush-mean-size) ; needed here and in calc-k-eat
-        eat (calc-k-eat rng snipe mush scaled-appearance)]
-    [(assoc snipe :eat eat) (pos? (* eat scaled-appearance))])) ; eat if scaled appearance has same sign as eat
+        scaled-appearance (- (mu/appearance mush) mush-mean-size) ; needed here and in calc-k-pref
+        mush-pref (calc-k-pref rng snipe mush scaled-appearance)]
+    [(assoc snipe :mush-pref mush-pref)
+     (pos? (* mush-pref scaled-appearance))])) ; eat if scaled appearance has same sign as mush-pref
 
-(defn r-snipe-eat
- "Decides randomly whether to eat--like initial base state of k-snipe-eat."
+(defn r-snipe-pref
+ "Decides randomly whether to eat--like initial base state of k-snipe-pref."
   [rng snipe mush]
-  [snipe (pos? (eat-noise rng))])
+  [snipe (pos? (pref-noise rng))])

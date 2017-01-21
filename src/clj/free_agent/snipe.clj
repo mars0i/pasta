@@ -1,5 +1,5 @@
 (ns free-agent.snipe
-  (:require [free-agent.eat :as perc]) ; [free-agent.level :as l]
+  (:require [free-agent.perception2 :as perc]) ; [free-agent.level :as l]
   (:import [sim.util Properties SimpleProperties Propertied])
   (:gen-class                 ; so it can be aot-compiled
      :name free-agent.snipe)) ; without :name other aot classes won't find it
@@ -12,14 +12,14 @@
 
 ;; The two atom fields at the end are there solely for interactions with the UI.
 ;; Propertied/properties is used by GUI to allow inspectors to follow a fnlly updated agent.
-(defrecord KSnipe [id levels perceive eat energy x y circled$ cfg-data$]
+(defrecord KSnipe [id perceive mush-pref energy x y circled$ cfg-data$]
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Object
   (toString [_] (str "<KSnipe #" id">")))
 
 ;; See comments on KSnipe.
-(defrecord RSnipe [id levels perceive eat energy x y circled$ cfg-data$]
+(defrecord RSnipe [id perceive mush-pref energy x y circled$ cfg-data$]
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Object
@@ -31,9 +31,8 @@
      (make-k-snipe cfg-data$ initial-energy k-snipe-prior x y)))
   ([cfg-data$ energy prior x y]
    (KSnipe. (next-id)
-            nil ;; TODO construct levels function here using prior
-            perc/k-snipe-eat ; perceive
-            0.0      ; eat
+            perc/k-snipe-pref ; perceive
+            0.0      ; mush-pref begins with indifference
             energy
             x y
             (atom false)
@@ -45,9 +44,8 @@
      (make-r-snipe cfg-data$ initial-energy r-snipe-low-prior r-snipe-high-prior x y)))
   ([cfg-data$ energy low-prior high-prior x y]
    (RSnipe. (next-id)
-            nil ;; TODO construct levels function here using prior (one of two values, randomly)
-            perc/r-snipe-eat ; perceive
-            0.0      ; eat
+            perc/r-snipe-pref ; perceive
+            0.0      ; mush-pref begins with indifference
             energy
             x y
             (atom false)
