@@ -32,7 +32,7 @@
   ([cfg-data$ energy prior x y]
    (KSnipe. (next-id)
             nil ;; TODO construct levels function here using prior
-            perc/eat ; perceive
+            perc/k-snipe-eat ; perceive
             0.0      ; eat
             energy
             x y
@@ -46,7 +46,7 @@
   ([cfg-data$ energy low-prior high-prior x y]
    (RSnipe. (next-id)
             nil ;; TODO construct levels function here using prior (one of two values, randomly)
-            perc/eat ; perceive
+            perc/r-snipe-eat ; perceive
             0.0      ; eat
             energy
             x y

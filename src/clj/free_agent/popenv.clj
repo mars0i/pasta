@@ -212,8 +212,8 @@
   two arguments--the snipe itself, and the mushroom.  The function
   should return a snipe updated to reflect its new experience, and
   a boolean indicating whether the mushroom is to be eaten."
-  [max-energy snipe mush] 
-  (let [[experienced-snipe appetizing?] ((:perceive snipe) snipe mush)]
+  [rng max-energy snipe mush] 
+  (let [[experienced-snipe appetizing?] ((:perceive snipe) rng snipe mush)]
     (if appetizing?
       [(update experienced-snipe :energy add-to-energy max-energy (:nutrition mush))
        true]
@@ -227,7 +227,7 @@
                                  :let [{:keys [x y]} snipe
                                        mush (.get mush-field x y)]
                                  :when mush]
-                             (eat-if-appetizing max-energy snipe mush))
+                             (eat-if-appetizing rng max-energy snipe mush))
         new-snipe-field (ObjectGrid2D. snipe-field) ; new field that's a copy of old one
         new-mush-field  (ObjectGrid2D. mush-field)]
     (doseq [[snipe ate?] snipes-plus-eaten? :when ate?]
