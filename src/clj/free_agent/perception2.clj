@@ -32,9 +32,7 @@
 ;; See free-fn.nt9 for discussion
 (defn calc-k-pref
   "Calculate a new mush-pref for a k-snipe.  Calculates an incremental change
-  in mush-pref, and then adds the increment to mush-pref, along with a small
-  Gaussian noise value so that even if mush-pref is zero and the increment is
-  zero, there's a chance that the snipe will eat.  The core idea in the 
+  in mush-pref, and then adds the increment to mush-pref.  The core idea of the 
   increment calculation is that if the (somewhat random) appearance of a
   mushroom has a larger (smaller) value than the midpoint between the two 
   actual mushroom sizes, and the mushroom's nutrition turns out to be positive,
@@ -54,19 +52,25 @@
                    nutrition
                    (- appearance mush-mid-size)
                    mush-size-scale)]
-    (+ mush-pref pref-inc (pref-noise rng))))
-
-;; SIMPLIFY this stuff?
+    (+ mush-pref pref-inc)))
 
 (defn k-snipe-pref
-  "Updates mush-pref field and decides whether to eat."
+  "Decides whether snipe eats mush, and updates the snipe's mush-pref in 
+  response to the experience if so, returning a possibly updated snipe 
+  along with a boolean indicating whether snipe is eating.  (Note that 
+  the energy transfer resulting from eating will occur elsewhere, in 
+  response to the boolean returned here.)"
   [rng snipe mush]
-  (let [{:keys [cfg-data$]} snipe
+  (let [{:keys [mush-pref cfg-data$]} snipe
         {:keys [mush-mid-size]} @cfg-data$
-        scaled-appearance (- (mu/appearance mush) mush-mid-size) ; needed here and in calc-k-pref
-        mush-pref (calc-k-pref rng snipe mush scaled-appearance)] ; both to update stored value and to decide whether to eat this one
-    [(assoc snipe :mush-pref mush-pref)
-     (pos? (* mush-pref scaled-appearance))])) ; eat if scaled appearance has same sign as mush-pref
+        scaled-appearance (- (mu/appearance mush) mush-mid-size)
+        eat? (pos? (+ (* mush-pref scaled-appearance)  ; eat if scaled appearance has same sign as mush-pref
+                      (pref-noise rng)))]                      ; or if small random increment pushes to result positive
+    [(if eat?
+       (assoc snipe :mush-pref (calc-k-pref rng snipe mush scaled-appearance)) ; if we're eating, this affects future preferences
+       snipe)
+     eat?]))
+
 
 (defn r-snipe-pref
  "Decides randomly whether to eat--like an initial base case of k-snipe-pref."
