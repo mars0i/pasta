@@ -228,14 +228,13 @@
                              (eat-if-appetizing max-energy snipe mush))
         new-snipe-field (ObjectGrid2D. snipe-field) ; new field that's a copy of old one
         new-mush-field  (ObjectGrid2D. mush-field)]
-    (doseq [[snipe ate?] snipes-plus-eaten?]
-      (when ate?
-        (let [{:keys [x y]} snipe]
-          (.set new-snipe-field x y snipe) ; replace old snipe with new, more experienced snipe, or maybe the same one
-          (.set new-mush-field x y nil)    ; mushroom has been eaten
-          ;; a new mushroom grows elsewhere:
-          (add-organism-to-rand-loc! rng new-mush-field env-width env-height 
-                                     (partial add-mush! rng cfg-data))))) ; can't use same procedure for mushrooms as for snipes
+    (doseq [[snipe ate?] snipes-plus-eaten? :when ate?]
+      (let [{:keys [x y]} snipe]
+        (.set new-snipe-field x y snipe) ; replace old snipe with new, more experienced snipe, or maybe the same one
+        (.set new-mush-field x y nil)    ; mushroom has been eaten
+        ;; a new mushroom grows elsewhere:
+        (add-organism-to-rand-loc! rng new-mush-field env-width env-height 
+                                   (partial add-mush! rng cfg-data)))) ; can't use same procedure for mushrooms as for snipes
     [new-snipe-field new-mush-field]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
