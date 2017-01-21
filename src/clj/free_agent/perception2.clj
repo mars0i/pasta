@@ -31,8 +31,22 @@
 
 ;; See free-fn.nt9 for discussion
 (defn calc-k-pref
+  "Calculate a new mush-pref for a k-snipe.  Calculates an incremental change
+  in mush-pref, and then adds the increment to mush-pref, along with a small
+  Gaussian noise value so that even if mush-pref is zero and the increment is
+  zero, there's a chance that the snipe will eat.  The core idea in the 
+  increment calculation is that if the (somewhat random) appearance of a
+  mushroom has a larger (smaller) value than the midpoint between the two 
+  actual mushroom sizes, and the mushroom's nutrition turns out to be positive,
+  then that's a reason to think that larger (smaller) mushrooms are nutritious,
+  and the opposite for negative nutritional values.  Thus it makes sense to
+  calculate the increment as a scaled value of the product of the mushroom's 
+  nutrition and the difference between the appearance and the midpoint.  Thus
+  positive values of mush-pref mean that in the past large mushrooms have often
+  be nutritious, while negative values mean that small mushrooms have more
+  often been nutritious, on average."
   [rng snipe mush appearance]
-  (let [appearance (mu/appearance mush)
+  (let [appearance (mu/appearance mush) ; get (noisy) sensory stimulation from mushroom
         {:keys [nutrition]} mush
         {:keys [mush-pref cfg-data$]} snipe
         {:keys [mush-mean-size mush-size-scale]} @cfg-data$
@@ -50,11 +64,11 @@
   (let [{:keys [cfg-data$]} snipe
         {:keys [mush-mean-size]} @cfg-data$
         scaled-appearance (- (mu/appearance mush) mush-mean-size) ; needed here and in calc-k-pref
-        mush-pref (calc-k-pref rng snipe mush scaled-appearance)]
+        mush-pref (calc-k-pref rng snipe mush scaled-appearance)] ; both to update stored value and to decide whether to eat this one
     [(assoc snipe :mush-pref mush-pref)
      (pos? (* mush-pref scaled-appearance))])) ; eat if scaled appearance has same sign as mush-pref
 
 (defn r-snipe-pref
- "Decides randomly whether to eat--like initial base state of k-snipe-pref."
+ "Decides randomly whether to eat--like an initial base case of k-snipe-pref."
   [rng snipe mush]
   [snipe (pos? (pref-noise rng))])
