@@ -31,7 +31,7 @@
      (make-k-snipe cfg-data$ initial-energy k-snipe-prior x y)))
   ([cfg-data$ energy prior x y]
    (KSnipe. (next-id)
-            perc/k-snipe-pref ; perceive
+            perc/k-snipe-pref ; perceive: function for responding to mushrooms
             0.0      ; mush-pref begins with indifference
             energy
             x y
@@ -44,41 +44,36 @@
      (make-r-snipe cfg-data$ initial-energy r-snipe-low-prior r-snipe-high-prior x y)))
   ([cfg-data$ energy low-prior high-prior x y]
    (RSnipe. (next-id)
-            perc/r-snipe-pref ; perceive
+            perc/r-snipe-pref ; perceive: function for responding to mushrooms
             0.0      ; mush-pref begins with indifference
             energy
             x y
             (atom false)
             cfg-data$)))
 
-;; Does gensym avoid bottleneck??
-(defn next-id 
-  "Returns a unique integer for use as an id."
-  [] 
-  (Long. (str (gensym ""))))
-
-;; This is unlikely to become part of clojure.core: http://dev.clojure.org/jira/browse/CLJ-1298
-(defn atom? [x] (instance? clojure.lang.Atom x))
+(defn atom? [x] (instance? clojure.lang.Atom x)) ; This is unlikely to become part of clojure.core: http://dev.clojure.org/jira/browse/CLJ-1298
 
 ;; Used by GUI to allow inspectors to follow a fnlly updated agent.
 ;; (Code below makes use of the fact that in Clojure, vectors can be treated as functions
 ;; of indexes, returning the indexed item; that keywords such as :x can be treated as 
 ;; functions of maps; and that defrecords such as snipes can be treated as maps.)
 (defn make-properties
-  "Return a Properties subclass for use by Propertied's properties method."
+  "Return a Properties subclass for use by Propertied's properties method so
+  that certain fields can be displayed in the GUI on request."
   [id cfg-data$]
   ;; These definitions need to be coordinated by hand:
-  (let [kys [:energy :x :y :circled$]
-        circled-idx 3 ; HARDCODED INDEX for circled$ field
+  (let [kys [:energy :mush-pref :x :y :circled$]
+        circled-idx 4 ; HARDCODED INDEX for circled$ field
         descriptions ["Energy is what snipes get from mushrooms."
+                      "Preference for large (positive number) or small (negative number) mushrooms."
                       "x coordinate in underlying grid"
                       "y coordinate in underlying grid"
                       "Boolean indicating whether circled in GUI"]
-        types [java.lang.Double java.lang.Integer java.lang.Integer java.lang.Boolean]
+        types [java.lang.Double java.lang.Double java.lang.Integer java.lang.Integer java.lang.Boolean]
         names (mapv name kys)
         num-properties (count kys)
         hidden     (vec (repeat num-properties false))
-        read-write [false false false true] ; allow user to turn off circled in UI
+        read-write [false false false false true] ; allow user to turn off circled in UI
         get-curr-snipe (fn [] ((:snipes (:popenv @cfg-data$)) id))]
     (reset! (:circled$ (get-curr-snipe)) true) ; make-properties only called by inspector, in which case highlight snipe in UI
     (proxy [Properties] []
@@ -103,3 +98,9 @@
 ;; note underscores
 (defn is-k-snipe? [s] (instance? free_agent.snipe.KSnipe s))
 (defn is-r-snipe? [s] (instance? free_agent.snipe.RSnipe s))
+
+;; Does gensym avoid bottleneck??
+(defn next-id 
+  "Returns a unique integer for use as an id."
+  [] 
+  (Long. (str (gensym ""))))
