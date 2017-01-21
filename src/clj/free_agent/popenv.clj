@@ -197,9 +197,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; PERCEPTION AND EATING
 
-(defn perceive-mushroom [snipe mush]
-  [snipe true]) ; FIXME
-
 (defn add-to-energy
   [snipe-energy max-energy mush-nutrition]
   (max 0                ; negative energy is impossible
@@ -210,11 +207,16 @@
   "Returns a pair containing (a) a new version of the snipe, with 
   an updated cognitive state, if appropriate, and an updated 
   energy level if eating occured; and (b) a boolean indicating
-  whether eating occurred."
+  whether eating occurred.  Step (a) is performed by the perceive
+  function contained within the snipe.  This function is called with
+  two arguments--the snipe itself, and the mushroom.  The function
+  should return a snipe updated to reflect its new experience, and
+  a boolean indicating whether the mushroom is to be eaten."
   [max-energy snipe mush] 
-  (let [[experienced-snipe appetizing?] (perceive-mushroom snipe mush)]
+  (let [[experienced-snipe appetizing?] ((:perceive snipe) snipe mush)]
     (if appetizing?
-      [(update experienced-snipe :energy add-to-energy max-energy (:nutrition mush)) true]
+      [(update experienced-snipe :energy add-to-energy max-energy (:nutrition mush))
+       true]
       [experienced-snipe false])))
 
 (defn snipes-eat

@@ -1,5 +1,5 @@
 (ns free-agent.snipe
-  (:require [free-agent.level :as l])
+  (:require [free-agent.eat :as perc]) ; [free-agent.level :as l]
   (:import [sim.util Properties SimpleProperties Propertied])
   (:gen-class                 ; so it can be aot-compiled
      :name free-agent.snipe)) ; without :name other aot classes won't find it
@@ -12,14 +12,14 @@
 
 ;; The two atom fields at the end are there solely for interactions with the UI.
 ;; Propertied/properties is used by GUI to allow inspectors to follow a fnlly updated agent.
-(defrecord KSnipe [id levels energy x y circled$ cfg-data$]
+(defrecord KSnipe [id levels perceive eat energy x y circled$ cfg-data$]
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Object
   (toString [_] (str "<KSnipe #" id">")))
 
 ;; See comments on KSnipe.
-(defrecord RSnipe [id levels energy x y circled$ cfg-data$]
+(defrecord RSnipe [id levels perceive eat energy x y circled$ cfg-data$]
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Object
@@ -32,6 +32,8 @@
   ([cfg-data$ energy prior x y]
    (KSnipe. (next-id)
             nil ;; TODO construct levels function here using prior
+            perc/eat ; perceive
+            0.0      ; eat
             energy
             x y
             (atom false)
@@ -44,6 +46,8 @@
   ([cfg-data$ energy low-prior high-prior x y]
    (RSnipe. (next-id)
             nil ;; TODO construct levels function here using prior (one of two values, randomly)
+            perc/eat ; perceive
+            0.0      ; eat
             energy
             x y
             (atom false)
