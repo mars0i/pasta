@@ -49,10 +49,10 @@
   (let [appearance (mu/appearance mush) ; get (noisy) sensory stimulation from mushroom
         {:keys [nutrition]} mush
         {:keys [mush-pref cfg-data$]} snipe
-        {:keys [mush-mean-size mush-size-scale]} @cfg-data$
+        {:keys [mush-mid-size mush-size-scale]} @cfg-data$
         pref-inc (* pref-dt
                    nutrition
-                   (- appearance mush-mean-size)
+                   (- appearance mush-mid-size)
                    mush-size-scale)]
     (+ mush-pref pref-inc (pref-noise rng))))
 
@@ -62,8 +62,8 @@
   "Updates mush-pref field and decides whether to eat."
   [rng snipe mush]
   (let [{:keys [cfg-data$]} snipe
-        {:keys [mush-mean-size]} @cfg-data$
-        scaled-appearance (- (mu/appearance mush) mush-mean-size) ; needed here and in calc-k-pref
+        {:keys [mush-mid-size]} @cfg-data$
+        scaled-appearance (- (mu/appearance mush) mush-mid-size) ; needed here and in calc-k-pref
         mush-pref (calc-k-pref rng snipe mush scaled-appearance)] ; both to update stored value and to decide whether to eat this one
     [(assoc snipe :mush-pref mush-pref)
      (pos? (* mush-pref scaled-appearance))])) ; eat if scaled appearance has same sign as mush-pref
