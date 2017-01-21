@@ -121,7 +121,7 @@
         ;; proxy needs to capture the correct 'this', and we need cfg-data:
         mush-portrayal (proxy [OvalPortrayal2D] []
                          (draw [mush graphics info]  ; override method in super
-                           (let [size  (if (= mush-high-size (:mean mush)) mush-high-size-appearance mush-low-size-appearance)
+                           (let [size  (if (= mush-high-size (:size mush)) mush-high-size-appearance mush-low-size-appearance)
                                  shade (if (neg? (:nutrition mush)) mush-neg-nutrition-shade mush-pos-nutrition-shade)]
                              (set! (.-scale this) size)                       ; superclass vars
                              (set! (.-paint this) (mush-color-fn shade))
