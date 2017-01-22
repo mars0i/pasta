@@ -46,33 +46,22 @@
                       [env-center         nil   double false]
                       [popenv             nil   free-agent.popenv.PopEnv false]]
   :methods [[getPopSize [] long] ; additional options here. this one is for def below; it will get merged into the generated :methods component.
-            [getRSnipeFreq [] double]])
+            [getKSnipeFreq [] double]])
 
 (defn -getPopSize
   [^SimConfig this]
   (count (:snipes     ; would it be faster to use (.elements snipe-field)?
            (:popenv @(.simConfigData this))))) 
 
-(defn -getRSnipeFreq
+(defn -getKSnipeFreq
   [^SimConfig this]
-  (let [count-r-snipes (fn [n id snipe] (if (sn/is-r-snipe? snipe) (inc n) n))
+  (let [count-k-snipes (fn [n id snipe] (if (sn/is-k-snipe? snipe) (inc n) n))
         snipes (:snipes (:popenv @(.simConfigData this)))
         pop-size (count snipes)
-        r-snipe-count (reduce-kv count-r-snipes 0 snipes)]
+        k-snipe-count (reduce-kv count-k-snipes 0 snipes)]
     (if (pos? pop-size)                   ; when UI first starts, it tries to calc this even though there's no pop, and divs by zero
-      (double (/ r-snipe-count pop-size)) 
-      0))) ; avoid spurious div by zero
-
-;(defn -getRSnipeFreq
-;  [^SimConfig this]
-;  (let [count-r-snipes (fn [n snipe] (if (sn/is-r-snipe? snipe) (inc n) n))
-;        snipes (vals (:snipes (:popenv @(.simConfigData this))))
-;        pop-size (count snipes)
-;        r-snipe-count (reduce count-r-snipes 0 snipes)]
-;    (if (pos? pop-size)                   ; when UI first starts, it tries to calc this even though there's no pop, and divs by zero
-;      (double (/ r-snipe-count pop-size)) 
-;      0))) ; avoid spurious div by zero
-
+      (double (/ k-snipe-count pop-size)) 
+      0))) ; avoid spurious div by zero at beginning of a run
 
 
 ;; no good reason to put this into the defsimconfig macro since it doesn't include any
