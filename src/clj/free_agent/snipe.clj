@@ -1,5 +1,6 @@
 (ns free-agent.snipe
-  (:require [free-agent.perception2 :as perc]) ; [free-agent.level :as l]
+  (:require [free-agent.perception2 :as perc] ; [free-agent.level :as l]
+            [utils.random :as ran])
   (:import [sim.util Properties SimpleProperties Propertied])
   (:gen-class                 ; so it can be aot-compiled
      :name free-agent.snipe)) ; without :name other aot classes won't find it
@@ -39,13 +40,13 @@
             cfg-data$)))
 
 (defn make-r-snipe
-  ([cfg-data$ x y]
+  ([rng cfg-data$ x y]
    (let [{:keys [initial-energy r-snipe-low-prior r-snipe-high-prior]} @cfg-data$]
-     (make-r-snipe cfg-data$ initial-energy r-snipe-low-prior r-snipe-high-prior x y)))
-  ([cfg-data$ energy low-prior high-prior x y]
+     (make-r-snipe rng cfg-data$ initial-energy r-snipe-low-prior r-snipe-high-prior x y)))
+  ([rng cfg-data$ energy low-prior high-prior x y] ; priors currently unused
    (RSnipe. (next-id)
             perc/r-snipe-pref ; perceive: function for responding to mushrooms
-            0.0      ; mush-pref begins with indifference
+            (if (< (ran/next-double rng) 0.5) -100.0 100.0)
             energy
             x y
             (atom false)

@@ -75,4 +75,8 @@
 (defn r-snipe-pref
  "Decides randomly whether to eat--like an initial base case of k-snipe-pref."
   [rng snipe mush]
-  [snipe (pos? (pref-noise rng))])
+  (let [{:keys [mush-pref cfg-data$]} snipe
+        {:keys [mush-mid-size]} @cfg-data$
+        scaled-appearance (- (mu/appearance mush) mush-mid-size)
+        eat? (pos? (* mush-pref scaled-appearance))]  ; eat if scaled appearance has same sign as mush-pref
+    [snipe eat?]))

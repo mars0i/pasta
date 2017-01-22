@@ -98,7 +98,7 @@
   (let [{:keys [env-width env-height num-r-snipes]} @cfg-data$]
     (dotimes [_ num-r-snipes]
       (add-organism-to-rand-loc! rng field env-width env-height 
-                                 (organism-setter (partial sn/make-r-snipe cfg-data$))))))
+                                 (organism-setter (partial sn/make-r-snipe rng cfg-data$))))))
 
 (defn add-mush!
   [rng cfg-data field x y]
@@ -291,7 +291,7 @@
             (add-organism-to-rand-loc! rng new-snipe-field env-width env-height ; add newborn
                                        (organism-setter (if (sn/is-k-snipe? snipe)  ; newborn should be like parent
                                                           (partial sn/make-k-snipe cfg-data$)
-                                                          (partial sn/make-r-snipe cfg-data$))))))))
+                                                          (partial sn/make-r-snipe rng cfg-data$))))))))
     new-snipe-field))
 
 
