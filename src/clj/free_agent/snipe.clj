@@ -36,14 +36,14 @@
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Object
-  (toString [this] (str "<RSnipe #" id ">")))
+  (toString [this] (str "<RSnipePrefSmall #" id ">")))
 
 ;; r-snipe that prefers large mushrooms
 (defrecord RSnipePrefBig [id perceive mush-pref energy x y circled$ cfg-data$]
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Object
-  (toString [this] (str "<RSnipe #" id ">")))
+  (toString [this] (str "<RSnipePrefBig #" id ">")))
 
 (defn make-k-snipe 
   ([cfg-data$ x y]
