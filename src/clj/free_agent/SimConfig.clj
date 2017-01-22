@@ -24,8 +24,8 @@
 (defcfg/defsimconfig [[num-k-snipes       50    long   [1 500]     ["-N" "Size of k-snipe subpopulation" :parse-fn #(Long. %)]]
                       [num-r-snipes       50    long   [1 500]     ["-o" "Size of r-snipe subpopulation" :parse-fn #(Long. %)]]
                       [k-snipe-prior      10.0  double [1.0 50.0]  ["-k" "Prior for k-snipes" :parse-fn #(Double. %)]]
-                      [r-snipe-low-prior   5.0  double [1.0 50.0]  ["-q" "One of two possible priors for r-snipes" :parse-fn #(Double. %)]]
-                      [r-snipe-high-prior 20.0  double [1.0 50.0]  ["-r" "One of two possible priors for r-snipes" :parse-fn #(Double. %)]]
+                      ;[r-snipe-low-prior   5.0  double [1.0 50.0]  ["-q" "One of two possible priors for r-snipes" :parse-fn #(Double. %)]]
+                      ;[r-snipe-high-prior 20.0  double [1.0 50.0]  ["-r" "One of two possible priors for r-snipes" :parse-fn #(Double. %)]]
                       [mush-prob           0.1  double [0.0 1.0]   ["-f" "Average frequency of mushrooms." :parse-fn #(Double. %)]]
                       [mush-low-size       4.0  double true        ["-l" "Mean of mushroom light distribution" :parse-fn #(Double. %)]]
                       [mush-high-size     16.0  double true        ["-h" "Mean of mushroom light distribution" :parse-fn #(Double. %)]]
@@ -55,7 +55,7 @@
 
 (defn -getKSnipeFreq
   [^SimConfig this]
-  (let [count-k-snipes (fn [n id snipe] (if (sn/is-k-snipe? snipe) (inc n) n))
+  (let [count-k-snipes (fn [n id snipe] (if (sn/k-snipe? snipe) (inc n) n))
         snipes (:snipes (:popenv @(.simConfigData this)))
         pop-size (count snipes)
         k-snipe-count (reduce-kv count-k-snipes 0 snipes)]

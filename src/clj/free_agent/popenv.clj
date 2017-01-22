@@ -289,24 +289,7 @@
           (.set new-snipe-field (:x snipe) (:y snipe) snipe)
           (dotimes [_ num-births]
             (add-organism-to-rand-loc! rng new-snipe-field env-width env-height ; add newborn
-                                       (organism-setter (if (sn/is-k-snipe? snipe)  ; newborn should be like parent
+                                       (organism-setter (if (sn/k-snipe? snipe)  ; newborn should be like parent
                                                           (partial sn/make-k-snipe cfg-data$)
                                                           (partial sn/make-r-snipe rng cfg-data$))))))))
     new-snipe-field))
-
-
-;(defn snipes-reproduce
-;  [rng cfg-data$ snipe-field]
-;  (let [{:keys [env-width env-height birth-threshold birth-cost]} @cfg-data$
-;        old-snipes (.elements snipe-field)
-;        new-snipe-field (ObjectGrid2D. snipe-field)] ; new field that's a copy of old one
-;    (doseq [snipe old-snipes]
-;      (when (>= (:energy snipe) birth-threshold)
-;        (.set new-snipe-field (:x snipe) (:y snipe)  ; replace with energy reduced due to birth
-;              (update snipe :energy - birth-cost))
-;        (add-organism-to-rand-loc! rng new-snipe-field env-width env-height ; add newborn
-;                                   (organism-setter (if (sn/is-k-snipe? snipe)  ; newborn should be like parent
-;                                                      (partial sn/make-k-snipe cfg-data$)
-;                                                      (partial sn/make-r-snipe cfg-data$))))))
-;    new-snipe-field))
-

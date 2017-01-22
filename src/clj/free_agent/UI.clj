@@ -143,7 +143,8 @@
     (.setPortrayalForNull bg-field-portrayal (HexagonalPortrayal2D. bg-pattern-color 0.91)) ; show patches as such (or use OvalPortrayal2D with scale 1.0)
     (.setPortrayalForClass mush-field-portrayal free_agent.mush.Mush mush-portrayal)
     (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe k-snipe-portrayal)
-    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipe r-snipe-portrayal)
+    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipePrefSmall r-snipe-portrayal)
+    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipePrefBig   r-snipe-portrayal)
     ;; Since popenvs are updated functionally, have to tell the ui about the new popenv on every timestep:
     (.scheduleRepeatingImmediatelyAfter this-ui
                                         (reify Steppable 

@@ -19,8 +19,27 @@
   Object
   (toString [_] (str "<KSnipe #" id">")))
 
+;; OBSOLETE
+;(defrecord RSnipe [id perceive mush-pref energy x y circled$ cfg-data$]
+;  Propertied
+;  (properties [original-snipe] (make-properties id cfg-data$))
+;  Object
+;  (toString [this] (str "<RSnipe #" id ">")))
+
+;; Creating two identical RSnipe defrecords, which will differ only
+;; in the value of mush-pref, so it will be simpler to keep track
+;; of the difference.
+
+;; r-snipe that prefers small mushrooms
 ;; See comments on KSnipe.
-(defrecord RSnipe [id perceive mush-pref energy x y circled$ cfg-data$]
+(defrecord RSnipePrefSmall [id perceive mush-pref energy x y circled$ cfg-data$]
+  Propertied
+  (properties [original-snipe] (make-properties id cfg-data$))
+  Object
+  (toString [this] (str "<RSnipe #" id ">")))
+
+;; r-snipe that prefers large mushrooms
+(defrecord RSnipePrefBig [id perceive mush-pref energy x y circled$ cfg-data$]
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Object
@@ -41,16 +60,25 @@
 
 (defn make-r-snipe
   ([rng cfg-data$ x y]
-   (let [{:keys [initial-energy r-snipe-low-prior r-snipe-high-prior]} @cfg-data$]
-     (make-r-snipe rng cfg-data$ initial-energy r-snipe-low-prior r-snipe-high-prior x y)))
-  ([rng cfg-data$ energy low-prior high-prior x y] ; priors currently unused
-   (RSnipe. (next-id)
-            perc/r-snipe-pref ; perceive: function for responding to mushrooms
-            (if (< (ran/next-double rng) 0.5) -100.0 100.0)
-            energy
-            x y
-            (atom false)
-            cfg-data$)))
+   (let [{:keys [initial-energy]} @cfg-data$]
+     (make-r-snipe rng cfg-data$ initial-energy x y)))
+  ([rng cfg-data$ energy x y]
+   (if (< (ran/next-double rng) 0.5)
+   (RSnipePrefSmall. (next-id) perc/r-snipe-pref -100.0 energy x y (atom false) cfg-data$)
+   (RSnipePrefBig.   (next-id) perc/r-snipe-pref  100.0 energy x y (atom false) cfg-data$))))
+
+;(defn old-make-r-snipe
+;  ([rng cfg-data$ x y]
+;   (let [{:keys [initial-energy r-snipe-low-prior r-snipe-high-prior]} @cfg-data$]
+;     (make-r-snipe rng cfg-data$ initial-energy r-snipe-low-prior r-snipe-high-prior x y)))
+;  ([rng cfg-data$ energy low-prior high-prior x y] ; priors currently unused
+;   (RSnipe. (next-id)
+;            perc/r-snipe-pref
+;            (if (< (ran/next-double rng) 0.5) -100.0 100.0)
+;            energy
+;            x y
+;            (atom false)
+;            cfg-data$)))
 
 (defn atom? [x] (instance? clojure.lang.Atom x)) ; This is unlikely to become part of clojure.core: http://dev.clojure.org/jira/browse/CLJ-1298
 
@@ -97,8 +125,10 @@
 
 
 ;; note underscores
-(defn is-k-snipe? [s] (instance? free_agent.snipe.KSnipe s))
-(defn is-r-snipe? [s] (instance? free_agent.snipe.RSnipe s))
+(defn k-snipe? [s] (instance? free_agent.snipe.KSnipe s))
+(defn r-snipe-pref-small? [s] (instance? free_agent.snipe.RSnipePrefSmall s))
+(defn r-snipe-pref-big?   [s] (instance? free_agent.snipe.RSnipePrefBig s))
+(defn r-snipe? [s] (or (r-snipe-pref-small? s) (r-snipe-pref-big? s)))
 
 ;; Does gensym avoid bottleneck??
 (defn next-id 
