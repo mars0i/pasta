@@ -101,7 +101,7 @@
         ^SimConfigData cfg-data$ (.simConfigData this)
         ^MersenneTwisterFast rng (.-random this)]
     (pe/setup-popenv-config! cfg-data$)
-    (report-params @cfg-data$)
+    ;(report-params @cfg-data$)
     (swap! cfg-data$ assoc :popenv (pe/make-popenv rng cfg-data$)) ; create new popenv
     ;; Run it:
     (let [stoppable (.scheduleRepeating schedule Schedule/EPOCH 0 ; epoch = starting at beginning, 0 means run this first during timestep
