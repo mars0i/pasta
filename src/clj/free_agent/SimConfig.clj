@@ -24,8 +24,8 @@
 (defcfg/defsimconfig [[num-k-snipes       50    long   [1 500]     ["-N" "Size of k-snipe subpopulation" :parse-fn #(Long. %)]]
                       [num-r-snipes       50    long   [1 500]     ["-o" "Size of r-snipe subpopulation" :parse-fn #(Long. %)]]
                       [k-snipe-prior      10.0  double [1.0 50.0]  ["-k" "Prior for k-snipes" :parse-fn #(Double. %)]]
-                      ;[r-snipe-low-prior   5.0  double [1.0 50.0]  ["-q" "One of two possible priors for r-snipes" :parse-fn #(Double. %)]]
-                      ;[r-snipe-high-prior 20.0  double [1.0 50.0]  ["-r" "One of two possible priors for r-snipes" :parse-fn #(Double. %)]]
+                     ;[r-snipe-low-prior   5.0  double [1.0 50.0]  ["-q" "One of two possible priors for r-snipes" :parse-fn #(Double. %)]]
+                     ;[r-snipe-high-prior 20.0  double [1.0 50.0]  ["-r" "One of two possible priors for r-snipes" :parse-fn #(Double. %)]]
                       [mush-prob           0.1  double [0.0 1.0]   ["-f" "Average frequency of mushrooms." :parse-fn #(Double. %)]]
                       [mush-low-size       4.0  double true        ["-l" "Mean of mushroom light distribution" :parse-fn #(Double. %)]]
                       [mush-high-size     16.0  double true        ["-h" "Mean of mushroom light distribution" :parse-fn #(Double. %)]]
@@ -39,6 +39,7 @@
                       [birth-cost          5.0  double [0.0 10.0]  ["-c" "Energetic cost of giving birth to one offspring" :parse-fn #(Double. %)]]
                       [max-energy         30.0  double [1.0 100.0] ["-x" "Max energy that a snipe can have." :parse-fn #(Double. %)]]
                       [max-proportion      0.25 double [0.1 0.9]   ["-m" "Snipes are randomly culled when number exceed this times # of cells." :parse-fn #(Double. %)]]
+                      [max-ticks           0    long   false       ["-T" "Stop after this number of timesteps have run, or never if 0." :parse-fn #(Long. %)]]
                       [env-width          88    long   false       ["-w" "How wide is env?  Must be an even number." :parse-fn #(Long. %)]] ; can be set from command line but not in running app
                       [env-height         40    long   false       ["-t" "How tall is env? Should be an even number." :parse-fn #(Long. %)]] ; ditto
                       [max-pop-size        0    long   false]
@@ -103,7 +104,39 @@
     (report-params @cfg-data$)
     (swap! cfg-data$ assoc :popenv (pe/make-popenv rng cfg-data$)) ; create new popenv
     ;; Run it:
-    (.scheduleRepeating schedule Schedule/EPOCH 0
+    (let [stoppable (.scheduleRepeating schedule Schedule/EPOCH 0 ; epoch = starting at beginning, 0 means run this first during timestep
                         (reify Steppable 
                           (step [this sim-state]
-                            (swap! cfg-data$ update :popenv (partial pe/next-popenv rng cfg-data$)))))))
+                            (swap! cfg-data$ update :popenv (partial pe/next-popenv rng cfg-data$)))))]
+      ;; Stop simulation when condition satisfied:
+      (.scheduleRepeating schedule Schedule/EPOCH 1 ; 1 = i.e. after the previous Steppable, which runs the simulation
+                          (reify Steppable
+                            (step [this sim-state]
+                              (let [max-ticks (:max-ticks @cfg-data$)]
+                                (when (and (pos? max-ticks) ; run forever if max-ticks = 0
+                                           (>= (.getTime schedule) max-ticks)) ; = s/b enough, but >= as failsafe
+                                  (.stop stoppable)
+                                  (println "Final"
+                                           "population size:" (.getPopSize sim-state)
+                                           " k-snipe freq:" (.getKSnipeFreq sim-state))
+                                  (.kill sim-state))))))))) ; end program after cleaning up Mason stuff
+
+;; https://listserv.gmu.edu/cgi-bin/wa?A2=ind0610&L=MASON-INTEREST-L&D=0&1=MASON-INTEREST-L&9=A&J=on&d=No+Match%3BMatch%3BMatches&z=4&P=14576
+;; 1. Make a Steppable which shuts down the simulation.
+;; 
+;; public class KillSteppable implements Steppable
+;; 	{
+;; 	public void step(SimState state)
+;; 		{
+;; 		state.kill();
+;; 		}
+;; 	}
+;; 
+;; 2. Stick it in a MultiStep (a convenience class we wrote which only  
+;; calls its subsidiary Steppable once every N times, among other options):
+;; 
+;; Steppable a = new MultiStep(new KillSteppable(), numTimeSteps, true);
+;; 
+;; 3. Schedule the MultiStep repeating every timestep.  After  
+;; numTimeSteps, it'll fire its KillSteppable, which will stop the  
+;; simulation.
