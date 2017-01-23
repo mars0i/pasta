@@ -60,8 +60,8 @@
   (let [{:keys [mush-pref cfg-data$]} snipe
         {:keys [mush-mid-size]} @cfg-data$
         scaled-appearance (- (mu/appearance mush) mush-mid-size)
-        eat? (pos? (+ (* mush-pref scaled-appearance)  ; eat if scaled appearance has same sign as mush-pref
-                      (pref-noise rng)))]                      ; or if small random increment pushes to result positive
+        eat? (pos? (* (+ mush-pref (pref-noise rng)) ; my effective mushroom preference is noisy. (even if starts at zero, I might eat.)
+                      scaled-appearance))]           ; eat if scaled appearance has same sign as mush-pref with noise
     [(if eat?
        (assoc snipe :mush-pref (calc-k-pref rng snipe mush scaled-appearance)) ; if we're eating, this affects future preferences
        snipe)
