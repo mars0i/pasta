@@ -19,7 +19,7 @@
 
 
 ;; Put these somewhere else?
-(def pref-dt 0.001)
+(def pref-dt 0.00001)
 (def pref-noise-sd (double 1/16))
 
 (defn pref-noise [rng]
