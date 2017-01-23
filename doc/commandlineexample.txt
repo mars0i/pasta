@@ -1,0 +1,8 @@
+i=50 ; while [ $i -gt 0 ]; do ./nogui --max-ticks 2000 --env-width 200 --env-height 50 --num-k-snipes 100 --num-r-snipes 100 -quiet ; i=$((i-1)); done
+
+Note "--" for Clojure params and "-" with multi-char name for Mason
+param at end.  There are also single-char Clojure params.
+
+Another useful Mason option:
+-time n
+Print progress report every n-1 ticks.
