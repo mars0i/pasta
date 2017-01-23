@@ -3,11 +3,7 @@
 ;; the file LICENSE.
 
 (ns free-agent.perception2
-  (:require [clojure.core.matrix :as m]
-            ;[clojure.math.numeric-tower :as math]
-            ;[free-agent.level :as lvl]
-            [free-agent.matrix :as fm]
-            [free-agent.mush :as mu]
+  (:require [free-agent.mush :as mu]
             [utils.random :as ran]))
 
 ;; Simple algorithm for k-snipes that's supposed to:
