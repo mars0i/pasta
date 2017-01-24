@@ -3,11 +3,7 @@
 ;; the file LICENSE.
 
 (ns free-agent.perception2
-  (:require [clojure.core.matrix :as m]
-            ;[clojure.math.numeric-tower :as math]
-            ;[free-agent.level :as lvl]
-            [free-agent.matrix :as fm]
-            [free-agent.mush :as mu]
+  (:require [free-agent.mush :as mu]
             [utils.random :as ran]))
 
 ;; Simple algorithm for k-snipes that's supposed to:
@@ -23,7 +19,7 @@
 
 
 ;; Put these somewhere else?
-(def pref-dt 0.001)
+(def pref-dt 0.00001)
 (def pref-noise-sd (double 1/16))
 
 (defn pref-noise [rng]
@@ -64,8 +60,8 @@
   (let [{:keys [mush-pref cfg-data$]} snipe
         {:keys [mush-mid-size]} @cfg-data$
         scaled-appearance (- (mu/appearance mush) mush-mid-size)
-        eat? (pos? (+ (* mush-pref scaled-appearance)  ; eat if scaled appearance has same sign as mush-pref
-                      (pref-noise rng)))]                      ; or if small random increment pushes to result positive
+        eat? (pos? (* (+ mush-pref (pref-noise rng)) ; my effective mushroom preference is noisy. (even if starts at zero, I might eat.)
+                      scaled-appearance))]           ; eat if scaled appearance has same sign as mush-pref with noise
     [(if eat?
        (assoc snipe :mush-pref (calc-k-pref rng snipe mush scaled-appearance)) ; if we're eating, this affects future preferences
        snipe)

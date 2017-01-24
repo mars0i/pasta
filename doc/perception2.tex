@@ -1,0 +1,131 @@
+\documentclass[12pt]{article}
+
+\usepackage{natbib}
+\bibliographystyle{chicagourl}
+\usepackage[letterpaper,left=1.25in,right=1.25in,top=1.0in,bottom=1.0in]{geometry}
+\usepackage{xspace}
+%\usepackage{listings}
+% This tells the listings package that it's Lisp it will be formatting:
+%\lstset{language=Lisp} % for uses of lstlistings below
+%\lstset{basicstyle=\ttfamily}
+% e.g.: \begin{lstlisting} ... \end{lstlisting}
+
+\setlength{\parindent}{0in}  % Don't indent paragraphs
+\setlength{\parskip}{2.5ex}  % Add space between paragraphs
+
+\newcommand{\UseGaramond}[1]{%
+	\usepackage[urw-garamond]{mathdesign}  % goes before fontenc, fontspec, etc.
+	\usepackage[T1]{fontenc}
+	\usepackage{fontspec,xltxtra,xunicode}
+	\defaultfontfeatures{Mapping=tex-text} % ditto
+	\setmainfont[Mapping=tex-text]{#1}}
+
+\UseGaramond{GaramondNo8}
+%\UseGaramond{EB Garamond}
+
+\newcommand{\cmnt}[1]{}
+\renewcommand{\cmnt}[1]{{\color{red}[#1]}}
+\newcommand{\fn}[1]{\footnote{#1}}
+
+\newcommand{\ie}{i.e.\@\xspace}
+\newcommand{\eg}{e.g.\@\xspace}
+\newcommand{\cf}{cf.\@\xspace}
+\newcommand{\etc}{etc.\@\xspace}
+\newcommand{\viz}{viz.\@\xspace}
+\newcommand{\vs}{vs.\@\xspace}
+
+\newcommand{\pr}{\mathsf{P}} % probability
+\newcommand{\expct}{\mathsf{E}} % expectation
+
+\begin{document}
+
+{\large Notes on perception2 k-snipe learning algorithm in free-agent}\\
+Marshall Abrams\hfill\today\\
+
+In {\tt free-agent.perception2}, the function {\tt k-snipe-pref}
+does this (from the docstring):
+\begin{quote}\vspace{-2ex}
+    Decides whether snipe eats mush, and updates the snipe's mush-pref
+    in  response to the experience if so, returning a possibly updated
+    snipe  along with a boolean indicating whether snipe is eating. 
+    (Note that  the energy transfer resulting from eating will occur
+    elsewhere, in  response to the boolean returned here.)
+\end{quote}\vspace{-2ex}
+More specifically, {\tt k-snipe-pref} decides to eat iff the sign of
+the (scalar) sensory input is such that $\mbox{size sensory input} -
+\mbox{midpoint between actual mushroom sizes}$ has the same as the
+sign of the snipe's (noisy) mushroom preference {\tt mush-pref}.
+(The midpoint is thus treated as an innate parameter, or one that was
+learned  earlier, as is the distance between the two mushroom sizes
+below.)  The idea is that a positive value for {\tt mush-pref} means
+``I prefer large mushrooms," while a negative value means ``I prefer
+small mushrooms." (That doesn't mean that an individual with a
+positive preference will only eat large mushrooms, however, since the
+sensory data is quite noisy.)
+
+If the snipe does eat, this allows it to collect information about
+whether the mushroom is nutritious or somewhat poisonous.  (This is
+similar to what rats do, as I understand it, refusing to eat a kind of
+food if eating it was followed by illness.)  When a k-snipe eats, 
+{\tt k-snipe-pref} calculates a new value for its {\tt mush-pref} by
+calling {\tt calc-k-pref}:
+\begin{quote}\vspace{-2ex}
+    Calculate a new mush-pref for a k-snipe.  Calculates an
+    incremental change in mush-pref, and then adds the increment to
+    mush-pref.  The core idea of the  increment calculation is that if
+    the (somewhat random) appearance of a mushroom has a larger
+    (smaller) value than the midpoint between the two actual mushroom
+    sizes, and the mushroom's nutrition turns out to be positive, then
+    that's a reason to think that larger (smaller) mushrooms are
+    nutritious, and the opposite for negative nutritional values. 
+    Thus it makes sense to calculate the increment as a scaled value
+    of the product of the mushroom's  nutrition and the difference
+    between the appearance and the midpoint.  Thus positive values of
+    mush-pref mean that in the past large mushrooms have often be
+    nutritious, while negative values mean that small mushrooms have
+    more often been nutritious, on average.
+\end{quote}\vspace{-2ex}
+Specifically, {\tt calc-k-pref} adds the following increment to the
+current value of {\tt mush-pref}:
+\[
+    \mbox{nutrition value of mushroom} \times  \frac{\mbox{sensory
+    input} - \mbox{mushroom midpoint}}{\mbox{distance from low to high
+    mushroom size}} \times \mbox{dt}
+\]
+where {\tt dt} is a small number, such as 0.001.  (The numerator of
+the division above is the reciprocal of the {\tt mush-size-scale}
+global parameter.)  The result of adding the above increment to {\tt
+mush-pref} is then returned to {\tt k-snipe-pref}.  As explained in
+the indented docstring above, the general  idea is that a positive
+nutritional value pushes {\tt mush-pref} in the direction of the
+sensory data's difference from the midpoint.
+
+This algorithm is very roughly like a very simplified version of part of
+the the algorithm that Feldman and Friston \citeyearpar[p.\
+9]{FeldmanFriston:AttentionUncertainty} use to model the Posner
+experimental setup\fn{
+    F\&F's model was in fact my starting point in developing this simple
+    method of learning mushroom preferences, even though what I ended up
+    with is very different and much, much simpler.}
+A series of eating experiences here takes on a role like the cue signal
+in the Posner setup.  In F\&F's model, the result of the signal is due
+to an interated calculation in response to it.  Here it's not a
+persistent signal to which the system responds, but a series of
+size-and-nutrition signals from different mushrooms. In F\&F's model,
+the signal from the cue (along with signals from two other regions)
+incrementally updates a hidden (vector-valued) variable $x$.  This
+variable indirectly affects the perception of signals in the other regions by
+affecting the precision which will scale the effects of those signals.  In
+the perception2 mushroom preference algorithm, there's no direct analog
+of precision, since {\tt mush-pref}, the closest analog of F\&F's $x$, is simply
+multiplied by the adjusted input signal, with the result tested for a 
+positive value, in order to decide whether to eat.  Scaling the size signal by
+a precision at this point wouldn't have any effect on the sign of the result, so
+there's no reason, in this kind of scheme, to do that.  Part of the reason
+that the method can be so simple is just that we're only trying to determine
+a Boolean value based on a very simple sensory signal.  We're not even trying
+to determine a scalar value from a continuous range.
+
+
+\bibliography{phil}
+\end{document}
