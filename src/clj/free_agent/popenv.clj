@@ -59,11 +59,10 @@
                                                      @cfg-data$
                                                      snipe-field 
                                                      mush-field)
-        new-snipe-field (->> new-snipe-field                 ; even I like a thread macro sometimes
-                             (snipes-reproduce rng cfg-data$) ; birth before death in case birth uses remaining energy
-                             (snipes-die @cfg-data$)
-                             (cull-snipes rng @cfg-data$)
-                             (move-snipes rng @cfg-data$))     ; only the living get to move
+        new-snipe-field (snipes-reproduce rng cfg-data$ new-snipe-field) ; birth before death in case birth uses remaining energy
+        [new-snipe-field newly-dead] (snipes-die @cfg-data$ new-snipe-field)
+        [new-snipe-field newly-culled] (cull-snipes rng @cfg-data$ new-snipe-field)
+        new-snipe-field (move-snipes rng @cfg-data$ new-snipe-field)     ; only the living get to move
         snipes (make-snipes-map new-snipe-field)]
     (PopEnv. new-snipe-field new-mush-field snipes []))) ; TODO
 
@@ -256,7 +255,7 @@
                                          (.elements snipe-field))] ; old version: (remove #(<= (:energy %) 0) (.elements snipe-field))]
     (doseq [snipe live-snipes]
       (.set new-snipe-field (:x snipe) (:y snipe) snipe))
-    new-snipe-field)) ; TODO
+    [new-snipe-field newly-dead]))
 
 ;; TODO
 (defn cull-snipes
@@ -272,8 +271,8 @@
             new-snipe-field (ObjectGrid2D. snipe-field)]
         (doseq [snipe excess-snipes]
           (.set new-snipe-field (:x snipe) (:y snipe) nil)) ; remove chosen snipes
-        new-snipe-field)
-      snipe-field)))
+        [new-snipe-field excess-snipes])
+      [snipe-field nil])))
 
 (defn count-litter
   [cfg-data snipe]
