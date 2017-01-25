@@ -84,7 +84,7 @@
   (let [kys (sort (keys cfg-data))]
     (println (map #(str (name %) "=" (% cfg-data)) kys))))
 
-(defn report-final-stats
+(defn report-stats
   [cfg-data]
   (println "Final"
            "population size:" (stats/get-pop-size cfg-data)
@@ -120,7 +120,7 @@
                                 (when (and (pos? max-ticks) ; run forever if max-ticks = 0
                                            (>= (.getTime schedule) max-ticks)) ; = s/b enough, but >= as failsafe
                                   (.stop stoppable)
-                                  (report-final-stats @cfg-data$)
+                                  (report-stats @cfg-data$)
                                   (.kill sim-state))))))))) ; end program after cleaning up Mason stuff
 
 ;; https://listserv.gmu.edu/cgi-bin/wa?A2=ind0610&L=MASON-INTEREST-L&D=0&1=MASON-INTEREST-L&9=A&J=on&d=No+Match%3BMatch%3BMatches&z=4&P=14576
