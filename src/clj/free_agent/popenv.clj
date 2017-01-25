@@ -54,7 +54,7 @@
   a new PopEnv.  (popenv is last for convenience with iterate.
   You can use partial use next-popenv with swap!.)"
   [rng cfg-data$ popenv]
-  (let [{:keys [snipe-field mush-field]} popenv
+  (let [{:keys [snipe-field mush-field dead-snipes]} popenv
         [new-snipe-field new-mush-field] (snipes-eat rng 
                                                      @cfg-data$
                                                      snipe-field 
@@ -64,7 +64,10 @@
         [new-snipe-field newly-culled] (cull-snipes rng @cfg-data$ new-snipe-field)
         new-snipe-field (move-snipes rng @cfg-data$ new-snipe-field)     ; only the living get to move
         snipes (make-snipes-map new-snipe-field)]
-    (PopEnv. new-snipe-field new-mush-field snipes []))) ; TODO
+    (PopEnv. new-snipe-field 
+             new-mush-field 
+             snipes 
+             (conj dead-snipes (concat newly-dead newly-culled))))) ; each timestep adds a separate collection of dead snipes
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; CREATE AND PLACE ORGANISMS
