@@ -130,8 +130,16 @@
 (defn r-snipe-pref-big?   [s] (instance? free_agent.snipe.RSnipePrefBig s))
 (defn r-snipe? [s] (or (r-snipe-pref-small? s) (r-snipe-pref-big? s)))
 
-;; Does gensym avoid bottleneck??
-(defn next-id 
+;; Switching to simple, non-gensym version so that this also tracks
+;; total number of snipes that have lived.
+(def num-snipes$ (atom 0))
+(defn next-id
   "Returns a unique integer for use as an id."
   [] 
-  (Long. (str (gensym ""))))
+  (swap! num-snipes$ inc))
+
+;; Does gensym avoid bottleneck??
+;(defn next-id 
+;  "Returns a unique integer for use as an id."
+;  [] 
+;  (Long. (str (gensym ""))))
