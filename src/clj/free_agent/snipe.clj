@@ -13,18 +13,11 @@
 
 ;; The two atom fields at the end are there solely for interactions with the UI.
 ;; Propertied/properties is used by GUI to allow inspectors to follow a fnlly updated agent.
-(defrecord KSnipe [id perceive mush-pref energy x y circled$ cfg-data$]
+(defrecord KSnipe [id perceive mush-pref energy x y age circled$ cfg-data$]
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Object
   (toString [_] (str "<KSnipe #" id">")))
-
-;; OBSOLETE
-;(defrecord RSnipe [id perceive mush-pref energy x y circled$ cfg-data$]
-;  Propertied
-;  (properties [original-snipe] (make-properties id cfg-data$))
-;  Object
-;  (toString [this] (str "<RSnipe #" id ">")))
 
 ;; Creating two identical RSnipe defrecords, which will differ only
 ;; in the value of mush-pref, so it will be simpler to keep track
@@ -32,14 +25,14 @@
 
 ;; r-snipe that prefers small mushrooms
 ;; See comments on KSnipe.
-(defrecord RSnipePrefSmall [id perceive mush-pref energy x y circled$ cfg-data$]
+(defrecord RSnipePrefSmall [id perceive mush-pref energy x y age circled$ cfg-data$]
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Object
   (toString [this] (str "<RSnipePrefSmall #" id ">")))
 
 ;; r-snipe that prefers large mushrooms
-(defrecord RSnipePrefBig [id perceive mush-pref energy x y circled$ cfg-data$]
+(defrecord RSnipePrefBig [id perceive mush-pref energy x y age circled$ cfg-data$]
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Object
@@ -55,6 +48,7 @@
             0.0      ; mush-pref begins with indifference
             energy
             x y
+            0
             (atom false)
             cfg-data$)))
 
@@ -64,21 +58,8 @@
      (make-r-snipe rng cfg-data$ initial-energy x y)))
   ([rng cfg-data$ energy x y]
    (if (< (ran/next-double rng) 0.5)
-   (RSnipePrefSmall. (next-id) perc/r-snipe-pref -100.0 energy x y (atom false) cfg-data$)
-   (RSnipePrefBig.   (next-id) perc/r-snipe-pref  100.0 energy x y (atom false) cfg-data$))))
-
-;(defn old-make-r-snipe
-;  ([rng cfg-data$ x y]
-;   (let [{:keys [initial-energy r-snipe-low-prior r-snipe-high-prior]} @cfg-data$]
-;     (make-r-snipe rng cfg-data$ initial-energy r-snipe-low-prior r-snipe-high-prior x y)))
-;  ([rng cfg-data$ energy low-prior high-prior x y] ; priors currently unused
-;   (RSnipe. (next-id)
-;            perc/r-snipe-pref
-;            (if (< (ran/next-double rng) 0.5) -100.0 100.0)
-;            energy
-;            x y
-;            (atom false)
-;            cfg-data$)))
+   (RSnipePrefSmall. (next-id) perc/r-snipe-pref -100.0 energy x y 0 (atom false) cfg-data$)
+   (RSnipePrefBig.   (next-id) perc/r-snipe-pref  100.0 energy x y 0 (atom false) cfg-data$))))
 
 (defn atom? [x] (instance? clojure.lang.Atom x)) ; This is unlikely to become part of clojure.core: http://dev.clojure.org/jira/browse/CLJ-1298
 
@@ -91,18 +72,19 @@
   that certain fields can be displayed in the GUI on request."
   [id cfg-data$]
   ;; These definitions need to be coordinated by hand:
-  (let [kys [:energy :mush-pref :x :y :circled$]
-        circled-idx 4 ; HARDCODED INDEX for circled$ field
-        descriptions ["Energy is what snipes get from mushrooms."
+  (let [kys [:energy :mush-pref :x :y :age :circled$]       ; CHANGE FOR NEW FIELDS
+        circled-idx 5 ; HARDCODED INDEX for circled$ field  ; CHANGE FOR NEW FIELDS
+        descriptions ["Energy is what snipes get from mushrooms." ; CHANGE FOR NEW FIELDS
                       "Preference for large (positive number) or small (negative number) mushrooms."
                       "x coordinate in underlying grid"
                       "y coordinate in underlying grid"
+                      "Age of snipe"
                       "Boolean indicating whether circled in GUI"]
-        types [java.lang.Double java.lang.Double java.lang.Integer java.lang.Integer java.lang.Boolean]
+        types [java.lang.Double java.lang.Double java.lang.Integer java.lang.Integer java.lang.Integer java.lang.Boolean] ; CHANGE FOR NEW FIELDS
+        read-write [false false false false false true] ; allow user to turn off circled in UI ; CHANGE FOR NEW FIELDS
         names (mapv name kys)
         num-properties (count kys)
         hidden     (vec (repeat num-properties false))
-        read-write [false false false false true] ; allow user to turn off circled in UI
         get-curr-snipe (fn [] ((:snipes (:popenv @cfg-data$)) id))]
     (reset! (:circled$ (get-curr-snipe)) true) ; make-properties only called by inspector, in which case highlight snipe in UI
     (proxy [Properties] []
@@ -113,7 +95,7 @@
       (getValue [i]
         (let [v ((kys i) (get-curr-snipe))]
           (if (atom? v) @v v)))
-      (setValue [i newval]                  ; allow user to turn off circled in UI
+      (setValue [i newval]                  ; allow user to turn off circled in UI  ; POSS CHANGE FOR NEW FIELDS
         (when (= i circled-idx)             ; returns nil/null for other fields
           (reset! (:circled$ (get-curr-snipe))
                   (Boolean/valueOf newval)))) ; it's always a string that's returned from UI. (Do *not* use (Boolean. newval); it's always truthy in Clojure.)

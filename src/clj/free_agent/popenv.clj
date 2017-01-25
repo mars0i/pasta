@@ -12,7 +12,7 @@
          add-organism-to-rand-loc! add-k-snipes! add-r-snipes! add-mush! 
          maybe-add-mush! add-mushs! move-snipes move-snipe! choose-next-loc
          perceive-mushroom add-to-energy eat-if-appetizing snipes-eat 
-         snipes-die snipes-reproduce cull-snipes)
+         snipes-die snipes-reproduce cull-snipes age-snipes)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TOP LEVEL FUNCTIONS
@@ -60,14 +60,15 @@
                                                      snipe-field 
                                                      mush-field)
         new-snipe-field (snipes-reproduce rng cfg-data$ new-snipe-field) ; birth before death in case birth uses remaining energy
-        [new-snipe-field newly-dead] (snipes-die @cfg-data$ new-snipe-field)
+        [new-snipe-field newly-died] (snipes-die @cfg-data$ new-snipe-field)
         [new-snipe-field newly-culled] (cull-snipes rng @cfg-data$ new-snipe-field)
         new-snipe-field (move-snipes rng @cfg-data$ new-snipe-field)     ; only the living get to move
+        new-snipe-field (age-snipes new-snipe-field)
         snipes (make-snipes-map new-snipe-field)]
     (PopEnv. new-snipe-field 
              new-mush-field 
              snipes 
-             (conj dead-snipes (concat newly-dead newly-culled))))) ; each timestep adds a separate collection of dead snipes
+             (conj dead-snipes (concat newly-died newly-culled))))) ; each timestep adds a separate collection of dead snipes
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; CREATE AND PLACE ORGANISMS
@@ -301,3 +302,17 @@
                                                           (partial sn/make-k-snipe cfg-data$)
                                                           (partial sn/make-r-snipe rng cfg-data$))))))))
     new-snipe-field))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; OTHER CHANGES
+
+(defn age-snipes
+  [snipe-field]
+  (let [old-snipes (.elements snipe-field)
+        new-snipe-field (ObjectGrid2D. snipe-field)]
+    (doseq [snipe old-snipes]
+      (.set new-snipe-field (:x snipe) (:y snipe) (update snipe :age inc)))
+    new-snipe-field))
+
+
