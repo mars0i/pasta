@@ -17,9 +17,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TOP LEVEL FUNCTIONS
 
-(defrecord PopEnv [snipe-field ; ObjectGrid2D
-                   mush-field  ; ObjectGrid2D
-                   snipes])    ; map from ids to snipes
+(defrecord PopEnv [snipe-field   ; ObjectGrid2D
+                   mush-field    ; ObjectGrid2D
+                   snipes        ; map from ids to snipes
+                   dead-snipes]) ; keep a record of dead snipes for later stats TODO
 
 (defn setup-popenv-config!
   [cfg-data$]
@@ -46,7 +47,7 @@
     (.clear snipe-field)
     (add-k-snipes! rng cfg-data$ snipe-field)
     (add-r-snipes! rng cfg-data$ snipe-field)
-    (PopEnv. snipe-field mush-field (make-snipes-map snipe-field))))
+    (PopEnv. snipe-field mush-field (make-snipes-map snipe-field) [])))
 
 (defn next-popenv
   "Given an rng, a simConfigData atom, and a PopEnv, return
@@ -64,7 +65,7 @@
                              (cull-snipes rng @cfg-data$)
                              (move-snipes rng @cfg-data$))     ; only the living get to move
         snipes (make-snipes-map new-snipe-field)]
-    (PopEnv. new-snipe-field new-mush-field snipes)))
+    (PopEnv. new-snipe-field new-mush-field snipes []))) ; TODO
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; CREATE AND PLACE ORGANISMS
@@ -247,11 +248,17 @@
   [cfg-data snipe-field]
   (let [{:keys [env-width env-height]} cfg-data
         new-snipe-field (ObjectGrid2D. env-width env-height)
-        live-snipes (remove #(<= (:energy %) 0) (.elements snipe-field))]
+        [live-snipes newly-dead] (reduce (fn [[living dead] snipe]
+                                           (if (> (:energy snipe) 0)
+                                             [(conj living snipe) dead]
+                                             [living (conj dead snipe)]))
+                                         [[][]]
+                                         (.elements snipe-field))] ; old version: (remove #(<= (:energy %) 0) (.elements snipe-field))]
     (doseq [snipe live-snipes]
       (.set new-snipe-field (:x snipe) (:y snipe) snipe))
-    new-snipe-field))
+    new-snipe-field)) ; TODO
 
+;; TODO
 (defn cull-snipes
   "If number of snipes exceeds max-pop-size calculated during initialization,
   randomly remove enough snipes that the pop size is now equal to max-pop-size."
