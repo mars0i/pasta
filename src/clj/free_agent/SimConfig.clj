@@ -88,7 +88,11 @@
   [cfg-data]
   (println "Final"
            "population size:" (stats/get-pop-size cfg-data)
-           " k-snipe freq:" (stats/get-k-snipe-freq cfg-data)))
+           " k-snipe freq:" (stats/get-k-snipe-freq cfg-data))
+  (println "live:" (into (sorted-map) ; display keys in order
+                         (stats/count-live-snipe-locs cfg-data)))
+  (println "dead:" (into (sorted-map)
+                         (stats/count-dead-snipe-locs cfg-data))))
 
 (defn -start
   "Function that's called to (re)start a new simulation run."
