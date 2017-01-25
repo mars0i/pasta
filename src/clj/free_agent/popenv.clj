@@ -20,7 +20,7 @@
 (defrecord PopEnv [snipe-field   ; ObjectGrid2D
                    mush-field    ; ObjectGrid2D
                    snipes        ; map from ids to snipes
-                   dead-snipes]) ; keep a record of dead snipes for later stats TODO
+                   dead-snipes]) ; keep a record of dead snipes for later stats
 
 (defn setup-popenv-config!
   [cfg-data$]
@@ -260,7 +260,6 @@
       (.set new-snipe-field (:x snipe) (:y snipe) snipe))
     [new-snipe-field newly-dead]))
 
-;; TODO
 (defn cull-snipes
   "If number of snipes exceeds max-pop-size calculated during initialization,
   randomly remove enough snipes that the pop size is now equal to max-pop-size."
