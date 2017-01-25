@@ -86,13 +86,19 @@
 
 (defn report-stats
   [cfg-data]
-  (println "Final"
-           "population size:" (stats/get-pop-size cfg-data)
-           " k-snipe freq:" (stats/get-k-snipe-freq cfg-data))
-  (println "live:" (into (sorted-map) ; display keys in order
-                         (stats/count-live-snipe-locs cfg-data)))
-  (println "dead:" (into (sorted-map)
-                         (stats/count-dead-snipe-locs cfg-data))))
+  (let [pop-size (stats/get-pop-size cfg-data)
+        k-snipe-freq (stats/get-k-snipe-freq cfg-data)
+        live-counts (into (sorted-map) (stats/count-live-snipe-locs cfg-data))
+        dead-counts (into (sorted-map) (stats/count-dead-snipe-locs cfg-data))
+        live-ages (into (sorted-map) (stats/mean-ages-live-snipe-locs cfg-data live-counts))
+        dead-ages (into (sorted-map) (stats/mean-ages-dead-snipe-locs cfg-data dead-counts))]
+    (println "Final"
+             "population size:" pop-size
+             " k-snipe freq:" k-snipe-freq)
+    (println "live counts:" live-counts)
+    (println "dead counts:" dead-counts)
+    (println "live mean ages:" live-ages)
+    (println "dead mean ages:" dead-ages)))
 
 (defn -start
   "Function that's called to (re)start a new simulation run."

@@ -1,5 +1,6 @@
 (ns free-agent.stats
-  (require [free-agent.snipe :as sn]))
+  (require [free-agent.snipe :as sn]
+           [clojure.math.numeric-tower :as math]))
 
 (defn get-pop-size
   [cfg-data]
@@ -35,11 +36,11 @@
           snipes))
 
 (defn count-snipe-locs
-  "Returns a map containing counts for numbers of snipes of the three kinds 
-  in snipes, also classifying r-snipes by the environment (left, right) in
-  which they were found.  Keys are named after snipe classes plus left and 
-  right for r-snipes: :k-snipe, :r-snipe-pref-small-{left,right},
-  :r-snipe-pref-big-{left,right}."
+  "Given a simple collection of snipes, returns a map containing counts 
+  for numbers of snipes of the three kinds in snipes, also classifying 
+  r-snipes by the environment (left, right) in which they were found.  
+  Keys are named after snipe classes plus left and right for r-snipes: 
+  :k-snipe, :r-snipe-pref-small-{left,right}, :r-snipe-pref-big-{left,right}."
   [cfg-data snipes]
   (let [env-center (:env-center cfg-data) ; always = something-and-a-half
         inc-counts (fn [counts s]
@@ -57,7 +58,6 @@
              :r-snipe-pref-big-left 0
              :r-snipe-pref-big-right 0}
             snipes)))
-
  
 (defn count-live-snipe-locs
   [cfg-data]
@@ -68,3 +68,42 @@
   [cfg-data]
   (let [dead-snipes (:dead-snipes (:popenv cfg-data))]
     (count-snipe-locs cfg-data (apply concat dead-snipes))))
+
+(defn mean-ages-locs
+  "Returns a map of mean ages for snipes, with keys as in count-snipe-locs. The
+  counts argument should be the result of count-snipe-locs for the same snipes."
+  [cfg-data counts snipes]
+  (let [env-center (:env-center cfg-data) ; always = something-and-a-half
+        num-snipes (count snipes)
+        sum-ages (fn [sums s]
+                     (cond (sn/k-snipe? s) (update sums :k-snipe + (:age s))
+                           (sn/r-snipe-pref-small? s) (if (< (:x s) env-center)
+                                                        (update sums :r-snipe-pref-small-left + (:age s))
+                                                        (update sums :r-snipe-pref-small-right + (:age s)))
+                           (sn/r-snipe-pref-big? s)   (if (< (:x s) env-center)
+                                                        (update sums :r-snipe-pref-big-left + (:age s))
+                                                        (update sums :r-snipe-pref-big-right + (:age s)))))
+        age-totals (reduce sum-ages 
+                           {:k-snipe 0 
+                            :r-snipe-pref-small-left 0,
+                            :r-snipe-pref-small-right 0 
+                            :r-snipe-pref-big-left 0
+                            :r-snipe-pref-big-right 0}
+                           snipes)]
+    (zipmap (keys age-totals)
+            (map #(if (pos? %2) ; don't divide zero by zero
+                    (long (math/round (/ %1 %2))) ; integer values are close enough, but round returns ugly BigInts
+                    nil)
+                 (vals (into (sorted-map) age-totals))
+                 (vals (into (sorted-map) counts))))))
+
+(defn mean-ages-live-snipe-locs
+  [cfg-data counts]
+  (let [snipes (vals (:snipes (:popenv cfg-data)))]
+    (mean-ages-locs cfg-data counts snipes)))
+
+(defn mean-ages-dead-snipe-locs
+  [cfg-data counts]
+  (let [dead-snipes (:dead-snipes (:popenv cfg-data))]
+    (mean-ages-locs cfg-data counts (apply concat dead-snipes))))
+
