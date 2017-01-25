@@ -1,4 +1,5 @@
-(ns free-agent.stats)
+(ns free-agent.stats
+  (require [free-agent.snipe :as sn]))
 
 (defn get-pop-size
   [cfg-data]
@@ -13,5 +14,3 @@
     (if (pos? pop-size)                   ; when UI first starts, it tries to calc this even though there's no pop, and divs by zero
       (double (/ k-snipe-count pop-size)) 
       0))) ; avoid spurious div by zero at beginning of a run
-
-

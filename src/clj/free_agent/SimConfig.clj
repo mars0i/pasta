@@ -2,7 +2,8 @@
   (:require [clojure.tools.cli]
             [utils.defsimconfig :as defcfg]
             [free-agent.snipe :as sn]
-            [free-agent.popenv :as pe])
+            [free-agent.popenv :as pe]
+            [free-agent.stats :as stats])
   (:import [sim.engine Steppable Schedule]
            [sim.util Interval]
            [ec.util MersenneTwisterFast]
@@ -51,18 +52,11 @@
 
 (defn -getPopSize
   [^SimConfig this]
-  (count (:snipes     ; would it be faster to use (.elements snipe-field)?
-           (:popenv @(.simConfigData this))))) 
+  (stats/get-pop-size @(.simConfigData this)))
 
 (defn -getKSnipeFreq
   [^SimConfig this]
-  (let [count-k-snipes (fn [n id snipe] (if (sn/k-snipe? snipe) (inc n) n))
-        snipes (:snipes (:popenv @(.simConfigData this)))
-        pop-size (count snipes)
-        k-snipe-count (reduce-kv count-k-snipes 0 snipes)]
-    (if (pos? pop-size)                   ; when UI first starts, it tries to calc this even though there's no pop, and divs by zero
-      (double (/ k-snipe-count pop-size)) 
-      0))) ; avoid spurious div by zero at beginning of a run
+  (stats/get-k-snipe-freq @(.simConfigData this)))
 
 
 ;; no good reason to put this into the defsimconfig macro since it doesn't include any
@@ -91,10 +85,10 @@
     (println (map #(str (name %) "=" (% cfg-data)) kys))))
 
 (defn report-final-stats
-  [sim-state cfg-data$]
+  [cfg-data]
   (println "Final"
-           "population size:" (.getPopSize sim-state)
-           " k-snipe freq:" (.getKSnipeFreq sim-state)))
+           "population size:" (stats/get-pop-size cfg-data)
+           " k-snipe freq:" (stats/get-k-snipe-freq cfg-data)))
 
 (defn -start
   "Function that's called to (re)start a new simulation run."
@@ -122,7 +116,7 @@
                                 (when (and (pos? max-ticks) ; run forever if max-ticks = 0
                                            (>= (.getTime schedule) max-ticks)) ; = s/b enough, but >= as failsafe
                                   (.stop stoppable)
-                                  (report-final-states sim-state)
+                                  (report-final-stats @cfg-data$)
                                   (.kill sim-state))))))))) ; end program after cleaning up Mason stuff
 
 ;; https://listserv.gmu.edu/cgi-bin/wa?A2=ind0610&L=MASON-INTEREST-L&D=0&1=MASON-INTEREST-L&9=A&J=on&d=No+Match%3BMatch%3BMatches&z=4&P=14576
