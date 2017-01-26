@@ -3,10 +3,9 @@
 Agent-based simulation with a model of prediction error minimization in
 some agents.
 
-## prediction energy minimzation
-
-AKA free-energy minimization, predictive processing, predictive
-coding. cf. integral control, mean-field, variational methods.
+Prediction energy minimzation: AKA free-energy minimization, predictive
+processing, predictive coding. cf. integral control, mean-field,
+variational methods.
 
 (My starting points are Rafal Bogacz, "A tutorial on the free-energy
 framework for modelling perception and learning", *Journal of
