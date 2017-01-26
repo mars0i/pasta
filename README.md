@@ -55,21 +55,23 @@ environment is narrow and tall.
 
 ## Installation
 
-The core of this simulation is written in Clojure.  However, it also
-uses the MASON agent-based modeling Java library.  
+This program is written in Clojure using the MASON Java library, which
+is a very flexible library for agent-based modeling.
 
-Clone this repo.
-
-Then you'll need to download the MASON jar file mason.19.jar (or a later
-version, probably), and the MASON libraries.tar.gz or libraries.zip
-file.  Move the MASON jar file into the lib directory under this
-project's directory. Unpack the contents of the libraries file into this
-project as well.
+To install, once you clone this repo:
 
 You need Leiningen (http://leiningen.org).  Then change to the root
 directory of the repo, and run 'lein deps'.  This will install the right
 version of Clojure, if necessary, along with a number of Clojure
 libraries and such that free-agent needs.
+
+You'll also need to download the MASON jar file mason.19.jar (or a later
+version, probably), and MASON libraries.tar.gz or libraries.zip file.
+Move the MASON jar file into the lib directory under this project's
+directory. Unpack the contents of the libraries file into this project
+as well.   You may want to get the MASON-associated 3D libs, too, in
+order to get rid of a warning message during startup.  Place these
+jars in the same places as the others.
 
 ## Running
 
