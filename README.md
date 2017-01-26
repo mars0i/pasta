@@ -63,27 +63,24 @@ if you want to have a GUI, but that it's also possible to run it without
 MASON.  Either way, it's possible to run it in a Clojure REPL, which
 allows you to inspect data, write it out, plot with Incanter, etc.
 without first writing and compiling custom data examination functions in
-your source files.
+your source files.  However, you'll still need MASON to compile this
+even if you don't use any of MASON's special capabilities.  It turned out
+to be easier to set the code up that way.
 
-## Setup
+## Installation
 
-To use this with MASON, you'll need to download the MASON jar file
-mason.19.jar (or a later version, probably), and the MASON
-libraries.tar.gz or libraries.zip file.  Move the MASON jar file into
-the lib directory under this project's directory. Unpack the contents of
-the libraries file into this project as well.
+Clone this repo.
 
-To use this without MASON, you still need to download the MASON jar file,
-because I use its MersenneTwisterFast random number generator.
-Alternatively, copy [MersenneTwisterFast.java](https://cs.gmu.edu/~sean/research/mersenne/MersenneTwisterFast.java)
-from [Sean Luke's website](https://cs.gmu.edu/~sean), place it in
-src/java/ec/util, and uncomment this line in project.clj:
+Then you'll need to download the MASON jar file mason.19.jar (or a later
+version, probably), and the MASON libraries.tar.gz or libraries.zip
+file.  Move the MASON jar file into the lib directory under this
+project's directory. Unpack the contents of the libraries file into this
+project as well.
 
-    :java-source-paths ["src/java"]
-
-You'll also need Leiningen (http://leiningen.org).  Then you can run
-the model with one of the scripts in src/scripts.  `gui` will run the
-GUI version of the model, and `nogui` will run it without a GUI.
+You need Leiningen (http://leiningen.org).  Then change to the root
+directory of the repo, and run 'lein deps'.  This will install the right
+version of Clojure, if necessary, along with a number of Clojure
+libraries and such that free-agent needs.
 
 ## Running
 
@@ -108,21 +105,21 @@ program:
     (def cfg-data$ (.simConfigData cfg))
 
 This defines `cfg-data$` as a Clojure `atom` containing structure
-(essentially a Clojure map) with various sorts of parameters and runtime
-state.  (I follow a non-standard convention of naming variables
-containing atoms with a dollar sign character as suffix.) For example,
-all currently living snipes are listed in map called `:snipes`, keyed
-by id, in
-the `:popen` structure in the structure to which `cfg-data$` refers.
-For example, since ids are assigned sequentially, the largest id is
-the count of all snipes that have lived:
+(essentially a Clojure map) with various sorts of parameters and
+runtime state.  (I follow a non-standard convention of naming
+variables containing atoms with a dollar sign character as suffix.)
+For example, all currently living snipes are listed in map called
+`:snipes`, keyed by id, in the `:popenv` structure in the structure to
+which `cfg-data$` refers. For example, since ids are assigned
+sequentially, the largest id is the count of all snipes that have
+lived:
 
     (apply max (keys (:snipes (:popenv @cfg-data$))))
 
 *Warning:* Unfortunately, snipes contain a reference to cfg-data$ itself,
 and by default the REPL will try to list the contents of atoms, so if
-you allow any snipe to print out to the terminal, you'll set off an
-infinite loop that should result in a stack overflow.  Sorry about that!
+you allow any snipe to print to the terminal, you'll set off an
+infinite loop that will result in a stack overflow.  Sorry about that!
 
 (4) (TODO: Explain how to run by hand in the REPL without interacting
 with the GUI.) 
