@@ -55,9 +55,9 @@ environment is narrow and tall.
 
 ## Installation
 
-This program is written in [Clojure](https://clojure.org) using
-[MASON](http://cs.gmu.edu/~eclab/projects/mason), which is a a Java
-library for agent-based modeling.
+This program is written in the [Clojure](https://clojure.org) language
+using [MASON](http://cs.gmu.edu/~eclab/projects/mason).  MASON is a
+Java library for agent-based modeling.
 
 To install, once you clone this repo:
 
