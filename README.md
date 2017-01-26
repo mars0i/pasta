@@ -60,8 +60,10 @@ The core of this simulation is written in Clojure.  However, I also use
 MASON agent-based modeling Java library.  My intention is that you can
 use this software with [MASON](http://cs.gmu.edu/~eclab/projects/mason/)
 if you want to have a GUI, but that it's also possible to run it without
-MASON.  This means you don't have a GUI, but you'll be able to inspect
-the data, write it out, and plot it with Incanter.
+MASON.  Either way, it's possible to run it in a Clojure REPL, which
+allows you to inspect data, write it out, plot with Incanter, etc.
+without first writing and compiling custom data examination functions in
+your source files.
 
 ## Setup
 
