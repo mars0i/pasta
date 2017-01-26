@@ -1,17 +1,59 @@
 # free-agent
 
-Agent-based simulation with free energy minimization within agents.
+Agent-based simulation with a model of prediction error minimization in
+some agents.
 
-## free energy minimzation
+## prediction energy minimzation
 
-AKA prediction-error minimization, predictive processing, predictive
-coding. cf. integral control.
+AKA free-energy minimization, predictive processing, predictive
+coding. cf. integral control, mean-field, variational methods.
 
-(My starting point is this excellent article:
-Rafal Bogacz, "A tutorial on the free-energy framework for modelling
-perception and learning", *Journal of Mathematical Psychology*,
-Available online 14 December 2015, ISSN 0022-2496,
-http://dx.doi.org/10.1016/j.jmp.2015.11.003 .)
+(My starting points are Rafal Bogacz, "A tutorial on the free-energy
+framework for modelling perception and learning", *Journal of
+Mathematical Psychology*, Available online 14 December 2015, ISSN
+0022-2496, http://dx.doi.org/10.1016/j.jmp.2015.11.003, and
+  Harriet Feldman and Karl Friston, "Attention, Uncertainty, and
+  Free-Energy", *Frontiers in Human Neuroscience* 4, 2010,
+http://dx.doi.org/10.3389/fnhum.2010.00215.)
+
+## Overview of simulation
+
+The point is to compare two evolutionary strategies and see which is
+selected for under specific parameter combinations.  One strategy, a
+version of what's called a "K strategy", here uses a model of learning
+based on prediction error minimization.  The other strategy, a variant
+of what's known as an r strategy, here produces offspring that are
+simply predisposed to certain behaviors, and don't learn.  This can be
+selected for under some conditions.
+
+There are two contiguous environments.  In the left side hand
+environment, small mushrooms are nutrious (yellow) and large mushrooms
+are poisonous (gray-brown-green).  In the right side environment, large
+mushrooms are nutritious and small mushrooms are poisonous.
+
+Snipes gain energy from eating nutritious mushrooms, and lose energy
+from eating poisonous mushrooms.  Snipes that accumulate sufficient
+energy give birth, and lose energy as a result of the birth.  All
+newborn snipes are placed in a random location at birth.
+
+k-snipes (red circles) initially eat mushrooms randomly, but learn to
+eat mushrooms whose size (normally distributed) signal indicates that
+they are probably nutrious.
+
+r-snipes (blue squares and triangles) never learn.  They produce
+offspring that exhibit developmental differences: Roughly half of any
+snipe's offspring (squares) always prefer large mushrooms; the others
+(triangles) always prefer small mushrooms.  Those suited to the
+environment in which they live tend to survive and reproduce, and those
+unsuited to their environment tend to die before reproduction.
+
+Snipes sometimes wander into the other environment.  (This is the way
+that an r-snipe born into the "wrong" environment might survive, or that
+one born into the "right" environment might die.)  The likelihood of
+this occurring depends on the shape of the environment. If it's very
+wide and not very tall, this happens less often than when the
+environment is narrow and tall.
+
 
 ## MASON
 
