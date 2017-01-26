@@ -55,7 +55,7 @@ environment is narrow and tall.
 
 ## Installation
 
-This program is written in Clojure using
+This program is written in [Clojure](https://clojure.org) using
 [MASON](http://cs.gmu.edu/~eclab/projects/mason), which is a a Java
 library for agent-based modeling.
 
