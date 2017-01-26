@@ -40,9 +40,9 @@
 
 (defn make-k-snipe 
   ([cfg-data$ x y]
-   (let [{:keys [initial-energy k-snipe-prior]} @cfg-data$]
-     (make-k-snipe cfg-data$ initial-energy k-snipe-prior x y)))
-  ([cfg-data$ energy prior x y]
+   (let [{:keys [initial-energy]} @cfg-data$]
+     (make-k-snipe cfg-data$ initial-energy x y)))
+  ([cfg-data$ energy x y]
    (KSnipe. (next-id)
             perc/k-snipe-pref ; perceive: function for responding to mushrooms
             0.0      ; mush-pref begins with indifference
