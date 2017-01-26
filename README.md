@@ -19,11 +19,14 @@ http://dx.doi.org/10.3389/fnhum.2010.00215.)
 
 The point is to compare two evolutionary strategies and see which is
 selected for under specific parameter combinations.  One strategy, a
-version of what's called a "K strategy", here uses a model of learning
+variant of what's called a "K strategy", here uses a model of learning
 based on prediction error minimization.  The other strategy, a variant
 of what's known as an r strategy, here produces offspring that are
-simply predisposed to certain behaviors, and don't learn.  This can be
-selected for under some conditions.
+simply predisposed to certain behaviors and don't learn.  The *general*
+concepts are that r strategists tend to produce more offspring, but many
+of them die without reproduction, while K strategists are less likely to
+die, but produce fewer offspring.  Roughly, an r strategy prioritizes
+quantity over quality, while a K strategy does the opposite.
 
 There are two contiguous environments.  In the left side hand
 environment, small mushrooms are nutrious (yellow) and large mushrooms
