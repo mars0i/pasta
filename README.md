@@ -53,21 +53,10 @@ this occurring depends on the shape of the environment. If it's very
 wide and not very tall, this happens less often than when the
 environment is narrow and tall.
 
-
-## MASON
-
-The core of this simulation is written in Clojure.  However, I also use
-MASON agent-based modeling Java library.  My intention is that you can
-use this software with [MASON](http://cs.gmu.edu/~eclab/projects/mason/)
-if you want to have a GUI, but that it's also possible to run it without
-MASON.  Either way, it's possible to run it in a Clojure REPL, which
-allows you to inspect data, write it out, plot with Incanter, etc.
-without first writing and compiling custom data examination functions in
-your source files.  However, you'll still need MASON to compile this
-even if you don't use any of MASON's special capabilities.  It turned out
-to be easier to set the code up that way.
-
 ## Installation
+
+The core of this simulation is written in Clojure.  However, it also
+uses the MASON agent-based modeling Java library.  
 
 Clone this repo.
 
