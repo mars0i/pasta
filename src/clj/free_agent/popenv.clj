@@ -24,11 +24,11 @@
 
 (defn setup-popenv-config!
   [cfg-data$]
-  (let [{:keys [env-width env-height max-proportion mush-low-size mush-high-size]} @cfg-data$]
+  (let [{:keys [env-width env-height carrying-proportion mush-low-size mush-high-size]} @cfg-data$]
     (swap! cfg-data$ assoc :mush-size-scale (/ 1.0 (- mush-high-size mush-low-size)))
     (swap! cfg-data$ assoc :mush-mid-size (/ (+ mush-low-size mush-high-size) 2.0))
     (swap! cfg-data$ assoc :env-center (/ env-width 2.0))
-    (swap! cfg-data$ assoc :max-pop-size (int (* env-width env-height max-proportion)))))
+    (swap! cfg-data$ assoc :max-pop-size (int (* env-width env-height carrying-proportion)))))
 
 (defn make-snipes-map
   "Make a map from snipe ids to snipes."
