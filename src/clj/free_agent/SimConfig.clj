@@ -39,7 +39,6 @@
                       [carrying-proportion 0.25 double [0.1 0.9]   ["-c" "Snipes are randomly culled when number exceed this times # of cells." :parse-fn #(Double. %)]]
                       [env-width          88    long   false       ["-W" "How wide is env?  Must be an even number." :parse-fn #(Long. %)]] ; can be set from command line but not in running app
                       [env-height         40    long   false       ["-T" "How tall is env? Should be an even number." :parse-fn #(Long. %)]] ; ditto
-                      ;; Do not put the false entries mixed in above.  It confuses defsimconfig or the gui
                       [max-ticks           0    long   false       ["-t" "Stop after this number of timesteps have run, or never if 0." :parse-fn #(Long. %)]]
                       [env-display-size   12.0  double false       ["-g" "How large to display the env in gui by default." :parse-fn #(Double. %)]]
                       [max-pop-size        0    long   false]
