@@ -24,7 +24,7 @@
 ;;                 field name      initial-value type  in ui? with range?
 (defcfg/defsimconfig [[num-k-snipes       50    long   [1 500]     ["-k" "Size of k-snipe subpopulation" :parse-fn #(Long. %)]]
                       [num-r-snipes       50    long   [1 500]     ["-r" "Size of r-snipe subpopulation" :parse-fn #(Long. %)]]
-                      [mush-prob           0.1  double [0.0 1.0]   ["-f" "Average frequency of mushrooms." :parse-fn #(Double. %)]]
+                      [mush-prob           0.2  double [0.0 1.0]   ["-f" "Average frequency of mushrooms." :parse-fn #(Double. %)]]
                       [mush-low-size       4.0  double true        ["-s" "Size of small mushrooms (mean of light distribution)" :parse-fn #(Double. %)]]
                       [mush-high-size     16.0  double true        ["-l" "Size of large mushrooms (mean of light distribution)" :parse-fn #(Double. %)]]
                       [mush-sd             2.0  double true        ["-d" "Standard deviation of mushroom light distribution" :parse-fn #(Double. %)]]
