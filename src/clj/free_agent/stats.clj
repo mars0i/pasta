@@ -108,19 +108,22 @@
     (mean-ages-locs cfg-data counts (apply concat dead-snipes))))
 
 (defn report-stats
-  [cfg-data]
-  (let [pop-size (get-pop-size cfg-data)
-        k-snipe-freq (get-k-snipe-freq cfg-data)
-        live-counts (into (sorted-map) (count-live-snipe-locs cfg-data))
-        dead-counts (into (sorted-map) (count-dead-snipe-locs cfg-data))
-        live-ages (into (sorted-map) (mean-ages-live-snipe-locs cfg-data live-counts))
-        dead-ages (into (sorted-map) (mean-ages-dead-snipe-locs cfg-data dead-counts))]
-    (println "Population size:" pop-size
-             " k-snipe freq:" k-snipe-freq)
-    (println "Live counts:" live-counts)
-    (println "Dead counts:" dead-counts)
-    (println "Live mean ages:" live-ages)
-    (println "Dead mean ages:" dead-ages)))
+  ([cfg-data schedule] 
+   (print "At step" (.getSteps schedule) "")
+   (report-stats cfg-data))
+  ([cfg-data]
+   (let [pop-size (get-pop-size cfg-data)
+         k-snipe-freq (get-k-snipe-freq cfg-data)
+         live-counts (into (sorted-map) (count-live-snipe-locs cfg-data))
+         dead-counts (into (sorted-map) (count-dead-snipe-locs cfg-data))
+         live-ages (into (sorted-map) (mean-ages-live-snipe-locs cfg-data live-counts))
+         dead-ages (into (sorted-map) (mean-ages-dead-snipe-locs cfg-data dead-counts))]
+     (println "Population size:" pop-size
+              " k-snipe freq:" k-snipe-freq)
+     (println "Live counts:" live-counts)
+     (println "Dead counts:" dead-counts)
+     (println "Live mean ages:" live-ages)
+     (println "Dead mean ages:" dead-ages))))
 
 (defn report-params
   "Print parameters in cfg-data to standard output."
