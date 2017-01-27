@@ -82,22 +82,6 @@
   (let [kys (sort (keys cfg-data))]
     (println (map #(str (name %) "=" (% cfg-data)) kys))))
 
-(defn report-stats
-  [cfg-data]
-  (let [pop-size (stats/get-pop-size cfg-data)
-        k-snipe-freq (stats/get-k-snipe-freq cfg-data)
-        live-counts (into (sorted-map) (stats/count-live-snipe-locs cfg-data))
-        dead-counts (into (sorted-map) (stats/count-dead-snipe-locs cfg-data))
-        live-ages (into (sorted-map) (stats/mean-ages-live-snipe-locs cfg-data live-counts))
-        dead-ages (into (sorted-map) (stats/mean-ages-dead-snipe-locs cfg-data dead-counts))]
-    (println "Final"
-             "population size:" pop-size
-             " k-snipe freq:" k-snipe-freq)
-    (println "live counts:" live-counts)
-    (println "dead counts:" dead-counts)
-    (println "live mean ages:" live-ages)
-    (println "dead mean ages:" dead-ages)))
-
 (defn -start
   "Function that's called to (re)start a new simulation run."
   [^SimConfig this]
@@ -122,9 +106,9 @@
                             (step [this sim-state]
                               (let [max-ticks (:max-ticks @cfg-data$)]
                                 (when (and (pos? max-ticks) ; run forever if max-ticks = 0
-                                           (>= (.getTime schedule) max-ticks)) ; = s/b enough, but >= as failsafe
+                                           (>= (.getSteps schedule) max-ticks)) ; = s/b enough, but >= as failsafe
                                   (.stop stoppable)
-                                  (report-stats @cfg-data$)
+                                  (stats/report-stats @cfg-data$)
                                   (.kill sim-state))))))))) ; end program after cleaning up Mason stuff
 
 ;; https://listserv.gmu.edu/cgi-bin/wa?A2=ind0610&L=MASON-INTEREST-L&D=0&1=MASON-INTEREST-L&9=A&J=on&d=No+Match%3BMatch%3BMatches&z=4&P=14576

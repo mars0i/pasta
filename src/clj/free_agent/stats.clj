@@ -107,3 +107,17 @@
   (let [dead-snipes (:dead-snipes (:popenv cfg-data))]
     (mean-ages-locs cfg-data counts (apply concat dead-snipes))))
 
+(defn report-stats
+  [cfg-data]
+  (let [pop-size (get-pop-size cfg-data)
+        k-snipe-freq (get-k-snipe-freq cfg-data)
+        live-counts (into (sorted-map) (count-live-snipe-locs cfg-data))
+        dead-counts (into (sorted-map) (count-dead-snipe-locs cfg-data))
+        live-ages (into (sorted-map) (mean-ages-live-snipe-locs cfg-data live-counts))
+        dead-ages (into (sorted-map) (mean-ages-dead-snipe-locs cfg-data dead-counts))]
+    (println "population size:" pop-size
+             " k-snipe freq:" k-snipe-freq)
+    (println "live counts:" live-counts)
+    (println "dead counts:" dead-counts)
+    (println "live mean ages:" live-ages)
+    (println "dead mean ages:" dead-ages)))
