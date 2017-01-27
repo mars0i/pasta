@@ -16,7 +16,7 @@
 ;; Generate SimConfig class as subclass of SimState using genclass, with an init 
 ;; function, import statement, and Bean/MASON field accessors.
 ;; To see what code will be generated, try this in a repl:
-;;    (require '[utils.defsimconfig :as cfg])
+;;    (require '[utils.defsimconfig :as defcfg])
 ;;    (pprint (macroexpand-1 '<insert defsimconfig call>))
 
 (def commandline (atom nil)) ; Needed by defsimconfig and other code below if we're defining commandline options
