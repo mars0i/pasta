@@ -115,9 +115,16 @@
         dead-counts (into (sorted-map) (count-dead-snipe-locs cfg-data))
         live-ages (into (sorted-map) (mean-ages-live-snipe-locs cfg-data live-counts))
         dead-ages (into (sorted-map) (mean-ages-dead-snipe-locs cfg-data dead-counts))]
-    (println "population size:" pop-size
+    (println "Population size:" pop-size
              " k-snipe freq:" k-snipe-freq)
-    (println "live counts:" live-counts)
-    (println "dead counts:" dead-counts)
-    (println "live mean ages:" live-ages)
-    (println "dead mean ages:" dead-ages)))
+    (println "Live counts:" live-counts)
+    (println "Dead counts:" dead-counts)
+    (println "Live mean ages:" live-ages)
+    (println "Dead mean ages:" dead-ages)))
+
+(defn report-params
+  "Print parameters in cfg-data to standard output."
+  [cfg-data]
+  (let [kys (sort (keys cfg-data))]
+    (print "Parameters: ")
+    (println (map #(str (name %) "=" (% cfg-data)) kys))))

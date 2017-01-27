@@ -76,12 +76,6 @@
   (sim.engine.SimState/doLoop free-agent.SimConfig (into-array String args)) ;; FIXME RUNTIME EXCEPTION HERE
   (System/exit 0))
 
-(defn report-params
-  "Print parameters in cfg-data to standard output."
-  [cfg-data]
-  (let [kys (sort (keys cfg-data))]
-    (println (map #(str (name %) "=" (% cfg-data)) kys))))
-
 (defn -start
   "Function that's called to (re)start a new simulation run."
   [^SimConfig this]
@@ -93,7 +87,6 @@
         ^SimConfigData cfg-data$ (.simConfigData this)
         ^MersenneTwisterFast rng (.-random this)]
     (pe/setup-popenv-config! cfg-data$)
-    ;(report-params @cfg-data$)
     (swap! cfg-data$ assoc :popenv (pe/make-popenv rng cfg-data$)) ; create new popenv
     ;; Run it:
     (let [stoppable (.scheduleRepeating schedule Schedule/EPOCH 0 ; epoch = starting at beginning, 0 means run this first during timestep
@@ -108,6 +101,8 @@
                                 (when (and (pos? max-ticks) ; run forever if max-ticks = 0
                                            (>= (.getSteps schedule) max-ticks)) ; = s/b enough, but >= as failsafe
                                   (.stop stoppable)
+                                  (println "Stopping at step" (.getSteps schedule))
+                                  (stats/report-params @cfg-data$)
                                   (stats/report-stats @cfg-data$)
                                   (.kill sim-state))))))))) ; end program after cleaning up Mason stuff
 
