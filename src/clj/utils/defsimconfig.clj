@@ -170,7 +170,7 @@
          ui-field-syms# (map first ui-fields#)
          ui-field-types# (map third ui-fields#)
          ui-field-keywords# (map keyword ui-field-syms#)
-         accessor-stubs# (map hyphed-sym-to-studly-str field-syms#)
+         accessor-stubs# (map hyphed-sym-to-studly-str ui-field-syms#)
          get-syms#  (map (partial prefix-sym "get") accessor-stubs#)
          set-syms#  (map (partial prefix-sym "set") accessor-stubs#)
          -get-syms# (map (partial prefix-sym "-") get-syms#)
