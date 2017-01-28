@@ -115,10 +115,10 @@
   The constructed long-option string will have the form 
   \"--key-sym <val-type>\"."
   [field]
-  (let [[key-sym _ val-type _ [short-opt & rest-of-cli-spec]] field]
+  (let [[key-sym init val-type _ [short-opt & rest-of-cli-spec]] field]
     (when short-opt
       (into [short-opt 
-             (str "--" key-sym " <" val-type ">")]
+             (str "--" key-sym " <" val-type "> (" init ")")]
             rest-of-cli-spec))))
 
 (defn get-cli-specs
@@ -175,7 +175,7 @@
          field-inits# (map field-init fields)
          ui-fields# (get-ui-fields fields)
          ui-field-syms# (map field-sym ui-fields#)
-         ui-field-inits# (map field-init ui-fields#)
+         ;ui-field-inits# (map field-init ui-fields#)
          ui-field-types# (map field-type ui-fields#)
          ui-field-keywords# (map keyword ui-field-syms#)
          accessor-stubs# (map hyphed-sym-to-studly-str ui-field-syms#)
