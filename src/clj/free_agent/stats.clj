@@ -53,7 +53,7 @@
                                                         (update counts :r-snipe-pref-big-right inc))))]
     (reduce inc-counts
             {:k-snipe 0 
-             :r-snipe-pref-small-left 0,
+             :r-snipe-pref-small-left 0
              :r-snipe-pref-small-right 0 
              :r-snipe-pref-big-left 0
              :r-snipe-pref-big-right 0}
@@ -90,7 +90,7 @@
                             :r-snipe-pref-big-left 0
                             :r-snipe-pref-big-right 0}
                            snipes)]
-    (zipmap (keys age-totals)
+    (zipmap (sort (keys age-totals)) ; make sure all keys are in same order
             (map #(if (pos? %2) ; don't divide zero by zero
                     (long (math/round (/ %1 %2))) ; integer values are close enough, but round returns ugly BigInts
                     nil)
