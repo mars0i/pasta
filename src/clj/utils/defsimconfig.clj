@@ -52,6 +52,13 @@
     (nth xs 4)
     nil))
 
+;; Positional function abbreviations for accessing components 
+;; of the fields argument below:
+(def field-sym  first)
+(def field-init second)
+(def field-type third)
+(def field-ui?  fourth)
+
 (defn get-class-prefix
   "Given a Java/Clojure class identifier symbol or string, or class object (found
   e.g. in *ns*), returns a string containing only the path part before the last 
@@ -83,12 +90,13 @@
   [get-syms set-syms classes]
   (mapcat (fn [get-sym set-sym cls] [[get-sym [] cls] [set-sym [cls] 'void]])
                get-syms set-syms classes))
+
 (defn get-ui-fields
   [fields]
   "Given a fields argument to defsimconfig, return a sequence containing 
   only those field specifications suitable for modification in the UI.
   These are those have a truthy fourth element"
-    (filter fourth fields)) ; i.e. 
+    (filter field-ui? fields)) ; i.e. 
 
 (defn get-range-fields
   "Given a fields argument to defsimconfig, return a sequence containing 
@@ -96,7 +104,7 @@
   range of values for the field--i.e. those field specs that have a sequence,
   presumably with exactly two elements, as the fourth element."
   [fields]
-  (filter (comp sequential? fourth) fields))
+  (filter (comp sequential? field-ui?) fields))
 
 (defn make-cli-spec
   "If a partial cli specification vector is present as the fifth element
@@ -139,7 +147,6 @@
             (println "-help (note single dash): Print help message for MASON.")
             (System/exit 0)))))))
 
-
 ;; TODO add type annotations. (maybe iff they're symbols??)
 ;; Maybe some of gensym pound signs are overkill. Can't hurt?
 (defmacro defsimconfig
@@ -164,11 +171,12 @@
   Note: SimConfig must be aot-compiled in order for gen-class to work."
   [fields & addl-gen-class-opts]
    (let [addl-opts-map (apply hash-map addl-gen-class-opts)
-         field-syms# (map first fields)
-         field-inits# (map second fields)
+         field-syms# (map field-sym fields)
+         field-inits# (map field-init fields)
          ui-fields# (get-ui-fields fields)
-         ui-field-syms# (map first ui-fields#)
-         ui-field-types# (map third ui-fields#)
+         ui-field-syms# (map field-sym ui-fields#)
+         ui-field-inits# (map field-init ui-fields#)
+         ui-field-types# (map field-type ui-fields#)
          ui-field-keywords# (map keyword ui-field-syms#)
          accessor-stubs# (map hyphed-sym-to-studly-str ui-field-syms#)
          get-syms#  (map (partial prefix-sym "get") accessor-stubs#)
@@ -180,7 +188,7 @@
                         range-fields#)
          -dom-syms# (map (partial prefix-sym "-") dom-syms#)
          dom-keywords# (map keyword dom-syms#)
-         ranges# (map fourth range-fields#)
+         ranges# (map field-ui? range-fields#)
          class-prefix (get-class-prefix *ns*)
          qualified-cfg-class# (symbol (str class-prefix "." cfg-class-sym))
          qualified-data-class# (symbol (str class-prefix "." data-class-sym))
