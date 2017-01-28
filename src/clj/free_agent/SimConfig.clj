@@ -37,6 +37,7 @@
                       [birth-cost          5.0  double [0.0 10.0]  ["-o" "Energetic cost of giving birth to one offspring" :parse-fn #(Double. %)]]
                       [max-energy         30.0  double [1.0 100.0] ["-x" "Max energy that a snipe can have." :parse-fn #(Double. %)]]
                       [carrying-proportion 0.25 double [0.1 0.9]   ["-c" "Snipes are randomly culled when number exceed this times # of cells." :parse-fn #(Double. %)]]
+                      [report-every        0    long   true        ["-i" "Report basic stats every i ticks after the first one (0: never.)" :parse-fn #(Long. %)]]
                       [env-width          88    long   false       ["-W" "How wide is env?  Must be an even number." :parse-fn #(Long. %)]] ; can be set from command line but not in running app
                       [env-height         40    long   false       ["-T" "How tall is env? Should be an even number." :parse-fn #(Long. %)]] ; ditto
                       [max-ticks           0    long   false       ["-t" "Stop after this number of timesteps have run, or never if 0." :parse-fn #(Long. %)]]
@@ -88,21 +89,31 @@
     (pe/setup-popenv-config! cfg-data$)
     (swap! cfg-data$ assoc :popenv (pe/make-popenv rng cfg-data$)) ; create new popenv
     ;; Run it:
-    (let [stoppable (.scheduleRepeating schedule Schedule/EPOCH 0 ; epoch = starting at beginning, 0 means run this first during timestep
+    (let [report-every (double (:report-every @cfg-data$))
+          max-ticks (:max-ticks @cfg-data$)
+          stoppable (.scheduleRepeating schedule Schedule/EPOCH 0 ; epoch = starting at beginning, 0 means run this first during timestep
                         (reify Steppable 
                           (step [this sim-state]
                             (swap! cfg-data$ update :popenv (partial pe/next-popenv rng cfg-data$)))))]
-      ;; Stop simulation when condition satisfied:
-      (.scheduleRepeating schedule Schedule/EPOCH 1 ; 1 = i.e. after the previous Steppable, which runs the simulation
+      ;; Stop simulation when condition satisfied (TODO will add additional conditions later):
+      (.scheduleRepeating schedule Schedule/EPOCH 1 ; 1 = i.e. after main previous Steppable that runs the simulation
                           (reify Steppable
                             (step [this sim-state]
-                              (let [max-ticks (:max-ticks @cfg-data$)]
                                 (when (and (pos? max-ticks) ; run forever if max-ticks = 0
                                            (>= (.getSteps schedule) max-ticks)) ; = s/b enough, but >= as failsafe
                                   (.stop stoppable)
                                   (stats/report-params @cfg-data$)
                                   (stats/report-stats @cfg-data$ schedule)
-                                  (.kill sim-state))))))))) ; end program after cleaning up Mason stuff
+                                  (.kill sim-state))))) ; end program after cleaning up Mason stuff
+      ;; maybe report stats periodically
+      (when (pos? report-every)
+        (.scheduleRepeating schedule report-every 1 ; first tick to report at; ordering within tick
+                            (reify Steppable
+                              (step [this sim-state]
+                                (when (< report-every max-ticks) ; don't report if this is the last tick
+                                  (stats/report-stats @cfg-data$ schedule)
+                                  (println))))
+                            report-every))))) ; repeat this often
 
 ;; https://listserv.gmu.edu/cgi-bin/wa?A2=ind0610&L=MASON-INTEREST-L&D=0&1=MASON-INTEREST-L&9=A&J=on&d=No+Match%3BMatch%3BMatches&z=4&P=14576
 ;; 1. Make a Steppable which shuts down the simulation.
