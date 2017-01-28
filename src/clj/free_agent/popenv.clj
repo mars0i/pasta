@@ -187,7 +187,8 @@
                             curr-x curr-y
                             1 Grid2D/TOROIDAL false  ; immediate neighbors, toroidally, don't include me
                             x-coord-bag y-coord-bag) ; will hold coords of neighbors
-    (let [candidate-locs (for [[x y] (map vector (.toIntegerArray x-coord-bag)  ; x-pos, y-pos have to be IntBags
+    (let [candidate-locs (for [[x y] (map vector 
+                                          (.toIntegerArray x-coord-bag)  ; x-pos, y-pos have to be IntBags
                                           (.toIntegerArray y-coord-bag)) ; but these are not ISeqs like Java arrays
                                :when (not (.get snipe-field x y))] ; when cell is empty
                            [x y])]
