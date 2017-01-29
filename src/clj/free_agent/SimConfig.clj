@@ -38,8 +38,8 @@
                       [max-energy         30.0  double [1.0 100.0] ["-x" "Max energy that a snipe can have." :parse-fn #(Double. %)]]
                       [carrying-proportion 0.25 double [0.1 0.9]   ["-c" "Snipes are randomly culled when number exceed this times # of cells." :parse-fn #(Double. %)]]
                       [report-every        0    long   true        ["-i" "Report basic stats every i ticks after the first one (0: never.)" :parse-fn #(Long. %)]]
-                      [env-width          88    long   false       ["-W" "How wide is env?  Must be an even number." :parse-fn #(Long. %)]] ; can be set from command line but not in running app
-                      [env-height         40    long   false       ["-T" "How tall is env? Should be an even number." :parse-fn #(Long. %)]] ; ditto
+                      [env-width          88    long   false       ["-w" "Width of env.  Must be an even number." :parse-fn #(Long. %)]] ; can be set from command line but not in running app
+                      [env-height         40    long   false       ["-h" "Height of env. Should be an even number." :parse-fn #(Long. %)]] ; ditto
                       [max-ticks           0    long   false       ["-t" "Stop after this number of timesteps have run, or never if 0." :parse-fn #(Long. %)]]
                       [env-display-size   12.0  double false       ["-g" "How large to display the env in gui by default." :parse-fn #(Double. %)]]
                       [max-pop-size        0    long   false]
