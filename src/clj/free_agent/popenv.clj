@@ -125,7 +125,9 @@
 ;; and reuse them?  (If so, be careful about their deaths.)
 (defn add-mushs!
   "For each patch in mush-field, optionally add a new mushroom, with 
-  probability (:mush-prob cfg-data)."
+  probability (:mush-prob cfg-data).  NOTE: Doesn't check for an existing
+  mushroom in the patch: Will simply clobber whatever mushroom is there,
+  if any."
   [rng cfg-data field]
   (let [{:keys [env-width env-height mush-prob
                 mush-low-size mush-high-size mush-sd 
