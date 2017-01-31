@@ -102,6 +102,7 @@
   (let [{:keys [env-width env-height num-r-snipes]} @cfg-data$]
     (dotimes [_ num-r-snipes]
       (add-organism-to-rand-loc! rng field env-width env-height 
+                                 (organism-setter (partial sn/make-r-snipe rng cfg-data$))))))
 
 ;; Do I really need so many mushrooms?  They don't change.  Couldn't I just define four mushrooms,
 ;; and reuse them?  (If so, be careful about their deaths.)
@@ -122,7 +123,6 @@
   [rng cfg-data field x y]
   (when (< (ran/next-double rng) (:mush-prob cfg-data)) ; flip biased coin to decide whether to grow a mushroom
     (add-mush! rng cfg-data field x y)))
-                                 (organism-setter (partial sn/make-r-snipe rng cfg-data$))))))
 
 (defn add-mush!
   [rng cfg-data field x y]
