@@ -2,7 +2,8 @@
   (:require [free-agent.snipe :as sn]
             [free-agent.mush :as mu]
             [utils.random :as ran]
-            [utils.random-utils :as ranu])
+            [utils.random-utils :as ranu]
+            [clojure.math.numeric-tower :as math])
   (:import [sim.field.grid Grid2D ObjectGrid2D]
            [sim.util IntBag]))
 
@@ -79,29 +80,38 @@
     (.set field x y (organism-maker x y)))))
 
 (defn add-organism-to-rand-loc!
-  "Create and add an organism to field using organism-maker, which expects 
+  "Create and add an organism to field using organism-setter!, which expects 
   x and y coordinates as arguments.  Looks for an empty field, so could
-  be inefficient if a large proportion of cells in the field are filled."
-  [rng field width height organism-setter!]
+  be inefficient if a large proportion of cells in the field are filled.
+  If :left or :right is passed for subenv, only looks for locations in
+  the left or right portion of the world."
+  ([rng cfg-data field width height organism-setter!]
+   (add-organism-to-rand-loc! rng cfg-data field width height organism-setter! nil))
+  ([rng cfg-data field width height organism-setter! subenv]
   (loop []
-    (let [x (ran/rand-idx rng width)
+    (let [half-width (math/floor (:env-center cfg-data)) ; env-center is fractional
+          [w offset] (case subenv             ; if restricted to subenv, get range for it
+                       nil [width 0]
+                       :left  [half-width 0]
+                       :right [half-width half-width])
+          x (+ offset (ran/rand-idx rng w))
           y (ran/rand-idx rng height)]
-      (if-not (.get field x y) ; don't clobber another snipe; empty slots contain Java nulls, i.e. Clojure nils
+      (if-not (.get field x y) ; don't clobber another organism; empty slots contain Java nulls, i.e. Clojure nils
         (organism-setter! field x y)
-        (recur)))))
+        (recur))))))
 
 (defn add-k-snipes!
   [rng cfg-data$ field]
   (let [{:keys [env-width env-height num-k-snipes]} @cfg-data$]
     (dotimes [_ num-k-snipes] ; don't use lazy method--it may never be executed
-      (add-organism-to-rand-loc! rng field env-width env-height 
+      (add-organism-to-rand-loc! rng @cfg-data$ field env-width env-height 
                                  (organism-setter (partial sn/make-k-snipe cfg-data$))))))
 
 (defn add-r-snipes!
   [rng cfg-data$ field]
   (let [{:keys [env-width env-height num-r-snipes]} @cfg-data$]
     (dotimes [_ num-r-snipes]
-      (add-organism-to-rand-loc! rng field env-width env-height 
+      (add-organism-to-rand-loc! rng @cfg-data$ field env-width env-height 
                                  (organism-setter (partial sn/make-r-snipe rng cfg-data$))))))
 
 ;; Do I really need so many mushrooms?  They don't change.  Couldn't I just define four mushrooms,
@@ -136,6 +146,18 @@
             (mu/make-mush mush-low-size  mush-sd low-mean-nutrition rng)
             (mu/make-mush mush-high-size mush-sd high-mean-nutrition rng)))))
 
+;; Use this for adding new mushrooms to replace those eaten.  Since
+;; over time, the population will tend to eat mostly nutritious mushrooms,
+;; if we randomly assign nutritiousness to replacement mushrooms, there
+;; will gradual loss of nutritious mushrooms.  This function instead
+;; keeps the frequencies the same.
+(defn replace-mush!
+  "Adds a mush just like old-mush but with a new id.  Note that x must
+  be in the subenv as the one from which the old mush came.  Otherwise
+  size and nutrition won't match up properly."
+  [old-mush field x y]
+  (.set field x y 
+        (assoc old-mush :id (mu/next-id))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MOVEMENT
@@ -222,7 +244,7 @@
 
 (defn snipes-eat
   [rng cfg-data snipe-field mush-field]
-  (let [{:keys [env-width env-height max-energy]} cfg-data
+  (let [{:keys [env-center env-width env-height max-energy]} cfg-data
         snipes (.elements snipe-field)
         snipes-plus-eaten? (for [snipe snipes    ; returns only snipes on mushrooms
                                  :let [{:keys [x y]} snipe
@@ -232,12 +254,14 @@
         new-snipe-field (ObjectGrid2D. snipe-field) ; new field that's a copy of old one
         new-mush-field  (ObjectGrid2D. mush-field)]
     (doseq [[snipe ate?] snipes-plus-eaten? :when ate?]
-      (let [{:keys [x y]} snipe]
+      (let [{:keys [x y]} snipe
+            eaten-mush (.get mush-field x y)]
         (.set new-snipe-field x y snipe) ; replace old snipe with new, more experienced snipe, or maybe the same one
         (.set new-mush-field x y nil)    ; mushroom has been eaten
         ;; a new mushroom grows elsewhere:
-        (add-organism-to-rand-loc! rng new-mush-field env-width env-height 
-                                   (partial add-mush! rng cfg-data)))) ; can't use same procedure for mushrooms as for snipes
+        (add-organism-to-rand-loc! rng cfg-data new-mush-field env-width env-height 
+                                   (partial replace-mush! eaten-mush) ; See comment at replace-mush!
+                                   (if (< x env-center) :left :right))))
     [new-snipe-field new-mush-field]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -294,7 +318,7 @@
         (let [[num-births snipe] (count-litter @cfg-data$ snipe)]
           (.set new-snipe-field (:x snipe) (:y snipe) snipe)
           (dotimes [_ num-births]
-            (add-organism-to-rand-loc! rng new-snipe-field env-width env-height ; add newborn
+            (add-organism-to-rand-loc! rng @cfg-data$ new-snipe-field env-width env-height ; add newborn
                                        (organism-setter (if (sn/k-snipe? snipe)  ; newborn should be like parent
                                                           (partial sn/make-k-snipe cfg-data$)
                                                           (partial sn/make-r-snipe rng cfg-data$))))))))
