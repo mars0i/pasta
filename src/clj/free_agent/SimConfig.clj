@@ -37,7 +37,7 @@
                       [birth-cost          5.0  double [0.0 10.0]  ["-o" "Energetic cost of giving birth to one offspring" :parse-fn #(Double. %)]]
                       [max-energy         30.0  double [1.0 100.0] ["-x" "Max energy that a snipe can have." :parse-fn #(Double. %)]]
                       [carrying-proportion 0.25 double [0.1 0.9]   ["-c" "Snipes are randomly culled when number exceed this times # of cells." :parse-fn #(Double. %)]]
-                      [report-every        0    long   true        ["-i" "Report basic stats every i ticks after the first one (0: never.)" :parse-fn #(Long. %)]]
+                      [report-every        0    long   true        ["-i" "Report basic stats every i ticks after the first one (0 = never)." :parse-fn #(Long. %)]]
                       [env-width          88    long   false       ["-w" "Width of env.  Must be an even number." :parse-fn #(Long. %)]] ; can be set from command line but not in running app
                       [env-height         40    long   false       ["-h" "Height of env. Should be an even number." :parse-fn #(Long. %)]] ; ditto
                       [max-ticks           0    long   false       ["-t" "Stop after this number of timesteps have run, or never if 0." :parse-fn #(Long. %)]]
@@ -111,7 +111,7 @@
         (.scheduleRepeating schedule report-every 1 ; first tick to report at; ordering within tick
                             (reify Steppable
                               (step [this sim-state]
-                                (when (< report-every max-ticks) ; don't report if this is the last tick
+                                (when (< (.getSteps schedule) max-ticks) ; don't report if this is the last tick
                                   (stats/report-stats @cfg-data$ schedule)
                                   (println))))
                             report-every))))) ; repeat this often
