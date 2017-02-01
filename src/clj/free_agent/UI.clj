@@ -29,8 +29,9 @@
 (def mush-high-size-appearance 1.0) ; we don't scale mushroom size to modeled size, but
 (def mush-low-size-appearance 0.745) ; we display the low-size mushroom smaller
 ;; background portrayal displayed in mushroom-less patches:
-(def bg-pattern-color (Color. 255 255 255)) ; (Color. 220 220 220)) ; or: a dirty pink: (def bg-pattern-color (Color. 200 165 165)) 
-(def bg-border-color (Color. 200 200 200)) ; what shows through around the edges of simple portrayals in the background field portrayal
+(def bg-pattern-color (Color. 255 255 255)) ; color of hexagons used to display underlying grid (if show-grid is true)
+(def bg-grid-color (Color. 200 200 200))    ; color of borders around hexagons for underlying grid (if show-grid is true)
+(def bg-space-color (Color. 255 255 255))   ; color of background without grid (if show-grid is false)
 (def snipe-size 0.45)
 (defn snipe-shade-fn [max-energy snipe] (int (+ 74 (* 180 (/ (:energy snipe) max-energy)))))
 (defn k-snipe-color-fn [max-energy snipe] (Color. (snipe-shade-fn max-energy snipe) 0 0))
@@ -107,6 +108,7 @@
         rng (.random sim-config)
         cfg-data$ (.simConfigData sim-config)
         cfg-data @cfg-data$
+        show-grid (:show-grid cfg-data)
         max-energy (:max-energy cfg-data)
         birth-threshold (:birth-threshold cfg-data)
         mush-high-size (:mush-high-size cfg-data)
@@ -143,7 +145,8 @@
                               (set! (.-paint this) (k-snipe-color-fn max-energy snipe)) ; superclass var
                               (proxy-super draw snipe graphics (DrawInfo2D. info org-offset org-offset)))) ; see above re last arg
         k-snipe-portrayal (make-fnl-circled-portrayal k-snipe-portrayal Color/blue)]
-    (.setField bg-field-portrayal (ObjectGrid2D. (:env-width cfg-data) (:env-height cfg-data))) ; displays a background grid
+    (when show-grid
+      (.setField bg-field-portrayal (ObjectGrid2D. (:env-width cfg-data) (:env-height cfg-data)))) ; displays a background grid
     (.setField mush-field-portrayal mush-field)
     (.setField snipe-field-portrayal snipe-field)
     ; **NOTE** UNDERSCORES NOT HYPHENS IN free_agent CLASSNAMES BELOW:
@@ -163,7 +166,7 @@
     ;; set up display:
     (doto display
       (.reset )
-      (.setBackdrop bg-border-color)
+      (.setBackdrop (if show-grid bg-grid-color bg-space-color))
       (.repaint))))
 
 
@@ -218,9 +221,11 @@
 (defn repl-gui
   "Convenience function to init and start GUI from the REPL.
   Returns the new SimConfig object.  Usage e.g.:
-  (use 'free-agent.UI) (def cfg (repl-gui))."
+  (use 'free-agent.UI) 
+  (let [[cfg ui] (repl-gui)] (def cfg cfg) (def ui ui)) ; considered bad practice--but convenient in this case
+  (def data$ (.simConfigData cfg))"
   []
-  (let [sim-config (SimConfig. (System/currentTimeMillis))]
-    (.setVisible (Console. (free-agent.UI. sim-config))
-                 true)
-    sim-config))
+  (let [sim-config (SimConfig. (System/currentTimeMillis))
+        ui (free-agent.UI. sim-config)]
+    (.setVisible (Console. ui) true)
+    [sim-config ui]))

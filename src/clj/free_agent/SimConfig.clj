@@ -27,7 +27,7 @@
                       [mush-prob           0.2  double [0.0 1.0]   ["-f" "Average frequency of mushrooms." :parse-fn #(Double. %)]]
                       [mush-low-size       4.0  double true        ["-s" "Size of small mushrooms (mean of light distribution)" :parse-fn #(Double. %)]]
                       [mush-high-size     16.0  double true        ["-l" "Size of large mushrooms (mean of light distribution)" :parse-fn #(Double. %)]]
-                      [mush-sd             2.0  double true        ["-d" "Standard deviation of mushroom light distribution" :parse-fn #(Double. %)]]
+                      [mush-sd             2.0  double true        ["-v" "Standard deviation of mushroom light distribution" :parse-fn #(Double. %)]]
                       [mush-mid-size       0    double false] ; calculated from the previous values
                       [mush-size-scale     0    double false] ; calculated from the previous values
                       [mush-pos-nutrition  1.0  double [0.0 20.0]  ["-n" "Energy from eating a nutritious mushroom" :parse-fn #(Double. %)]]
@@ -38,10 +38,11 @@
                       [max-energy         30.0  double [1.0 100.0] ["-x" "Max energy that a snipe can have." :parse-fn #(Double. %)]]
                       [carrying-proportion 0.25 double [0.1 0.9]   ["-c" "Snipes are randomly culled when number exceed this times # of cells." :parse-fn #(Double. %)]]
                       [report-every        0    long   true        ["-i" "Report basic stats every i ticks after the first one (0 = never)." :parse-fn #(Long. %)]]
-                      [env-width          88    long   false       ["-w" "Width of env.  Must be an even number." :parse-fn #(Long. %)]] ; can be set from command line but not in running app
-                      [env-height         40    long   false       ["-h" "Height of env. Should be an even number." :parse-fn #(Long. %)]] ; ditto
                       [max-ticks           0    long   false       ["-t" "Stop after this number of timesteps have run, or never if 0." :parse-fn #(Long. %)]]
-                      [env-display-size   12.0  double false       ["-g" "How large to display the env in gui by default." :parse-fn #(Double. %)]]
+                      [env-width          88    long   false       ["-w" "Width of env.  Must be an even number." :parse-fn #(Long. %)]]   ; Haven't figured out how to change 
+                      [env-height         40    long   false       ["-h" "Height of env. Should be an even number." :parse-fn #(Long. %)]] ;  within app without distortion
+                      [env-display-size   12.0  double false       ["-d" "How large to display the env in gui by default." :parse-fn #(Double. %)]]
+                      [show-grid         false  boolean false      ["-g" "If present, display underlying hexagonal grid." :parse-fn #(Boolean. %)]]
                       [max-pop-size        0    long   false]
                       [env-center         nil   double false]
                       [popenv             nil   free-agent.popenv.PopEnv false]]

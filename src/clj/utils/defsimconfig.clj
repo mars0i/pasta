@@ -118,7 +118,9 @@
   (let [[key-sym init val-type _ [short-opt & rest-of-cli-spec]] field]
     (when short-opt
       (into [short-opt 
-             (str "--" key-sym " <" val-type "> (" init ")")]
+             (str "--" key-sym 
+                  (when (not= val-type 'boolean)          ; for booleans, don't require an argument
+                    (str " <" val-type "> (" init ")")))]
             rest-of-cli-spec))))
 
 (defn get-cli-specs
