@@ -104,7 +104,7 @@
                                            (>= (.getSteps schedule) max-ticks)) ; = s/b enough, but >= as failsafe
                                   (.stop stoppable)
                                   (stats/report-stats @cfg-data$ schedule)
-                                  ;(println)
+                                  (println)
                                   ;(stats/report-params @cfg-data$)
                                   (.kill sim-state))))) ; end program after cleaning up Mason stuff
       ;; maybe report stats periodically
