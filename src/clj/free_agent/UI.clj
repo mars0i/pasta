@@ -229,3 +229,17 @@
         ui (free-agent.UI. sim-config)]
     (.setVisible (Console. ui) true)
     [sim-config ui]))
+
+(defmacro repl-gui-with-defs
+  "Calls repl-gui to start the gui, then creates top-level definitions:
+  cfg as a free-agent.SimConfig (i.e. a SimState), ui as a free-agent.UI
+  (i.e. a GUIState) that references cfg, and data$ as an atom containing 
+  cfg's SimConfigData stru."
+  []
+  (let [[cfg ui] (repl-gui)]
+    (def cfg cfg)
+    (def ui ui))
+  (def data$ (.simConfigData cfg))
+  (println "cfg is defined as a SimConfig (i.e. a SimState)")
+  (println "ui is defined as a UI (i.e. a GUIState)")
+  (println "data$ is defined as an atom containing cfg's SimConfigData stru."))
