@@ -27,7 +27,7 @@
 (def mush-neg-nutrition-shade 215)
 (defn mush-color-fn [shade] (Color. shade (int (* 0.8 shade)) (int (* 0.3 shade))))
 (def mush-high-size-appearance 1.0) ; we don't scale mushroom size to modeled size, but
-(def mush-low-size-appearance 0.900) ; we display the low-size mushroom smaller
+(def mush-low-size-appearance 0.875) ; we display the low-size mushroom smaller
 ;; background portrayal displayed in mushroom-less patches:
 (def bg-pattern-color (Color. 255 255 255)) ; color of hexagons used to display underlying grid (if show-grid is true)
 (def bg-grid-color (Color. 200 200 200))    ; color of borders around hexagons for underlying grid (if show-grid is true)
