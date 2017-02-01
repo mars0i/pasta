@@ -24,16 +24,16 @@
 
 ;; display parameters:
 (def mush-pos-nutrition-shade 255) ; a grayscale value in [0,255]
-(def mush-neg-nutrition-shade 200)
-(defn mush-color-fn [shade] (Color. shade (int (* 0.8 shade)) (int (* 0.2 shade))))
+(def mush-neg-nutrition-shade 215)
+(defn mush-color-fn [shade] (Color. shade (int (* 0.8 shade)) (int (* 0.3 shade))))
 (def mush-high-size-appearance 1.0) ; we don't scale mushroom size to modeled size, but
-(def mush-low-size-appearance 0.745) ; we display the low-size mushroom smaller
+(def mush-low-size-appearance 0.900) ; we display the low-size mushroom smaller
 ;; background portrayal displayed in mushroom-less patches:
 (def bg-pattern-color (Color. 255 255 255)) ; color of hexagons used to display underlying grid (if show-grid is true)
 (def bg-grid-color (Color. 200 200 200))    ; color of borders around hexagons for underlying grid (if show-grid is true)
 (def bg-space-color (Color. 255 255 255))   ; color of background without grid (if show-grid is false)
-(def snipe-size 0.45)
-(defn snipe-shade-fn [max-energy snipe] (int (+ 74 (* 180 (/ (:energy snipe) max-energy)))))
+(def snipe-size 0.55)
+(defn snipe-shade-fn [max-energy snipe] (int (+ 94 (* 160 (/ (:energy snipe) max-energy)))))
 (defn k-snipe-color-fn [max-energy snipe] (Color. (snipe-shade-fn max-energy snipe) 0 0))
 (defn r-snipe-color-fn [max-energy snipe] (Color. 0 0 (snipe-shade-fn max-energy snipe)))
 (def org-offset 0.6) ; with simple hex portrayals to display grid, organisms off center; pass this to DrawInfo2D to correct.
@@ -133,9 +133,9 @@
                                                                 (* 1.1 snipe-size)]
                             (draw [snipe graphics info] ; orverride method in super
                               (set! (.-paint this) (r-snipe-color-fn (min max-energy birth-threshold) snipe)) ; paint var is in superclass
-                              (proxy-super draw snipe graphics (DrawInfo2D. info (* 0.7 org-offset) (* 0.5 org-offset))))) ; see above re last arg
+                              (proxy-super draw snipe graphics (DrawInfo2D. info (* 0.75 org-offset) (* 0.55 org-offset))))) ; see above re last arg
         r-snipe-portrayal-pref-small (make-fnl-circled-portrayal r-snipe-portrayal-pref-small Color/red)
-        r-snipe-portrayal-pref-big (proxy [RectanglePortrayal2D] [(* 0.9 snipe-size)] ; squares are bigger than circles
+        r-snipe-portrayal-pref-big (proxy [RectanglePortrayal2D] [(* 0.915 snipe-size)] ; squares need to be bigger than circles
                             (draw [snipe graphics info] ; orverride method in super
                               (set! (.-paint this) (r-snipe-color-fn (min max-energy birth-threshold) snipe)) ; paint var is in superclass
                               (proxy-super draw snipe graphics (DrawInfo2D. info (* 1.5 org-offset) (* 1.5 org-offset))))) ; see above re last arg
