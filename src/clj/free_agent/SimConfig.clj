@@ -32,7 +32,7 @@
                       [mush-size-scale     0    double false] ; calculated from the previous values
                       [mush-pos-nutrition  1.0  double [0.0 20.0]  ["-n" "Energy from eating a nutritious mushroom" :parse-fn #(Double. %)]]
                       [mush-neg-nutrition -1.0  double [-20.0 0.0] ["-p" "Energy from eating a poisonous mushroom" :parse-fn #(Double. %)]]
-                      [initial-energy     10.0  double [0.0 50.0]  ["-e" "Initial energy for each snipe" :parse-fn #(Double. %)]]
+                      [initial-energy      5.0  double [0.0 50.0]  ["-e" "Initial energy for each snipe" :parse-fn #(Double. %)]]
                       [birth-threshold    15.0  double [1.0 50.0]  ["-b" "Energy level at which birth takes place" :parse-fn #(Double. %)]]
                       [birth-cost          5.0  double [0.0 10.0]  ["-o" "Energetic cost of giving birth to one offspring" :parse-fn #(Double. %)]]
                       [max-energy         30.0  double [1.0 100.0] ["-x" "Max energy that a snipe can have." :parse-fn #(Double. %)]]
