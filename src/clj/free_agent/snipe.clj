@@ -61,6 +61,10 @@
    (RSnipePrefSmall. (next-id) perc/r-snipe-pref -100.0 energy x y 0 (atom false) cfg-data$)
    (RSnipePrefBig.   (next-id) perc/r-snipe-pref  100.0 energy x y 0 (atom false) cfg-data$))))
 
+;(defn make-r-snipe-rand-energy
+;  [snipe-maker rng cfg-data$ x y]
+;  (snipe-maker rng cfg-data$ (rand-energy rng) x y))
+
 (defn atom? [x] (instance? clojure.lang.Atom x)) ; This is unlikely to become part of clojure.core: http://dev.clojure.org/jira/browse/CLJ-1298
 
 ;; Used by GUI to allow inspectors to follow a fnlly updated agent.
