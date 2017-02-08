@@ -69,33 +69,40 @@
   (let [dead-snipes (:dead-snipes (:popenv cfg-data))]
     (count-snipe-locs cfg-data (apply concat dead-snipes))))
 
-(defn mean-ages-locs
-  "Returns a map of mean ages for snipes, with keys as in count-snipe-locs. The
-  counts argument should be the result of count-snipe-locs for the same snipes."
-  [cfg-data counts snipes]
+(defn mean-vals-locs
+  "Returns a map of mean values for snipe field key k for snipes, with the keys 
+  of the new map as in count-snipe-locs. The counts argument should be the result 
+  of count-snipe-locs for the same snipes."
+  [k cfg-data counts snipes]
   (let [env-center (:env-center cfg-data) ; always = something-and-a-half
         num-snipes (count snipes)
-        sum-ages (fn [sums s]
-                     (cond (sn/k-snipe? s) (update sums :k-snipe + (:age s))
+        sum-vals (fn [sums s]
+                     (cond (sn/k-snipe? s)            (update sums :k-snipe + (k s))
                            (sn/r-snipe-pref-small? s) (if (< (:x s) env-center)
-                                                        (update sums :r-snipe-pref-small-left + (:age s))
-                                                        (update sums :r-snipe-pref-small-right + (:age s)))
+                                                        (update sums :r-snipe-pref-small-left + (k s))
+                                                        (update sums :r-snipe-pref-small-right + (k s)))
                            (sn/r-snipe-pref-big? s)   (if (< (:x s) env-center)
-                                                        (update sums :r-snipe-pref-big-left + (:age s))
-                                                        (update sums :r-snipe-pref-big-right + (:age s)))))
-        age-totals (reduce sum-ages 
+                                                        (update sums :r-snipe-pref-big-left + (k s))
+                                                        (update sums :r-snipe-pref-big-right + (k s)))))
+        val-totals (reduce sum-vals 
                            {:k-snipe 0 
                             :r-snipe-pref-small-left 0,
                             :r-snipe-pref-small-right 0 
                             :r-snipe-pref-big-left 0
                             :r-snipe-pref-big-right 0}
                            snipes)]
-    (zipmap (sort (keys age-totals)) ; make sure all keys are in same order
+    (zipmap (sort (keys val-totals)) ; make sure all keys are in same order
             (map #(if (pos? %2) ; don't divide zero by zero
                     (long (math/round (/ %1 %2))) ; integer values are close enough, but round returns ugly BigInts
                     nil)
-                 (vals (into (sorted-map) age-totals))
+                 (vals (into (sorted-map) val-totals))
                  (vals (into (sorted-map) counts))))))
+
+(defn mean-ages-locs
+  "Returns a map of mean ages for snipes, with keys as in count-snipe-locs. The
+  counts argument should be the result of count-snipe-locs for the same snipes."
+  [cfg-data counts snipes]
+  (mean-vals-locs :age cfg-data counts snipes))
 
 (defn mean-ages-live-snipe-locs
   [cfg-data counts]
