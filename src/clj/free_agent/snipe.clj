@@ -39,31 +39,49 @@
   (toString [this] (str "<RSnipePrefBig #" id ">")))
 
 (defn make-k-snipe 
-  ([cfg-data$ x y]
-   (let [{:keys [initial-energy]} @cfg-data$]
-     (make-k-snipe cfg-data$ initial-energy x y)))
-  ([cfg-data$ energy x y]
-   (KSnipe. (next-id)
-            perc/k-snipe-pref ; perceive: function for responding to mushrooms
-            0.0      ; mush-pref begins with indifference
-            energy
-            x y
-            0
-            (atom false)
-            cfg-data$)))
+  [cfg-data$ energy x y]
+  (KSnipe. (next-id)
+           perc/k-snipe-pref ; perceive: function for responding to mushrooms
+           0.0      ; mush-pref begins with indifference
+           energy
+           x y
+           0
+           (atom false)
+           cfg-data$))
 
 (defn make-r-snipe
-  ([rng cfg-data$ x y]
-   (let [{:keys [initial-energy]} @cfg-data$]
-     (make-r-snipe rng cfg-data$ initial-energy x y)))
-  ([rng cfg-data$ energy x y]
-   (if (< (ran/next-double rng) 0.5)
-   (RSnipePrefSmall. (next-id) perc/r-snipe-pref -100.0 energy x y 0 (atom false) cfg-data$)
-   (RSnipePrefBig.   (next-id) perc/r-snipe-pref  100.0 energy x y 0 (atom false) cfg-data$))))
+  [rng cfg-data$ energy x y]
+  (if (< (ran/next-double rng) 0.5)
+    (RSnipePrefSmall. (next-id) perc/r-snipe-pref -100.0 energy x y 0 (atom false) cfg-data$)
+    (RSnipePrefBig.   (next-id) perc/r-snipe-pref  100.0 energy x y 0 (atom false) cfg-data$)))
 
-;(defn make-r-snipe-rand-energy
-;  [snipe-maker rng cfg-data$ x y]
-;  (snipe-maker rng cfg-data$ (rand-energy rng) x y))
+(defn make-newborn-k-snipe 
+  [cfg-data$ x y]
+  (let [{:keys [initial-energy]} @cfg-data$]
+    (make-k-snipe cfg-data$ initial-energy x y)))
+
+(defn make-newborn-r-snipe
+  [rng cfg-data$ x y]
+  (let [{:keys [initial-energy]} @cfg-data$]
+    (make-r-snipe rng cfg-data$ initial-energy x y)))
+
+;; SHOULD THIS BE GAUSSIAN?
+;; Is birth-threshold the right limit?
+(defn rand-energy
+  "Generate random energy value uniformly distributed in [0, birth-threshold)."
+  [rng cfg-data]
+  (* (:birth-threshold cfg-data)
+     (ran/next-double rng)))
+
+(defn make-rand-k-snipe 
+  "Create k-snipe with random energy (from rand-energy)."
+  [rng cfg-data$ x y]
+  (make-k-snipe cfg-data$ (rand-energy rng @cfg-data$) x y))
+
+(defn make-rand-r-snipe 
+  "Create r-snipe with random energy (from rand-energy)."
+  [rng cfg-data$ x y]
+  (make-r-snipe rng cfg-data$ (rand-energy rng @cfg-data$) x y))
 
 (defn atom? [x] (instance? clojure.lang.Atom x)) ; This is unlikely to become part of clojure.core: http://dev.clojure.org/jira/browse/CLJ-1298
 

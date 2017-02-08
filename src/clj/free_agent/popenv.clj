@@ -105,14 +105,14 @@
   (let [{:keys [env-width env-height num-k-snipes]} @cfg-data$]
     (dotimes [_ num-k-snipes] ; don't use lazy method--it may never be executed
       (add-organism-to-rand-loc! rng @cfg-data$ field env-width env-height 
-                                 (organism-setter (partial sn/make-k-snipe cfg-data$))))))
+                                 (organism-setter (partial sn/make-rand-k-snipe rng cfg-data$))))))
 
 (defn add-r-snipes!
   [rng cfg-data$ field]
   (let [{:keys [env-width env-height num-r-snipes]} @cfg-data$]
     (dotimes [_ num-r-snipes]
       (add-organism-to-rand-loc! rng @cfg-data$ field env-width env-height 
-                                 (organism-setter (partial sn/make-r-snipe rng cfg-data$))))))
+                                 (organism-setter (partial sn/make-rand-r-snipe rng cfg-data$))))))
 
 ;; Do I really need so many mushrooms?  They don't change.  Couldn't I just define four mushrooms,
 ;; and reuse them?  (If so, be careful about their deaths.)
@@ -320,8 +320,8 @@
           (dotimes [_ num-births]
             (add-organism-to-rand-loc! rng @cfg-data$ new-snipe-field env-width env-height ; add newborn
                                        (organism-setter (if (sn/k-snipe? snipe)  ; newborn should be like parent
-                                                          (partial sn/make-k-snipe cfg-data$)
-                                                          (partial sn/make-r-snipe rng cfg-data$))))))))
+                                                          (partial sn/make-newborn-k-snipe cfg-data$)
+                                                          (partial sn/make-newborn-r-snipe rng cfg-data$))))))))
     new-snipe-field))
 
 
@@ -335,5 +335,3 @@
     (doseq [snipe old-snipes]
       (.set new-snipe-field (:x snipe) (:y snipe) (update snipe :age inc)))
     new-snipe-field))
-
-
