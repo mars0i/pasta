@@ -1,5 +1,6 @@
 (ns free-agent.stats
   (require [free-agent.snipe :as sn]
+           [clojure.pprint :as pp]
            [clojure.math.numeric-tower :as math]))
 
 (defn get-pop-size
@@ -93,7 +94,7 @@
                            snipes)]
     (zipmap (sort (keys val-totals)) ; make sure all keys are in same order
             (map #(if (pos? %2) ; don't divide zero by zero
-                    (long (math/round (/ %1 %2))) ; integer values are close enough, but round returns ugly BigInts
+                    (double (/ %1 %2)) ; integer values are close enough, but round returns ugly BigInts
                     nil)
                  (vals (into (sorted-map) val-totals))
                  (vals (into (sorted-map) counts))))))
@@ -130,7 +131,24 @@
   (let [dead-snipes (:dead-snipes (:popenv cfg-data))]
     (mean-energies-locs cfg-data counts (apply concat dead-snipes))))
 
+;; from https://clojuredocs.org/clojure.core/reduce-kv#example-57d1e9dae4b0709b524f04eb
+(defn map-kv
+  "Given a map coll, returns a similar map with the same keys and the result 
+  of applying f to each value."
+  [f coll]
+  (reduce-kv (fn [m k v] (assoc m k (f v)))
+             (empty coll) coll))
+
+(defn round-or-nil
+  "Rounds its argument unless the argument is falsey, in which case it's simply
+  passed through as is."
+  [x]
+  (if x
+    (math/round x)
+    x))
+
 (defn report-stats
+  "Report summary statistics to standard output."
   ([cfg-data schedule] 
    (print "At step" (.getSteps schedule) "")
    (report-stats cfg-data))
@@ -140,17 +158,15 @@
          live-counts (into (sorted-map) (count-live-snipe-locs cfg-data))
          dead-counts (into (sorted-map) (count-dead-snipe-locs cfg-data))
          live-energies (into (sorted-map) (mean-energies-live-snipe-locs cfg-data live-counts))
-         dead-energies (into (sorted-map) (mean-energies-dead-snipe-locs cfg-data dead-counts))
-         live-ages (into (sorted-map) (mean-ages-live-snipe-locs cfg-data live-counts))
-         dead-ages (into (sorted-map) (mean-ages-dead-snipe-locs cfg-data dead-counts))]
-     (println "Population size:" pop-size
-              " k-snipe freq:" k-snipe-freq)
-     (println "Live counts:" live-counts)
-     (println "Dead counts:" dead-counts)
-     (println "Live mean energies" live-energies)
-     (println "Dead mean energies" dead-energies)
-     (println "Live mean ages:" live-ages)
-     (println "Dead mean ages:" dead-ages))))
+         ;; no need to caluclate mean dead energies: they're always zero
+         live-ages (into (sorted-map) (map-kv round-or-nil (mean-ages-live-snipe-locs cfg-data live-counts)))  ; cl-format ~d directive doesn't round or truncate, etc.
+         dead-ages (into (sorted-map) (map-kv round-or-nil (mean-ages-dead-snipe-locs cfg-data dead-counts)))] ; and ages are easier to read as integers
+     (pp/cl-format true "pop size: ~d, k-snipe-freq: ~d~%" pop-size k-snipe-freq)
+     (pp/cl-format true "live counts ~{~{~a ~d~}~^, ~}~%" live-counts) ; ~{...~} iterates over a sequence; maps treated as sequences become
+     (pp/cl-format true "dead counts ~{~{~a ~d~}~^, ~}~%" dead-counts) ;  sequences of pairs; so we embed another ~{...~} to process the pair.
+     (pp/cl-format true "mean live energies ~{~{~a ~@{~:[-~;~:*~$~]~}~}~^, ~}~%" live-energies) ; voodoo to print a number with ~$ if non-nil, or "-" otherwise. 
+     (pp/cl-format true "mean live ages ~{~{~a ~@{~:[-~;~:*~d~]~}~}~^, ~}~%" live-ages)         ;  It's needed because I treat an average as nil if no snipes
+     (pp/cl-format true "mean dead ages ~{~{~a ~@{~:[-~;~:*~d~]~}~}~^, ~}~%" dead-ages)))) ; also note "~^," emits a comma iff there is more coming
 
 (defn report-params
   "Print parameters in cfg-data to standard output."
