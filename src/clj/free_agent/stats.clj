@@ -114,6 +114,22 @@
   (let [dead-snipes (:dead-snipes (:popenv cfg-data))]
     (mean-ages-locs cfg-data counts (apply concat dead-snipes))))
 
+(defn mean-energies-locs
+  "Returns a map of mean energies for snipes, with keys as in count-snipe-locs. The
+  counts argument should be the result of count-snipe-locs for the same snipes."
+  [cfg-data counts snipes]
+  (mean-vals-locs :energy cfg-data counts snipes))
+
+(defn mean-energies-live-snipe-locs
+  [cfg-data counts]
+  (let [snipes (vals (:snipes (:popenv cfg-data)))]
+    (mean-energies-locs cfg-data counts snipes)))
+
+(defn mean-energies-dead-snipe-locs
+  [cfg-data counts]
+  (let [dead-snipes (:dead-snipes (:popenv cfg-data))]
+    (mean-energies-locs cfg-data counts (apply concat dead-snipes))))
+
 (defn report-stats
   ([cfg-data schedule] 
    (print "At step" (.getSteps schedule) "")
@@ -123,12 +139,16 @@
          k-snipe-freq (get-k-snipe-freq cfg-data)
          live-counts (into (sorted-map) (count-live-snipe-locs cfg-data))
          dead-counts (into (sorted-map) (count-dead-snipe-locs cfg-data))
+         live-energies (into (sorted-map) (mean-energies-live-snipe-locs cfg-data live-counts))
+         dead-energies (into (sorted-map) (mean-energies-dead-snipe-locs cfg-data dead-counts))
          live-ages (into (sorted-map) (mean-ages-live-snipe-locs cfg-data live-counts))
          dead-ages (into (sorted-map) (mean-ages-dead-snipe-locs cfg-data dead-counts))]
      (println "Population size:" pop-size
               " k-snipe freq:" k-snipe-freq)
      (println "Live counts:" live-counts)
      (println "Dead counts:" dead-counts)
+     (println "Live mean energies" live-energies)
+     (println "Dead mean energies" dead-energies)
      (println "Live mean ages:" live-ages)
      (println "Dead mean ages:" dead-ages))))
 
