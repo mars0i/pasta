@@ -1,0 +1,3 @@
+#!/bin/sh
+echo 'Try (repl-gui-with-defs) to start the app.'
+lein repl
