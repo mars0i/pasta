@@ -1,11 +1,11 @@
 # free-agent
 
-Agent-based simulation with a model of prediction error minimization in
-some agents.
+Agent-based simulation with a very simple model of prediction error
+minimization in some agents.
 
-Prediction energy minimzation: AKA free-energy minimization, predictive
-processing, predictive coding. cf. integral control, mean-field,
-variational methods.
+(Prediction energy minimzation: AKA free-energy minimization, predictive
+processing, predictive coding. cf. integral control, mean-field
+approximation, variational methods.)
 
 (My starting points are Rafal Bogacz, "A tutorial on the free-energy
 framework for modelling perception and learning", *Journal of
@@ -13,7 +13,9 @@ Mathematical Psychology*, Available online 14 December 2015, ISSN
 0022-2496, http://dx.doi.org/10.1016/j.jmp.2015.11.003, and
   Harriet Feldman and Karl Friston, "Attention, Uncertainty, and
   Free-Energy", *Frontiers in Human Neuroscience* 4, 2010,
-http://dx.doi.org/10.3389/fnhum.2010.00215.)
+http://dx.doi.org/10.3389/fnhum.2010.00215.  However, the model
+implemented here in the k-snipe agents is very simple and very
+different.)
 
 ## Overview of simulation
 
