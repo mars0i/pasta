@@ -5,55 +5,84 @@
   (:gen-class                 ; so it can be aot-compiled
      :name free-agent.snipe)) ; without :name other aot classes won't find it
 
-;; The real difference between k- and r-snipes is in how levels is implemented,
-;; but it will be useful to have two different wrapper classes to make it easier to
-;; observe differences.
 
-(declare next-id make-properties make-k-snipe make-r-snipe is-k-snipe? is-r-snipe?)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; INITIAL UTILITY DEFS
+
+(declare next-id make-properties make-k-snipe make-r-snipe is-k-snipe? is-r-snipe? rand-energy atom?)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; DEFRECORD CLASS DEFS
+
+;; The real difference between snipe types is in perception/preferences occurs,
+;; so you don't really need separate defrecords--except that it's easier to
+;; display snipes of different types differently in the UI if they're represented
+;; by different Java classes.
 
 ;; The two atom fields at the end are there solely for interactions with the UI.
 ;; Propertied/properties is used by GUI to allow inspectors to follow a fnlly updated agent.
+
+;; K-strategy snipes use individual learning to determine which size of mushrooms 
+;; are nutritious.  This takes time and can involve eating many poisonous mushrooms.
 (defrecord KSnipe [id perceive mush-pref energy x y age circled$ cfg-data$]
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Object
   (toString [_] (str "<KSnipe #" id">")))
 
-;; Creating two identical RSnipe defrecords, which will differ only
-;; in the value of mush-pref, so it will be simpler to keep track
-;; of the difference.
-
-;; r-snipe that prefers small mushrooms
-;; See comments on KSnipe.
-(defrecord RSnipePrefSmall [id perceive mush-pref energy x y age circled$ cfg-data$]
+;; r-strategy snipes don't learn: They go right to work eating their preferred
+;; size mushrooms, which may be the poisonous kind in their environment--or not.
+;; Their children might have either size preference.  This means that the ones
+;; that have the "right" preference can usually reproduce more quickly than k-snipes.
+(defrecord RSnipePrefSmall [id perceive mush-pref energy x y age circled$ cfg-data$] ; r-snipe that prefers small mushrooms
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Object
   (toString [this] (str "<RSnipePrefSmall #" id ">")))
 
-;; r-snipe that prefers large mushrooms
-(defrecord RSnipePrefBig [id perceive mush-pref energy x y age circled$ cfg-data$]
+(defrecord RSnipePrefBig [id perceive mush-pref energy x y age circled$ cfg-data$] ; r-snipe that prefers large mushrooms
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Object
   (toString [this] (str "<RSnipePrefBig #" id ">")))
 
+;; Social snipes learn from the preferences of other nearby snipes.
+(defrecord SSnipe [id perceive mush-pref energy x y age circled$ cfg-data$]
+  Propertied
+  (properties [original-snipe] (make-properties id cfg-data$))
+  Object
+  (toString [_] (str "<SSnipe #" id">")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; SNIPE MAKER FUNCTIONS
+
 (defn make-k-snipe 
   [cfg-data$ energy x y]
   (KSnipe. (next-id)
            perc/k-snipe-pref ; perceive: function for responding to mushrooms
-           0.0      ; mush-pref begins with indifference
-           energy
-           x y
-           0
-           (atom false)
-           cfg-data$))
+           0.0               ; mush-pref begins with indifference
+           energy            ; initial energy level
+           x y               ; location of snipe on grid
+           0                 ; age of snipe
+           (atom false)      ; is snipe displayed circled in the GUI?
+           cfg-data$))       ; contains global parameters for snipe operation
 
 (defn make-r-snipe
   [rng cfg-data$ energy x y]
   (if (< (ran/next-double rng) 0.5)
     (RSnipePrefSmall. (next-id) perc/r-snipe-pref -100.0 energy x y 0 (atom false) cfg-data$)
     (RSnipePrefBig.   (next-id) perc/r-snipe-pref  100.0 energy x y 0 (atom false) cfg-data$)))
+
+(defn make-s-snipe 
+  [cfg-data$ energy x y]
+  (SSnipe. (next-id)
+           perc/s-snipe-pref
+           0.0 
+           energy
+           x y
+           0
+           (atom false)
+           cfg-data$))
 
 (defn make-newborn-k-snipe 
   [cfg-data$ x y]
@@ -65,13 +94,10 @@
   (let [{:keys [initial-energy]} @cfg-data$]
     (make-r-snipe rng cfg-data$ initial-energy x y)))
 
-;; SHOULD THIS BE GAUSSIAN?
-;; Is birth-threshold the right limit?
-(defn rand-energy
-  "Generate random energy value uniformly distributed in [0, birth-threshold)."
-  [rng cfg-data]
-  (* (:birth-threshold cfg-data)
-     (ran/next-double rng)))
+(defn make-newborn-s-snipe 
+  [cfg-data$ x y]
+  (let [{:keys [initial-energy]} @cfg-data$]
+    (make-s-snipe cfg-data$ initial-energy x y)))
 
 (defn make-rand-k-snipe 
   "Create k-snipe with random energy (from rand-energy)."
@@ -83,7 +109,13 @@
   [rng cfg-data$ x y]
   (make-r-snipe rng cfg-data$ (rand-energy rng @cfg-data$) x y))
 
-(defn atom? [x] (instance? clojure.lang.Atom x)) ; This is unlikely to become part of clojure.core: http://dev.clojure.org/jira/browse/CLJ-1298
+(defn make-rand-s-snipe 
+  "Create s-snipe with random energy (from rand-energy)."
+  [rng cfg-data$ x y]
+  (make-s-snipe cfg-data$ (rand-energy rng @cfg-data$) x y))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; MAKE-PROPERTIES FUNCTION
 
 ;; Used by GUI to allow inspectors to follow a fnlly updated agent.
 ;; (Code below makes use of the fact that in Clojure, vectors can be treated as functions
@@ -128,11 +160,25 @@
       (toString [] (str "<SimpleProperties: snipe id=" id ">")))))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; MISCELLANEOUS LITTLE FUNCTIONS
+
+(defn atom? [x] (instance? clojure.lang.Atom x)) ; This is unlikely to become part of clojure.core: http://dev.clojure.org/jira/browse/CLJ-1298
+
+;; SHOULD THIS BE GAUSSIAN?
+;; Is birth-threshold the right limit?
+(defn rand-energy
+  "Generate random energy value uniformly distributed in [0, birth-threshold)."
+  [rng cfg-data]
+  (* (:birth-threshold cfg-data)
+     (ran/next-double rng)))
+
 ;; note underscores
 (defn k-snipe? [s] (instance? free_agent.snipe.KSnipe s))
 (defn r-snipe-pref-small? [s] (instance? free_agent.snipe.RSnipePrefSmall s))
 (defn r-snipe-pref-big?   [s] (instance? free_agent.snipe.RSnipePrefBig s))
 (defn r-snipe? [s] (or (r-snipe-pref-small? s) (r-snipe-pref-big? s)))
+(defn s-snipe? [s] (instance? free_agent.snipe.SSnipe s))
 
 ;; Switching to simple, non-gensym version so that this also tracks
 ;; total number of snipes that have lived.

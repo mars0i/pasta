@@ -76,6 +76,11 @@
         eat? (pos? (* mush-pref scaled-appearance))]  ; eat if scaled appearance has same sign as mush-pref
     [snipe eat?]))
 
+;; TODO temporary stub definition
+(defn s-snipe-pref
+  [rng snipe mush]
+  [snipe false])
+
 (defn random-eat-snipe-pref
  "Decides by a coin toss whether to eat."
   [rng snipe mush]
