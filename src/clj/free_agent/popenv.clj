@@ -220,28 +220,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; PERCEPTION AND EATING
 
-(defn add-to-energy
-  [snipe-energy max-energy mush-nutrition]
-  (max 0                ; negative energy is impossible
-       (min max-energy  ; can't exceed max energy
-            (+ snipe-energy mush-nutrition))))
-
-(defn eat-if-appetizing 
-  "Returns a pair containing (a) a new version of the snipe, with 
-  an updated cognitive state, if appropriate, and an updated 
-  energy level if eating occured; and (b) a boolean indicating
-  whether eating occurred.  Step (a) is performed by the perceive
-  function contained within the snipe.  This function is called with
-  two arguments--the snipe itself, and the mushroom.  The function
-  should return a snipe updated to reflect its new experience, and
-  a boolean indicating whether the mushroom is to be eaten."
-  [rng max-energy snipe mush] 
-  (let [[experienced-snipe appetizing?] ((:perceive snipe) rng snipe mush)]
-    (if appetizing?
-      [(update experienced-snipe :energy add-to-energy max-energy (:nutrition mush))
-       true]
-      [experienced-snipe false])))
-
 (defn snipes-eat
   [rng cfg-data snipe-field mush-field]
   (let [{:keys [env-center env-width env-height max-energy]} cfg-data
@@ -263,6 +241,28 @@
                                    (partial replace-mush! eaten-mush) ; See comment at replace-mush!
                                    (if (< x env-center) :left :right))))
     [new-snipe-field new-mush-field]))
+
+(defn eat-if-appetizing 
+  "Returns a pair containing (a) a new version of the snipe, with 
+  an updated cognitive state, if appropriate, and an updated 
+  energy level if eating occured; and (b) a boolean indicating
+  whether eating occurred.  Step (a) is performed by the perceive
+  function contained within the snipe.  This function is called with
+  two arguments--the snipe itself, and the mushroom.  The function
+  should return a snipe updated to reflect its new experience, and
+  a boolean indicating whether the mushroom is to be eaten."
+  [rng max-energy snipe mush] 
+  (let [[experienced-snipe appetizing?] ((:perceive snipe) rng snipe mush)]
+    (if appetizing?
+      [(update experienced-snipe :energy add-to-energy max-energy (:nutrition mush))
+       true]
+      [experienced-snipe false])))
+
+(defn add-to-energy
+  [snipe-energy max-energy mush-nutrition]
+  (max 0                ; negative energy is impossible
+       (min max-energy  ; can't exceed max energy
+            (+ snipe-energy mush-nutrition))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; BIRTH AND DEATH
