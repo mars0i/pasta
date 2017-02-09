@@ -2,7 +2,7 @@
 ;; under the Gnu General Public License version 3.0 as specified in the
 ;; the file LICENSE.
 
-(ns free-agent.perception2
+(ns free-agent.perception
   (:require [free-agent.mush :as mu]
             [utils.random :as ran]))
 

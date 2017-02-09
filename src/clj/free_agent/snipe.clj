@@ -1,5 +1,5 @@
 (ns free-agent.snipe
-  (:require [free-agent.perception2 :as perc] ; [free-agent.level :as l]
+  (:require [free-agent.perception :as perc]
             [utils.random :as ran])
   (:import [sim.util Properties SimpleProperties Propertied])
   (:gen-class                 ; so it can be aot-compiled
