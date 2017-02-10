@@ -10,7 +10,7 @@
 ;(use '[clojure.pprint]) ; DEBUG
 
 (declare setup-popenv-config! make-popenv next-popenv organism-setter 
-         add-organism-to-rand-loc! add-k-snipes! add-r-snipes! add-mush! 
+         add-organism-to-rand-loc! add-k-snipes! add-r-snipes! add-s-snipes! add-mush! 
          maybe-add-mush! add-mushs! move-snipes move-snipe! choose-next-loc
          perceive-mushroom add-to-energy eat-if-appetizing snipes-eat 
          snipes-die snipes-reproduce cull-snipes age-snipes)
@@ -48,6 +48,7 @@
     (.clear snipe-field)
     (add-k-snipes! rng cfg-data$ snipe-field)
     (add-r-snipes! rng cfg-data$ snipe-field)
+    (add-s-snipes! rng cfg-data$ snipe-field)
     (PopEnv. snipe-field mush-field (make-snipes-map snipe-field) [])))
 
 (defn next-popenv
@@ -113,6 +114,13 @@
     (dotimes [_ num-r-snipes]
       (add-organism-to-rand-loc! rng @cfg-data$ field env-width env-height 
                                  (organism-setter (partial sn/make-rand-r-snipe rng cfg-data$))))))
+
+(defn add-s-snipes!
+  [rng cfg-data$ field]
+  (let [{:keys [env-width env-height num-s-snipes]} @cfg-data$]
+    (dotimes [_ num-s-snipes]
+      (add-organism-to-rand-loc! rng @cfg-data$ field env-width env-height 
+                                 (organism-setter (partial sn/make-rand-s-snipe rng cfg-data$))))))
 
 ;; Do I really need so many mushrooms?  They don't change.  Couldn't I just define four mushrooms,
 ;; and reuse them?  (If so, be careful about their deaths.)
@@ -319,12 +327,12 @@
           (.set new-snipe-field (:x snipe) (:y snipe) snipe)
           (dotimes [_ num-births]
             (add-organism-to-rand-loc! rng @cfg-data$ new-snipe-field env-width env-height ; add newborn
-                                       (organism-setter (if (sn/k-snipe? snipe)  ; newborn should be like parent
-                                                          (partial sn/make-newborn-k-snipe cfg-data$)
-                                                          (partial sn/make-newborn-r-snipe rng cfg-data$))))))))
+                                       (organism-setter (cond (sn/k-snipe? snipe) (partial sn/make-newborn-k-snipe cfg-data$)
+                                                              (sn/r-snipe? snipe) (partial sn/make-newborn-r-snipe rng cfg-data$)
+                                                              :else               (partial sn/make-newborn-s-snipe rng cfg-data$))))))))
     new-snipe-field))
 
-
+ ; newborn should be like parent
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; OTHER CHANGES
 
