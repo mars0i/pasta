@@ -3,8 +3,11 @@
 ;; the file LICENSE.
 
 (ns free-agent.perception
-  (:require [free-agent.mush :as mu]
-            [utils.random :as ran]))
+  (:require [clojure.algo.generic.math-functions :as amath]
+            [free-agent.mush :as mu]
+            [utils.random :as ran])
+  (:import [sim.field.grid Grid2D ObjectGrid2D]
+           [sim.util IntBag]))
 
 ;; Simple algorithm for k-snipes that's supposed to:
 ;; a. learn what size the nutritious mushrooms are around here, and
@@ -76,10 +79,21 @@
         eat? (pos? (* mush-pref scaled-appearance))]  ; eat if scaled appearance has same sign as mush-pref
     [snipe eat?]))
 
-;; TODO temporary stub definition
 (defn s-snipe-pref
+  "Adopts mushroom preference with a sign like that of its neighbors."
   [rng snipe mush]
-  [snipe false])
+  (let [{:keys [perceive x y mush-pref cfg-data$]} snipe
+        {:keys [popenv mush-mid-size neighbor-radius extreme-pref]} @cfg-data$
+        {:keys [snipe-field]} popenv
+        neighbors (.getHexagonalNeighbors snipe-field x y neighbor-radius Grid2D/TOROIDAL false)
+        neighbors-sign (amath/sgn (reduce (fn [sum neighbor]  ; determine whether neighbors with positive or negative prefs
+                                            (+ sum (amath/sgn ; predominate (or are equal); store sign of result.
+                                                              (:mush-pref neighbor))))
+                                          0 neighbors))
+        mush-pref (* neighbors-sign extreme-pref) ; -1, 0, or 1 * extreme-pref
+        scaled-appearance (- (mu/appearance mush) mush-mid-size)
+        eat? (pos? (* mush-pref scaled-appearance))]  ; eat if scaled appearance has same sign as mush-pref
+    [(assoc snipe :mush-pref mush-pref) false])) ; mush-pref will just be replaced next time, but this allows inspection
 
 (defn random-eat-snipe-pref
  "Decides by a coin toss whether to eat."

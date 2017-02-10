@@ -3,7 +3,7 @@
             [free-agent.mush :as mu]
             [utils.random :as ran]
             [utils.random-utils :as ranu]
-            [clojure.math.numeric-tower :as math])
+            [clojure.math.numeric-tower :as nmath])
   (:import [sim.field.grid Grid2D ObjectGrid2D]
            [sim.util IntBag]))
 
@@ -89,7 +89,7 @@
    (add-organism-to-rand-loc! rng cfg-data field width height organism-setter! nil))
   ([rng cfg-data field width height organism-setter! subenv]
   (loop []
-    (let [half-width (math/floor (:env-center cfg-data)) ; env-center is fractional
+    (let [half-width (nmath/floor (:env-center cfg-data)) ; env-center is fractional
           [w offset] (case subenv             ; if restricted to subenv, get range for it
                        nil [width 0]
                        :left  [half-width 0]

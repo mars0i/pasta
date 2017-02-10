@@ -70,8 +70,9 @@
 (defn make-r-snipe
   [rng cfg-data$ energy x y]
   (if (< (ran/next-double rng) 0.5)
-    (RSnipePrefSmall. (next-id) perc/r-snipe-pref -100.0 energy x y 0 (atom false) cfg-data$)
-    (RSnipePrefBig.   (next-id) perc/r-snipe-pref  100.0 energy x y 0 (atom false) cfg-data$)))
+    (let [extreme-pref (:extreme-pref @cfg-data$)]
+      (RSnipePrefSmall. (next-id) perc/r-snipe-pref (- extreme-pref) energy x y 0 (atom false) cfg-data$)
+      (RSnipePrefBig.   (next-id) perc/r-snipe-pref extreme-pref     energy x y 0 (atom false) cfg-data$))))
 
 (defn make-s-snipe 
   [cfg-data$ energy x y]
