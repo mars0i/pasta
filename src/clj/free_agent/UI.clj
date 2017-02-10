@@ -134,17 +134,17 @@
                             (draw [snipe graphics info] ; orverride method in super
                               (set! (.-paint this) (r-snipe-color-fn (min max-energy birth-threshold) snipe)) ; paint var is in superclass
                               (proxy-super draw snipe graphics (DrawInfo2D. info (* 0.75 org-offset) (* 0.55 org-offset))))) ; see above re last arg
-        r-snipe-portrayal-pref-small (make-fnl-circled-portrayal r-snipe-portrayal-pref-small Color/red)
+        r-snipe-portrayal-pref-small (make-fnl-circled-portrayal r-snipe-portrayal-pref-small Color/blue)
         r-snipe-portrayal-pref-big (proxy [RectanglePortrayal2D] [(* 0.915 snipe-size)] ; squares need to be bigger than circles
                             (draw [snipe graphics info] ; orverride method in super
                               (set! (.-paint this) (r-snipe-color-fn (min max-energy birth-threshold) snipe)) ; paint var is in superclass
                               (proxy-super draw snipe graphics (DrawInfo2D. info (* 1.5 org-offset) (* 1.5 org-offset))))) ; see above re last arg
-        r-snipe-portrayal-pref-big (make-fnl-circled-portrayal r-snipe-portrayal-pref-big Color/red)
+        r-snipe-portrayal-pref-big (make-fnl-circled-portrayal r-snipe-portrayal-pref-big Color/blue)
         k-snipe-portrayal (proxy [OvalPortrayal2D] [(* 1.1 snipe-size)]
                             (draw [snipe graphics info] ; override method in super
                               (set! (.-paint this) (k-snipe-color-fn max-energy snipe)) ; superclass var
                               (proxy-super draw snipe graphics (DrawInfo2D. info org-offset org-offset)))) ; see above re last arg
-        k-snipe-portrayal (make-fnl-circled-portrayal k-snipe-portrayal Color/blue)]
+        k-snipe-portrayal (make-fnl-circled-portrayal k-snipe-portrayal Color/red)]
     (when show-grid
       (.setField bg-field-portrayal (ObjectGrid2D. (:env-width cfg-data) (:env-height cfg-data)))) ; displays a background grid
     (.setField mush-field-portrayal mush-field)
