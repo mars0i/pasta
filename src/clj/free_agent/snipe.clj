@@ -175,6 +175,13 @@
   (math/round (* (:birth-threshold cfg-data) ; round isn't essential. just makes it easier to watch individual snipes.
                  (ran/next-double rng))))
 
+(defn clean
+  "Returns a copy of the snipe with its cfg.data$ atom removed so that
+  it can be displayed in a repl without creating an infinite loop (since
+  cfg-data$ contains popenv which contains a hash of all snipes)."
+  [snipe]
+  (assoc snipe :cfg-data$ nil))
+
 ;; note underscores
 (defn k-snipe? [s] (instance? free_agent.snipe.KSnipe s))
 (defn r-snipe-pref-small? [s] (instance? free_agent.snipe.RSnipePrefSmall s))
