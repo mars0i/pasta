@@ -1,5 +1,6 @@
 (ns free-agent.snipe
-  (:require [free-agent.perception :as perc]
+  (:require [clojure.math.numeric-tower :as math]
+            [free-agent.perception :as perc]
             [utils.random :as ran])
   (:import [sim.util Properties SimpleProperties Propertied])
   (:gen-class                 ; so it can be aot-compiled
@@ -171,8 +172,8 @@
 (defn rand-energy
   "Generate random energy value uniformly distributed in [0, birth-threshold)."
   [rng cfg-data]
-  (* (:birth-threshold cfg-data)
-     (ran/next-double rng)))
+  (math/round (* (:birth-threshold cfg-data)
+                 (ran/next-double rng))))
 
 ;; note underscores
 (defn k-snipe? [s] (instance? free_agent.snipe.KSnipe s))
