@@ -87,8 +87,7 @@
         {:keys [snipe-field]} popenv
         neighbors (.getHexagonalNeighbors snipe-field x y neighbor-radius Grid2D/TOROIDAL false)
         neighbors-sign (amath/sgn (reduce (fn [sum neighbor]  ; determine whether neighbors with positive or negative prefs
-                                            (+ sum (amath/sgn ; predominate (or are equal); store sign of result.
-                                                              (:mush-pref neighbor))))
+                                            (+ sum (amath/sgn (:mush-pref neighbor)))) ; predominate (or are equal); store sign of result.
                                           0 neighbors))
         mush-pref (* neighbors-sign extreme-pref) ; -1, 0, or 1 * extreme-pref
         scaled-appearance (- (mu/appearance mush) mush-mid-size)
