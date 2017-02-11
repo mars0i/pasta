@@ -22,9 +22,9 @@
 (def commandline (atom nil)) ; Needed by defsimconfig and other code below if we're defining commandline options
 
 ;;                 field name      initial-value type  in ui? with range?
-(defcfg/defsimconfig [[num-k-snipes       50    long    [1 500]     ["-K" "Size of k-snipe subpopulation" :parse-fn #(Long. %)]]
-                      [num-r-snipes       50    long    [1 500]     ["-R" "Size of r-snipe subpopulation" :parse-fn #(Long. %)]]
-                      [num-s-snipes        0    long    [1 500]     ["-S" "Size of s-snipe subpopulation" :parse-fn #(Long. %)]]
+(defcfg/defsimconfig [[num-k-snipes       50    long    [0 500]     ["-K" "Size of k-snipe subpopulation" :parse-fn #(Long. %)]]
+                      [num-r-snipes       50    long    [0 500]     ["-R" "Size of r-snipe subpopulation" :parse-fn #(Long. %)]]
+                      [num-s-snipes       50    long    [0 500]     ["-S" "Size of s-snipe subpopulation" :parse-fn #(Long. %)]]
                       [mush-prob           0.2  double  [0.0 1.0]   ["-f" "Average frequency of mushrooms." :parse-fn #(Double. %)]]
                       [mush-low-size       4.0  double  true        ["-s" "Size of small mushrooms (mean of light distribution)" :parse-fn #(Double. %)]]
                       [mush-high-size     16.0  double  true        ["-l" "Size of large mushrooms (mean of light distribution)" :parse-fn #(Double. %)]]
@@ -38,7 +38,7 @@
                       [birth-cost          5.0  double  [0.0 10.0]  ["-o" "Energetic cost of giving birth to one offspring" :parse-fn #(Double. %)]]
                       [max-energy         30.0  double  [1.0 100.0] ["-x" "Max energy that a snipe can have." :parse-fn #(Double. %)]]
                       [carrying-proportion 0.25 double  [0.1 0.9]   ["-c" "Snipes are randomly culled when number exceed this times # of cells." :parse-fn #(Double. %)]]
-                      [neighbor-radius     1    long    [1 10]      ["-r" "Outer radius from s-snipe including its neighbors." :parse-fn #(Long. %)]]
+                      [neighbor-radius     5    long    [1 10]      ["-r" "s-snipe neighbors are no more than this distance away." :parse-fn #(Long. %)]]
                       [report-every        0    long    true        ["-i" "Report basic stats every i ticks after the first one (0 = never)." :parse-fn #(Long. %)]]
                       [max-ticks           0    long    false       ["-t" "Stop after this number of timesteps have run, or never if 0." :parse-fn #(Long. %)]]
                       [env-width          88    long    false       ["-w" "Width of env.  Must be an even number." :parse-fn #(Long. %)]]   ; Haven't figured out how to change 
