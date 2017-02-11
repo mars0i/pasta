@@ -7,6 +7,15 @@
   [cfg-data]
   (count (:snipes (:popenv cfg-data))))
 
+(defn count-snipes
+  [snipes]
+  (let [counter (fn [[k r s] id snipe]
+                  (cond (sn/k-snipe? snipe) [(inc k) r s]
+                        (sn/r-snipe? snipe) [k (inc r) s]
+                        (sn/s-snipe? snipe) [k r (inc s)]
+                        :else (throw (Exception. "bad snipe"))))]
+    (reduce-kv counter [0 0 0] snipes)))
+
 (defn get-k-snipe-freq
   [cfg-data]
   (let [count-k-snipes (fn [n id snipe]
