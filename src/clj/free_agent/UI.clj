@@ -36,6 +36,7 @@
 (defn snipe-shade-fn [max-energy snipe] (int (+ 94 (* 160 (/ (:energy snipe) max-energy)))))
 (defn k-snipe-color-fn [max-energy snipe] (Color. (snipe-shade-fn max-energy snipe) 0 0))
 (defn r-snipe-color-fn [max-energy snipe] (Color. 0 0 (snipe-shade-fn max-energy snipe)))
+(defn s-snipe-color-fn [max-energy snipe] (Color. 0 (snipe-shade-fn max-energy snipe) 0))
 (def org-offset 0.6) ; with simple hex portrayals to display grid, organisms off center; pass this to DrawInfo2D to correct.
 
 ; DEBUG:
@@ -144,7 +145,14 @@
                             (draw [snipe graphics info] ; override method in super
                               (set! (.-paint this) (k-snipe-color-fn max-energy snipe)) ; superclass var
                               (proxy-super draw snipe graphics (DrawInfo2D. info org-offset org-offset)))) ; see above re last arg
-        k-snipe-portrayal (make-fnl-circled-portrayal k-snipe-portrayal Color/red)]
+        k-snipe-portrayal (make-fnl-circled-portrayal k-snipe-portrayal Color/red)
+        s-snipe-portrayal (proxy [ShapePortrayal2D] [ShapePortrayal2D/X_POINTS_BOWTIE 
+                                                     ShapePortrayal2D/Y_POINTS_BOWTIE
+                                                     (* 1.3 snipe-size)]
+                            (draw [snipe graphics info] ; orverride method in super
+                              (set! (.-paint this) (s-snipe-color-fn (min max-energy birth-threshold) snipe)) ; paint var is in superclass
+                              (proxy-super draw snipe graphics (DrawInfo2D. info (* 1.00 org-offset) (* 1.00 org-offset))))) ; see above re last arg
+        s-snipe-portrayal (make-fnl-circled-portrayal s-snipe-portrayal Color/black)]
     (when show-grid
       (.setField bg-field-portrayal (ObjectGrid2D. (:env-width cfg-data) (:env-height cfg-data)))) ; displays a background grid
     (.setField mush-field-portrayal mush-field)
@@ -155,6 +163,7 @@
     (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe k-snipe-portrayal)
     (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipePrefSmall r-snipe-portrayal-pref-small)
     (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipePrefBig   r-snipe-portrayal-pref-big)
+    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.SSnipe s-snipe-portrayal)
     ;; Since popenvs are updated functionally, have to tell the ui about the new popenv on every timestep:
     (.scheduleRepeatingImmediatelyAfter this-ui
                                         (reify Steppable 
