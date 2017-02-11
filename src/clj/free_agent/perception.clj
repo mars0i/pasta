@@ -92,7 +92,7 @@
         mush-pref (* neighbors-sign extreme-pref) ; -1, 0, or 1 * extreme-pref
         scaled-appearance (- (mu/appearance mush) mush-mid-size)
         eat? (pos? (* mush-pref scaled-appearance))]  ; eat if scaled appearance has same sign as mush-pref
-    [(assoc snipe :mush-pref mush-pref) false])) ; mush-pref will just be replaced next time, but this allows inspection
+    [(assoc snipe :mush-pref mush-pref) eat?])) ; mush-pref will just be replaced next time, but this allows inspection
 
 (defn random-eat-snipe-pref
  "Decides by a coin toss whether to eat."
