@@ -329,7 +329,7 @@
             (add-organism-to-rand-loc! rng @cfg-data$ new-snipe-field env-width env-height ; add newborn
                                        (organism-setter (cond (sn/k-snipe? snipe) (partial sn/make-newborn-k-snipe cfg-data$)
                                                               (sn/r-snipe? snipe) (partial sn/make-newborn-r-snipe rng cfg-data$)
-                                                              :else               (partial sn/make-newborn-s-snipe rng cfg-data$))))))))
+                                                              :else               (partial sn/make-newborn-s-snipe cfg-data$))))))))
     new-snipe-field))
 
  ; newborn should be like parent
