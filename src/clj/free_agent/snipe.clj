@@ -172,7 +172,7 @@
 (defn rand-energy
   "Generate random energy value uniformly distributed in [0, birth-threshold)."
   [rng cfg-data]
-  (math/round (* (:birth-threshold cfg-data)
+  (math/round (* (:birth-threshold cfg-data) ; round isn't essential. just makes it easier to watch individual snipes.
                  (ran/next-double rng))))
 
 ;; note underscores
