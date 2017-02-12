@@ -7,14 +7,14 @@
   [cfg-data]
   (count (:snipes (:popenv cfg-data))))
 
-(defn count-snipes
-  [snipes]
-  (let [counter (fn [[k r s] id snipe]
-                  (cond (sn/k-snipe? snipe) [(inc k) r s]
-                        (sn/r-snipe? snipe) [k (inc r) s]
-                        (sn/s-snipe? snipe) [k r (inc s)]
-                        :else (throw (Exception. "bad snipe"))))]
-    (reduce-kv counter [0 0 0] snipes)))
+;(defn count-snipes
+;  [snipes]
+;  (let [counter (fn [[k r s] id snipe]
+;                  (cond (sn/k-snipe? snipe) [(inc k) r s]
+;                        (sn/r-snipe? snipe) [k (inc r) s]
+;                        (sn/s-snipe? snipe) [k r (inc s)]
+;                        :else (throw (Exception. "bad snipe"))))]
+;    (reduce-kv counter [0 0 0] snipes)))
 
 (defn get-k-snipe-freq
   [cfg-data]
@@ -29,12 +29,12 @@
       (double (/ k-snipe-count pop-size)) 
       0))) ; avoid spurious div by zero at beginning of a run
 
-;(defn inc-snipe-counts
-;  "Increments the entry of map counts corresponding to the snipe class."
-;  [counts s]
-;  (cond (sn/k-snipe? s)            (update counts :k-snipe inc)
-;        (sn/r-snipe-pref-small? s) (update counts :r-snipe-pref-small inc)
-;        :else                      (update counts :r-snipe-pref-big inc)))
+(defn inc-snipe-counts
+  "Increments the entry of map counts corresponding to the snipe class."
+  [counts s]
+  (cond (sn/k-snipe? s)            (update counts :k-snipe inc)
+        (sn/r-snipe-pref-small? s) (update counts :r-snipe-pref-small inc)
+        :else                      (update counts :r-snipe-pref-big inc)))
 
 (defn count-snipes
   "Returns a map containing counts for numbers of snipes of the three kinds 
@@ -55,6 +55,7 @@
   (let [env-center (:env-center cfg-data) ; always = something-and-a-half
         inc-counts (fn [counts s]
                      (cond (sn/k-snipe? s) (update counts :k-snipe inc)
+                           (sn/s-snipe? s) (update counts :s-snipe inc)
                            (sn/r-snipe-pref-small? s) (if (< (:x s) env-center)
                                                         (update counts :r-snipe-pref-small-left inc)
                                                         (update counts :r-snipe-pref-small-right inc))
@@ -63,6 +64,7 @@
                                                         (update counts :r-snipe-pref-big-right inc))))]
     (reduce inc-counts
             {:k-snipe 0 
+             :s-snipe 0 
              :r-snipe-pref-small-left 0
              :r-snipe-pref-small-right 0 
              :r-snipe-pref-big-left 0
