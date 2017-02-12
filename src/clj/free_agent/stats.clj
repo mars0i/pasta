@@ -33,6 +33,7 @@
   "Increments the entry of map counts corresponding to the snipe class."
   [counts s]
   (cond (sn/k-snipe? s)            (update counts :k-snipe inc)
+        (sn/s-snipe? s)            (update counts :s-snipe inc)
         (sn/r-snipe-pref-small? s) (update counts :r-snipe-pref-small inc)
         :else                      (update counts :r-snipe-pref-big inc)))
 
@@ -42,7 +43,7 @@
   :r-snipe-pref-small, :r-snipe-pref-big."
   [snipes]
   (reduce inc-snipe-counts
-          {:k-snipe 0, :r-snipe-pref-small 0, :r-snipe-pref-big 0}
+          {:k-snipe 0, :s-snipe 0, :r-snipe-pref-small 0, :r-snipe-pref-big 0}
           snipes))
 
 (defn count-snipe-locs
@@ -90,6 +91,7 @@
         num-snipes (count snipes)
         sum-vals (fn [sums s]
                      (cond (sn/k-snipe? s)            (update sums :k-snipe + (k s))
+                           (sn/s-snipe? s)            (update sums :s-snipe + (k s))
                            (sn/r-snipe-pref-small? s) (if (< (:x s) env-center)
                                                         (update sums :r-snipe-pref-small-left + (k s))
                                                         (update sums :r-snipe-pref-small-right + (k s)))
@@ -98,6 +100,7 @@
                                                         (update sums :r-snipe-pref-big-right + (k s)))))
         val-totals (reduce sum-vals 
                            {:k-snipe 0 
+                            :s-snipe 0 
                             :r-snipe-pref-small-left 0,
                             :r-snipe-pref-small-right 0 
                             :r-snipe-pref-big-left 0
