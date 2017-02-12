@@ -145,6 +145,17 @@
   (let [dead-snipes (:dead-snipes (:popenv cfg-data))]
     (mean-energies-locs cfg-data counts (apply concat dead-snipes))))
 
+(defn mean-prefs-locs
+  "Returns a map of mean mush-prefs for snipes, with keys as in count-snipe-locs. The
+  counts argument should be the result of count-snipe-locs for the same snipes."
+  [cfg-data counts snipes]
+  (mean-vals-locs :mush-pref cfg-data counts snipes))
+
+(defn mean-prefs-live-snipe-locs
+  [cfg-data counts]
+  (let [snipes (vals (:snipes (:popenv cfg-data)))]
+    (mean-prefs-locs cfg-data counts snipes)))
+
 ;; from https://clojuredocs.org/clojure.core/reduce-kv#example-57d1e9dae4b0709b524f04eb
 (defn map-kv
   "Given a map coll, returns a similar map with the same keys and the result 
@@ -172,6 +183,7 @@
          live-counts (into (sorted-map) (count-live-snipe-locs cfg-data))
          dead-counts (into (sorted-map) (count-dead-snipe-locs cfg-data))
          live-energies (into (sorted-map) (mean-energies-live-snipe-locs cfg-data live-counts))
+         live-prefs (into (sorted-map) (mean-prefs-live-snipe-locs cfg-data live-counts))
          ;; no need to caluclate mean dead energies: they're always zero
          live-ages (into (sorted-map) (map-kv round-or-nil (mean-ages-live-snipe-locs cfg-data live-counts)))  ; cl-format ~d directive doesn't round or truncate, etc.
          dead-ages (into (sorted-map) (map-kv round-or-nil (mean-ages-dead-snipe-locs cfg-data dead-counts)))] ; and ages are easier to read as integers
@@ -179,6 +191,7 @@
      (pp/cl-format true "live counts ~{~{~a ~d~}~^, ~}~%" live-counts) ; ~{...~} iterates over a sequence; maps treated as sequences become
      (pp/cl-format true "dead counts ~{~{~a ~d~}~^, ~}~%" dead-counts) ;  sequences of pairs; so we embed another ~{...~} to process the pair.
      (pp/cl-format true "mean live energies ~{~{~a ~@{~:[-~;~:*~$~]~}~}~^, ~}~%" live-energies) ; voodoo to print a number with ~$ if non-nil, or "-" otherwise. 
+     (pp/cl-format true "mean live prefs ~{~{~a ~@{~:[-~;~:*~$~]~}~}~^, ~}~%" live-prefs)       ;  ...
      (pp/cl-format true "mean live ages ~{~{~a ~@{~:[-~;~:*~d~]~}~}~^, ~}~%" live-ages)         ;  It's needed because I treat an average as nil if no snipes
      (pp/cl-format true "mean dead ages ~{~{~a ~@{~:[-~;~:*~d~]~}~}~^, ~}~%" dead-ages)))) ; also note "~^," emits a comma iff there is more coming
 
