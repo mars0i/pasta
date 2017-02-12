@@ -143,9 +143,9 @@
               {:keys [~'options ~'arguments ~'errors ~'summary] :as ~'cmdline} (clojure.tools.cli/parse-opts args# ~'cli-options)]
           (reset! ~'commandline ~'cmdline) ; commandline should be defined previously in SimConfig
           (when (:help ~'options)
-            (println "Command line options for free-agent:")
+            (println "Command line options (defaults in parentheses):")
             (println (usage-fmt# ~'cli-options))
-            (println "free-agent and MASON options can both be used:")
+            (println "MASON options can also be used:")
             (println "-help (note single dash): Print help message for MASON.")
             (System/exit 0)))))))
 
