@@ -29,12 +29,12 @@
       (double (/ k-snipe-count pop-size)) 
       0))) ; avoid spurious div by zero at beginning of a run
 
-(defn inc-snipe-counts
-  "Increments the entry of map counts corresponding to the snipe class."
-  [counts s]
-  (cond (sn/k-snipe? s)            (update counts :k-snipe inc)
-        (sn/r-snipe-pref-small? s) (update counts :r-snipe-pref-small inc)
-        :else                      (update counts :r-snipe-pref-big inc)))
+;(defn inc-snipe-counts
+;  "Increments the entry of map counts corresponding to the snipe class."
+;  [counts s]
+;  (cond (sn/k-snipe? s)            (update counts :k-snipe inc)
+;        (sn/r-snipe-pref-small? s) (update counts :r-snipe-pref-small inc)
+;        :else                      (update counts :r-snipe-pref-big inc)))
 
 (defn count-snipes
   "Returns a map containing counts for numbers of snipes of the three kinds 
