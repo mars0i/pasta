@@ -25,7 +25,7 @@
 (defcfg/defsimconfig [[num-k-snipes       50    long    [0 500]     ["-K" "Size of k-snipe subpopulation" :parse-fn #(Long. %)]]
                       [num-r-snipes       50    long    [0 500]     ["-R" "Size of r-snipe subpopulation" :parse-fn #(Long. %)]]
                       [num-s-snipes       50    long    [0 500]     ["-S" "Size of s-snipe subpopulation" :parse-fn #(Long. %)]]
-                      [mush-prob           0.2  double  [0.0 1.0]   ["-f" "Average frequency of mushrooms." :parse-fn #(Double. %)]]
+                      [mush-prob           0.2  double  [0.0 1.0]   ["-M" "Average frequency of mushrooms." :parse-fn #(Double. %)]]
                       [mush-low-size       4.0  double  true        ["-s" "Size of small mushrooms (mean of light distribution)" :parse-fn #(Double. %)]]
                       [mush-high-size     16.0  double  true        ["-l" "Size of large mushrooms (mean of light distribution)" :parse-fn #(Double. %)]]
                       [mush-sd             2.0  double  true        ["-v" "Standard deviation of mushroom light distribution" :parse-fn #(Double. %)]]
