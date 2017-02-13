@@ -89,7 +89,8 @@
         neighbors-sign (amath/sgn (reduce (fn [sum neighbor]  ; determine whether neighbors with positive or negative prefs
                                             (+ sum (amath/sgn (:mush-pref neighbor)))) ; predominate (or are equal); store sign of result.
                                           0 neighbors))
-        mush-pref (* neighbors-sign extreme-pref) ; -1, 0, or 1 * extreme-pref
+        mush-pref (+ (* neighbors-sign extreme-pref) ; -1, 0, or 1 * extreme-pref
+                     (pref-noise rng)) ; allows s-snipes to explore preference space even when all snipes are s-snipes
         scaled-appearance (- (mu/appearance mush) mush-mid-size)
         eat? (pos? (* mush-pref scaled-appearance))]  ; eat if scaled appearance has same sign as mush-pref
     [(assoc snipe :mush-pref mush-pref) eat?])) ; mush-pref will just be replaced next time, but this allows inspection
