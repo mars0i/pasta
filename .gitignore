@@ -24,3 +24,6 @@ nogui
 repl
 doc/BogaczTutorialOnFreeEnergyPerception.pdf
 doc/FeldmanFriston2010AttnUncertFreeEnergy.pdf
+
+phil.bib
+*.bst
