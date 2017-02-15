@@ -78,7 +78,8 @@
 (defn make-s-snipe 
   [cfg-data$ energy x y]
   (SSnipe. (next-id)
-           perc/s-snipe-pref
+           perc/s-snipe-pref-success-bias
+           ;perc/s-snipe-pref-freq-bias
            0.0 
            energy
            x y
@@ -180,7 +181,7 @@
   it can be displayed in a repl without creating an infinite loop (since
   cfg-data$ contains popenv which contains a hash of all snipes)."
   [snipe]
-  (assoc snipe :cfg-data$ nil))
+  (dissoc snipe :cfg-data$))
 
 ;; note underscores
 (defn k-snipe? [s] (instance? free_agent.snipe.KSnipe s))
