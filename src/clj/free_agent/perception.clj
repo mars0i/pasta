@@ -5,7 +5,8 @@
 (ns free-agent.perception
   (:require [clojure.algo.generic.math-functions :as amath]
             [free-agent.mush :as mu]
-            [utils.random :as ran])
+            [utils.random :as ran]
+            [utils.random-utils :as ranu])
   (:import [sim.field.grid Grid2D ObjectGrid2D]
            [sim.util IntBag]))
 
@@ -79,17 +80,42 @@
         eat? (pos? (* mush-pref scaled-appearance))]  ; eat if scaled appearance has same sign as mush-pref
     [snipe eat?]))
 
-(defn s-snipe-pref
+(defn s-snipe-pref-freq-bias
   "Adopts mushroom preference with a sign like that of its neighbors."
   [rng snipe mush]
-  (let [{:keys [perceive x y mush-pref cfg-data$]} snipe
+  (let [{:keys [x y cfg-data$]} snipe
         {:keys [popenv mush-mid-size neighbor-radius extreme-pref]} @cfg-data$
         {:keys [snipe-field]} popenv
         neighbors (.getHexagonalNeighbors snipe-field x y neighbor-radius Grid2D/TOROIDAL false)
         neighbors-sign (amath/sgn (reduce (fn [sum neighbor]  ; determine whether neighbors with positive or negative prefs
                                             (+ sum (amath/sgn (:mush-pref neighbor)))) ; predominate (or are equal); store sign of result.
-                                          0 neighbors))
+                                          0 neighbors)) ; returns zero if no neighbors
         mush-pref (+ (* neighbors-sign extreme-pref) ; -1, 0, or 1 * extreme-pref
+                     (pref-noise rng)) ; allows s-snipes to explore preference space even when all snipes are s-snipes
+        scaled-appearance (- (mu/appearance mush) mush-mid-size)
+        eat? (pos? (* mush-pref scaled-appearance))]  ; eat if scaled appearance has same sign as mush-pref
+    [(assoc snipe :mush-pref mush-pref) eat?])) ; mush-pref will just be replaced next time, but this allows inspection
+
+(defn s-snipe-pref-success-bias
+  "Adopts mushroom preference with a sign like that of its most successful 
+  neighbor, where success is measured by current energy.  Ties are broken
+  randomly.  (Note this simple measure means that a snipe that's recently 
+  given birth and lost the birth cost may appear less successful than one 
+  who's e.g. never given birth but is approaching the birth threshold.)"
+  [rng snipe mush]
+  (let [{:keys [x y cfg-data$]} snipe
+        {:keys [popenv mush-mid-size neighbor-radius extreme-pref]} @cfg-data$
+        {:keys [snipe-field]} popenv
+        neighbors (.getHexagonalNeighbors snipe-field x y neighbor-radius Grid2D/TOROIDAL false)
+        best-neighbors (reduce (fn [best-neighbors neighbor]
+                                 (let [best-energy (:energy (first best-neighbors))
+                                       neighbor-energy (:energy neighbor)]
+                                   (cond (< neighbor-energy best-energy) best-neighbors
+                                         (> neighbor-energy best-energy) [neighbor]
+                                         :else (conj best-neighbors neighbor))))
+                               [{:energy -1 :mush-pref 0}] ; start with dummy "snipe", returned only if there are no neighbors
+                               neighbors) 
+        mush-pref (+ (:mush-pref (ranu/sample-one rng best-neighbors))
                      (pref-noise rng)) ; allows s-snipes to explore preference space even when all snipes are s-snipes
         scaled-appearance (- (mu/appearance mush) mush-mid-size)
         eat? (pos? (* mush-pref scaled-appearance))]  ; eat if scaled appearance has same sign as mush-pref
