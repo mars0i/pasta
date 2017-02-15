@@ -3,6 +3,14 @@
            [clojure.pprint :as pp]
            [clojure.math.numeric-tower :as math]))
 
+;; from https://clojuredocs.org/clojure.core/reduce-kv#example-57d1e9dae4b0709b524f04eb
+(defn map-kv
+  "Given a map coll, returns a similar map with the same keys and the result 
+  of applying f to each value."
+  [f coll]
+  (reduce-kv (fn [m k v] (assoc m k (f v)))
+             (empty coll) coll))
+
 (defn get-pop-size
   [cfg-data]
   (count (:snipes (:popenv cfg-data))))
@@ -15,19 +23,6 @@
 ;                        (sn/s-snipe? snipe) [k r (inc s)]
 ;                        :else (throw (Exception. "bad snipe"))))]
 ;    (reduce-kv counter [0 0 0] snipes)))
-
-(defn get-k-snipe-freq
-  [cfg-data]
-  (let [count-k-snipes (fn [n id snipe]
-                         (if (sn/k-snipe? snipe)
-                           (inc n)
-                           n))
-        snipes (:snipes (:popenv cfg-data))
-        pop-size (count snipes)
-        k-snipe-count (reduce-kv count-k-snipes 0 snipes)]
-    (if (pos? pop-size)                   ; when UI first starts, it tries to calc this even though there's no pop, and divs by zero
-      (double (/ k-snipe-count pop-size)) 
-      0))) ; avoid spurious div by zero at beginning of a run
 
 (defn inc-snipe-counts
   "Increments the entry of map counts corresponding to the snipe class."
@@ -64,13 +59,46 @@
                                                         (update counts :r-snipe-pref-big-left inc)
                                                         (update counts :r-snipe-pref-big-right inc))))]
     (reduce inc-counts
-            {:k-snipe 0 
+            {:total (count snipes)
+             :k-snipe 0 
              :s-snipe 0 
              :r-snipe-pref-small-left 0
              :r-snipe-pref-small-right 0 
              :r-snipe-pref-big-left 0
              :r-snipe-pref-big-right 0}
             snipes)))
+
+(defn freq-snipe-locs
+  [cfg-data snipes]
+  (let [counts (count-snipe-locs cfg-data snipes)
+        total (:total counts)]
+    (map-kv (fn [n] (if (pos? n)
+                      (double (/ n total))
+                      0))
+            (dissoc counts :total))))
+
+(def freqs$ (atom {}))
+
+(defn get-freq
+  [cfg-data tick k snipes]
+  (let [freqs (or (@freqs$ tick) ; if already got freqs for this tick, use 'em
+                  (reset! freqs$  ; if it's a new tick, replace with map containing only new freqs
+                         {k (freq-snipe-locs cfg-data snipes)}))] ; i.e. don't keep old freqs
+    (k freqs)))
+
+;; OLD
+(defn get-k-snipe-freq
+  [cfg-data]
+  (let [count-k-snipes (fn [n id snipe]
+                         (if (sn/k-snipe? snipe)
+                           (inc n)
+                           n))
+        snipes (:snipes (:popenv cfg-data))
+        pop-size (count snipes)
+        k-snipe-count (reduce-kv count-k-snipes 0 snipes)]
+    (if (pos? pop-size)                   ; when UI first starts, it tries to calc this even though there's no pop, and divs by zero
+      (double (/ k-snipe-count pop-size)) 
+      0))) ; avoid spurious div by zero at beginning of a run
  
 (defn count-live-snipe-locs
   [cfg-data]
@@ -155,14 +183,6 @@
   [cfg-data counts]
   (let [snipes (vals (:snipes (:popenv cfg-data)))]
     (mean-prefs-locs cfg-data counts snipes)))
-
-;; from https://clojuredocs.org/clojure.core/reduce-kv#example-57d1e9dae4b0709b524f04eb
-(defn map-kv
-  "Given a map coll, returns a similar map with the same keys and the result 
-  of applying f to each value."
-  [f coll]
-  (reduce-kv (fn [m k v] (assoc m k (f v)))
-             (empty coll) coll))
 
 (defn round-or-nil
   "Rounds its argument unless the argument is falsey, in which case it's simply
