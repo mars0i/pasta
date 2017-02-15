@@ -189,6 +189,16 @@
      (+ 1 (* (- width 1)
              (/ 3.0 4.0)))))
 
+;; EXPERIMENT
+;(defn make-display
+;  [controller width height title]
+;  (let [display (Display2D. width height this)
+;        display-frame (.createFrame display)]
+;    (.setClipping display false)
+;    (.registerFrame controller display-frame)
+;    (.setTitle display-frame "free-agent")
+;    (.setVisible display-frame true)))
+
 (defn -init
   [this controller] ; fyi controller is called c in Java version
   (.superInit this controller)
