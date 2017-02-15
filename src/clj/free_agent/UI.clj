@@ -152,15 +152,7 @@
                             (draw [snipe graphics info] ; orverride method in super
                               (set! (.-paint this) (s-snipe-color-fn (min max-energy birth-threshold) snipe)) ; paint var is in superclass
                               (proxy-super draw snipe graphics (DrawInfo2D. info (* 1.5 org-offset) (* 1.5 org-offset))))) ; see above re last arg
-        s-snipe-portrayal (make-fnl-circled-portrayal s-snipe-portrayal Color/black)
-        ;s-snipe-portrayal (proxy [ShapePortrayal2D] [ShapePortrayal2D/X_POINTS_BOWTIE 
-        ;                                             ShapePortrayal2D/Y_POINTS_BOWTIE
-        ;                                             (* 1.3 snipe-size)]
-        ;                    (draw [snipe graphics info] ; orverride method in super
-        ;                      (set! (.-paint this) (s-snipe-color-fn (min max-energy birth-threshold) snipe)) ; paint var is in superclass
-        ;                      (proxy-super draw snipe graphics (DrawInfo2D. info (* 1.00 org-offset) (* 1.00 org-offset))))) ; see above re last arg
-        ;s-snipe-portrayal (make-fnl-circled-portrayal s-snipe-portrayal Color/black)
-        ]
+        s-snipe-portrayal (make-fnl-circled-portrayal s-snipe-portrayal Color/black)]
     (when show-grid
       (.setField bg-field-portrayal (ObjectGrid2D. (:env-width cfg-data) (:env-height cfg-data)))) ; displays a background grid
     (.setField mush-field-portrayal mush-field)
