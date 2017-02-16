@@ -96,17 +96,36 @@
         eat? (pos? (* mush-pref scaled-appearance))]  ; eat if scaled appearance has same sign as mush-pref
     [(assoc snipe :mush-pref mush-pref) eat?])) ; mush-pref will just be replaced next time, but this allows inspection
 
+(defn s-snipe-pref-success-bias-cross-env
+  (let [{:keys [x y cfg-data$]} snipe
+        {:keys [popenv neighbor-radius mush-mid-size]} @cfg-data$
+        {:keys [snipe-field]} popenv
+        neighbors (concat 
+                    (.getHexagonalNeighbors snipe-field  ; env for my kind of mushrooms
+                                            x y
+                                            neighbor-radius Grid2D/TOROIDAL false)
+                    (.getHexagonalNeighbors snipe-field  ; env for the other kind of mushrooms
+                                            (+ x mush-mid-size) y 
+                                            neighbor-radius Grid2D/TOROIDAL false))]
+    (s-snipe-pref-success-bias rng snipe mush neighbors)))
+
+(defn s-snipe-pref-success-bias-one-env
+  [rng snipe mush]
+  (let [{:keys [x y cfg-data$]} snipe
+        {:keys [popenv neighbor-radius]} @cfg-data$
+        {:keys [snipe-field]} popenv
+        neighbors (.getHexagonalNeighbors snipe-field x y neighbor-radius Grid2D/TOROIDAL false)]
+    (s-snipe-pref-success-bias rng snipe mush neighbors)))
+
 (defn s-snipe-pref-success-bias
   "Adopts mushroom preference with a sign like that of its most successful 
   neighbor, where success is measured by current energy.  Ties are broken
   randomly.  (Note this simple measure means that a snipe that's recently 
   given birth and lost the birth cost may appear less successful than one 
   who's e.g. never given birth but is approaching the birth threshold.)"
-  [rng snipe mush]
-  (let [{:keys [x y cfg-data$]} snipe
-        {:keys [popenv mush-mid-size neighbor-radius extreme-pref]} @cfg-data$
-        {:keys [snipe-field]} popenv
-        neighbors (.getHexagonalNeighbors snipe-field x y neighbor-radius Grid2D/TOROIDAL false)
+  [rng snipe mush neighbors]
+  (let [{:keys [cfg-data$]} snipe
+        {:keys [mush-mid-size]} @cfg-data$
         best-neighbors (reduce (fn [best-neighbors neighbor]
                                  (let [best-energy (:energy (first best-neighbors))
                                        neighbor-energy (:energy neighbor)]
