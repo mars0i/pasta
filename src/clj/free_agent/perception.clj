@@ -96,29 +96,6 @@
         eat? (pos? (* mush-pref scaled-appearance))]  ; eat if scaled appearance has same sign as mush-pref
     [(assoc snipe :mush-pref mush-pref) eat?])) ; mush-pref will just be replaced next time, but this allows inspection
 
-(defn s-snipe-pref-success-bias
-  "Adopts mushroom preference with a sign like that of its most successful 
-  neighbor, where success is measured by current energy.  Ties are broken
-  randomly.  (Note this simple measure means that a snipe that's recently 
-  given birth and lost the birth cost may appear less successful than one 
-  who's e.g. never given birth but is approaching the birth threshold.)"
-  [rng snipe mush neighbors]
-  (let [{:keys [cfg-data$]} snipe
-        {:keys [mush-mid-size]} @cfg-data$
-        best-neighbors (reduce (fn [best-neighbors neighbor]
-                                 (let [best-energy (:energy (first best-neighbors))
-                                       neighbor-energy (:energy neighbor)]
-                                   (cond (< neighbor-energy best-energy) best-neighbors
-                                         (> neighbor-energy best-energy) [neighbor]
-                                         :else (conj best-neighbors neighbor))))
-                               [{:energy -1 :mush-pref 0}] ; start with dummy "snipe", returned only if there are no neighbors
-                               neighbors) 
-        mush-pref (+ (:mush-pref (ranu/sample-one rng best-neighbors))
-                     (pref-noise rng)) ; allows s-snipes to explore preference space even when all snipes are s-snipes
-        scaled-appearance (- (mu/appearance mush) mush-mid-size)
-        eat? (pos? (* mush-pref scaled-appearance))]  ; eat if scaled appearance has same sign as mush-pref
-    [(assoc snipe :mush-pref mush-pref) eat?])) ; mush-pref will just be replaced next time, but this allows inspection
-
 (defn this-env-neighbors
   [snipe]
   (let [{:keys [x y cfg-data$]} snipe
@@ -142,6 +119,35 @@
       (.getHexagonalNeighbors snipe-field  ; env for the other kind of mushrooms
                               cross-x y 
                               neighbor-radius Grid2D/TOROIDAL false))))
+
+(defn best-neighbor
+  "Return the neighbor with the most energy.  If there's a tie, return
+  a randomly chosen one of the best."
+  [rng neighbors]
+  (ranu/sample-one rng 
+                   (reduce (fn [best-neighbors neighbor]
+                             (let [best-energy (:energy (first best-neighbors))
+                                   neighbor-energy (:energy neighbor)]
+                               (cond (< neighbor-energy best-energy) best-neighbors
+                                     (> neighbor-energy best-energy) [neighbor]
+                                     :else (conj best-neighbors neighbor))))
+                           [{:energy -1 :mush-pref 0}] ; start with dummy "snipe", returned only if there are no neighbors
+                           neighbors)))
+
+(defn s-snipe-pref-success-bias
+  "Adopts mushroom preference with a sign like that of its most successful 
+  neighbor, where success is measured by current energy.  Ties are broken
+  randomly.  (Note this simple measure means that a snipe that's recently 
+  given birth and lost the birth cost may appear less successful than one 
+  who's e.g. never given birth but is approaching the birth threshold.)"
+  [rng snipe mush neighbors]
+  (let [{:keys [cfg-data$]} snipe
+        {:keys [mush-mid-size]} @cfg-data$
+        mush-pref (+ (:mush-pref (best-neighbor rng neighbors))
+                     (pref-noise rng)) ; allows s-snipes to explore preference space even when all snipes are s-snipes
+        scaled-appearance (- (mu/appearance mush) mush-mid-size)
+        eat? (pos? (* mush-pref scaled-appearance))]  ; eat if scaled appearance has same sign as mush-pref
+    [(assoc snipe :mush-pref mush-pref) eat?])) ; mush-pref will just be replaced next time, but this allows inspection
 
 (defn s-snipe-pref-success-bias-this-env
   [rng snipe mush]
