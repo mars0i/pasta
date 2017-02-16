@@ -78,7 +78,8 @@
 (defn make-s-snipe 
   [cfg-data$ energy x y]
   (SSnipe. (next-id)
-           perc/s-snipe-pref-success-bias
+           perc/s-snipe-pref-success-bias-cross-env
+           ;perc/s-snipe-pref-success-bias-this-env
            ;perc/s-snipe-pref-freq-bias
            0.0 
            energy

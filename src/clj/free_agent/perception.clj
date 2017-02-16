@@ -96,27 +96,6 @@
         eat? (pos? (* mush-pref scaled-appearance))]  ; eat if scaled appearance has same sign as mush-pref
     [(assoc snipe :mush-pref mush-pref) eat?])) ; mush-pref will just be replaced next time, but this allows inspection
 
-(defn s-snipe-pref-success-bias-cross-env
-  (let [{:keys [x y cfg-data$]} snipe
-        {:keys [popenv neighbor-radius mush-mid-size]} @cfg-data$
-        {:keys [snipe-field]} popenv
-        neighbors (concat 
-                    (.getHexagonalNeighbors snipe-field  ; env for my kind of mushrooms
-                                            x y
-                                            neighbor-radius Grid2D/TOROIDAL false)
-                    (.getHexagonalNeighbors snipe-field  ; env for the other kind of mushrooms
-                                            (+ x mush-mid-size) y 
-                                            neighbor-radius Grid2D/TOROIDAL false))]
-    (s-snipe-pref-success-bias rng snipe mush neighbors)))
-
-(defn s-snipe-pref-success-bias-one-env
-  [rng snipe mush]
-  (let [{:keys [x y cfg-data$]} snipe
-        {:keys [popenv neighbor-radius]} @cfg-data$
-        {:keys [snipe-field]} popenv
-        neighbors (.getHexagonalNeighbors snipe-field x y neighbor-radius Grid2D/TOROIDAL false)]
-    (s-snipe-pref-success-bias rng snipe mush neighbors)))
-
 (defn s-snipe-pref-success-bias
   "Adopts mushroom preference with a sign like that of its most successful 
   neighbor, where success is measured by current energy.  Ties are broken
@@ -139,6 +118,38 @@
         scaled-appearance (- (mu/appearance mush) mush-mid-size)
         eat? (pos? (* mush-pref scaled-appearance))]  ; eat if scaled appearance has same sign as mush-pref
     [(assoc snipe :mush-pref mush-pref) eat?])) ; mush-pref will just be replaced next time, but this allows inspection
+
+(defn this-env-neighbors
+  [snipe]
+  (let [{:keys [x y cfg-data$]} snipe
+        {:keys [popenv neighbor-radius]} @cfg-data$
+        {:keys [snipe-field]} popenv]
+    (.getHexagonalNeighbors snipe-field x y neighbor-radius Grid2D/TOROIDAL false)))
+
+(defn cross-env-neighbors
+  [snipe]
+  (let [{:keys [x y cfg-data$]} snipe
+        {:keys [popenv neighbor-radius env-width env-center]} @cfg-data$
+        {:keys [snipe-field]} popenv
+        shifted-x (+ x env-center)
+        cross-x (if (< shifted-x env-width)
+                  shifted-x
+                  (- shifted-x env-width))]
+    (concat 
+      (.getHexagonalNeighbors snipe-field  ; env for my kind of mushrooms
+                              x y
+                              neighbor-radius Grid2D/TOROIDAL false)
+      (.getHexagonalNeighbors snipe-field  ; env for the other kind of mushrooms
+                              cross-x y 
+                              neighbor-radius Grid2D/TOROIDAL false))))
+
+(defn s-snipe-pref-success-bias-this-env
+  [rng snipe mush]
+  (s-snipe-pref-success-bias rng snipe mush (this-env-neighbors snipe)))
+
+(defn s-snipe-pref-success-bias-cross-env
+  [rng snipe mush]
+  (s-snipe-pref-success-bias rng snipe mush (cross-env-neighbors snipe)))
 
 (defn random-eat-snipe-pref
  "Decides by a coin toss whether to eat."
