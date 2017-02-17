@@ -9,9 +9,10 @@
            [sim.engine Steppable Schedule Stoppable]
            [sim.field.grid ObjectGrid2D] ; normally doesn't belong in UI: a hack to use a field portrayal to display a background pattern
            [sim.portrayal DrawInfo2D SimpleInspector]
-           [sim.portrayal.grid HexaObjectGridPortrayal2D ObjectGridPortrayal2D]; FastHexaObjectGridPortrayal2D
+           [sim.portrayal.grid HexaObjectGridPortrayal2D]; FastHexaObjectGridPortrayal2D ObjectGridPortrayal2D
            [sim.portrayal.simple OvalPortrayal2D RectanglePortrayal2D HexagonalPortrayal2D CircledPortrayal2D ShapePortrayal2D]
            [sim.display Console Display2D]
+           [java.awt.geom Rectangle2D$Double] ; note wierd Clojure syntax for Java static nested class
            [java.awt Color])
   (:gen-class
     :name free-agent.UI
@@ -51,9 +52,9 @@
   [& args]
   [(vec args) {:display (atom nil)       ; will be replaced in init because we need to pass the UI instance to it
                :display-frame (atom nil) ; will be replaced in init because we need to pass the display to it
-               :snipe-field-portrayal (HexaObjectGridPortrayal2D.) :mush-field-portrayal (HexaObjectGridPortrayal2D.) :bg-field-portrayal (HexaObjectGridPortrayal2D.)
-               ;:snipe-field-portrayal (ObjectGridPortrayal2D.) :mush-field-portrayal (ObjectGridPortrayal2D.) :bg-field-portrayal (ObjectGridPortrayal2D.)
-               }]) ; static background pattern
+               :snipe-field-portrayal (HexaObjectGridPortrayal2D.)
+               :mush-field-portrayal (HexaObjectGridPortrayal2D.)
+               :bg-field-portrayal (HexaObjectGridPortrayal2D.)}]) ; static background pattern
 
 ;; see doc/getName.md
 (defn -getName-void [this] "free-agent") ; override method in super. Should cause this string to be displayed as title of config window of gui, but it doesn't.
@@ -217,9 +218,9 @@
     (set-display! this display)
     (doto display
       (.setClipping false)
-      (.attach bg-field-portrayal "env")         ; The order of attaching is the order of painting.
-      (.attach mush-field-portrayal "mushrooms") ; what's attached later will appear on top of what's earlier. 
-      (.attach snipe-field-portrayal "snipes"))  
+      (.attach bg-field-portrayal "env")         ; The order of attaching is the order of painting; what's attached later will appear on top of what's earlier. 
+      (.attach mush-field-portrayal "mushrooms" (Rectangle2D$Double. 0 0 (/ width 2) height)) ; note Clojure syntax for Java static nested classes
+      (.attach snipe-field-portrayal "snipes"   (Rectangle2D$Double. (/ width 2) 0 (/ width 2) height)))
     (set-display-frame! this display-frame)
     (.registerFrame controller display-frame)
     (doto display-frame 
