@@ -20,7 +20,9 @@
 
 (defrecord PopEnv [snipe-field   ; ObjectGrid2D
                    mush-field    ; ObjectGrid2D
-                   snipes        ; map from ids to snipes
+                   ;east-snipe-field   ; ObjectGrid2D
+                   ;east-mush-field    ; ObjectGrid2D
+                   snipe-map        ; map from ids to snipes
                    dead-snipes]) ; keep a record of dead snipes for later stats
 
 (defn setup-popenv-config!
@@ -66,10 +68,10 @@
         [new-snipe-field newly-culled] (cull-snipes rng @cfg-data$ new-snipe-field)
         new-snipe-field (move-snipes rng @cfg-data$ new-snipe-field)     ; only the living get to move
         new-snipe-field (age-snipes new-snipe-field)
-        snipes (make-snipes-map new-snipe-field)]
+        snipe-map (make-snipes-map new-snipe-field)]
     (PopEnv. new-snipe-field 
              new-mush-field 
-             snipes 
+             snipe-map 
              (conj dead-snipes (concat newly-died newly-culled))))) ; each timestep adds a separate collection of dead snipes
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
