@@ -30,8 +30,8 @@
 (def mush-high-size-appearance 1.0) ; we don't scale mushroom size to modeled size, but
 (def mush-low-size-appearance 0.875) ; we display the low-size mushroom smaller
 ;; background portrayal displayed in mushroom-less patches:
-(def bg-pattern-color (Color. 255 255 255)) ; color of hexagons used to display underlying grid (if show-grid is true)
-(def bg-grid-color (Color. 200 200 200))    ; color of borders around hexagons for underlying grid (if show-grid is true)
+;(def bg-pattern-color (Color. 255 255 255)) ; color of hexagons used to display underlying grid (if show-grid is true)
+;(def bg-grid-color (Color. 200 200 200))    ; color of borders around hexagons for underlying grid (if show-grid is true)
 (def bg-space-color (Color. 255 255 255))   ; color of background without grid (if show-grid is false)
 (def snipe-size 0.55)
 (defn snipe-shade-fn [max-energy snipe] (int (+ 94 (* 160 (/ (:energy snipe) max-energy)))))
@@ -54,7 +54,8 @@
                :display-frame (atom nil) ; will be replaced in init because we need to pass the display to it
                :snipe-field-portrayal (HexaObjectGridPortrayal2D.)
                :mush-field-portrayal (HexaObjectGridPortrayal2D.)
-               :bg-field-portrayal (HexaObjectGridPortrayal2D.)}]) ; static background pattern
+               ;:bg-field-portrayal (HexaObjectGridPortrayal2D.) ; static background pattern
+	       }])
 
 ;; see doc/getName.md
 (defn -getName-void [this] "free-agent") ; override method in super. Should cause this string to be displayed as title of config window of gui, but it doesn't.
@@ -65,7 +66,7 @@
 (defn set-display-frame! [this newval] (reset! (:display-frame (.getUIState this)) newval))
 (defn get-snipe-field-portrayal [this] (:snipe-field-portrayal (.getUIState this)))
 (defn get-mush-field-portrayal [this] (:mush-field-portrayal (.getUIState this)))
-(defn get-bg-field-portrayal [this] (:bg-field-portrayal (.getUIState this)))
+;(defn get-bg-field-portrayal [this] (:bg-field-portrayal (.getUIState this)))
 
 ;; Override methods in sim.display.GUIState so that UI can make graphs, etc.
 (defn -getSimulationInspectedObject [this] (.state this))
@@ -119,7 +120,7 @@
         snipe-field (:snipe-field popenv)
         mush-field-portrayal (get-mush-field-portrayal this-ui)
         snipe-field-portrayal (get-snipe-field-portrayal this-ui)
-        bg-field-portrayal (get-bg-field-portrayal this-ui)
+        ;bg-field-portrayal (get-bg-field-portrayal this-ui)
         display (get-display this-ui)
         ;; These portrayals should be local to setup-portrayals because 
         ;; proxy needs to capture the correct 'this', and we need cfg-data:
@@ -154,12 +155,12 @@
                               (set! (.-paint this) (s-snipe-color-fn (min max-energy birth-threshold) snipe)) ; paint var is in superclass
                               (proxy-super draw snipe graphics (DrawInfo2D. info (* 1.5 org-offset) (* 1.5 org-offset))))) ; see above re last arg
         s-snipe-portrayal (make-fnl-circled-portrayal s-snipe-portrayal Color/black)]
-    (when show-grid
-      (.setField bg-field-portrayal (ObjectGrid2D. (:env-width cfg-data) (:env-height cfg-data)))) ; displays a background grid
+    ;(when show-grid
+    ;  (.setField bg-field-portrayal (ObjectGrid2D. (:env-width cfg-data) (:env-height cfg-data)))) ; displays a background grid
     (.setField mush-field-portrayal mush-field)
     (.setField snipe-field-portrayal snipe-field)
     ; **NOTE** UNDERSCORES NOT HYPHENS IN free_agent CLASSNAMES BELOW:
-    (.setPortrayalForNull bg-field-portrayal (HexagonalPortrayal2D. bg-pattern-color 0.91)) ; show patches as such (or use OvalPortrayal2D with scale 1.0)
+    ;(.setPortrayalForNull bg-field-portrayal (HexagonalPortrayal2D. bg-pattern-color 0.91)) ; show patches as such (or use OvalPortrayal2D with scale 1.0)
     (.setPortrayalForClass mush-field-portrayal free_agent.mush.Mush mush-portrayal)
     (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe k-snipe-portrayal)
     (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipePrefSmall r-snipe-portrayal-pref-small)
@@ -176,7 +177,8 @@
     ;; set up display:
     (doto display
       (.reset )
-      (.setBackdrop (if show-grid bg-grid-color bg-space-color))
+      ;(.setBackdrop (if show-grid bg-grid-color bg-space-color))
+      (.setBackdrop bg-space-color)
       (.repaint))))
 
 
@@ -212,13 +214,13 @@
         height (hex-scale-height height) ; for hexagonal grid
         display (Display2D. width height this)
         display-frame (.createFrame display)
-        bg-field-portrayal (get-bg-field-portrayal this)
+        ;bg-field-portrayal (get-bg-field-portrayal this)
         mush-field-portrayal (get-mush-field-portrayal this)
         snipe-field-portrayal (get-snipe-field-portrayal this)]
     (set-display! this display)
     (doto display
       (.setClipping false)
-      (.attach bg-field-portrayal "env")         ; The order of attaching is the order of painting; what's attached later will appear on top of what's earlier. 
+      ;(.attach bg-field-portrayal "env")         ; The order of attaching is the order of painting; what's attached later will appear on top of what's earlier. 
       (.attach mush-field-portrayal "mushrooms" (Rectangle2D$Double. 0 0 (/ width 2) height)) ; note Clojure syntax for Java static nested classes
       (.attach snipe-field-portrayal "snipes"   (Rectangle2D$Double. (/ width 2) 0 (/ width 2) height)))
     (set-display-frame! this display-frame)
