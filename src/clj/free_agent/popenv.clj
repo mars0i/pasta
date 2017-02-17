@@ -18,10 +18,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TOP LEVEL FUNCTIONS
 
-(defrecord PopEnv [snipe-field   ; ObjectGrid2D
-                   mush-field    ; ObjectGrid2D
-                   ;east-snipe-field   ; ObjectGrid2D
-                   ;east-mush-field    ; ObjectGrid2D
+(defrecord PopEnv [west-snipe-field   ; ObjectGrid2D
+                   east-snipe-field   ; ObjectGrid2D
+                   west-mush-field    ; ObjectGrid2D
+                   east-mush-field    ; ObjectGrid2D
                    snipe-map        ; map from ids to snipes
                    dead-snipes]) ; keep a record of dead snipes for later stats
 
@@ -30,35 +30,44 @@
   (let [{:keys [env-width env-height carrying-proportion mush-low-size mush-high-size]} @cfg-data$]
     (swap! cfg-data$ assoc :mush-size-scale (/ 1.0 (- mush-high-size mush-low-size)))
     (swap! cfg-data$ assoc :mush-mid-size (/ (+ mush-low-size mush-high-size) 2.0))
-    (swap! cfg-data$ assoc :env-center (/ env-width 2.0))
-    (swap! cfg-data$ assoc :max-pop-size (int (* env-width env-height carrying-proportion)))))
+    ;(swap! cfg-data$ assoc :env-center (/ env-width 2.0))
+    (swap! cfg-data$ assoc :max-pop-size (int (* 2 env-width env-height carrying-proportion))))) ; * 2 since two distinct envs
 
-(defn make-snipes-map
-  "Make a map from snipe ids to snipes."
-  [snipe-field]
-  (into {} (map #(vector (:id %) %)) ; transducer w/ vector: may be slightly faster than alternatives
-        (.elements snipe-field)))    ; btw cost compared to not constructing a snipes map is trivial
-
+(defn make-snipe-map
+  "Make a map from snipe ids to snipes in one or more snipe-fields."
+  [& snipe-fields]
+  (into snipe-map (map #(vector (:id %) %)) ; transducer w/ vector: may be slightly faster than alternatives
+        (mapcat #(.elements %) snipe-fields)))    ; btw cost compared to not constructing a snipes map is trivial
 
 (defn make-popenv
   [rng cfg-data$]
   (let [{:keys [env-width env-height]} @cfg-data$
-        snipe-field (ObjectGrid2D. env-width env-height)
-        mush-field  (ObjectGrid2D. env-width env-height)]
-    (.clear mush-field)
-    (add-mushs! rng @cfg-data$ mush-field)
+        west-snipe-field (ObjectGrid2D. env-width env-height)
+        west-mush-field  (ObjectGrid2D. env-width env-height)
+        east-snipe-field (ObjectGrid2D. env-width env-height)
+        east-mush-field  (ObjectGrid2D. env-width env-height)]
+    (add-mushs! rng @cfg-data$ west-mush-field)
+    (add-mushs! rng @cfg-data$ east-mush-field)
     (.clear snipe-field)
-    (add-k-snipes! rng cfg-data$ snipe-field)
-    (add-r-snipes! rng cfg-data$ snipe-field)
-    (add-s-snipes! rng cfg-data$ snipe-field)
-    (PopEnv. snipe-field mush-field (make-snipes-map snipe-field) [])))
+    (add-k-snipes! rng cfg-data$ west-snipe-field)
+    (add-r-snipes! rng cfg-data$ west-snipe-field)
+    (add-s-snipes! rng cfg-data$ west-snipe-field)
+    (add-k-snipes! rng cfg-data$ east-snipe-field)
+    (add-r-snipes! rng cfg-data$ east-snipe-field)
+    (add-s-snipes! rng cfg-data$ east-snipe-field)
+    (PopEnv. west-snipe-field east-snipe-field
+             west-mush-field  east-mush-field 
+             (make-snipe-map west-snipe-field east-snipe-field)
+             []))) ; dead snipes
 
 (defn next-popenv
   "Given an rng, a simConfigData atom, and a PopEnv, return
   a new PopEnv.  (popenv is last for convenience with iterate.
   You can use partial use next-popenv with swap!.)"
   [rng cfg-data$ popenv]
-  (let [{:keys [snipe-field mush-field dead-snipes]} popenv
+  (let [{:keys [west-snipe-field east-snipe-field 
+                west-mush-field east-mush-field
+                dead-snipes]} popenv
         [new-snipe-field new-mush-field] (snipes-eat rng 
                                                      @cfg-data$
                                                      snipe-field 
@@ -68,7 +77,7 @@
         [new-snipe-field newly-culled] (cull-snipes rng @cfg-data$ new-snipe-field)
         new-snipe-field (move-snipes rng @cfg-data$ new-snipe-field)     ; only the living get to move
         new-snipe-field (age-snipes new-snipe-field)
-        snipe-map (make-snipes-map new-snipe-field)]
+        snipe-map (make-snipe-map new-snipe-field)]
     (PopEnv. new-snipe-field 
              new-mush-field 
              snipe-map 
