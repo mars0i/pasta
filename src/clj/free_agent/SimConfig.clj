@@ -47,8 +47,8 @@
                       [show-grid         false  boolean false      ["-g" "If present, display underlying hexagonal grid." :parse-fn #(Boolean. %)]]
                       [extreme-pref      100.0  double  false] ; mush preference value for r-snipes and s-snipes
                       [max-pop-size        0    long    false]
-                      [env-center         nil   double  false]
-                      [popenv             nil   free-agent.popenv.PopEnv false]]
+                      [west-popenv             nil   free-agent.popenv.PopEnv false]
+                      [east-popenv             nil   free-agent.popenv.PopEnv false]]
   :methods [[getPopSize [] long] ; additional options here. this one is for def below; it will get merged into the generated :methods component.
             [getKSnipeFreq [] double]])
 
@@ -91,14 +91,16 @@
         ^SimConfigData cfg-data$ (.simConfigData this)
         ^MersenneTwisterFast rng (.-random this)]
     (pe/setup-popenv-config! cfg-data$)
-    (swap! cfg-data$ assoc :popenv (pe/make-popenv rng cfg-data$)) ; create new popenv
+    (swap! cfg-data$ assoc :west-popenv (pe/make-popenv rng cfg-data$ :west)) ; create new popenv
+    (swap! cfg-data$ assoc :east-popenv (pe/make-popenv rng cfg-data$ :east)) ; create new popenv
     ;; Run it:
     (let [report-every (double (:report-every @cfg-data$))
           max-ticks (:max-ticks @cfg-data$)
           stoppable (.scheduleRepeating schedule Schedule/EPOCH 0 ; epoch = starting at beginning, 0 means run this first during timestep
                         (reify Steppable 
                           (step [this sim-state]
-                            (swap! cfg-data$ update :popenv (partial pe/next-popenv rng cfg-data$)))))]
+                            (swap! cfg-data$ update :west-popenv (partial pe/next-popenv rng cfg-data$))
+                            (swap! cfg-data$ update :east-popenv (partial pe/next-popenv rng cfg-data$)))))]
       ;; Stop simulation when condition satisfied (TODO will add additional conditions later):
       (.scheduleRepeating schedule Schedule/EPOCH 1 ; 1 = i.e. after main previous Steppable that runs the simulation
                           (reify Steppable
@@ -116,26 +118,6 @@
                             (reify Steppable
                               (step [this sim-state]
                                 (when (< (.getSteps schedule) max-ticks) ; don't report if this is the last tick
-                                  (stats/report-stats @cfg-data$ schedule)
+                                  (stats/report-stats @cfg-data$ schedule) ; FIXME BROKEN FOR NEW TWO-ENV CONFIG
                                   (println))))
                             report-every))))) ; repeat this often
-
-;; https://listserv.gmu.edu/cgi-bin/wa?A2=ind0610&L=MASON-INTEREST-L&D=0&1=MASON-INTEREST-L&9=A&J=on&d=No+Match%3BMatch%3BMatches&z=4&P=14576
-;; 1. Make a Steppable which shuts down the simulation.
-;; 
-;; public class KillSteppable implements Steppable
-;; 	{
-;; 	public void step(SimState state)
-;; 		{
-;; 		state.kill();
-;; 		}
-;; 	}
-;; 
-;; 2. Stick it in a MultiStep (a convenience class we wrote which only  
-;; calls its subsidiary Steppable once every N times, among other options):
-;; 
-;; Steppable a = new MultiStep(new KillSteppable(), numTimeSteps, true);
-;; 
-;; 3. Schedule the MultiStep repeating every timestep.  After  
-;; numTimeSteps, it'll fire its KillSteppable, which will stop the  
-;; simulation.

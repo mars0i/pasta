@@ -20,9 +20,7 @@
 
 (defrecord PopEnv [snipe-field   ; ObjectGrid2D
                    mush-field    ; ObjectGrid2D
-                   ;east-snipe-field   ; ObjectGrid2D
-                   ;east-mush-field    ; ObjectGrid2D
-                   snipe-map        ; map from ids to snipes
+                   snipe-map     ; map from ids to snipes
                    dead-snipes]) ; keep a record of dead snipes for later stats
 
 (defn setup-popenv-config!
@@ -30,28 +28,26 @@
   (let [{:keys [env-width env-height carrying-proportion mush-low-size mush-high-size]} @cfg-data$]
     (swap! cfg-data$ assoc :mush-size-scale (/ 1.0 (- mush-high-size mush-low-size)))
     (swap! cfg-data$ assoc :mush-mid-size (/ (+ mush-low-size mush-high-size) 2.0))
-    (swap! cfg-data$ assoc :env-center (/ env-width 2.0))
     (swap! cfg-data$ assoc :max-pop-size (int (* env-width env-height carrying-proportion)))))
 
-(defn make-snipes-map
+(defn make-snipe-map
   "Make a map from snipe ids to snipes."
   [snipe-field]
   (into {} (map #(vector (:id %) %)) ; transducer w/ vector: may be slightly faster than alternatives
         (.elements snipe-field)))    ; btw cost compared to not constructing a snipes map is trivial
 
-
 (defn make-popenv
-  [rng cfg-data$]
+  [rng cfg-data$ subenv]
   (let [{:keys [env-width env-height]} @cfg-data$
         snipe-field (ObjectGrid2D. env-width env-height)
         mush-field  (ObjectGrid2D. env-width env-height)]
     (.clear mush-field)
-    (add-mushs! rng @cfg-data$ mush-field)
+    (add-mushs! rng @cfg-data$ mush-field subenv)
     (.clear snipe-field)
     (add-k-snipes! rng cfg-data$ snipe-field)
     (add-r-snipes! rng cfg-data$ snipe-field)
     (add-s-snipes! rng cfg-data$ snipe-field)
-    (PopEnv. snipe-field mush-field (make-snipes-map snipe-field) [])))
+    (PopEnv. snipe-field mush-field (make-snipe-map snipe-field) [])))
 
 (defn next-popenv
   "Given an rng, a simConfigData atom, and a PopEnv, return
@@ -68,7 +64,7 @@
         [new-snipe-field newly-culled] (cull-snipes rng @cfg-data$ new-snipe-field)
         new-snipe-field (move-snipes rng @cfg-data$ new-snipe-field)     ; only the living get to move
         new-snipe-field (age-snipes new-snipe-field)
-        snipe-map (make-snipes-map new-snipe-field)]
+        snipe-map (make-snipe-map new-snipe-field)]
     (PopEnv. new-snipe-field 
              new-mush-field 
              snipe-map 
@@ -84,24 +80,17 @@
 
 (defn add-organism-to-rand-loc!
   "Create and add an organism to field using organism-setter!, which expects 
-  x and y coordinates as arguments.  Looks for an empty field, so could
+  x and y coordinates as arguments.  Looks for an empty location, so could
   be inefficient if a large proportion of cells in the field are filled.
   If :left or :right is passed for subenv, only looks for locations in
   the left or right portion of the world."
-  ([rng cfg-data field width height organism-setter!]
-   (add-organism-to-rand-loc! rng cfg-data field width height organism-setter! nil))
-  ([rng cfg-data field width height organism-setter! subenv]
+  [rng cfg-data field width height organism-setter!]
   (loop []
-    (let [half-width (nmath/floor (:env-center cfg-data)) ; env-center is fractional
-          [w offset] (case subenv             ; if restricted to subenv, get range for it
-                       nil [width 0]
-                       :left  [half-width 0]
-                       :right [half-width half-width])
-          x (+ offset (ran/rand-idx rng w))
+    (let [x (ran/rand-idx rng width)
           y (ran/rand-idx rng height)]
       (if-not (.get field x y) ; don't clobber another organism; empty slots contain Java nulls, i.e. Clojure nils
         (organism-setter! field x y)
-        (recur))))))
+        (recur)))))
 
 (defn add-k-snipes!
   [rng cfg-data$ field]
@@ -131,24 +120,24 @@
   probability (:mush-prob cfg-data).  NOTE: Doesn't check for an existing
   mushroom in the patch: Will simply clobber whatever mushroom is there,
   if any."
-  [rng cfg-data field]
-  (let [{:keys [env-width env-height mush-prob
-                mush-low-size mush-high-size mush-sd 
-                mush-pos-nutrition mush-neg-nutrition]} cfg-data]
+  [rng cfg-data field subenv]
+  (let [{:keys [env-width env-height]} cfg-data]
     (doseq [x (range env-width)
             y (range env-height)]
-      (maybe-add-mush! rng cfg-data field x y))))
+      (maybe-add-mush! rng cfg-data field x y subenv))))
 
 (defn maybe-add-mush!
-  [rng cfg-data field x y]
+  [rng cfg-data field x y subenv]
   (when (< (ran/next-double rng) (:mush-prob cfg-data)) ; flip biased coin to decide whether to grow a mushroom
-    (add-mush! rng cfg-data field x y)))
+    (add-mush! rng cfg-data field x y subenv)))
 
 (defn add-mush!
-  [rng cfg-data field x y]
-  (let [{:keys [env-center mush-low-size mush-high-size 
+  "Adds a mushroom to a random location in field.  subenv, which is :west or :east,
+  determines which size is associated with which nutritional value."
+  [rng cfg-data field x y subenv]
+  (let [{:keys [mush-low-size mush-high-size 
                 mush-sd mush-pos-nutrition mush-neg-nutrition]} cfg-data
-        [low-mean-nutrition high-mean-nutrition] (if (< x env-center) ; subenv determines whether low vs high reflectance
+        [low-mean-nutrition high-mean-nutrition] (if (= subenv :west) ; subenv determines whether low vs high reflectance
                                                    [mush-pos-nutrition mush-neg-nutrition]   ; paired with
                                                    [mush-neg-nutrition mush-pos-nutrition])] ; nutritious vs poison
     (.set field x y 
@@ -248,8 +237,7 @@
         (.set new-mush-field x y nil)    ; mushroom has been eaten
         ;; a new mushroom grows elsewhere:
         (add-organism-to-rand-loc! rng cfg-data new-mush-field env-width env-height 
-                                   (partial replace-mush! eaten-mush) ; See comment at replace-mush!
-                                   (if (< x env-center) :left :right))))
+                                   (partial replace-mush! eaten-mush)))) ; See comment at replace-mush!
     [new-snipe-field new-mush-field]))
 
 (defn eat-if-appetizing 
