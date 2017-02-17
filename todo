@@ -1,0 +1,13 @@
+DONE get rid of bg field portrayal
+DONE 2 mush fields
+DONE 2 snipe fields
+DONE fix popenv to deal with separate fields
+	instead just made two popenvs
+fix stats
+2 mush portrayals
+2 snipe portrayals
+attach the four portrayals to one display, side by side
+make 1 extra display
+attach the four portrayals to the new display, overlaid
+adjust perception functions
+think through mentoring
