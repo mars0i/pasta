@@ -47,8 +47,8 @@
                       [show-grid         false  boolean false      ["-g" "If present, display underlying hexagonal grid." :parse-fn #(Boolean. %)]]
                       [extreme-pref      100.0  double  false] ; mush preference value for r-snipes and s-snipes
                       [max-pop-size        0    long    false]
-                      [west-popenv             nil   free-agent.popenv.PopEnv false]
-                      [east-popenv             nil   free-agent.popenv.PopEnv false]]
+                      [west-popenv        nil   free-agent.popenv.PopEnv false]
+                      [east-popenv        nil   free-agent.popenv.PopEnv false]]
   :methods [[getPopSize [] long] ; additional options here. this one is for def below; it will get merged into the generated :methods component.
             [getKSnipeFreq [] double]])
 

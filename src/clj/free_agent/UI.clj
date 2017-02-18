@@ -51,20 +51,12 @@
   [(vec args) {:display (atom nil)       ; will be replaced in init because we need to pass the UI instance to it
                :display-frame (atom nil) ; will be replaced in init because we need to pass the display to it
                :west-snipe-field-portrayal (HexaObjectGridPortrayal2D.)
-               :east-snipe-field-portrayal (HexaObjectGridPortrayal2D.)
                :west-mush-field-portrayal (HexaObjectGridPortrayal2D.)
-               :east-mush-field-portrayal (HexaObjectGridPortrayal2D.)
-	       }])
+               :east-snipe-field-portrayal (HexaObjectGridPortrayal2D.)
+               :east-mush-field-portrayal (HexaObjectGridPortrayal2D.)}])
 
 ;; see doc/getName.md
 (defn -getName-void [this] "free-agent") ; override method in super. Should cause this string to be displayed as title of config window of gui, but it doesn't.
-
-(defn get-display [this] @(:display (.getUIState this)))
-(defn set-display! [this newval] (reset! (:display (.getUIState this)) newval))
-(defn get-display-frame [this] @(:display-frame (.getUIState this)))
-(defn set-display-frame! [this newval] (reset! (:display-frame (.getUIState this)) newval))
-;(defn get-snipe-field-portrayal [this] (:snipe-field-portrayal (.getUIState this)))
-;(defn get-mush-field-portrayal [this] (:mush-field-portrayal (.getUIState this)))
 
 ;; Override methods in sim.display.GUIState so that UI can make graphs, etc.
 (defn -getSimulationInspectedObject [this] (.state this))
@@ -110,11 +102,12 @@
         cfg-data$ (.simConfigData sim-config)
         rng (.random sim-config)
         cfg-data @cfg-data$
-        popenv (:popenv cfg-data)
+        west-popenv (:west-popenv cfg-data)
+        east-popenv (:east-popenv cfg-data)
         max-energy (:max-energy cfg-data)
         birth-threshold (:birth-threshold cfg-data)
         mush-high-size (:mush-high-size cfg-data)
-        display (get-display this-ui)
+        display @(:display ui-config)
         ;; These portrayals should be local to setup-portrayals because 
         ;; proxy needs to capture the correct 'this', and we need cfg-data:
         mush-portrayal (proxy [OvalPortrayal2D] []
@@ -157,10 +150,10 @@
         west-mush-field-portrayal (:west-mush-field-portrayal ui-config)
         east-mush-field-portrayal (:east-mush-field-portrayal ui-config)]
     ;; connect fields to their portrayals
-    (.setField west-snipe-field-portrayal (:west-snipe-field popenv))
-    (.setField east-snipe-field-portrayal (:east-snipe-field popenv))
-    (.setField west-mush-field-portrayal (:west-mush-field popenv))
-    (.setField east-mush-field-portrayal (:east-mush-field popenv))
+    (.setField west-snipe-field-portrayal (:snipe-field west-popenv))
+    (.setField west-mush-field-portrayal (:mush-field west-popenv))
+    (.setField east-snipe-field-portrayal (:snipe-field east-popenv))
+    (.setField east-mush-field-portrayal (:mush-field east-popenv))
     ; **NOTE** UNDERSCORES NOT HYPHENS IN free_agent CLASSNAMES BELOW:
     ;; connect portrayals to agents:
     ;; mushs:
@@ -180,12 +173,11 @@
     (.scheduleRepeatingImmediatelyAfter this-ui
                                         (reify Steppable 
                                           (step [this sim-state]
-                                            (let [{:keys [west-snipe-field east-snipe-field 
-                                                          west-mush-field east-mush-field]} (:popenv @cfg-data$)]
-                                              (.setField west-snipe-field-portrayal west-snipe-field)
-                                              (.setField east-snipe-field-portrayal east-snipe-field)
-                                              (.setField west-mush-field-portrayal west-mush-field)
-                                              (.setField east-mush-field-portrayal east-mush-field)))))
+                                            (let [{:keys [west-popenv east-popenv]} @cfg-data$]
+                                              (.setField west-snipe-field-portrayal (:snipe-field west-popenv))
+                                              (.setField west-mush-field-portrayal (:mush-field west-popenv))
+                                              (.setField east-snipe-field-portrayal (:snipe-field east-popenv))
+                                              (.setField east-mush-field-portrayal (:mush-field east-popenv))))))
     ;; set up display:
     (doto display
       (.reset )
@@ -202,31 +194,22 @@
      (+ 1 (* (- width 1)
              (/ 3.0 4.0)))))
 
-;; EXPERIMENT
-;(defn make-display
-;  [controller width height title]
-;  (let [display (Display2D. width height this)
-;        display-frame (.createFrame display)]
-;    (.setClipping display false)
-;    (.registerFrame controller display-frame)
-;    (.setTitle display-frame "free-agent")
-;    (.setVisible display-frame true)))
-
 (defn -init
   [this controller] ; fyi controller is called c in Java version
   (.superInit this controller)
   (let [sim-config (.getState this)
+        ui-config (.getUIState this)
         cfg-data @(.simConfigData sim-config) ; just for env dimensions
         display-size (:env-display-size cfg-data)
         width (hex-scale-width (int (* display-size (:env-width cfg-data))))
-        height (hext-scale-height (int (* display-size (:env-height cfg-data))))
+        height (hex-scale-height (int (* display-size (:env-height cfg-data))))
         display (Display2D. width height this)
         display-frame (.createFrame display)
-        west-snipe-field-portrayal (:west-snipe-field-portrayl (.getUIState this))
-        east-snipe-field-portrayal (:east-snipe-field-portrayl (.getUIState this))
-        west-mush-field-portrayal (:west-mush-field-portrayl (.getUIState this))
-        east-mush-field-portrayal (:east-mush-field-portrayl (.getUIState this))]
-    (set-display! this display)
+        west-snipe-field-portrayal (:west-snipe-field-portrayal ui-config)
+        east-snipe-field-portrayal (:east-snipe-field-portrayal ui-config)
+        west-mush-field-portrayal (:west-mush-field-portrayal ui-config)
+        east-mush-field-portrayal (:east-mush-field-portrayal ui-config)]
+    (reset! (:display ui-config) display)
     (doto display
       (.setClipping false)
       ;; note Clojure $ syntax for Java static nested classes:
@@ -235,7 +218,7 @@
       (.attach west-mush-field-portrayal  "west mushs"  (Rectangle2D$Double. 0           0 (/ width 2) height))
       (.attach east-snipe-field-portrayal "east snipes" (Rectangle2D$Double. (/ width 2) 0 (/ width 2) height))
       (.attach east-mush-field-portrayal  "east mushs"  (Rectangle2D$Double. (/ width 2) 0 (/ width 2) height)))
-    (set-display-frame! this display-frame)
+    (reset! (:display-frame ui-config) display-frame)
     (.registerFrame controller display-frame)
     (doto display-frame 
       (.setTitle "free-agent")
@@ -244,11 +227,13 @@
 (defn -quit
   [this]
   (.superQuit this)  ; combine in doto?
-  (when-let [display-frame (get-display-frame this)]
-    (.dispose display-frame))
-  (doto this
-    (set-display-frame! nil)
-    (set-display! nil)))
+  (let [ui-config (.getUIState this)
+        display (:display ui-config)
+        display-frame (:display-frame ui-config)]
+    (when display-frame
+      (.dispose display-frame))
+    (reset! (:display ui-config) nil)
+    (reset! (:display-frame ui-config) nil)))
 
 ;; Try this:
 ;; (let [snipes (.elements (:snipe-field (:popenv @cfg-data$))) N (count snipes) energies (map :energy snipes)] [N (/ (apply + energies) N)])
