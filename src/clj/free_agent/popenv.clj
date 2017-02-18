@@ -20,10 +20,9 @@
 
 (defrecord SubEnv [snipe-field   ; ObjectGrid2D
                    mush-field    ; ObjectGrid2D
-                   snipe-map     ; map from ids to snipes
                    dead-snipes]) ; keep a record of dead snipes for later stats
 
-(defrecord PopEnv [west east] ; two SubEnvs
+(defrecord PopEnv [west east snipe-map] ; two SubEnvs, and map from ids to snipes
 
 (defn setup-popenv-config!
   [cfg-data$]
