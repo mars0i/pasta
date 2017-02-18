@@ -143,7 +143,7 @@
         names (mapv name kys)
         num-properties (count kys)
         hidden     (vec (repeat num-properties false))
-        get-curr-snipe (fn [] ((:snipes (:popenv @cfg-data$)) id))]
+        get-curr-snipe (fn [] ((:snipe-map (:popenv @cfg-data$)) id))]
     (reset! (:circled$ (get-curr-snipe)) true) ; make-properties only called by inspector, in which case highlight snipe in UI
     (proxy [Properties] []
       (getObject [] (get-curr-snipe))
@@ -180,7 +180,7 @@
 (defn clean
   "Returns a copy of the snipe with its cfg.data$ atom removed so that
   it can be displayed in a repl without creating an infinite loop (since
-  cfg-data$ contains popenv which contains a hash of all snipes)."
+  cfg-data$ contains a subenv which contains a hash of all snipes)."
   [snipe]
   (dissoc snipe :cfg-data$))
 

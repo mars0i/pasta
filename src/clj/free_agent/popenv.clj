@@ -18,10 +18,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TOP LEVEL FUNCTIONS
 
-(defrecord PopEnv [snipe-field   ; ObjectGrid2D
+(defrecord SubEnv [snipe-field   ; ObjectGrid2D
                    mush-field    ; ObjectGrid2D
                    snipe-map     ; map from ids to snipes
                    dead-snipes]) ; keep a record of dead snipes for later stats
+
+(defrecord PopEnv [west east] ; two SubEnvs
 
 (defn setup-popenv-config!
   [cfg-data$]
@@ -36,22 +38,28 @@
   (into {} (map #(vector (:id %) %)) ; transducer w/ vector: may be slightly faster than alternatives
         (.elements snipe-field)))    ; btw cost compared to not constructing a snipes map is trivial
 
-(defn make-popenv
-  [rng cfg-data$ subenv]
+(defn make-subenv
+  "Returns new SubEnv with mushs and snipes.  which-subenv is :west or :east."
+  [rng cfg-data$ which-subenv]
   (let [{:keys [env-width env-height]} @cfg-data$
         snipe-field (ObjectGrid2D. env-width env-height)
         mush-field  (ObjectGrid2D. env-width env-height)]
     (.clear mush-field)
-    (add-mushs! rng @cfg-data$ mush-field subenv)
+    (add-mushs! rng @cfg-data$ mush-field which-subenv)
     (.clear snipe-field)
     (add-k-snipes! rng cfg-data$ snipe-field)
     (add-r-snipes! rng cfg-data$ snipe-field)
     (add-s-snipes! rng cfg-data$ snipe-field)
-    (PopEnv. snipe-field mush-field (make-snipe-map snipe-field) [])))
+    (SubEnv. snipe-field mush-field (make-snipe-map snipe-field) [])))
+
+(defn make-popenv
+  [rng cfg-data$]
+  (PopEnv. (make-subenv rng cfg-data$ :west)
+           (make-subenv rng cfg-data$ :east)))
 
 (defn next-popenv
-  "Given an rng, a simConfigData atom, and a PopEnv, return
-  a new PopEnv.  (popenv is last for convenience with iterate.
+  "Given an rng, a simConfigData atom, and a SubEnv, return
+  a new SubEnv.  (popenv is last for convenience with iterate.
   You can use partial use next-popenv with swap!.)"
   [rng cfg-data$ popenv]
   (let [{:keys [snipe-field mush-field dead-snipes]} popenv
@@ -65,7 +73,7 @@
         new-snipe-field (move-snipes rng @cfg-data$ new-snipe-field)     ; only the living get to move
         new-snipe-field (age-snipes new-snipe-field)
         snipe-map (make-snipe-map new-snipe-field)]
-    (PopEnv. new-snipe-field 
+    (SubEnv. new-snipe-field 
              new-mush-field 
              snipe-map 
              (conj dead-snipes (concat newly-died newly-culled))))) ; each timestep adds a separate collection of dead snipes

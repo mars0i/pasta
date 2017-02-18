@@ -47,8 +47,7 @@
                       [show-grid         false  boolean false      ["-g" "If present, display underlying hexagonal grid." :parse-fn #(Boolean. %)]]
                       [extreme-pref      100.0  double  false] ; mush preference value for r-snipes and s-snipes
                       [max-pop-size        0    long    false]
-                      [west-popenv        nil   free-agent.popenv.PopEnv false]
-                      [east-popenv        nil   free-agent.popenv.PopEnv false]]
+                      [popenv            nil   free-agent.popenv.PopEnv false]]
   :methods [[getPopSize [] long] ; additional options here. this one is for def below; it will get merged into the generated :methods component.
             [getKSnipeFreq [] double]])
 
@@ -91,16 +90,14 @@
         ^SimConfigData cfg-data$ (.simConfigData this)
         ^MersenneTwisterFast rng (.-random this)]
     (pe/setup-popenv-config! cfg-data$)
-    (swap! cfg-data$ assoc :west-popenv (pe/make-popenv rng cfg-data$ :west)) ; create new popenv
-    (swap! cfg-data$ assoc :east-popenv (pe/make-popenv rng cfg-data$ :east)) ; create new popenv
+    (swap! cfg-data$ assoc :popenv (pe/make-popenv rng cfg-data$)) ; create new popenv
     ;; Run it:
     (let [report-every (double (:report-every @cfg-data$))
           max-ticks (:max-ticks @cfg-data$)
           stoppable (.scheduleRepeating schedule Schedule/EPOCH 0 ; epoch = starting at beginning, 0 means run this first during timestep
                         (reify Steppable 
                           (step [this sim-state]
-                            (swap! cfg-data$ update :west-popenv (partial pe/next-popenv rng cfg-data$))
-                            (swap! cfg-data$ update :east-popenv (partial pe/next-popenv rng cfg-data$)))))]
+                            (swap! cfg-data$ update :popenv (partial pe/next-popenv rng cfg-data$)))))]
       ;; Stop simulation when condition satisfied (TODO will add additional conditions later):
       (.scheduleRepeating schedule Schedule/EPOCH 1 ; 1 = i.e. after main previous Steppable that runs the simulation
                           (reify Steppable
