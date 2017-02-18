@@ -27,13 +27,18 @@
 
 ;; display parameters:
 (def mush-pos-nutrition-shade 255) ; a grayscale value in [0,255]
-(def mush-neg-nutrition-shade 215)
+(def mush-neg-nutrition-shade 215) ; for white background
+;(def mush-neg-nutrition-shade 140) ; for black background
 (defn mush-color-fn [shade] (Color. shade (int (* 0.8 shade)) (int (* 0.3 shade))))
 (def mush-high-size-appearance 1.0) ; we don't scale mushroom size to modeled size, but
 (def mush-low-size-appearance 0.875) ; we display the low-size mushroom smaller
-;; background portrayal displayed in mushroom-less patches:
-(def bg-color (Color. 255 0 0))   ; color of background without grid (if show-grid is false)
-(def display-backdrop-color (Color. 0 0 0))
+;; white background:
+(def bg-color (Color. 255 255 255))   ; color of background without grid (if show-grid is false)
+(def display-backdrop-color (Color. 64 64 64)) ; border around subenvs
+;; black background
+;(def bg-color (Color. 0 0 0))   ; color of background without grid (if show-grid is false)
+;(def display-backdrop-color (Color. 70 70 70))
+(def subenv-gap 5)
 (def snipe-size 0.55)
 (defn snipe-shade-fn [max-energy snipe] (int (+ 94 (* 160 (/ (:energy snipe) max-energy)))))
 (defn k-snipe-color-fn [max-energy snipe] (Color. (snipe-shade-fn max-energy snipe) 0 0))
@@ -155,10 +160,13 @@
         west-mush-field-portrayal (:west-mush-field-portrayal ui-config)
         east-mush-field-portrayal (:east-mush-field-portrayal ui-config)]
     ;; connect fields to their portrayals
+    (.setField bg-field-portrayal (ObjectGrid2D. (:env-width cfg-data) (:env-height cfg-data)))
     (.setField west-snipe-field-portrayal (:snipe-field west-popenv))
     (.setField west-mush-field-portrayal (:mush-field west-popenv))
     (.setField east-snipe-field-portrayal (:snipe-field east-popenv))
     (.setField east-mush-field-portrayal (:mush-field east-popenv))
+    ;; extra field portrayal to set a background color under the subenvs:
+    (.setPortrayalForNull bg-field-portrayal (HexagonalPortrayal2D. bg-color 1.2))
     ; **NOTE** UNDERSCORES NOT HYPHENS IN free_agent CLASSNAMES BELOW:
     ;; connect portrayals to agents:
     ;; mushs:
@@ -174,8 +182,6 @@
     (.setPortrayalForClass east-snipe-field-portrayal free_agent.snipe.RSnipePrefSmall r-snipe-portrayal-pref-small)
     (.setPortrayalForClass east-snipe-field-portrayal free_agent.snipe.RSnipePrefBig   r-snipe-portrayal-pref-big)
     (.setPortrayalForClass east-snipe-field-portrayal free_agent.snipe.SSnipe s-snipe-portrayal)
-    ;; extra field portrayal to set a background color under the subenvs:
-    (.setPortrayalForNull bg-field-portrayal (HexagonalPortrayal2D. bg-color 10.0))
     ;; Since popenvs are updated functionally, have to tell the ui about the new popenv on every timestep:
     (.scheduleRepeatingImmediatelyAfter this-ui
                                         (reify Steppable 
@@ -200,18 +206,16 @@
   (* (/ 2.0 (math/sqrt 3)) 
      (+ 1 (* (- width 1)
              (/ 3.0 4.0)))))
-
 (defn -init
   [this controller] ; fyi controller is called c in Java version
   (.superInit this controller)
-  (let [space-between-subenvs 20
-        sim-config (.getState this)
+  (let [sim-config (.getState this)
         ui-config (.getUIState this)
         cfg-data @(.simConfigData sim-config) ; just for env dimensions
         display-size (:env-display-size cfg-data)
         width  (hex-scale-width  (int (* display-size (:env-width cfg-data))))
         height (hex-scale-height (int (* display-size (:env-height cfg-data))))
-        display (Display2D. (+ space-between-subenvs (* 2 width)) height this)
+        display (Display2D. (+ subenv-gap (* 2 width)) height this)
         display-frame (.createFrame display)
         bg-field-portrayal (:bg-field-portrayal ui-config)
         west-snipe-field-portrayal (:west-snipe-field-portrayal ui-config)
@@ -226,9 +230,9 @@
       (.attach bg-field-portrayal     "west background" (Rectangle2D$Double. 0     0 width height))
       (.attach west-snipe-field-portrayal "west snipes" (Rectangle2D$Double. 0     0 width height))
       (.attach west-mush-field-portrayal  "west mushs"  (Rectangle2D$Double. 0     0 width height))
-      (.attach bg-field-portrayal     "east background" (Rectangle2D$Double. (+ width space-between-subenvs) 0 width height)) ; NOTE reusing same portrayal as above
-      (.attach east-snipe-field-portrayal "east snipes" (Rectangle2D$Double. (+ width space-between-subenvs) 0 width height))
-      (.attach east-mush-field-portrayal  "east mushs"  (Rectangle2D$Double. (+ width space-between-subenvs) 0 width height)))
+      (.attach bg-field-portrayal     "east background" (Rectangle2D$Double. (+ width subenv-gap) 0 width height)) ; NOTE reusing same portrayal as above
+      (.attach east-snipe-field-portrayal "east snipes" (Rectangle2D$Double. (+ width subenv-gap) 0 width height))
+      (.attach east-mush-field-portrayal  "east mushs"  (Rectangle2D$Double. (+ width subenv-gap) 0 width height)))
     (reset! (:display-frame ui-config) display-frame)
     (.registerFrame controller display-frame)
     (doto display-frame 
