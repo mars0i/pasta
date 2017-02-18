@@ -4,7 +4,11 @@ DONE 2 snipe fields
 DONE fix popenv to deal with separate fields
 	instead just made two popenvs
 should children be in both subenvs?
-adjust perception functions
+	for this I might need to replace next-popenv
+	with a combined next-popenvs
+fix s-snipe perception
+bug: circled portrayals no longer work
+bug:?? snipes no longer sit on mushrooms
 fix stats
 DONE 2 mush portrayals
 DONE 2 snipe portrayals
