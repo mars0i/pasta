@@ -225,14 +225,15 @@
     (reset! (:display ui-config) display)
     (doto display
       (.setClipping false)
+      ;; Remember: Order of attaching sets layering: Later attachments appear on top of earlier ones.
       ;; note Clojure $ syntax for Java static nested classes:
       ;;                                                  upper left corner: x     y 
       (.attach bg-field-portrayal     "west background" (Rectangle2D$Double. 0     0 width height))
-      (.attach west-snipe-field-portrayal "west snipes" (Rectangle2D$Double. 0     0 width height))
       (.attach west-mush-field-portrayal  "west mushs"  (Rectangle2D$Double. 0     0 width height))
+      (.attach west-snipe-field-portrayal "west snipes" (Rectangle2D$Double. 0     0 width height))
       (.attach bg-field-portrayal     "east background" (Rectangle2D$Double. (+ width subenv-gap) 0 width height)) ; NOTE reusing same portrayal as above
-      (.attach east-snipe-field-portrayal "east snipes" (Rectangle2D$Double. (+ width subenv-gap) 0 width height))
-      (.attach east-mush-field-portrayal  "east mushs"  (Rectangle2D$Double. (+ width subenv-gap) 0 width height)))
+      (.attach east-mush-field-portrayal  "east mushs"  (Rectangle2D$Double. (+ width subenv-gap) 0 width height))
+      (.attach east-snipe-field-portrayal "east snipes" (Rectangle2D$Double. (+ width subenv-gap) 0 width height)))
     (reset! (:display-frame ui-config) display-frame)
     (.registerFrame controller display-frame)
     (doto display-frame 
