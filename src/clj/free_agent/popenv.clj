@@ -22,7 +22,7 @@
                    mush-field    ; ObjectGrid2D
                    dead-snipes]) ; keep a record of dead snipes for later stats
 
-(defrecord PopEnv [west east snipe-map] ; two SubEnvs, and map from ids to snipes
+(defrecord PopEnv [west-subenv east-subenv snipe-map]) ; two SubEnvs, and map from ids to snipes
 
 (defn setup-popenv-config!
   [cfg-data$]
@@ -33,9 +33,10 @@
 
 (defn make-snipe-map
   "Make a map from snipe ids to snipes."
-  [snipe-field]
+  [west-snipe-field east-snipe-field]
   (into {} (map #(vector (:id %) %)) ; transducer w/ vector: may be slightly faster than alternatives
-        (.elements snipe-field)))    ; btw cost compared to not constructing a snipes map is trivial
+        (concat (.elements west-snipe-field)
+                (.elements east-snipe-field)))) ; btw cost compared to not constructing a snipes map is trivial
 
 (defn make-subenv
   "Returns new SubEnv with mushs and snipes.  which-subenv is :west or :east."
@@ -49,24 +50,26 @@
     (add-k-snipes! rng cfg-data$ snipe-field)
     (add-r-snipes! rng cfg-data$ snipe-field)
     (add-s-snipes! rng cfg-data$ snipe-field)
-    (SubEnv. snipe-field mush-field (make-snipe-map snipe-field) [])))
+    (SubEnv. snipe-field mush-field [])))
 
 (defn make-popenv
   [rng cfg-data$]
-  (PopEnv. (make-subenv rng cfg-data$ :west)
-           (make-subenv rng cfg-data$ :east)))
+  (let [west-subenv (make-subenv rng cfg-data$ :west)
+        east-subenv (make-subenv rng cfg-data$ :east)]
+    (PopEnv. west-subenv 
+             east-subenv
+             (make-snipe-map (:snipe-field west-subenv)
+                             (:snipe-field east-subenv)))))
 
 (defn next-popenv
   "Given an rng, a simConfigData atom, and a SubEnv, return
   a new SubEnv.  (popenv is last for convenience with iterate.
   You can use partial use next-popenv with swap!.)"
   [rng cfg-data$ popenv]
-  (let [{:keys [snipe-field mush-field dead-snipes]} popenv
-        [new-snipe-field new-mush-field] (snipes-eat rng 
-                                                     @cfg-data$
-                                                     snipe-field 
-                                                     mush-field)
-        new-snipe-field (snipes-reproduce rng cfg-data$ new-snipe-field) ; birth before death in case birth uses remaining energy
+  (let [{:keys [west-subenv east-subenv snipe-map]} popenv
+        {:keys [snipe-field mush-field dead-snipes]} popenv
+        new-snipe-field (snipes-reproduce rng cfg-data$ snipe-field) ; birth before death in case birth uses remaining energy
+        [new-snipe-field new-mush-field] (snipes-eat rng @cfg-data$ new-snipe-field mush-field)
         [new-snipe-field newly-died] (snipes-die @cfg-data$ new-snipe-field)
         [new-snipe-field newly-culled] (cull-snipes rng @cfg-data$ new-snipe-field)
         new-snipe-field (move-snipes rng @cfg-data$ new-snipe-field)     ; only the living get to move
@@ -127,24 +130,24 @@
   probability (:mush-prob cfg-data).  NOTE: Doesn't check for an existing
   mushroom in the patch: Will simply clobber whatever mushroom is there,
   if any."
-  [rng cfg-data field subenv]
+  [rng cfg-data field which-subenv]
   (let [{:keys [env-width env-height]} cfg-data]
     (doseq [x (range env-width)
             y (range env-height)]
-      (maybe-add-mush! rng cfg-data field x y subenv))))
+      (maybe-add-mush! rng cfg-data field x y which-subenv))))
 
 (defn maybe-add-mush!
-  [rng cfg-data field x y subenv]
+  [rng cfg-data field x y which-subenv]
   (when (< (ran/next-double rng) (:mush-prob cfg-data)) ; flip biased coin to decide whether to grow a mushroom
-    (add-mush! rng cfg-data field x y subenv)))
+    (add-mush! rng cfg-data field x y which-subenv)))
 
 (defn add-mush!
   "Adds a mushroom to a random location in field.  subenv, which is :west or :east,
   determines which size is associated with which nutritional value."
-  [rng cfg-data field x y subenv]
+  [rng cfg-data field x y which-subenv]
   (let [{:keys [mush-low-size mush-high-size 
                 mush-sd mush-pos-nutrition mush-neg-nutrition]} cfg-data
-        [low-mean-nutrition high-mean-nutrition] (if (= subenv :west) ; subenv determines whether low vs high reflectance
+        [low-mean-nutrition high-mean-nutrition] (if (= which-subenv :west) ; subenv determines whether low vs high reflectance
                                                    [mush-pos-nutrition mush-neg-nutrition]   ; paired with
                                                    [mush-neg-nutrition mush-pos-nutrition])] ; nutritious vs poison
     (.set field x y 
