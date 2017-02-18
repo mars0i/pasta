@@ -192,7 +192,6 @@
       (.setBackdrop bg-color)
       (.repaint))))
 
-
 ;; For hex grid, need to rescale display (based on HexaBugsWithUI.java around line 200 in Mason 19):
 (defn hex-scale-height
   [height]
@@ -219,19 +218,23 @@
   (let [sim-config (.getState this)
         cfg-data @(.simConfigData sim-config) ; just for env dimensions
         display-size (:env-display-size cfg-data)
-        width (int (* display-size (:env-width cfg-data)))
-        height (int (* display-size (:env-height cfg-data)))
-        width (hex-scale-width width)    ; for hexagonal grid
-        height (hex-scale-height height) ; for hexagonal grid
+        width (hex-scale-width (int (* display-size (:env-width cfg-data))))
+        height (hext-scale-height (int (* display-size (:env-height cfg-data))))
         display (Display2D. width height this)
         display-frame (.createFrame display)
-        mush-field-portrayal (get-mush-field-portrayal this)
-        snipe-field-portrayal (get-snipe-field-portrayal this)]
+        west-snipe-field-portrayal (:west-snipe-field-portrayl (.getUIState this))
+        east-snipe-field-portrayal (:east-snipe-field-portrayl (.getUIState this))
+        west-mush-field-portrayal (:west-mush-field-portrayl (.getUIState this))
+        east-mush-field-portrayal (:east-mush-field-portrayl (.getUIState this))]
     (set-display! this display)
     (doto display
       (.setClipping false)
-      (.attach mush-field-portrayal "mushrooms" (Rectangle2D$Double. 0 0 (/ width 2) height)) ; note Clojure syntax for Java static nested classes
-      (.attach snipe-field-portrayal "snipes"   (Rectangle2D$Double. (/ width 2) 0 (/ width 2) height)))
+      ;; note Clojure $ syntax for Java static nested classes:
+      ;;                                                          upper left x           y    width    height
+      (.attach west-snipe-field-portrayal "west snipes" (Rectangle2D$Double. 0           0 (/ width 2) height))
+      (.attach west-mush-field-portrayal  "west mushs"  (Rectangle2D$Double. 0           0 (/ width 2) height))
+      (.attach east-snipe-field-portrayal "east snipes" (Rectangle2D$Double. (/ width 2) 0 (/ width 2) height))
+      (.attach east-mush-field-portrayal  "east mushs"  (Rectangle2D$Double. (/ width 2) 0 (/ width 2) height)))
     (set-display-frame! this display-frame)
     (.registerFrame controller display-frame)
     (doto display-frame 
