@@ -2,6 +2,8 @@
 ;;; is distributed under the Gnu General Public License version 3.0 as
 ;;; specified in the file LICENSE.
 
+
+
 (ns free-agent.UI
   (:require [free-agent.SimConfig :as cfg]
             [clojure.math.numeric-tower :as math])
@@ -30,7 +32,8 @@
 (def mush-high-size-appearance 1.0) ; we don't scale mushroom size to modeled size, but
 (def mush-low-size-appearance 0.875) ; we display the low-size mushroom smaller
 ;; background portrayal displayed in mushroom-less patches:
-(def bg-color (Color. 255 255 255))   ; color of background without grid (if show-grid is false)
+(def bg-color (Color. 255 0 0))   ; color of background without grid (if show-grid is false)
+(def display-backdrop-color (Color. 0 0 0))
 (def snipe-size 0.55)
 (defn snipe-shade-fn [max-energy snipe] (int (+ 94 (* 160 (/ (:energy snipe) max-energy)))))
 (defn k-snipe-color-fn [max-energy snipe] (Color. (snipe-shade-fn max-energy snipe) 0 0))
@@ -50,6 +53,7 @@
   [& args]
   [(vec args) {:display (atom nil)       ; will be replaced in init because we need to pass the UI instance to it
                :display-frame (atom nil) ; will be replaced in init because we need to pass the display to it
+               :bg-field-portrayal (HexaObjectGridPortrayal2D.) ; can be used to put a background or grid only under subenvs
                :west-snipe-field-portrayal (HexaObjectGridPortrayal2D.)
                :west-mush-field-portrayal (HexaObjectGridPortrayal2D.)
                :east-snipe-field-portrayal (HexaObjectGridPortrayal2D.)
@@ -145,6 +149,7 @@
                                 (set! (.-paint this) (s-snipe-color-fn (min max-energy birth-threshold) snipe)) ; paint var is in superclass
                                 (proxy-super draw snipe graphics (DrawInfo2D. info (* 1.5 org-offset) (* 1.5 org-offset))))) ; see above re last arg
                             Color/black)
+        bg-field-portrayal (:bg-field-portrayal ui-config)
         west-snipe-field-portrayal (:west-snipe-field-portrayal ui-config)
         east-snipe-field-portrayal (:east-snipe-field-portrayal ui-config)
         west-mush-field-portrayal (:west-mush-field-portrayal ui-config)
@@ -169,6 +174,8 @@
     (.setPortrayalForClass east-snipe-field-portrayal free_agent.snipe.RSnipePrefSmall r-snipe-portrayal-pref-small)
     (.setPortrayalForClass east-snipe-field-portrayal free_agent.snipe.RSnipePrefBig   r-snipe-portrayal-pref-big)
     (.setPortrayalForClass east-snipe-field-portrayal free_agent.snipe.SSnipe s-snipe-portrayal)
+    ;; extra field portrayal to set a background color under the subenvs:
+    (.setPortrayalForNull bg-field-portrayal (HexagonalPortrayal2D. bg-color 10.0))
     ;; Since popenvs are updated functionally, have to tell the ui about the new popenv on every timestep:
     (.scheduleRepeatingImmediatelyAfter this-ui
                                         (reify Steppable 
@@ -181,7 +188,7 @@
     ;; set up display:
     (doto display
       (.reset )
-      (.setBackdrop bg-color)
+      (.setBackdrop display-backdrop-color)
       (.repaint))))
 
 ;; For hex grid, need to rescale display (based on HexaBugsWithUI.java around line 200 in Mason 19):
@@ -206,6 +213,7 @@
         height (hex-scale-height (int (* display-size (:env-height cfg-data))))
         display (Display2D. (+ space-between-subenvs (* 2 width)) height this)
         display-frame (.createFrame display)
+        bg-field-portrayal (:bg-field-portrayal ui-config)
         west-snipe-field-portrayal (:west-snipe-field-portrayal ui-config)
         east-snipe-field-portrayal (:east-snipe-field-portrayal ui-config)
         west-mush-field-portrayal (:west-mush-field-portrayal ui-config)
@@ -215,8 +223,10 @@
       (.setClipping false)
       ;; note Clojure $ syntax for Java static nested classes:
       ;;                                                  upper left corner: x     y 
+      (.attach bg-field-portrayal     "west background" (Rectangle2D$Double. 0     0 width height))
       (.attach west-snipe-field-portrayal "west snipes" (Rectangle2D$Double. 0     0 width height))
       (.attach west-mush-field-portrayal  "west mushs"  (Rectangle2D$Double. 0     0 width height))
+      (.attach bg-field-portrayal     "east background" (Rectangle2D$Double. (+ width space-between-subenvs) 0 width height)) ; NOTE reusing same portrayal as above
       (.attach east-snipe-field-portrayal "east snipes" (Rectangle2D$Double. (+ width space-between-subenvs) 0 width height))
       (.attach east-mush-field-portrayal  "east mushs"  (Rectangle2D$Double. (+ width space-between-subenvs) 0 width height)))
     (reset! (:display-frame ui-config) display-frame)
