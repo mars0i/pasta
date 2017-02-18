@@ -31,13 +31,6 @@
     (swap! cfg-data$ assoc :mush-mid-size (/ (+ mush-low-size mush-high-size) 2.0))
     (swap! cfg-data$ assoc :max-pop-size (int (* env-width env-height carrying-proportion)))))
 
-(defn make-snipe-map
-  "Make a map from snipe ids to snipes."
-  [west-snipe-field east-snipe-field]
-  (into {} (map #(vector (:id %) %)) ; transducer w/ vector: may be slightly faster than alternatives
-        (concat (.elements west-snipe-field)
-                (.elements east-snipe-field)))) ; btw cost compared to not constructing a snipes map is trivial
-
 (defn make-subenv
   "Returns new SubEnv with mushs and snipes.  which-subenv is :west or :east."
   [rng cfg-data$ which-subenv]
@@ -52,6 +45,13 @@
     (add-s-snipes! rng cfg-data$ snipe-field)
     (SubEnv. snipe-field mush-field [])))
 
+(defn make-snipe-map
+  "Make a map from snipe ids to snipes."
+  [west-snipe-field east-snipe-field]
+  (into {} (map #(vector (:id %) %)) ; transducer w/ vector: may be slightly faster than alternatives
+        (concat (.elements west-snipe-field)
+                (.elements east-snipe-field)))) ; btw cost compared to not constructing a snipes map is trivial
+
 (defn make-popenv
   [rng cfg-data$]
   (let [west-subenv (make-subenv rng cfg-data$ :west)
@@ -61,24 +61,36 @@
              (make-snipe-map (:snipe-field west-subenv)
                              (:snipe-field east-subenv)))))
 
+(defn eat-die-move
+  [rng cfg-data$ subenv]
+  (let [{:keys [snipe-field mush-field dead-snipes]} subenv
+        [snipe-field' mush-field'] (snipes-eat rng @cfg-data$ snipe-field mush-field)
+        [snipe-field' newly-died] (snipes-die @cfg-data$ snipe-field')
+        [snipe-field' newly-culled] (cull-snipes rng @cfg-data$ snipe-field')
+        snipe-field' (move-snipes rng @cfg-data$ snipe-field')     ; only the living get to move
+        snipe-field' (age-snipes snipe-field')]
+    (SubEnv. snipe-field' 
+             mush-field' 
+             (conj dead-snipes (concat newly-died newly-culled))))) ; each timestep adds a separate collection of dead snipes
+
 (defn next-popenv
   "Given an rng, a simConfigData atom, and a SubEnv, return
   a new SubEnv.  (popenv is last for convenience with iterate.
   You can use partial use next-popenv with swap!.)"
   [rng cfg-data$ popenv]
   (let [{:keys [west-subenv east-subenv snipe-map]} popenv
-        {:keys [snipe-field mush-field dead-snipes]} popenv
-        new-snipe-field (snipes-reproduce rng cfg-data$ snipe-field) ; birth before death in case birth uses remaining energy
-        [new-snipe-field new-mush-field] (snipes-eat rng @cfg-data$ new-snipe-field mush-field)
-        [new-snipe-field newly-died] (snipes-die @cfg-data$ new-snipe-field)
-        [new-snipe-field newly-culled] (cull-snipes rng @cfg-data$ new-snipe-field)
-        new-snipe-field (move-snipes rng @cfg-data$ new-snipe-field)     ; only the living get to move
-        new-snipe-field (age-snipes new-snipe-field)
-        snipe-map (make-snipe-map new-snipe-field)]
-    (SubEnv. new-snipe-field 
-             new-mush-field 
-             snipe-map 
-             (conj dead-snipes (concat newly-died newly-culled))))) ; each timestep adds a separate collection of dead snipes
+        {west-snipe-field :snipe-field} west-subenv
+        {east-snipe-field :snipe-field} east-subenv
+        [west-snipe-field' east-snipe-field'] (snipes-reproduce rng cfg-data$ 
+                                                                west-snipe-field 
+                                                                east-snipe-field)
+        west-subenv' (eat-die-move rng cfg-data$
+                                        (assoc west-subenv :snipe-field west-snipe-field'))
+        east-subenv' (eat-die-move rng cfg-data$
+                                        (assoc east-subenv :snipe-field east-snipe-field'))
+        snipe-map' (make-snipe-map (:snipe-field west-subenv)
+                                   (:snipe-field east-subenv))]
+    (PopEnv. west-subenv' east-subenv' snipe-map')))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; CREATE AND PLACE ORGANISMS
