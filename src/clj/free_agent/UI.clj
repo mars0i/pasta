@@ -197,13 +197,14 @@
 (defn -init
   [this controller] ; fyi controller is called c in Java version
   (.superInit this controller)
-  (let [sim-config (.getState this)
+  (let [space-between-subenvs 20
+        sim-config (.getState this)
         ui-config (.getUIState this)
         cfg-data @(.simConfigData sim-config) ; just for env dimensions
         display-size (:env-display-size cfg-data)
-        width (hex-scale-width (int (* display-size (:env-width cfg-data))))
+        width  (hex-scale-width  (int (* display-size (:env-width cfg-data))))
         height (hex-scale-height (int (* display-size (:env-height cfg-data))))
-        display (Display2D. width height this)
+        display (Display2D. (+ space-between-subenvs (* 2 width)) height this)
         display-frame (.createFrame display)
         west-snipe-field-portrayal (:west-snipe-field-portrayal ui-config)
         east-snipe-field-portrayal (:east-snipe-field-portrayal ui-config)
@@ -213,11 +214,11 @@
     (doto display
       (.setClipping false)
       ;; note Clojure $ syntax for Java static nested classes:
-      ;;                                                          upper left x           y    width    height
-      (.attach west-snipe-field-portrayal "west snipes" (Rectangle2D$Double. 0           0 (/ width 2) height))
-      (.attach west-mush-field-portrayal  "west mushs"  (Rectangle2D$Double. 0           0 (/ width 2) height))
-      (.attach east-snipe-field-portrayal "east snipes" (Rectangle2D$Double. (/ width 2) 0 (/ width 2) height))
-      (.attach east-mush-field-portrayal  "east mushs"  (Rectangle2D$Double. (/ width 2) 0 (/ width 2) height)))
+      ;;                                                  upper left corner: x     y 
+      (.attach west-snipe-field-portrayal "west snipes" (Rectangle2D$Double. 0     0 width height))
+      (.attach west-mush-field-portrayal  "west mushs"  (Rectangle2D$Double. 0     0 width height))
+      (.attach east-snipe-field-portrayal "east snipes" (Rectangle2D$Double. (+ width space-between-subenvs) 0 width height))
+      (.attach east-mush-field-portrayal  "east mushs"  (Rectangle2D$Double. (+ width space-between-subenvs) 0 width height)))
     (reset! (:display-frame ui-config) display-frame)
     (.registerFrame controller display-frame)
     (doto display-frame 
