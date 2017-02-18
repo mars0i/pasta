@@ -50,8 +50,10 @@
   [& args]
   [(vec args) {:display (atom nil)       ; will be replaced in init because we need to pass the UI instance to it
                :display-frame (atom nil) ; will be replaced in init because we need to pass the display to it
-               :snipe-field-portrayal (HexaObjectGridPortrayal2D.)
-               :mush-field-portrayal (HexaObjectGridPortrayal2D.)
+               :west-snipe-field-portrayal (HexaObjectGridPortrayal2D.)
+               :east-snipe-field-portrayal (HexaObjectGridPortrayal2D.)
+               :west-mush-field-portrayal (HexaObjectGridPortrayal2D.)
+               :east-mush-field-portrayal (HexaObjectGridPortrayal2D.)
 	       }])
 
 ;; see doc/getName.md
@@ -61,8 +63,8 @@
 (defn set-display! [this newval] (reset! (:display (.getUIState this)) newval))
 (defn get-display-frame [this] @(:display-frame (.getUIState this)))
 (defn set-display-frame! [this newval] (reset! (:display-frame (.getUIState this)) newval))
-(defn get-snipe-field-portrayal [this] (:snipe-field-portrayal (.getUIState this)))
-(defn get-mush-field-portrayal [this] (:mush-field-portrayal (.getUIState this)))
+;(defn get-snipe-field-portrayal [this] (:snipe-field-portrayal (.getUIState this)))
+;(defn get-mush-field-portrayal [this] (:mush-field-portrayal (.getUIState this)))
 
 ;; Override methods in sim.display.GUIState so that UI can make graphs, etc.
 (defn -getSimulationInspectedObject [this] (.state this))
@@ -100,22 +102,18 @@
       (.setCircleShowing this @(:circled$ snipe))
       (proxy-super draw snipe graphics info))))
 
+;; TODO abstract out some of the repetition below
 (defn setup-portrayals
   [this-ui]  ; instead of 'this': avoid confusion with e.g. proxy below
   (let [sim-config (.getState this-ui)
         ui-config (.getUIState this-ui)
-        rng (.random sim-config)
         cfg-data$ (.simConfigData sim-config)
+        rng (.random sim-config)
         cfg-data @cfg-data$
-        show-grid (:show-grid cfg-data)
+        popenv (:popenv cfg-data)
         max-energy (:max-energy cfg-data)
         birth-threshold (:birth-threshold cfg-data)
         mush-high-size (:mush-high-size cfg-data)
-        popenv (:popenv cfg-data)
-        mush-field  (:mush-field  popenv)
-        snipe-field (:snipe-field popenv)
-        mush-field-portrayal (get-mush-field-portrayal this-ui)
-        snipe-field-portrayal (get-snipe-field-portrayal this-ui)
         display (get-display this-ui)
         ;; These portrayals should be local to setup-portrayals because 
         ;; proxy needs to capture the correct 'this', and we need cfg-data:
@@ -126,46 +124,68 @@
                              (set! (.-scale this) size)                       ; superclass vars
                              (set! (.-paint this) (mush-color-fn shade))
                              (proxy-super draw mush graphics (DrawInfo2D. info org-offset org-offset))))) ; last arg centers organism in hex cell
-        r-snipe-portrayal-pref-small (proxy [ShapePortrayal2D] [ShapePortrayal2D/X_POINTS_TRIANGLE_DOWN 
-                                                                ShapePortrayal2D/Y_POINTS_TRIANGLE_DOWN
-                                                                (* 1.1 snipe-size)]
-                            (draw [snipe graphics info] ; orverride method in super
-                              (set! (.-paint this) (r-snipe-color-fn (min max-energy birth-threshold) snipe)) ; paint var is in superclass
-                              (proxy-super draw snipe graphics (DrawInfo2D. info (* 0.75 org-offset) (* 0.55 org-offset))))) ; see above re last arg
-        r-snipe-portrayal-pref-small (make-fnl-circled-portrayal r-snipe-portrayal-pref-small Color/blue)
-        r-snipe-portrayal-pref-big (proxy [ShapePortrayal2D] [ShapePortrayal2D/X_POINTS_TRIANGLE_UP 
+        r-snipe-portrayal-pref-small (make-fnl-circled-portrayal 
+                                       (proxy [ShapePortrayal2D] [ShapePortrayal2D/X_POINTS_TRIANGLE_DOWN 
+                                                                  ShapePortrayal2D/Y_POINTS_TRIANGLE_DOWN
+                                                                  (* 1.1 snipe-size)]
+                                         (draw [snipe graphics info] ; orverride method in super
+                                           (set! (.-paint this) (r-snipe-color-fn (min max-energy birth-threshold) snipe)) ; paint var is in superclass
+                                           (proxy-super draw snipe graphics (DrawInfo2D. info (* 0.75 org-offset) (* 0.55 org-offset))))) ; see above re last arg
+                                       Color/blue)
+        r-snipe-portrayal-pref-big (make-fnl-circled-portrayal 
+                                     (proxy [ShapePortrayal2D] [ShapePortrayal2D/X_POINTS_TRIANGLE_UP 
                                                                 ShapePortrayal2D/Y_POINTS_TRIANGLE_UP
                                                                 (* 1.1 snipe-size)]
-                            (draw [snipe graphics info] ; orverride method in super
-                              (set! (.-paint this) (r-snipe-color-fn (min max-energy birth-threshold) snipe)) ; paint var is in superclass
-                              (proxy-super draw snipe graphics (DrawInfo2D. info (* 0.75 org-offset) (* 0.55 org-offset))))) ; see above re last arg
-        r-snipe-portrayal-pref-big (make-fnl-circled-portrayal r-snipe-portrayal-pref-big Color/blue)
-        k-snipe-portrayal (proxy [OvalPortrayal2D] [(* 1.1 snipe-size)]
-                            (draw [snipe graphics info] ; override method in super
-                              (set! (.-paint this) (k-snipe-color-fn max-energy snipe)) ; superclass var
-                              (proxy-super draw snipe graphics (DrawInfo2D. info org-offset org-offset)))) ; see above re last arg
-        k-snipe-portrayal (make-fnl-circled-portrayal k-snipe-portrayal Color/red)
-        s-snipe-portrayal (proxy [RectanglePortrayal2D] [(* 0.915 snipe-size)] ; squares need to be bigger than circles
-                            (draw [snipe graphics info] ; orverride method in super
-                              (set! (.-paint this) (s-snipe-color-fn (min max-energy birth-threshold) snipe)) ; paint var is in superclass
-                              (proxy-super draw snipe graphics (DrawInfo2D. info (* 1.5 org-offset) (* 1.5 org-offset))))) ; see above re last arg
-        s-snipe-portrayal (make-fnl-circled-portrayal s-snipe-portrayal Color/black)]
-    (.setField mush-field-portrayal mush-field)
-    (.setField snipe-field-portrayal snipe-field)
+                                       (draw [snipe graphics info] ; orverride method in super
+                                         (set! (.-paint this) (r-snipe-color-fn (min max-energy birth-threshold) snipe)) ; paint var is in superclass
+                                         (proxy-super draw snipe graphics (DrawInfo2D. info (* 0.75 org-offset) (* 0.55 org-offset))))) ; see above re last arg
+                                     Color/blue)
+        k-snipe-portrayal (make-fnl-circled-portrayal 
+                            (proxy [OvalPortrayal2D] [(* 1.1 snipe-size)]
+                              (draw [snipe graphics info] ; override method in super
+                                (set! (.-paint this) (k-snipe-color-fn max-energy snipe)) ; superclass var
+                                (proxy-super draw snipe graphics (DrawInfo2D. info org-offset org-offset)))) ; see above re last arg
+                            Color/red)
+        s-snipe-portrayal (make-fnl-circled-portrayal 
+                            (proxy [RectanglePortrayal2D] [(* 0.915 snipe-size)] ; squares need to be bigger than circles
+                              (draw [snipe graphics info] ; orverride method in super
+                                (set! (.-paint this) (s-snipe-color-fn (min max-energy birth-threshold) snipe)) ; paint var is in superclass
+                                (proxy-super draw snipe graphics (DrawInfo2D. info (* 1.5 org-offset) (* 1.5 org-offset))))) ; see above re last arg
+                            Color/black)
+        west-snipe-field-portrayal (:west-snipe-field-portrayal ui-config)
+        east-snipe-field-portrayal (:east-snipe-field-portrayal ui-config)
+        west-mush-field-portrayal (:west-mush-field-portrayal ui-config)
+        east-mush-field-portrayal (:east-mush-field-portrayal ui-config)]
+    ;; connect fields to their portrayals
+    (.setField west-snipe-field-portrayal (:west-snipe-field popenv))
+    (.setField east-snipe-field-portrayal (:east-snipe-field popenv))
+    (.setField west-mush-field-portrayal (:west-mush-field popenv))
+    (.setField east-mush-field-portrayal (:east-mush-field popenv))
     ; **NOTE** UNDERSCORES NOT HYPHENS IN free_agent CLASSNAMES BELOW:
-    (.setPortrayalForClass mush-field-portrayal free_agent.mush.Mush mush-portrayal)
-    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.KSnipe k-snipe-portrayal)
-    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipePrefSmall r-snipe-portrayal-pref-small)
-    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.RSnipePrefBig   r-snipe-portrayal-pref-big)
-    (.setPortrayalForClass snipe-field-portrayal free_agent.snipe.SSnipe s-snipe-portrayal)
+    ;; connect portrayals to agents:
+    ;; mushs:
+    (.setPortrayalForClass west-mush-field-portrayal free_agent.mush.Mush mush-portrayal)
+    (.setPortrayalForClass east-mush-field-portrayal free_agent.mush.Mush mush-portrayal)
+    ;; west snipes:
+    (.setPortrayalForClass west-snipe-field-portrayal free_agent.snipe.KSnipe k-snipe-portrayal)
+    (.setPortrayalForClass west-snipe-field-portrayal free_agent.snipe.RSnipePrefSmall r-snipe-portrayal-pref-small)
+    (.setPortrayalForClass west-snipe-field-portrayal free_agent.snipe.RSnipePrefBig   r-snipe-portrayal-pref-big)
+    (.setPortrayalForClass west-snipe-field-portrayal free_agent.snipe.SSnipe s-snipe-portrayal)
+    ;; east snipes:
+    (.setPortrayalForClass east-snipe-field-portrayal free_agent.snipe.KSnipe k-snipe-portrayal)
+    (.setPortrayalForClass east-snipe-field-portrayal free_agent.snipe.RSnipePrefSmall r-snipe-portrayal-pref-small)
+    (.setPortrayalForClass east-snipe-field-portrayal free_agent.snipe.RSnipePrefBig   r-snipe-portrayal-pref-big)
+    (.setPortrayalForClass east-snipe-field-portrayal free_agent.snipe.SSnipe s-snipe-portrayal)
     ;; Since popenvs are updated functionally, have to tell the ui about the new popenv on every timestep:
     (.scheduleRepeatingImmediatelyAfter this-ui
                                         (reify Steppable 
                                           (step [this sim-state]
-                                            (let [{:keys [snipe-field mush-field]} (:popenv @cfg-data$)]
-                                              (.setField snipe-field-portrayal snipe-field)
-                                              ;(.setDirtyField snipe-field-portrayal true) ; I thought that maybe this would affect inspector-tracking; nope.
-                                              (.setField mush-field-portrayal mush-field)))))
+                                            (let [{:keys [west-snipe-field east-snipe-field 
+                                                          west-mush-field east-mush-field]} (:popenv @cfg-data$)]
+                                              (.setField west-snipe-field-portrayal west-snipe-field)
+                                              (.setField east-snipe-field-portrayal east-snipe-field)
+                                              (.setField west-mush-field-portrayal west-mush-field)
+                                              (.setField east-mush-field-portrayal east-mush-field)))))
     ;; set up display:
     (doto display
       (.reset )
