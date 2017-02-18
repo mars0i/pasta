@@ -57,11 +57,8 @@
   You can use partial use next-popenv with swap!.)"
   [rng cfg-data$ popenv]
   (let [{:keys [snipe-field mush-field dead-snipes]} popenv
-        [new-snipe-field new-mush-field] (snipes-eat rng 
-                                                     @cfg-data$
-                                                     snipe-field 
-                                                     mush-field)
-        new-snipe-field (snipes-reproduce rng cfg-data$ new-snipe-field) ; birth before death in case birth uses remaining energy
+        new-snipe-field (snipes-reproduce rng cfg-data$ snipe-field)
+        [new-snipe-field new-mush-field] (snipes-eat rng @cfg-data$ new-snipe-field mush-field)
         [new-snipe-field newly-died] (snipes-die @cfg-data$ new-snipe-field)
         [new-snipe-field newly-culled] (cull-snipes rng @cfg-data$ new-snipe-field)
         new-snipe-field (move-snipes rng @cfg-data$ new-snipe-field)     ; only the living get to move
