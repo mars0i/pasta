@@ -78,10 +78,10 @@
   a new SubEnv.  (popenv is last for convenience with iterate.
   You can use partial use next-popenv with swap!.)"
   [rng cfg-data$ popenv]
-  (let [{:keys [west-subenv east-subenv snipe-map]} popenv
+  (let [{:keys [west-subenv east-subenv]} popenv
         {west-snipe-field :snipe-field} west-subenv
         {east-snipe-field :snipe-field} east-subenv
-        [west-snipe-field' east-snipe-field'] (snipes-reproduce rng cfg-data$ 
+        [west-snipe-field' east-snipe-field'] (snipes-reproduce rng cfg-data$   ; uses both fields: newborns could go anywhere
                                                                 west-snipe-field 
                                                                 east-snipe-field)
         west-subenv' (eat-die-move rng cfg-data$
@@ -329,11 +329,14 @@
         [num-births (assoc snipe :energy remaining-energy)]))))
 
 (defn snipes-reproduce
-  [rng cfg-data$ snipe-field]
+  [rng cfg-data$ west-snipe-field east-snipe-field]
   (let [{:keys [env-width env-height birth-threshold birth-cost]} @cfg-data$
-        old-snipes (.elements snipe-field)
-        new-snipe-field (ObjectGrid2D. snipe-field)] ; new field that's a copy of old one
-    (doseq [snipe old-snipes]
+        old-west-snipes (.elements west-snipe-field)
+        old-east-snipes (.elements west-snipe-field)
+        west-snipe-field' (ObjectGrid2D. west-snipe-field) ; new field that's a copy of old one
+        east-snipe-field' (ObjectGrid2D. east-snipe-field)]
+    ;; WHICH FIELD GETS TO PLACE ITS OFFSPRING FIRST? 
+    (doseq [snipe old-west-snipes]
       (when (>= (:energy snipe) birth-threshold)
         (let [[num-births snipe] (count-litter @cfg-data$ snipe)]
           (.set new-snipe-field (:x snipe) (:y snipe) snipe)
