@@ -40,7 +40,7 @@
 ;(def display-backdrop-color (Color. 70 70 70))
 (def subenv-gap 5)
 (def snipe-size 0.55)
-(defn snipe-shade-fn [max-energy snipe] (int (+ 94 (* 160 (/ (:energy snipe) max-energy)))))
+(defn snipe-shade-fn [max-energy snipe] (int (+ 64 (* 190 (/ (:energy snipe) max-energy)))))
 (defn k-snipe-color-fn [max-energy snipe] (Color. (snipe-shade-fn max-energy snipe) 0 0))
 (defn r-snipe-color-fn [max-energy snipe] (Color. 0 0 (snipe-shade-fn max-energy snipe)))
 (defn s-snipe-color-fn [max-energy snipe] (Color. 0 (snipe-shade-fn max-energy snipe) 0))
