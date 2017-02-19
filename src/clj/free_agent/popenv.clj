@@ -61,16 +61,23 @@
              (make-snipe-map (:snipe-field west-subenv)
                              (:snipe-field east-subenv)))))
 
-(defn eat-die-move
-  [rng cfg-data$ subenv]
+(defn eat
+  [rng cfg-data subenv]
   (let [{:keys [snipe-field mush-field dead-snipes]} subenv
-        [snipe-field' mush-field'] (snipes-eat rng @cfg-data$ snipe-field mush-field)
-        [snipe-field' newly-died] (snipes-die @cfg-data$ snipe-field')
-        [snipe-field' newly-culled] (cull-snipes rng @cfg-data$ snipe-field')
-        snipe-field' (move-snipes rng @cfg-data$ snipe-field')     ; only the living get to move
-        snipe-field' (age-snipes snipe-field')]
+        [snipe-field' mush-field'] (snipes-eat rng cfg-data snipe-field mush-field)]
     (SubEnv. snipe-field' 
              mush-field' 
+             dead-snipes)))
+
+(defn die-move
+  [rng cfg-data subenv]
+  (let [{:keys [snipe-field mush-field dead-snipes]} subenv
+        [snipe-field' newly-died] (snipes-die cfg-data snipe-field)
+        [snipe-field' newly-culled] (cull-snipes rng cfg-data snipe-field')
+        snipe-field' (move-snipes rng cfg-data snipe-field')     ; only the living get to move
+        snipe-field' (age-snipes snipe-field')]
+    (SubEnv. snipe-field' 
+             mush-field 
              (conj dead-snipes (concat newly-died newly-culled))))) ; each timestep adds a separate collection of dead snipes
 
 (defn next-popenv
@@ -79,13 +86,13 @@
   You can use partial use next-popenv with swap!.)"
   [rng cfg-data$ popenv]
   (let [{:keys [west-subenv east-subenv]} popenv
-        {west-snipe-field :snipe-field} west-subenv
-        {east-snipe-field :snipe-field} east-subenv
+        west-subenv' (eat rng @cfg-data$ west-subenv) ; better to eat before reproduction--makes sense
+        east-subenv' (eat rng @cfg-data$ east-subenv) ; and avoids complexity with max energy
         [west-snipe-field' east-snipe-field'] (snipes-reproduce rng cfg-data$ ; uses both fields: newborns could go anywhere
-                                                                west-snipe-field 
-                                                                east-snipe-field)
-        west-subenv' (eat-die-move rng cfg-data$ (assoc west-subenv :snipe-field west-snipe-field'))
-        east-subenv' (eat-die-move rng cfg-data$ (assoc east-subenv :snipe-field east-snipe-field'))
+                                                                (:snipe-field west-subenv')
+                                                                (:snipe-field east-subenv'))
+        west-subenv' (die-move rng @cfg-data$ (assoc west-subenv :snipe-field west-snipe-field'))
+        east-subenv' (die-move rng @cfg-data$ (assoc east-subenv :snipe-field east-snipe-field'))
         snipe-map' (make-snipe-map (:snipe-field west-subenv) (:snipe-field east-subenv))]
     (PopEnv. west-subenv' east-subenv' snipe-map')))
 
@@ -331,8 +338,7 @@
   (let [{:keys [env-width env-height birth-threshold birth-cost]} @cfg-data$
         snipes (interleave (.elements west-snipe-field) (.elements west-snipe-field))
         west-snipe-field' (ObjectGrid2D. west-snipe-field) ; new field that's a copy of old one
-        east-snipe-field' (ObjectGrid2D. east-snipe-field)
-        subenv-key :YOW]
+        east-snipe-field' (ObjectGrid2D. east-snipe-field)]
     (doseq [snipe snipes]
       (when (>= (:energy snipe) birth-threshold)
         (let [[num-births snipe'] (give-birth @cfg-data$ snipe)
