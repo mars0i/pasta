@@ -40,7 +40,12 @@
 ;(def display-backdrop-color (Color. 70 70 70))
 (def subenv-gap 5)
 (def snipe-size 0.55)
-(defn snipe-shade-fn [max-energy snipe] (int (+ 64 (* 190 (/ (:energy snipe) max-energy)))))
+;(defn snipe-shade-fn [max-energy snipe] (int (+ 64 (* 190 (/ (:energy snipe) max-energy)))))
+(defn snipe-shade-fn [max-energy snipe] 
+  (let [shade (int (+ 54 (* 200 (/ (:energy snipe) max-energy))))]
+    (when (> shade 255)
+      (println "SHADE:" shade (dissoc snipe :cfg-data$)))
+    shade))
 (defn k-snipe-color-fn [max-energy snipe] (Color. (snipe-shade-fn max-energy snipe) 0 0))
 (defn r-snipe-color-fn [max-energy snipe] (Color. 0 0 (snipe-shade-fn max-energy snipe)))
 (defn s-snipe-color-fn [max-energy snipe] (Color. 0 (snipe-shade-fn max-energy snipe) 0))
@@ -111,8 +116,9 @@
         cfg-data$ (.simConfigData sim-config)
         rng (.random sim-config)
         cfg-data @cfg-data$
-        west-popenv (:west-popenv cfg-data)
-        east-popenv (:east-popenv cfg-data)
+        popenv (:popenv cfg-data)
+        west-subenv (:west-subenv popenv)
+        east-subenv (:east-subenv popenv)
         max-energy (:max-energy cfg-data)
         birth-threshold (:birth-threshold cfg-data)
         mush-high-size (:mush-high-size cfg-data)
@@ -161,10 +167,10 @@
         east-mush-field-portrayal (:east-mush-field-portrayal ui-config)]
     ;; connect fields to their portrayals
     (.setField bg-field-portrayal (ObjectGrid2D. (:env-width cfg-data) (:env-height cfg-data)))
-    (.setField west-snipe-field-portrayal (:snipe-field west-popenv))
-    (.setField west-mush-field-portrayal (:mush-field west-popenv))
-    (.setField east-snipe-field-portrayal (:snipe-field east-popenv))
-    (.setField east-mush-field-portrayal (:mush-field east-popenv))
+    (.setField west-snipe-field-portrayal (:snipe-field west-subenv))
+    (.setField west-mush-field-portrayal (:mush-field west-subenv))
+    (.setField east-snipe-field-portrayal (:snipe-field east-subenv))
+    (.setField east-mush-field-portrayal (:mush-field east-subenv))
     ;; extra field portrayal to set a background color under the subenvs:
     (.setPortrayalForNull bg-field-portrayal (HexagonalPortrayal2D. bg-color 1.2))
     ; **NOTE** UNDERSCORES NOT HYPHENS IN free_agent CLASSNAMES BELOW:
@@ -186,11 +192,11 @@
     (.scheduleRepeatingImmediatelyAfter this-ui
                                         (reify Steppable 
                                           (step [this sim-state]
-                                            (let [{:keys [west-popenv east-popenv]} @cfg-data$]
-                                              (.setField west-snipe-field-portrayal (:snipe-field west-popenv))
-                                              (.setField west-mush-field-portrayal (:mush-field west-popenv))
-                                              (.setField east-snipe-field-portrayal (:snipe-field east-popenv))
-                                              (.setField east-mush-field-portrayal (:mush-field east-popenv))))))
+                                            (let [{:keys [west-subenv east-subenv]} (:popenv @cfg-data$)]
+                                              (.setField west-snipe-field-portrayal (:snipe-field west-subenv))
+                                              (.setField west-mush-field-portrayal (:mush-field west-subenv))
+                                              (.setField east-snipe-field-portrayal (:snipe-field east-subenv))
+                                              (.setField east-mush-field-portrayal (:mush-field east-subenv))))))
     ;; set up display:
     (doto display
       (.reset )

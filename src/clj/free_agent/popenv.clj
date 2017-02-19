@@ -339,11 +339,11 @@
     (doseq [snipe snipes]
       (when (>= (:energy snipe) birth-threshold)
         (let [[num-births snipe'] (give-birth @cfg-data$ snipe)
-              parental-snipe-field (if (= (:subenv-key snipe') :west-subenv)
-                                     west-snipe-field'
-                                     east-snipe-field')]
+              parental-snipe-field' (if (= (:subenv-key snipe') :west-subenv)
+                                      west-snipe-field'
+                                      east-snipe-field')]
           ;; replace old snipe with one updated to reflect birth:
-          (.set parental-snipe-field (:x snipe') (:y snipe') snipe')
+          (.set parental-snipe-field' (:x snipe') (:y snipe') snipe')
           ;; create and place newborns:
           (dotimes [_ num-births]
             (let [[child-snipe-field subenv-key] (if (< (ran/next-double rng) 0.5)

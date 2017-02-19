@@ -41,7 +41,7 @@
   Object
   (toString [this] (str "<RSnipePrefSmall #" id ">")))
 
-(defrecord RSnipePrefBig [id perceive mush-pref energy x y age subenv-key circled$ cfg-data$] ; r-snipe that prefers large mushrooms
+(defrecord RSnipePrefBig [id perceive mush-pref energy subenv-key x y age circled$ cfg-data$] ; r-snipe that prefers large mushrooms
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Object
