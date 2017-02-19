@@ -41,7 +41,7 @@
 (def subenv-gap 5)
 (def snipe-size 0.55)
 ;(defn snipe-shade-fn [max-energy snipe] (int (+ 64 (* 190 (/ (:energy snipe) max-energy)))))
-(defn snipe-shade-fn [max-energy snipe] 
+(defn snipe-shade-fn [max-energy snipe]   ; DEBUG VERSION
   (let [shade (int (+ 64 (* 190 (/ (:energy snipe) max-energy))))]
     (when (> shade 255)
       (println "SHADE:" shade max-energy (dissoc snipe :cfg-data$)))
@@ -123,7 +123,8 @@
         birth-threshold (:birth-threshold cfg-data)
         mush-pos-nutrition (:mush-pos-nutrition cfg-data)
         mush-high-size (:mush-high-size cfg-data)
-        effective-max-energy (min birth-threshold max-energy)
+        ;effective-max-energy (min birth-threshold max-energy)
+        effective-max-energy max-energy ; DEBUG VERSION
         display @(:display ui-config)
         ;; These portrayals should be local to setup-portrayals because 
         ;; proxy needs to capture the correct 'this', and we need cfg-data:
