@@ -352,12 +352,10 @@
         east-snipe-field' (ObjectGrid2D. east-snipe-field)]
     (doseq [snipe snipes]
       (when (>= (:energy snipe) birth-threshold)
-        ;(println "giving birth ====================\n" (sn/clean snipe))
         (let [[num-births snipe'] (give-birth @cfg-data$ snipe)
               parental-snipe-field' (if (= (:subenv-key snipe') :west-subenv)
                                       west-snipe-field'
                                       east-snipe-field')]
-          ;(println snipe')
           ;; replace old snipe with one updated to reflect birth:
           (.set parental-snipe-field' (:x snipe') (:y snipe') snipe')
           ;; create and place newborns:
