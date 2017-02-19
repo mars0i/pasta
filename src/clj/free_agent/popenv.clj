@@ -339,18 +339,15 @@
             remaining-energy (- old-energy (* num-births birth-cost))]
         [num-births (assoc snipe :energy remaining-energy)]))))
 
-;; TODO ? SHOULD I RANDOMLY SHUFFLE THE SNIPES HERE?  SNIPES EARLIER
-;; IN THE SEQUENCE GET FIRST PICK FOR RANDOM BIRTH LOCATIONS.  AS LONG
-;; AS THERE'S NO INDIVIDUAL INHERITANCE, THIS SEEMS OK.  BUT IT COULD
-;; BE BAD FOR SOME FUTURE SIMULATION.
 (defn snipes-reproduce
   [rng cfg-data$ west-snipe-field east-snipe-field]
   (let [{:keys [env-width env-height birth-threshold birth-cost]} @cfg-data$
-        snipes (interleave (.elements west-snipe-field)  ; interleave so that one subenv doesn't
-                           (.elements east-snipe-field)) ; get first dibs on birth locations
         west-snipe-field' (ObjectGrid2D. west-snipe-field) ; new field that's a copy of old one
-        east-snipe-field' (ObjectGrid2D. east-snipe-field)]
-    (doseq [snipe snipes]
+        east-snipe-field' (ObjectGrid2D. east-snipe-field)
+        snipes' (.elements west-snipe-field)]
+    (.addAll snipes' (.elements east-snipe-field)) ; doing this MASON-style is quite fast (and ok if local)
+    (.shuffle snipes' rng) ; shuffle so no snipe gets preference for scarce birth locations (shuffle is fast)
+    (doseq [snipe snipes']
       (when (>= (:energy snipe) birth-threshold)
         (let [[num-births snipe'] (give-birth @cfg-data$ snipe)
               parental-snipe-field' (if (= (:subenv-key snipe') :west-subenv)
@@ -360,10 +357,10 @@
           (.set parental-snipe-field' (:x snipe') (:y snipe') snipe')
           ;; create and place newborns:
           (dotimes [_ num-births]
-            (let [[child-snipe-field subenv-key] (if (< (ran/next-double rng) 0.5)
-                                                   [west-snipe-field' :west-subenv]
+            (let [[child-snipe-field subenv-key] (if (< (ran/next-double rng) 0.5)   ; newborns are randomly 
+                                                   [west-snipe-field' :west-subenv]  ; assigned to a subenv
                                                    [east-snipe-field' :east-subenv])]
-              (add-organism-to-rand-loc! rng @cfg-data$ child-snipe-field env-width env-height ; add newborn
+              (add-organism-to-rand-loc! rng @cfg-data$ child-snipe-field env-width env-height ; add newborn of same type as parent
                                          (organism-setter (cond (sn/k-snipe? snipe') (partial sn/make-newborn-k-snipe cfg-data$ subenv-key)
                                                                 (sn/r-snipe? snipe') (partial sn/make-newborn-r-snipe rng cfg-data$ subenv-key)
                                                                 :else                (partial sn/make-newborn-s-snipe cfg-data$ subenv-key)))))))))
