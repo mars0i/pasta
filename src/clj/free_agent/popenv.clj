@@ -7,6 +7,12 @@
   (:import [sim.field.grid Grid2D ObjectGrid2D]
            [sim.util IntBag]))
 
+;; Conventions:
+;; * Adding an apostrophe to a var name--e.g. making x into x-prime--means
+;;   that this is the next value of that thing.  Sometimes this name will
+;;   be reused repeatedly in a let as the value is sequentially updated.
+;; * Var names containing atoms have "$" as a suffix.
+
 ;(use '[clojure.pprint]) ; DEBUG
 
 (declare setup-popenv-config! make-popenv next-popenv organism-setter 
@@ -333,14 +339,20 @@
             remaining-energy (- old-energy (* num-births birth-cost))]
         [num-births (assoc snipe :energy remaining-energy)]))))
 
+;; TODO ? SHOULD I RANDOMLY SHUFFLE THE SNIPES HERE?  SNIPES EARLIER
+;; IN THE SEQUENCE GET FIRST PICK FOR RANDOM BIRTH LOCATIONS.  AS LONG
+;; AS THERE'S NO INDIVIDUAL INHERITANCE, THIS SEEMS OK.  BUT IT COULD
+;; BE BAD FOR SOME FUTURE SIMULATION.
 (defn snipes-reproduce
   [rng cfg-data$ west-snipe-field east-snipe-field]
   (let [{:keys [env-width env-height birth-threshold birth-cost]} @cfg-data$
-        snipes (interleave (.elements west-snipe-field) (.elements west-snipe-field))
+        snipes (interleave (.elements west-snipe-field)  ; interleave so that one subenv doesn't
+                           (.elements east-snipe-field)) ; get first dibs on birth locations
         west-snipe-field' (ObjectGrid2D. west-snipe-field) ; new field that's a copy of old one
         east-snipe-field' (ObjectGrid2D. east-snipe-field)]
     (doseq [snipe snipes]
       (when (>= (:energy snipe) birth-threshold)
+        (println "giving birth:\n" (sn/clean snipe))
         (let [[num-births snipe'] (give-birth @cfg-data$ snipe)
               parental-snipe-field' (if (= (:subenv-key snipe') :west-subenv)
                                       west-snipe-field'
