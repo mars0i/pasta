@@ -6,6 +6,10 @@ DONE fix popenv to deal with separate fields
 should children be in both subenvs?
 	for this I might need to replace next-popenv
 	with a combined next-popenvs
+	we have two source subenvs
+	and two target subenvs
+	and I can either iterate through the potential parents
+	subenv by subenv, or somehow interleaving them
 fix s-snipe perception
 bug: circled portrayals no longer work
 fix stats
