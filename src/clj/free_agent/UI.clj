@@ -121,11 +121,10 @@
         east-subenv (:east-subenv popenv)
         max-energy (:max-energy cfg-data)
         birth-threshold (:birth-threshold cfg-data)
-        mush-high-size (:mush-high-size cfg-data)
         mush-pos-nutrition (:mush-pos-nutrition cfg-data)
+        mush-high-size (:mush-high-size cfg-data)
+        effective-max-energy (min birth-threshold max-energy)
         display @(:display ui-config)
-        effective-max-energy (min (+ birth-threshold mush-pos-nutrition) ; the most snipe can have before birth
-                                  max-energy)
         ;; These portrayals should be local to setup-portrayals because 
         ;; proxy needs to capture the correct 'this', and we need cfg-data:
         mush-portrayal (proxy [OvalPortrayal2D] []
