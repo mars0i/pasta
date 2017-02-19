@@ -42,9 +42,9 @@
 (def snipe-size 0.55)
 ;(defn snipe-shade-fn [max-energy snipe] (int (+ 64 (* 190 (/ (:energy snipe) max-energy)))))
 (defn snipe-shade-fn [max-energy snipe] 
-  (let [shade (int (+ 54 (* 200 (/ (:energy snipe) max-energy))))]
+  (let [shade (int (+ 64 (* 190 (/ (:energy snipe) max-energy))))]
     (when (> shade 255)
-      (println "SHADE:" shade (dissoc snipe :cfg-data$)))
+      (println "SHADE:" shade max-energy (dissoc snipe :cfg-data$)))
     shade))
 (defn k-snipe-color-fn [max-energy snipe] (Color. (snipe-shade-fn max-energy snipe) 0 0))
 (defn r-snipe-color-fn [max-energy snipe] (Color. 0 0 (snipe-shade-fn max-energy snipe)))
@@ -122,7 +122,10 @@
         max-energy (:max-energy cfg-data)
         birth-threshold (:birth-threshold cfg-data)
         mush-high-size (:mush-high-size cfg-data)
+        mush-pos-nutrition (:mush-pos-nutrition cfg-data)
         display @(:display ui-config)
+        effective-max-energy (min (+ birth-threshold mush-pos-nutrition) ; the most snipe can have before birth
+                                  max-energy)
         ;; These portrayals should be local to setup-portrayals because 
         ;; proxy needs to capture the correct 'this', and we need cfg-data:
         mush-portrayal (proxy [OvalPortrayal2D] []
@@ -137,7 +140,7 @@
                                                                   ShapePortrayal2D/Y_POINTS_TRIANGLE_DOWN
                                                                   (* 1.1 snipe-size)]
                                          (draw [snipe graphics info] ; orverride method in super
-                                           (set! (.-paint this) (r-snipe-color-fn (min max-energy birth-threshold) snipe)) ; paint var is in superclass
+                                           (set! (.-paint this) (r-snipe-color-fn effective-max-energy snipe)) ; paint var is in superclass
                                            (proxy-super draw snipe graphics (DrawInfo2D. info (* 0.75 org-offset) (* 0.55 org-offset))))) ; see above re last arg
                                        Color/blue)
         r-snipe-portrayal-pref-big (make-fnl-circled-portrayal 
@@ -145,19 +148,19 @@
                                                                 ShapePortrayal2D/Y_POINTS_TRIANGLE_UP
                                                                 (* 1.1 snipe-size)]
                                        (draw [snipe graphics info] ; orverride method in super
-                                         (set! (.-paint this) (r-snipe-color-fn (min max-energy birth-threshold) snipe)) ; paint var is in superclass
+                                         (set! (.-paint this) (r-snipe-color-fn effective-max-energy snipe)) ; paint var is in superclass
                                          (proxy-super draw snipe graphics (DrawInfo2D. info (* 0.75 org-offset) (* 0.55 org-offset))))) ; see above re last arg
                                      Color/blue)
         k-snipe-portrayal (make-fnl-circled-portrayal 
                             (proxy [OvalPortrayal2D] [(* 1.1 snipe-size)]
                               (draw [snipe graphics info] ; override method in super
-                                (set! (.-paint this) (k-snipe-color-fn max-energy snipe)) ; superclass var
+                                (set! (.-paint this) (k-snipe-color-fn effective-max-energy snipe)) ; superclass var
                                 (proxy-super draw snipe graphics (DrawInfo2D. info org-offset org-offset)))) ; see above re last arg
                             Color/red)
         s-snipe-portrayal (make-fnl-circled-portrayal 
                             (proxy [RectanglePortrayal2D] [(* 0.915 snipe-size)] ; squares need to be bigger than circles
                               (draw [snipe graphics info] ; orverride method in super
-                                (set! (.-paint this) (s-snipe-color-fn (min max-energy birth-threshold) snipe)) ; paint var is in superclass
+                                (set! (.-paint this) (s-snipe-color-fn effective-max-energy snipe)) ; paint var is in superclass
                                 (proxy-super draw snipe graphics (DrawInfo2D. info (* 1.5 org-offset) (* 1.5 org-offset))))) ; see above re last arg
                             Color/black)
         bg-field-portrayal (:bg-field-portrayal ui-config)
