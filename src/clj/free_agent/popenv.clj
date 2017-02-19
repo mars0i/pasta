@@ -352,11 +352,12 @@
         east-snipe-field' (ObjectGrid2D. east-snipe-field)]
     (doseq [snipe snipes]
       (when (>= (:energy snipe) birth-threshold)
-        (println "giving birth:\n" (sn/clean snipe))
+        ;(println "giving birth ====================\n" (sn/clean snipe))
         (let [[num-births snipe'] (give-birth @cfg-data$ snipe)
               parental-snipe-field' (if (= (:subenv-key snipe') :west-subenv)
                                       west-snipe-field'
                                       east-snipe-field')]
+          ;(println snipe')
           ;; replace old snipe with one updated to reflect birth:
           (.set parental-snipe-field' (:x snipe') (:y snipe') snipe')
           ;; create and place newborns:
@@ -368,7 +369,7 @@
                                          (organism-setter (cond (sn/k-snipe? snipe') (partial sn/make-newborn-k-snipe cfg-data$ subenv-key)
                                                                 (sn/r-snipe? snipe') (partial sn/make-newborn-r-snipe rng cfg-data$ subenv-key)
                                                                 :else                (partial sn/make-newborn-s-snipe cfg-data$ subenv-key)))))))))
-    [west-snipe-field east-snipe-field]))
+    [west-snipe-field' east-snipe-field']))
 
  ; newborn should be like parent
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
