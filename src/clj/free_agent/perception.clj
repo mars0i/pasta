@@ -96,14 +96,14 @@
         eat? (pos? (* mush-pref scaled-appearance))]  ; eat if scaled appearance has same sign as mush-pref
     [(assoc snipe :mush-pref mush-pref) eat?])) ; mush-pref will just be replaced next time, but this allows inspection
 
-(defn this-env-neighbors
+(defn OLD-this-env-neighbors
   [snipe]
   (let [{:keys [x y cfg-data$]} snipe
         {:keys [popenv neighbor-radius]} @cfg-data$
         {:keys [snipe-field]} popenv]
     (.getHexagonalNeighbors snipe-field x y neighbor-radius Grid2D/TOROIDAL false)))
 
-(defn cross-env-neighbors
+(defn OLD-cross-env-neighbors
   [snipe]
   (let [{:keys [x y cfg-data$]} snipe
         {:keys [popenv neighbor-radius env-width env-center]} @cfg-data$
@@ -120,9 +120,40 @@
                               cross-x y 
                               neighbor-radius Grid2D/TOROIDAL false))))
 
+;; Would it be faster to avoid doing all of the setup in the let twice for the both-subenvs version?
+(defn subenv-neighbors
+  "Returns a MASON sim.util.Bag containing all snipes in the hexagonal region 
+  around snipe's location in the subenv corresponding to subenv-key, to a 
+  distance of neighbor-radius.  This may include the original snipe.
+  (Note that Bags are Java Collections, so they work with Clojure collection 
+  functions.)"
+  [subenv-key snipe]
+  (let [{:keys [x y cfg-data$]} snipe
+        {:keys [popenv neighbor-radius]} @cfg-data$
+        snipe-field (:snipe-field (subenv-key popenv))]
+    (.getHexagonalNeighbors snipe-field x y neighbor-radius Grid2D/TOROIDAL true)))
+
+(defn this-subenv-neighbors
+  "Returns a MASON sim.util.Bag containing all snipes in the hexagonal region 
+  around snipe's location in its subenv, to a distance of neighbor-radius.  
+  This will include the original snipe.  (Note that Bags are Java Collections, 
+  so they work with Clojure collection functions.)"
+  [snipe]
+  (subenv-neighbors (:subenv-key snipe) snipe))
+
+(defn both-subenvs-neighbors
+  [snipe]
+  "Returns a MASON sim.util.Bag containing all snipes in the hexagonal region 
+  around snipe's location in both of the subenvs, to a distance of neighbor-radius.  
+  This will include the original snipe.  (Note that Bags are Java Collections, so 
+  they work with Clojure collection functions.)"
+  (.addAll (subenv-neighbors :west-subenv snipe)
+           (subenv-neighbors :east-subenv snipe)))
+
 (defn best-neighbor
-  "Return the neighbor with the most energy.  If there's a tie, return
-  a randomly chosen one of the best."
+  "Return the neighbor (or self) with the most energy.  If there's a tie, return
+  a randomly chosen one of the best.  Assumes that there is at least one \"neighbor\":
+  oneself."
   [rng neighbors]
   (ranu/sample-one rng 
                    (reduce (fn [best-neighbors neighbor]
@@ -131,7 +162,6 @@
                                (cond (< neighbor-energy best-energy) best-neighbors
                                      (> neighbor-energy best-energy) [neighbor]
                                      :else (conj best-neighbors neighbor))))
-                           [{:energy -1 :mush-pref 0}] ; start with dummy "snipe", returned only if there are no neighbors
                            neighbors)))
 
 (defn s-snipe-pref-success-bias
@@ -151,11 +181,11 @@
 
 (defn s-snipe-pref-success-bias-this-env
   [rng snipe mush]
-  (s-snipe-pref-success-bias rng snipe mush (this-env-neighbors snipe)))
+  (s-snipe-pref-success-bias rng snipe mush (OLD-this-env-neighbors snipe)))
 
 (defn s-snipe-pref-success-bias-cross-env
   [rng snipe mush]
-  (s-snipe-pref-success-bias rng snipe mush (cross-env-neighbors snipe)))
+  (s-snipe-pref-success-bias rng snipe mush (OLD-cross-env-neighbors snipe)))
 
 (defn random-eat-snipe-pref
  "Decides by a coin toss whether to eat."
