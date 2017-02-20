@@ -55,7 +55,8 @@
             [getEastRSnipePrefSmallFreq [] double]
             [getWestRSnipePrefBigFreq [] double]
             [getEastRSnipePrefBigFreq [] double]
-            ])
+            [getWestSSnipeFreq [] double]
+            [getEastSSnipeFreq [] double]])
 
 (defn -getPopSize [^SimConfig this] (stats/get-pop-size @(.simConfigData this)))
 (defn -getWestKSnipeFreq          [^SimConfig this] (stats/get-freq (.getSteps (.schedule this)) :west-subenv :k-snipe (:popenv @(.simConfigData this))))
@@ -64,6 +65,8 @@
 (defn -getEastRSnipePrefSmallFreq [^SimConfig this] (stats/get-freq (.getSteps (.schedule this)) :east-subenv :r-snipe-pref-small (:popenv @(.simConfigData this))))
 (defn -getWestRSnipePrefBigFreq   [^SimConfig this] (stats/get-freq (.getSteps (.schedule this)) :west-subenv :r-snipe-pref-big (:popenv @(.simConfigData this))))
 (defn -getEastRSnipePrefBigFreq   [^SimConfig this] (stats/get-freq (.getSteps (.schedule this)) :east-subenv :r-snipe-pref-big (:popenv @(.simConfigData this))))
+(defn -getWestSSnipeFreq          [^SimConfig this] (stats/get-freq (.getSteps (.schedule this)) :west-subenv :s-snipe (:popenv @(.simConfigData this))))
+(defn -getEastSSnipeFreq          [^SimConfig this] (stats/get-freq (.getSteps (.schedule this)) :east-subenv :s-snipe (:popenv @(.simConfigData this))))
 
 ;; no good reason to put this into the defsimconfig macro since it doesn't include any
 ;; field-specific code.  Easier to redefine if left here.
