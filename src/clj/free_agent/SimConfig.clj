@@ -44,29 +44,23 @@
                       [env-width          40    long    false       ["-w" "Width of env.  Must be an even number." :parse-fn #(Long. %)]] ; Haven't figured out how to change 
                       [env-height         40    long    false       ["-h" "Height of env. Must be an even number." :parse-fn #(Long. %)]] ;  within app without distortion
                       [env-display-size   12.0  double  false       ["-D" "How large to display the env in gui by default." :parse-fn #(Double. %)]]
-                      [show-grid         false  boolean false      ["-g" "If present, display underlying hexagonal grid." :parse-fn #(Boolean. %)]]
                       [extreme-pref      100.0  double  false] ; mush preference value for r-snipes and s-snipes
                       [max-pop-size        0    long    false]
                       [popenv            nil   free-agent.popenv.PopEnv false]]
   :methods [[getPopSize [] long] ; additional options here. this one is for def below; it will get merged into the generated :methods component.
-            [getWestKSnipeFreq [] double]
-            [getEastKSnipeFreq [] double]
-            [getWestRSnipePrefSmallFreq [] double]
-            [getEastRSnipePrefSmallFreq [] double]
-            [getWestRSnipePrefBigFreq [] double]
-            [getEastRSnipePrefBigFreq [] double]
-            [getWestSSnipeFreq [] double]
-            [getEastSSnipeFreq [] double]])
+            [getKSnipeFreq [] double]
+            [getRSnipePrefSmallFreq [] double]
+            [getRSnipePrefBigFreq [] double]
+            [getSSnipeFreq [] double]])
 
+(defn curr-step [cfg] (.getSteps (.schedule cfg)))
+(defn curr-popenv [cfg] (:popenv @(.simConfigData cfg)))
+;; NOTE these get called on every tick even if not reported in GUI.
 (defn -getPopSize [^SimConfig this] (stats/get-pop-size @(.simConfigData this)))
-(defn -getWestKSnipeFreq          [^SimConfig this] (stats/get-freq (.getSteps (.schedule this)) :west-subenv :k-snipe (:popenv @(.simConfigData this))))
-(defn -getEastKSnipeFreq          [^SimConfig this] (stats/get-freq (.getSteps (.schedule this)) :east-subenv :k-snipe (:popenv @(.simConfigData this))))
-(defn -getWestRSnipePrefSmallFreq [^SimConfig this] (stats/get-freq (.getSteps (.schedule this)) :west-subenv :r-snipe-pref-small (:popenv @(.simConfigData this))))
-(defn -getEastRSnipePrefSmallFreq [^SimConfig this] (stats/get-freq (.getSteps (.schedule this)) :east-subenv :r-snipe-pref-small (:popenv @(.simConfigData this))))
-(defn -getWestRSnipePrefBigFreq   [^SimConfig this] (stats/get-freq (.getSteps (.schedule this)) :west-subenv :r-snipe-pref-big (:popenv @(.simConfigData this))))
-(defn -getEastRSnipePrefBigFreq   [^SimConfig this] (stats/get-freq (.getSteps (.schedule this)) :east-subenv :r-snipe-pref-big (:popenv @(.simConfigData this))))
-(defn -getWestSSnipeFreq          [^SimConfig this] (stats/get-freq (.getSteps (.schedule this)) :west-subenv :s-snipe (:popenv @(.simConfigData this))))
-(defn -getEastSSnipeFreq          [^SimConfig this] (stats/get-freq (.getSteps (.schedule this)) :east-subenv :s-snipe (:popenv @(.simConfigData this))))
+(defn -getKSnipeFreq          [^SimConfig this] (stats/get-freq (curr-step this) :k-snipe            (curr-popenv this)))
+(defn -getRSnipePrefSmallFreq [^SimConfig this] (stats/get-freq (curr-step this) :r-snipe-pref-small (curr-popenv this)))
+(defn -getRSnipePrefBigFreq   [^SimConfig this] (stats/get-freq (curr-step this) :r-snipe-pref-big   (curr-popenv this)))
+(defn -getSSnipeFreq          [^SimConfig this] (stats/get-freq (curr-step this) :s-snipe            (curr-popenv this)))
 
 ;; no good reason to put this into the defsimconfig macro since it doesn't include any
 ;; field-specific code.  Easier to redefine if left here.

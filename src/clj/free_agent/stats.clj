@@ -15,15 +15,7 @@
   [cfg-data]
   (count (:snipe-map (:popenv cfg-data))))
 
-;(defn count-snipes
-;  [snipes]
-;  (let [counter (fn [[k r s] id snipe]
-;                  (cond (sn/k-snipe? snipe) [(inc k) r s]
-;                        (sn/r-snipe? snipe) [k (inc r) s]
-;                        (sn/s-snipe? snipe) [k r (inc s)]
-;                        :else (throw (Exception. "bad snipe"))))]
-;    (reduce-kv counter [0 0 0] snipes)))
-
+;; DEPRECATED
 (defn inc-snipe-counts
   "Increments the entry of map counts corresponding to the snipe class."
   [counts s]
@@ -32,6 +24,7 @@
         (sn/r-snipe-pref-small? s) (update counts :r-snipe-pref-small inc)
         :else                      (update counts :r-snipe-pref-big inc)))
 
+;; DEPRECATED
 (defn count-snipes
   "Returns a map containing counts for numbers of snipes of the three kinds 
   in snipes.  Keys are named after snipe classes: :k-snipe, 
@@ -42,37 +35,67 @@
           snipes))
 
 (defn count-snipe-locs
-  "Given a simple collection of snipes, returns a map containing counts 
-  for numbers of snipes of the three kinds in snipes, also classifying 
-  r-snipes by the environment (left, right) in which they were found.  
-  Keys are named after snipe classes plus left and right for r-snipes: 
-  :k-snipe, :r-snipe-pref-small-{left,right}, :r-snipe-pref-big-{left,right}."
-  [snipes]
-  (let [inc-counts (fn [counts s]
-                     (cond (sn/k-snipe? s) (update counts :k-snipe inc)
-                           (sn/s-snipe? s) (update counts :s-snipe inc)
-                           (sn/r-snipe-pref-small? s) (update counts :r-snipe-pref-small inc)
-                           (sn/r-snipe-pref-big? s) (update counts :r-snipe-pref-big inc)))]
-    (reduce inc-counts
-            {:total (count snipes)
-             :k-snipe 0 
-             :s-snipe 0 
-             :r-snipe-pref-small 0
-             :r-snipe-pref-big 0}
-            snipes)))
+  "Given a simple collection (not a map) of snipes, returns a map containing
+  counts for numbers of snipes of different classes.  Keys are named after 
+  snipe classes: :k-snipe, :r-snipe-pref-small, :r-snipe-pref-big, :s-snipe.
+  An additional entry, :total, contains a total count of all snipes.  If there
+  are additional collection arguments, the counts will be sums from all
+  of the collections."
+  ([snipes]
+   (let [inc-counts (fn [counts s]
+                      (cond (sn/k-snipe? s) (update counts :k-snipe inc)
+                            (sn/s-snipe? s) (update counts :s-snipe inc)
+                            (sn/r-snipe-pref-small? s) (update counts :r-snipe-pref-small inc)
+                            (sn/r-snipe-pref-big? s) (update counts :r-snipe-pref-big inc)))]
+     (reduce inc-counts
+             {:total (count snipes)
+              :k-snipe 0 
+              :s-snipe 0 
+              :r-snipe-pref-small 0
+              :r-snipe-pref-big 0}
+             snipes)))
+  ([snipes & more-snipes]
+   (apply merge-with +            ; overhead of map and apply should be minor relative to counting process
+          (map count-snipe-locs 
+               (cons snipes more-snipes))))) ; cons is really cheap here
 
 (defn freq-snipe-locs
-  [snipes]
-  (let [counts (count-snipe-locs snipes)
+  "Given one or more simple collections (not maps) of snipes, returns a map
+  containing relative frequencies of snipes of different classes, plus the total
+  number of snipes examined.  Keys are named after snipe classes: :k-snipe, 
+  :r-snipe-pref-small, :r-snipe-pref-big, :s-snipe, plus :total."
+  [& snipe-colls]
+  (let [counts (apply count-snipe-locs snipe-colls)
         total (:total counts)]
     (map-kv (fn [n] (if (pos? n)
                       (double (/ n total))
                       0))
-            (dissoc counts :total))))
+            counts)))
 
 (def freqs$ (atom {}))
 
 (defn get-freq
+  "Given an integer tick representing a MASON step, and a key k
+  for a snipes class (:k-snipe, :r-snipe-pref-small, :r-snipe-pref-big,
+  :s-snipe) or :total, returns the relative frequency of that snipe class
+  in the current population in popenv, or the total number of snipes if
+  :total is passed.  Note that data from previous ticks isn't kept.
+  tick is just used to determine whether the requested data is from the
+  same timestep as the last time that get-freq was called.  If not, then
+  all of the frequencies are recalculated from the current population,
+  and are associated with the newly passed tick, whether it's actually the 
+  current tick or not."
+  [tick k popenv]
+  (let [freqs (or (@freqs$ tick) ; if already got freqs for this tick, use 'em; else make 'em:
+                  (let [{:keys [west-subenv east-subenv]} popenv
+                        new-freqs (freq-snipe-locs (.elements (:snipe-field west-subenv))
+                                                   (.elements (:snipe-field east-subenv)))]
+                    ;(println "[" tick "]") ; DEBUG 
+                    (reset! freqs$ {tick new-freqs})
+                    new-freqs))]
+    (k freqs)))
+
+(defn get-freq-OLD
   [tick subenv-key k popenv]
   (let [freqs (or (@freqs$ tick) ; if already got freqs for this tick, use 'em, else make 'em
                   (let [{:keys [west-subenv east-subenv]} popenv
@@ -82,7 +105,7 @@
                     new-data))]
     (k (subenv-key freqs))))
 
-;; OLD
+;; OBSOLETE
 (defn get-k-snipe-freq
   [cfg-data]
   (let [count-k-snipes (fn [n id snipe]
@@ -96,16 +119,19 @@
       (double (/ k-snipe-count pop-size)) 
       0))) ; avoid spurious div by zero at beginning of a run
  
+;; TODO OLD, BROKEN
 (defn count-live-snipe-locs
   [cfg-data]
   (let [snipes (vals (:snipe-map (:popenv cfg-data)))]
     (count-snipe-locs cfg-data snipes)))
 
+;; TODO OLD, BROKEN
 (defn count-dead-snipe-locs
   [cfg-data]
   (let [dead-snipes (:dead-snipes (:popenv cfg-data))]
     (count-snipe-locs cfg-data (apply concat dead-snipes))))
 
+;; TODO OLD, BROKEN
 (defn mean-vals-locs
   "Returns a map of mean values for snipe field key k for snipes, with the keys 
   of the new map as in count-snipe-locs. The counts argument should be the result 
@@ -137,44 +163,52 @@
                  (vals (into (sorted-map) val-totals))
                  (vals (into (sorted-map) counts))))))
 
+;; TODO OLD, BROKEN
 (defn mean-ages-locs
   "Returns a map of mean ages for snipes, with keys as in count-snipe-locs. The
   counts argument should be the result of count-snipe-locs for the same snipes."
   [cfg-data counts snipes]
   (mean-vals-locs :age cfg-data counts snipes))
 
+;; TODO OLD, BROKEN
 (defn mean-ages-live-snipe-locs
   [cfg-data counts]
   (let [snipes (vals (:snipes (:popenv cfg-data)))]
     (mean-ages-locs cfg-data counts snipes)))
 
+;; TODO OLD, BROKEN
 (defn mean-ages-dead-snipe-locs
   [cfg-data counts]
   (let [dead-snipes (:dead-snipes (:popenv cfg-data))]
     (mean-ages-locs cfg-data counts (apply concat dead-snipes))))
 
+;; TODO OLD, BROKEN
 (defn mean-energies-locs
   "Returns a map of mean energies for snipes, with keys as in count-snipe-locs. The
   counts argument should be the result of count-snipe-locs for the same snipes."
   [cfg-data counts snipes]
   (mean-vals-locs :energy cfg-data counts snipes))
 
+;; TODO OLD, BROKEN
 (defn mean-energies-live-snipe-locs
   [cfg-data counts]
   (let [snipes (vals (:snipes (:popenv cfg-data)))]
     (mean-energies-locs cfg-data counts snipes)))
 
+;; TODO OLD, BROKEN
 (defn mean-energies-dead-snipe-locs
   [cfg-data counts]
   (let [dead-snipes (:dead-snipes (:popenv cfg-data))]
     (mean-energies-locs cfg-data counts (apply concat dead-snipes))))
 
+;; TODO OLD, BROKEN
 (defn mean-prefs-locs
   "Returns a map of mean mush-prefs for snipes, with keys as in count-snipe-locs. The
   counts argument should be the result of count-snipe-locs for the same snipes."
   [cfg-data counts snipes]
   (mean-vals-locs :mush-pref cfg-data counts snipes))
 
+;; TODO OLD, BROKEN
 (defn mean-prefs-live-snipe-locs
   [cfg-data counts]
   (let [snipes (vals (:snipes (:popenv cfg-data)))]
@@ -188,6 +222,7 @@
     (math/round x)
     x))
 
+;; TODO OLD, BROKEN
 (defn report-stats
   "Report summary statistics to standard output."
   ([cfg-data schedule] 
