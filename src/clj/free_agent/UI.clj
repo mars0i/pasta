@@ -40,24 +40,16 @@
 ;(def display-backdrop-color (Color. 70 70 70))
 (def subenv-gap 5)
 (def snipe-size 0.55)
-;(defn snipe-shade-fn [max-energy snipe] (int (+ 64 (* 190 (/ (:energy snipe) max-energy)))))
-(defn snipe-shade-fn [max-energy snipe]   ; DEBUG VERSION
-  (let [shade (int (+ 64 (* 190 (/ (:energy snipe) max-energy))))]
-    (when (> shade 255)
-      (println "SHADE:" shade max-energy (dissoc snipe :cfg-data$)))
-    shade))
+(defn snipe-shade-fn [max-energy snipe] (int (+ 64 (* 190 (/ (:energy snipe) max-energy)))))
+;(defn snipe-shade-fn [max-energy snipe]   ; DEBUG VERSION
+;  (let [shade (int (+ 64 (* 190 (/ (:energy snipe) max-energy))))]
+;    (when (> shade 255)
+;      (println "SHADE:" shade max-energy (dissoc snipe :cfg-data$)))
+;    shade))
 (defn k-snipe-color-fn [max-energy snipe] (Color. (snipe-shade-fn max-energy snipe) 0 0))
 (defn r-snipe-color-fn [max-energy snipe] (Color. 0 0 (snipe-shade-fn max-energy snipe)))
 (defn s-snipe-color-fn [max-energy snipe] (Color. 0 (snipe-shade-fn max-energy snipe) 0))
 (def org-offset 0.6) ; with simple hex portrayals to display grid, organisms off center; pass this to DrawInfo2D to correct.
-
-; DEBUG:
-;(defn snipe-shade-fn [max-energy snipe] 
-;  (let [shade (int (+ 54 (* 200 (/ (:energy snipe) max-energy))))]
-;    (when (> shade 255)
-;      (println "SHADE:" shade (dissoc snipe :cfg-data$)))
-;    shade))
-
 
 (defn -init-instance-state
   [& args]
@@ -123,8 +115,8 @@
         birth-threshold (:birth-threshold cfg-data)
         mush-pos-nutrition (:mush-pos-nutrition cfg-data)
         mush-high-size (:mush-high-size cfg-data)
-        ;effective-max-energy (min birth-threshold max-energy)
-        effective-max-energy max-energy ; DEBUG VERSION
+        effective-max-energy (min birth-threshold max-energy)
+        ;effective-max-energy max-energy ; DEBUG VERSION
         display @(:display ui-config)
         ;; These portrayals should be local to setup-portrayals because 
         ;; proxy needs to capture the correct 'this', and we need cfg-data:
