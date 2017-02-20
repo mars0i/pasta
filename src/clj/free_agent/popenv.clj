@@ -5,7 +5,7 @@
             [utils.random-utils :as ranu]
             [clojure.math.numeric-tower :as nmath])
   (:import [sim.field.grid Grid2D ObjectGrid2D]
-           [sim.util IntBag]))
+           [sim.util IntBag Bag]))
 
 ;; Conventions:
 ;; * Adding an apostrophe to a var name--e.g. making x into x-prime--means
@@ -342,28 +342,30 @@
 (defn snipes-reproduce
   [rng cfg-data$ west-snipe-field east-snipe-field]
   (let [{:keys [env-width env-height birth-threshold birth-cost]} @cfg-data$
+        suff-energy (fn [snipe] (>= (:energy snipe) birth-threshold))
         west-snipe-field' (ObjectGrid2D. west-snipe-field) ; new field that's a copy of old one
         east-snipe-field' (ObjectGrid2D. east-snipe-field)
-        snipes' (.elements west-snipe-field)]
-    (.addAll snipes' (.elements east-snipe-field)) ; doing this MASON-style is quite fast (and ok if local)
-    (.shuffle snipes' rng) ; shuffle so no snipe gets preference for scarce birth locations (shuffle is fast)
-    (doseq [snipe snipes']
-      (when (>= (:energy snipe) birth-threshold)
-        (let [[num-births snipe'] (give-birth @cfg-data$ snipe)
-              parental-snipe-field' (if (= (:subenv-key snipe') :west-subenv)
-                                      west-snipe-field'
-                                      east-snipe-field')]
-          ;; replace old snipe with one updated to reflect birth:
-          (.set parental-snipe-field' (:x snipe') (:y snipe') snipe')
-          ;; create and place newborns:
-          (dotimes [_ num-births]
-            (let [[child-snipe-field subenv-key] (if (< (ran/next-double rng) 0.5)   ; newborns are randomly 
-                                                   [west-snipe-field' :west-subenv]  ; assigned to a subenv
-                                                   [east-snipe-field' :east-subenv])]
-              (add-organism-to-rand-loc! rng @cfg-data$ child-snipe-field env-width env-height ; add newborn of same type as parent
-                                         (organism-setter (cond (sn/k-snipe? snipe') (partial sn/make-newborn-k-snipe cfg-data$ subenv-key)
-                                                                (sn/r-snipe? snipe') (partial sn/make-newborn-r-snipe rng cfg-data$ subenv-key)
-                                                                :else                (partial sn/make-newborn-s-snipe cfg-data$ subenv-key)))))))))
+        west-mothers (filter suff-energy (.elements west-snipe-field))
+        east-mothers (filter suff-energy (.elements east-snipe-field))
+        mothers (Bag. west-mothers)] ; MASON Bags have an in-place shuffle routine
+    (.addAll mothers east-mothers)
+    (.shuffle mothers rng)
+    (doseq [snipe mothers]
+      (let [[num-births snipe'] (give-birth @cfg-data$ snipe)
+            parental-snipe-field' (if (= (:subenv-key snipe') :west-subenv)
+                                    west-snipe-field'
+                                    east-snipe-field')]
+        ;; replace old snipe with one updated to reflect birth:
+        (.set parental-snipe-field' (:x snipe') (:y snipe') snipe')
+        ;; create and place newborns:
+        (dotimes [_ num-births]
+          (let [[child-snipe-field subenv-key] (if (< (ran/next-double rng) 0.5)   ; newborns are randomly 
+                                                 [west-snipe-field' :west-subenv]  ; assigned to a subenv
+                                                 [east-snipe-field' :east-subenv])]
+            (add-organism-to-rand-loc! rng @cfg-data$ child-snipe-field env-width env-height ; add newborn of same type as parent
+                                       (organism-setter (cond (sn/k-snipe? snipe') (partial sn/make-newborn-k-snipe cfg-data$ subenv-key)
+                                                              (sn/r-snipe? snipe') (partial sn/make-newborn-r-snipe rng cfg-data$ subenv-key)
+                                                              :else                (partial sn/make-newborn-s-snipe cfg-data$ subenv-key))))))))
     [west-snipe-field' east-snipe-field']))
 
  ; newborn should be like parent
