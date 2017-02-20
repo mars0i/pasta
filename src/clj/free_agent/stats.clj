@@ -13,7 +13,7 @@
 
 (defn get-pop-size
   [cfg-data]
-  (count (:snipes (:popenv cfg-data))))
+  (count (:snipe-map (:popenv cfg-data))))
 
 ;(defn count-snipes
 ;  [snipes]
@@ -47,30 +47,23 @@
   r-snipes by the environment (left, right) in which they were found.  
   Keys are named after snipe classes plus left and right for r-snipes: 
   :k-snipe, :r-snipe-pref-small-{left,right}, :r-snipe-pref-big-{left,right}."
-  [cfg-data snipes]
-  (let [env-center (:env-center cfg-data) ; always = something-and-a-half
-        inc-counts (fn [counts s]
+  [snipes]
+  (let [inc-counts (fn [counts s]
                      (cond (sn/k-snipe? s) (update counts :k-snipe inc)
                            (sn/s-snipe? s) (update counts :s-snipe inc)
-                           (sn/r-snipe-pref-small? s) (if (< (:x s) env-center)
-                                                        (update counts :r-snipe-pref-small-left inc)
-                                                        (update counts :r-snipe-pref-small-right inc))
-                           (sn/r-snipe-pref-big? s)   (if (< (:x s) env-center)
-                                                        (update counts :r-snipe-pref-big-left inc)
-                                                        (update counts :r-snipe-pref-big-right inc))))]
+                           (sn/r-snipe-pref-small? s) (update counts :r-snipe-pref-small inc)
+                           (sn/r-snipe-pref-big? s) (update counts :r-snipe-pref-big inc)))]
     (reduce inc-counts
             {:total (count snipes)
              :k-snipe 0 
              :s-snipe 0 
-             :r-snipe-pref-small-left 0
-             :r-snipe-pref-small-right 0 
-             :r-snipe-pref-big-left 0
-             :r-snipe-pref-big-right 0}
+             :r-snipe-pref-small 0
+             :r-snipe-pref-big 0}
             snipes)))
 
 (defn freq-snipe-locs
-  [cfg-data snipes]
-  (let [counts (count-snipe-locs cfg-data snipes)
+  [snipes]
+  (let [counts (count-snipe-locs snipes)
         total (:total counts)]
     (map-kv (fn [n] (if (pos? n)
                       (double (/ n total))
@@ -80,11 +73,14 @@
 (def freqs$ (atom {}))
 
 (defn get-freq
-  [cfg-data tick k snipes]
-  (let [freqs (or (@freqs$ tick) ; if already got freqs for this tick, use 'em
-                  (reset! freqs$  ; if it's a new tick, replace with map containing only new freqs
-                         {k (freq-snipe-locs cfg-data snipes)}))] ; i.e. don't keep old freqs
-    (k freqs)))
+  [tick subenv-key k popenv]
+  (let [freqs (or (@freqs$ tick) ; if already got freqs for this tick, use 'em, else make 'em
+                  (let [{:keys [west-subenv east-subenv]} popenv
+                        new-data {:west-subenv (freq-snipe-locs (.elements (:snipe-field west-subenv)))
+                                  :east-subenv (freq-snipe-locs (.elements (:snipe-field east-subenv)))}]
+                    (reset! freqs$ {tick new-data})
+                    new-data))]
+    (k (subenv-key freqs))))
 
 ;; OLD
 (defn get-k-snipe-freq
@@ -93,7 +89,7 @@
                          (if (sn/k-snipe? snipe)
                            (inc n)
                            n))
-        snipes (:snipes (:popenv cfg-data))
+        snipes (:snipe-map (:popenv cfg-data))
         pop-size (count snipes)
         k-snipe-count (reduce-kv count-k-snipes 0 snipes)]
     (if (pos? pop-size)                   ; when UI first starts, it tries to calc this even though there's no pop, and divs by zero
@@ -102,7 +98,7 @@
  
 (defn count-live-snipe-locs
   [cfg-data]
-  (let [snipes (vals (:snipes (:popenv cfg-data)))]
+  (let [snipes (vals (:snipe-map (:popenv cfg-data)))]
     (count-snipe-locs cfg-data snipes)))
 
 (defn count-dead-snipe-locs

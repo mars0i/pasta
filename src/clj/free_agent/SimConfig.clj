@@ -49,16 +49,21 @@
                       [max-pop-size        0    long    false]
                       [popenv            nil   free-agent.popenv.PopEnv false]]
   :methods [[getPopSize [] long] ; additional options here. this one is for def below; it will get merged into the generated :methods component.
-            [getKSnipeFreq [] double]])
+            [getWestKSnipeFreq [] double]
+            [getEastKSnipeFreq [] double]
+            [getWestRSnipePrefSmallFreq [] double]
+            [getEastRSnipePrefSmallFreq [] double]
+            [getWestRSnipePrefBigFreq [] double]
+            [getEastRSnipePrefBigFreq [] double]
+            ])
 
-(defn -getPopSize
-  [^SimConfig this]
-  (stats/get-pop-size @(.simConfigData this)))
-
-(defn -getKSnipeFreq
-  [^SimConfig this]
-  (stats/get-k-snipe-freq @(.simConfigData this)))
-
+(defn -getPopSize [^SimConfig this] (stats/get-pop-size @(.simConfigData this)))
+(defn -getWestKSnipeFreq          [^SimConfig this] (stats/get-freq (.getSteps (.schedule this)) :west-subenv :k-snipe (:popenv @(.simConfigData this))))
+(defn -getEastKSnipeFreq          [^SimConfig this] (stats/get-freq (.getSteps (.schedule this)) :east-subenv :k-snipe (:popenv @(.simConfigData this))))
+(defn -getWestRSnipePrefSmallFreq [^SimConfig this] (stats/get-freq (.getSteps (.schedule this)) :west-subenv :r-snipe-pref-small (:popenv @(.simConfigData this))))
+(defn -getEastRSnipePrefSmallFreq [^SimConfig this] (stats/get-freq (.getSteps (.schedule this)) :east-subenv :r-snipe-pref-small (:popenv @(.simConfigData this))))
+(defn -getWestRSnipePrefBigFreq   [^SimConfig this] (stats/get-freq (.getSteps (.schedule this)) :west-subenv :r-snipe-pref-big (:popenv @(.simConfigData this))))
+(defn -getEastRSnipePrefBigFreq   [^SimConfig this] (stats/get-freq (.getSteps (.schedule this)) :east-subenv :r-snipe-pref-big (:popenv @(.simConfigData this))))
 
 ;; no good reason to put this into the defsimconfig macro since it doesn't include any
 ;; field-specific code.  Easier to redefine if left here.
