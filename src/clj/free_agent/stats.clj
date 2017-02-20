@@ -95,6 +95,14 @@
                     new-freqs))]
     (k freqs)))
 
+(defn maybe-get-freq
+  "Kludge: Calls get-freq if and only if at timestep 1 or later.  Avoids
+  irrelevant NPEs during initial setup."
+  [tick k popenv]
+  (if (and tick (pos? tick))
+    (get-freq tick k popenv)
+    0.0))
+
 (defn get-freq-OLD
   [tick subenv-key k popenv]
   (let [freqs (or (@freqs$ tick) ; if already got freqs for this tick, use 'em, else make 'em

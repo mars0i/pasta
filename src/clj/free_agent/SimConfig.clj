@@ -55,12 +55,12 @@
 
 (defn curr-step [cfg] (.getSteps (.schedule cfg)))
 (defn curr-popenv [cfg] (:popenv @(.simConfigData cfg)))
-;; NOTE these get called on every tick even if not reported in GUI.
+;; NOTE these get called on every tick in GUI even if not reported:
 (defn -getPopSize [^SimConfig this] (stats/get-pop-size @(.simConfigData this)))
-(defn -getKSnipeFreq          [^SimConfig this] (stats/get-freq (curr-step this) :k-snipe            (curr-popenv this)))
-(defn -getRSnipePrefSmallFreq [^SimConfig this] (stats/get-freq (curr-step this) :r-snipe-pref-small (curr-popenv this)))
-(defn -getRSnipePrefBigFreq   [^SimConfig this] (stats/get-freq (curr-step this) :r-snipe-pref-big   (curr-popenv this)))
-(defn -getSSnipeFreq          [^SimConfig this] (stats/get-freq (curr-step this) :s-snipe            (curr-popenv this)))
+(defn -getKSnipeFreq          [^SimConfig this] (stats/maybe-get-freq (curr-step this) :k-snipe            (curr-popenv this)))
+(defn -getRSnipePrefSmallFreq [^SimConfig this] (stats/maybe-get-freq (curr-step this) :r-snipe-pref-small (curr-popenv this)))
+(defn -getRSnipePrefBigFreq   [^SimConfig this] (stats/maybe-get-freq (curr-step this) :r-snipe-pref-big   (curr-popenv this)))
+(defn -getSSnipeFreq          [^SimConfig this] (stats/maybe-get-freq (curr-step this) :s-snipe            (curr-popenv this)))
 
 ;; no good reason to put this into the defsimconfig macro since it doesn't include any
 ;; field-specific code.  Easier to redefine if left here.
