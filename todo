@@ -3,7 +3,7 @@ DONE 2 mush fields
 DONE 2 snipe fields
 DONE fix popenv to deal with separate fields
 	instead just made two popenvs
-should children be in both subenvs?
+DONE should children be in both subenvs?
 	for this I might need to replace next-popenv
 	with a combined next-popenvs
 	we have two source subenvs
@@ -11,7 +11,6 @@ should children be in both subenvs?
 	and I can either iterate through the potential parents
 	subenv by subenv, or somehow interleaving them
 fix s-snipe perception
-bug: circled portrayals no longer work
 fix stats
 DONE 2 mush portrayals
 DONE 2 snipe portrayals
