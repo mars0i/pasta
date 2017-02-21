@@ -77,12 +77,13 @@
       (RSnipePrefBig.   (next-id) perc/r-snipe-pref extreme-pref     energy subenv-key x y 0 (atom false) cfg-data$))))
 
 (defn make-s-snipe 
-  [cfg-data$ energy subenv-key x y]
+  [rng cfg-data$ energy subenv-key x y]
   (SSnipe. (next-id)
-           perc/s-snipe-pref-success-bias-cross-env
+           perc/r-snipe-pref ; use simple r-snipe method but a different starting strategy
+           ;perc/s-snipe-pref-success-bias-cross-env
            ;perc/s-snipe-pref-success-bias-this-env
            ;perc/s-snipe-pref-freq-bias
-           0.0 
+           (perc/get-best-neighbor-pref rng @cfg-data$ x y) ; get preference from best neighbor
            energy
            subenv-key
            x y
@@ -101,9 +102,9 @@
     (make-r-snipe rng cfg-data$ initial-energy subenv-key x y)))
 
 (defn make-newborn-s-snipe 
-  [cfg-data$ subenv-key x y]
+  [rng cfg-data$ subenv-key x y]
   (let [{:keys [initial-energy]} @cfg-data$]
-    (make-s-snipe cfg-data$ initial-energy subenv-key x y)))
+    (make-s-snipe rng cfg-data$ initial-energy subenv-key x y)))
 
 (defn make-rand-k-snipe 
   "Create k-snipe with random energy (from rand-energy)."
@@ -118,7 +119,7 @@
 (defn make-rand-s-snipe 
   "Create s-snipe with random energy (from rand-energy)."
   [rng cfg-data$ subenv-key x y]
-  (make-s-snipe cfg-data$ (rand-energy rng @cfg-data$) subenv-key x y))
+  (make-s-snipe rng cfg-data$ (rand-energy rng @cfg-data$) subenv-key x y))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MAKE-PROPERTIES FUNCTION

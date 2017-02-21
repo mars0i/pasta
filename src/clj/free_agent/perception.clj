@@ -80,6 +80,7 @@
         eat? (pos? (* mush-pref scaled-appearance))]  ; eat if scaled appearance has same sign as mush-pref
     [snipe eat?]))
 
+;; OBSOLETE?
 (defn s-snipe-pref-freq-bias
   "Adopts mushroom preference with a sign like that of its neighbors."
   [rng snipe mush]
@@ -120,41 +121,65 @@
                               cross-x y 
                               neighbor-radius Grid2D/TOROIDAL false))))
 
-;; Would it be faster to avoid doing all of the setup in the let twice for the both-subenvs version?
-(defn subenv-neighbors
+;; FIXME BUG: During init, this is called when creating each subenv, but
+;; at that point, there is no popenv--not until after the subenvs
+;; are created.  So we can't get subenvs from the popenv yet in
+;; the second line of the let.
+(defn subenv-loc-neighbors
   "Returns a MASON sim.util.Bag containing all snipes in the hexagonal region 
-  around snipe's location in the subenv corresponding to subenv-key, to a 
-  distance of neighbor-radius.  This may include the original snipe.
-  (Note that Bags are Java Collections, so they work with Clojure collection 
-  functions.)"
-  [subenv-key snipe]
-  (let [{:keys [x y cfg-data$]} snipe
-        {:keys [popenv neighbor-radius]} @cfg-data$
-        snipe-field (:snipe-field (subenv-key popenv))]
+  around location <x,y> in the subenv corresponding to subenv-key, to a 
+  distance of neighbor-radius.  This may include the snipe at <x,y>."
+  [cfg-data subenv-key x y]
+  (let[{:keys [popenv neighbor-radius]} cfg-data
+       snipe-field (:snipe-field (subenv-key popenv))]
+    (println subenv-key snipe-field) ; DEBUG
     (.getHexagonalNeighbors snipe-field x y neighbor-radius Grid2D/TOROIDAL true)))
 
-(defn this-subenv-neighbors
+(defn this-subenv-loc-neighbors
+  "Returns a MASON sim.util.Bag containing all snipes in the hexagonal region 
+  around location <x,y> in its subenv, to a distance of neighbor-radius.  
+  This may include the snipe at <x,y>."
+  [cfg-data subenv-key x y]
+  (subenv-loc-neighbors cfg-data subenv-key x y))
+
+(defn both-subenvs-loc-neighbors
+  [cfg-data x y]
+  "Returns a MASON sim.util.Bag containing all snipes in the hexagonal region 
+  around location <x,y> in both of the subenvs, to a distance of neighbor-radius.  
+  This may include the snipe at <x,y>."
+  (.addAll (subenv-loc-neighbors cfg-data :west-subenv x y)
+           (subenv-loc-neighbors cfg-data :east-subenv x y)))
+
+;; Would it be faster to avoid doing all of the setup in the let twice for the both-subenvs version?
+(defn subenv-snipe-neighbors
+  "Returns a MASON sim.util.Bag containing all snipes in the hexagonal region 
+  around snipe's location in the subenv corresponding to subenv-key, to a 
+  distance of neighbor-radius.  This may include the original snipe."
+  [subenv-key snipe]
+  (let [{:keys [x y cfg-data$]} snipe]
+    (subenv-loc-neighbors @cfg-data$ subenv-key x y)))
+
+(defn this-subenv-snipe-neighbors
   "Returns a MASON sim.util.Bag containing all snipes in the hexagonal region 
   around snipe's location in its subenv, to a distance of neighbor-radius.  
-  This will include the original snipe.  (Note that Bags are Java Collections, 
-  so they work with Clojure collection functions.)"
+  This will include the original snipe."
   [snipe]
-  (subenv-neighbors (:subenv-key snipe) snipe))
+  (subenv-snipe-neighbors (:subenv-key snipe) snipe))
 
-(defn both-subenvs-neighbors
+(defn both-subenvs-snipe-neighbors
   [snipe]
   "Returns a MASON sim.util.Bag containing all snipes in the hexagonal region 
   around snipe's location in both of the subenvs, to a distance of neighbor-radius.  
-  This will include the original snipe.  (Note that Bags are Java Collections, so 
-  they work with Clojure collection functions.)"
-  (.addAll (subenv-neighbors :west-subenv snipe)
-           (subenv-neighbors :east-subenv snipe)))
+  This will include the original snipe."
+  (.addAll (subenv-snipe-neighbors :west-subenv snipe)
+           (subenv-snipe-neighbors :east-subenv snipe)))
 
 (defn best-neighbor
   "Return the neighbor (or self) with the most energy.  If there's a tie, return
   a randomly chosen one of the best.  Assumes that there is at least one \"neighbor\":
   oneself."
   [rng neighbors]
+  (println (map #(dissoc % :cfg-data$) neighbors)) ; DEBUG
   (ranu/sample-one rng 
                    (reduce (fn [best-neighbors neighbor]
                              (let [best-energy (:energy (first best-neighbors))
@@ -163,6 +188,12 @@
                                      (> neighbor-energy best-energy) [neighbor]
                                      :else (conj best-neighbors neighbor))))
                            neighbors)))
+
+(defn get-best-neighbor-pref
+  "Get the preference of the best neighbor in both subenvs."
+  [rng cfg-data x y]
+  (:mush-pref (best-neighbor rng 
+                   (both-subenvs-loc-neighbors cfg-data x y))))
 
 (defn s-snipe-pref-success-bias
   "Adopts mushroom preference with a sign like that of its most successful 
