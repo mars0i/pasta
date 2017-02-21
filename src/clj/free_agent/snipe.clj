@@ -79,11 +79,8 @@
 (defn make-s-snipe 
   [rng cfg-data$ energy subenv-key x y]
   (SSnipe. (next-id)
-           perc/r-snipe-pref ; use simple r-snipe method but a different starting strategy
-           ;perc/s-snipe-pref-success-bias-cross-env
-           ;perc/s-snipe-pref-success-bias-this-env
-           ;perc/s-snipe-pref-freq-bias
-           (perc/get-best-neighbor-pref rng @cfg-data$ x y) ; get preference from best neighbor
+           perc/s-snipe-pref ; use simple r-snipe method but a different starting strategy
+           0.0               ; will be set soon by s-snipe-pref
            energy
            subenv-key
            x y

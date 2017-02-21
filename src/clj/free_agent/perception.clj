@@ -132,7 +132,7 @@
   [cfg-data subenv-key x y]
   (let[{:keys [popenv neighbor-radius]} cfg-data
        snipe-field (:snipe-field (subenv-key popenv))]
-    (println subenv-key snipe-field) ; DEBUG
+    ;(println subenv-key snipe-field) ; DEBUG
     (.getHexagonalNeighbors snipe-field x y neighbor-radius Grid2D/TOROIDAL true)))
 
 (defn this-subenv-loc-neighbors
@@ -171,15 +171,17 @@
   "Returns a MASON sim.util.Bag containing all snipes in the hexagonal region 
   around snipe's location in both of the subenvs, to a distance of neighbor-radius.  
   This will include the original snipe."
-  (.addAll (subenv-snipe-neighbors :west-subenv snipe)
-           (subenv-snipe-neighbors :east-subenv snipe)))
+  (let [neighbors (subenv-snipe-neighbors :west-subenv snipe)]
+    (.addAll neighbors (subenv-snipe-neighbors :east-subenv snipe))
+    neighbors))
 
 (defn best-neighbor
   "Return the neighbor (or self) with the most energy.  If there's a tie, return
   a randomly chosen one of the best.  Assumes that there is at least one \"neighbor\":
   oneself."
   [rng neighbors]
-  (println (map #(dissoc % :cfg-data$) neighbors)) ; DEBUG
+  ;(println (map #(dissoc % :cfg-data$) neighbors)) ; DEBUG
+  ;(println neighbors) ; DEBUG
   (ranu/sample-one rng 
                    (reduce (fn [best-neighbors neighbor]
                              (let [best-energy (:energy (first best-neighbors))
@@ -191,9 +193,19 @@
 
 (defn get-best-neighbor-pref
   "Get the preference of the best neighbor in both subenvs."
-  [rng cfg-data x y]
-  (:mush-pref (best-neighbor rng 
-                   (both-subenvs-loc-neighbors cfg-data x y))))
+  [rng snipe]
+  (:mush-pref 
+    (best-neighbor rng (both-subenvs-snipe-neighbors snipe))))
+
+(defn s-snipe-pref
+  "ADD HERE."
+  [rng snipe mush]
+  (if (= 0.0 (:mush-pref snipe))
+    (r-snipe-pref rng 
+                  (assoc snipe :mush-pref (get-best-neighbor-pref rng snipe))
+                  mush)
+    (r-snipe-pref rng snipe mush)))
+
 
 (defn s-snipe-pref-success-bias
   "Adopts mushroom preference with a sign like that of its most successful 
