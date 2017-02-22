@@ -38,7 +38,7 @@
           {:k-snipe 0, :s-snipe 0, :r-snipe-pref-small 0, :r-snipe-pref-big 0}
           snipes))
 
-(defn count-snipe-locs
+(defn count-snipes
   "Given a simple collection (not a map) of snipes, returns a map containing
   counts for numbers of snipes of different classes.  Keys are named after 
   snipe classes: :k-snipe, :r-snipe-pref-small, :r-snipe-pref-big, :s-snipe.
@@ -60,17 +60,16 @@
              snipes)))
   ([snipes & more-snipes]
    (apply merge-with +            ; overhead of map and apply should be minor relative to counting process
-          (map count-snipe-locs 
+          (map count-snipes 
                (cons snipes more-snipes))))) ; cons is really cheap here
 
-(defn freq-snipe-locs
-  "Given one or more simple collections (not maps) of snipes, returns a map
-  containing relative frequencies of snipes of different classes, plus the total
+(defn snipe-freqs
+  "Given the result of count-snipes, returns a map containing relative 
+  frequencies of snipes of different classes, plus the total
   number of snipes examined.  Keys are named after snipe classes: :k-snipe, 
   :r-snipe-pref-small, :r-snipe-pref-big, :s-snipe, plus :total."
-  [& snipe-colls]
-  (let [counts (apply count-snipe-locs snipe-colls)
-        total (:total counts)]
+  [counts]
+  (let [total (:total counts)]
     (map-kv (fn [n] (if (pos? n)
                       (double (/ n total))
                       0))
@@ -92,9 +91,9 @@
   [tick k popenv]
   (let [freqs (or (@freqs$ tick) ; if already got freqs for this tick, use 'em; else make 'em:
                   (let [{:keys [west-subenv east-subenv]} popenv
-                        new-freqs (freq-snipe-locs (.elements (:snipe-field west-subenv))
-                                                   (.elements (:snipe-field east-subenv)))]
-                    ;(println "[" tick "]") ; DEBUG 
+                        snipes (.elements (:snipe-field west-subenv))
+                        _ (.addAll snipes (.elements (:snipe-field east-subenv)))
+                        new-freqs (snipe-freqs (count-snipes snipes))]
                     (reset! freqs$ {tick new-freqs})
                     new-freqs))]
     (k freqs)))
@@ -106,16 +105,6 @@
   (if (and tick (pos? tick))
     (get-freq tick k popenv)
     0.0))
-
-(defn get-freq-OLD
-  [tick subenv-key k popenv]
-  (let [freqs (or (@freqs$ tick) ; if already got freqs for this tick, use 'em, else make 'em
-                  (let [{:keys [west-subenv east-subenv]} popenv
-                        new-data {:west-subenv (freq-snipe-locs (.elements (:snipe-field west-subenv)))
-                                  :east-subenv (freq-snipe-locs (.elements (:snipe-field east-subenv)))}]
-                    (reset! freqs$ {tick new-data})
-                    new-data))]
-    (k (subenv-key freqs))))
 
 ;; OBSOLETE
 (defn get-k-snipe-freq
@@ -131,23 +120,27 @@
       (double (/ k-snipe-count pop-size)) 
       0))) ; avoid spurious div by zero at beginning of a run
  
-;; TODO OLD, BROKEN
 (defn count-live-snipe-locs
   [cfg-data]
-  (let [snipes (vals (:snipe-map (:popenv cfg-data)))]
-    (count-snipe-locs cfg-data snipes)))
+  (let [{:keys [popenv]} cfg-data
+        {:keys [west-subenv east-subenv]} popenv
+        snipes (.elements (:snipe-field west-subenv))]
+    (.addAll snipes (.elements (:snipe-field east-subenv)))
+    (count-snipes cfg-data snipes)))
 
-;; TODO OLD, BROKEN
 (defn count-dead-snipe-locs
   [cfg-data]
-  (let [dead-snipes (:dead-snipes (:popenv cfg-data))]
-    (count-snipe-locs cfg-data (apply concat dead-snipes))))
+  (let [{:keys [popenv]} cfg-data
+        {:keys [west-subenv east-subenv]} popenv
+        west-snipes (apply concat (:dead-snipes west-subenv))
+        east-snipes (apply concat (:dead-snipes east-subenv))]
+    (count-snipes cfg-data (concat west-snipes east-snipes))))
 
 ;; TODO OLD, BROKEN
 (defn mean-vals-locs
   "Returns a map of mean values for snipe field key k for snipes, with the keys 
-  of the new map as in count-snipe-locs. The counts argument should be the result 
-  of count-snipe-locs for the same snipes."
+  of the new map as in count-snipes. The counts argument should be the result 
+  of count-snipes for the same snipes."
   [k cfg-data counts snipes]
   (let [env-center (:env-center cfg-data) ; always = something-and-a-half
         num-snipes (count snipes)
@@ -177,8 +170,8 @@
 
 ;; TODO OLD, BROKEN
 (defn mean-ages-locs
-  "Returns a map of mean ages for snipes, with keys as in count-snipe-locs. The
-  counts argument should be the result of count-snipe-locs for the same snipes."
+  "Returns a map of mean ages for snipes, with keys as in count-snipes. The
+  counts argument should be the result of count-snipes for the same snipes."
   [cfg-data counts snipes]
   (mean-vals-locs :age cfg-data counts snipes))
 
@@ -196,8 +189,8 @@
 
 ;; TODO OLD, BROKEN
 (defn mean-energies-locs
-  "Returns a map of mean energies for snipes, with keys as in count-snipe-locs. The
-  counts argument should be the result of count-snipe-locs for the same snipes."
+  "Returns a map of mean energies for snipes, with keys as in count-snipes. The
+  counts argument should be the result of count-snipes for the same snipes."
   [cfg-data counts snipes]
   (mean-vals-locs :energy cfg-data counts snipes))
 
@@ -215,8 +208,8 @@
 
 ;; TODO OLD, BROKEN
 (defn mean-prefs-locs
-  "Returns a map of mean mush-prefs for snipes, with keys as in count-snipe-locs. The
-  counts argument should be the result of count-snipe-locs for the same snipes."
+  "Returns a map of mean mush-prefs for snipes, with keys as in count-snipes. The
+  counts argument should be the result of count-snipes for the same snipes."
   [cfg-data counts snipes]
   (mean-vals-locs :mush-pref cfg-data counts snipes))
 
