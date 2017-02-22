@@ -1,8 +1,6 @@
-;;; This software is copyright 2015 by Marshall Abrams, and
+;;; This software is copyright 2015, 2016 by Marshall Abrams, and
 ;;; is distributed under the Gnu General Public License version 3.0 as
 ;;; specified in the file LICENSE.
-
-
 
 (ns free-agent.UI
   (:require [free-agent.SimConfig :as cfg]

@@ -7,20 +7,7 @@
             [free-agent.mush :as mu]
             [utils.random :as ran]
             [utils.random-utils :as ranu])
-  (:import [sim.field.grid Grid2D] ; ObjectGrid2D
-           ;[sim.util IntBag]
-           ))
-
-;; Simple algorithm for k-snipes that's supposed to:
-;; a. learn what size the nutritious mushrooms are around here, and
-;; b. then tend to eat only those, and not the poisonous ones
-
-;; For r-snipes, keeps only a minor random effect from preceding
-;; algorithm, so r-snipes eat randomly (at present) while
-;; k-snipes learn.
-
-;; See free-fn.nt9 for motivation, analysis, derivations, etc.
-;; (mush-pref is called 'eat' there.)
+  (:import [sim.field.grid Grid2D]))
 
 
 ;; Put these somewhere else?
@@ -30,7 +17,12 @@
 (defn pref-noise [rng]
   (ran/next-gaussian rng 0 pref-noise-sd))
 
-;; See free-fn.nt9 for discussion
+;; Simple algorithm for k-snipes that's supposed to:
+;; a. learn what size the nutritious mushrooms are around here, and
+;; b. then tend to eat only those, and not the poisonous ones
+;; k-snipes learn.
+;; See free-fn.nt9 for motivation, analysis, derivations, etc.
+;; (mush-pref is called 'eat' there.)
 (defn calc-k-pref
   "Calculate a new mush-pref for a k-snipe.  Calculates an incremental change
   in mush-pref, and then adds the increment to mush-pref.  The core idea of the 

@@ -1,7 +1,9 @@
-;; Define a defsymstate macro that will define a subclass of MASON's
-;; SimState with associated instance state variable, accessors, etc.
+;;; This software is copyright 2016 by Marshall Abrams, and
+;;; is distributed under the Gnu General Public License version 3.0 as
+;;; specified in the file LICENSE.
 
-;; TODO consider moving command line processing into this macro.
+;; Defines a defsymstate macro that will define a subclass of MASON's
+;; SimState with associated instance state variable, accessors, etc.
 
 ;; NOTE this will not work unless project.clj specifies that SimConfig
 ;; is aot-compiled.  e.g. if your overarching namespace path is named
@@ -9,6 +11,8 @@
 ;;     :aot [myproject.SimConfig]
 ;; or like this:
 ;;     :aot [myproject.SimConfig myproject.UI]
+
+;; TODO consider moving command line processing into this macro.
 
 (ns utils.defsimconfig
   (:require [clojure.string :as s]))
