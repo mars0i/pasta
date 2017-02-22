@@ -7,8 +7,9 @@
             [free-agent.mush :as mu]
             [utils.random :as ran]
             [utils.random-utils :as ranu])
-  (:import [sim.field.grid Grid2D ObjectGrid2D]
-           [sim.util IntBag]))
+  (:import [sim.field.grid Grid2D] ; ObjectGrid2D
+           ;[sim.util IntBag]
+           ))
 
 ;; Simple algorithm for k-snipes that's supposed to:
 ;; a. learn what size the nutritious mushrooms are around here, and
@@ -180,8 +181,7 @@
   a randomly chosen one of the best.  Assumes that there is at least one \"neighbor\":
   oneself."
   [rng neighbors]
-  ;(println (map #(dissoc % :cfg-data$) neighbors)) ; DEBUG
-  ;(println neighbors) ; DEBUG
+  ;(println (map #(vector (:energy %) (:mush-pref %)) neighbors) "\n")(flush) ; DEBUG
   (ranu/sample-one rng 
                    (reduce (fn [best-neighbors neighbor]
                              (let [best-energy (:energy (first best-neighbors))
@@ -189,7 +189,7 @@
                                (cond (< neighbor-energy best-energy) best-neighbors
                                      (> neighbor-energy best-energy) [neighbor]
                                      :else (conj best-neighbors neighbor))))
-                           neighbors)))
+                           [(first neighbors)] (next neighbors)))) ; neighbors should always at least include the "student" snipe
 
 (defn get-best-neighbor-pref
   "Get the preference of the best neighbor in both subenvs."
