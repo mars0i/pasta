@@ -9,13 +9,20 @@
             [utils.random-utils :as ranu])
   (:import [sim.field.grid Grid2D]))
 
+(declare pref-noise calc-k-pref k-snipe-pref r-snipe-pref subenv-loc-neighbors
+         subenv-snipe-neighbors this-subenv-snipe-neighbors both-subenvs-snipe-neighbors
+         best-neighbor get-best-neighbor-pref s-snipe-pref random-eat-snipe-pref 
+         always-eat-snipe-pref)
 
-;; Put these somewhere else?
+;; Put these somewhere else? e.g. in cfg-data$ so they can be set by the user?
 (def pref-dt 0.00001)
 (def pref-noise-sd (double 1/16))
 
 (defn pref-noise [rng]
   (ran/next-gaussian rng 0 pref-noise-sd))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; K-SNIPE PREFERENCES
 
 ;; Simple algorithm for k-snipes that's supposed to:
 ;; a. learn what size the nutritious mushrooms are around here, and
@@ -23,6 +30,23 @@
 ;; k-snipes learn.
 ;; See free-fn.nt9 for motivation, analysis, derivations, etc.
 ;; (mush-pref is called 'eat' there.)
+(defn k-snipe-pref
+  "Decides whether snipe eats mush, and updates the snipe's mush-pref in 
+  response to the experience if so, returning a possibly updated snipe 
+  along with a boolean indicating whether snipe is eating.  (Note that 
+  the energy transfer resulting from eating will occur elsewhere, in 
+  response to the boolean returned here.)"
+  [rng snipe mush]
+  (let [{:keys [mush-pref cfg-data$]} snipe
+        {:keys [mush-mid-size]} @cfg-data$
+        scaled-appearance (- (mu/appearance mush) mush-mid-size)
+        eat? (pos? (* (+ mush-pref (pref-noise rng)) ; my effective mushroom preference is noisy. (even if starts at zero, I might eat.)
+                      scaled-appearance))]           ; eat if scaled appearance has same sign as mush-pref with noise
+    [(if eat?
+       (assoc snipe :mush-pref (calc-k-pref rng snipe mush scaled-appearance)) ; if we're eating, this affects future preferences
+       snipe)
+     eat?]))
+
 (defn calc-k-pref
   "Calculate a new mush-pref for a k-snipe.  Calculates an incremental change
   in mush-pref, and then adds the increment to mush-pref.  The core idea of the 
@@ -47,22 +71,9 @@
                    mush-size-scale)]
     (+ mush-pref pref-inc)))
 
-(defn k-snipe-pref
-  "Decides whether snipe eats mush, and updates the snipe's mush-pref in 
-  response to the experience if so, returning a possibly updated snipe 
-  along with a boolean indicating whether snipe is eating.  (Note that 
-  the energy transfer resulting from eating will occur elsewhere, in 
-  response to the boolean returned here.)"
-  [rng snipe mush]
-  (let [{:keys [mush-pref cfg-data$]} snipe
-        {:keys [mush-mid-size]} @cfg-data$
-        scaled-appearance (- (mu/appearance mush) mush-mid-size)
-        eat? (pos? (* (+ mush-pref (pref-noise rng)) ; my effective mushroom preference is noisy. (even if starts at zero, I might eat.)
-                      scaled-appearance))]           ; eat if scaled appearance has same sign as mush-pref with noise
-    [(if eat?
-       (assoc snipe :mush-pref (calc-k-pref rng snipe mush scaled-appearance)) ; if we're eating, this affects future preferences
-       snipe)
-     eat?]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; R-SNIPE PREFERENCES
 
 (defn r-snipe-pref
  "Always prefers size initially specified in its mush-pref field."
@@ -73,100 +84,35 @@
         eat? (pos? (* mush-pref scaled-appearance))]  ; eat if scaled appearance has same sign as mush-pref
     [snipe eat?]))
 
-;; OBSOLETE?
-(defn s-snipe-pref-freq-bias
-  "Adopts mushroom preference with a sign like that of its neighbors."
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; S-SNIPE PREFERENCES (which depend on the r-snipe prefence function)
+
+(defn s-snipe-pref
+  "Like r-snipe-pref (which is called by this function), except that this
+  function tries to set the snipe's mush-pref preference value by copying
+  it from one of those neighbors that have the most energy.  This will 
+  occur every time this function is called as long as the snipe still has 
+  its initial mush-pref of 0.0.  Once it acquires a different preference,
+  it will retain that preference for the rest of its life.  (Thus s-snipes
+  are like r-snipes, except that while r-snipe preferences are the result
+  of an initial random developmental process, s-snipe preferences are
+  acquired through early social learning.)  Neighbors include all snipes
+  within neighbor-radius of this snipe's location, *in both subenvs*: 
+  The subenvs are thus treated as spatially identical but functionally 
+  different domains of interest.  Snipes in one domain are obligate 
+  specialists in the mushrooms of their own domain--their \"subenv\", but 
+  can't tell whether other snipes are also specialists in the same domain."
   [rng snipe mush]
-  (let [{:keys [x y cfg-data$]} snipe
-        {:keys [popenv mush-mid-size neighbor-radius extreme-pref]} @cfg-data$
-        {:keys [snipe-field]} popenv
-        neighbors (.getHexagonalNeighbors snipe-field x y neighbor-radius Grid2D/TOROIDAL false)
-        neighbors-sign (amath/sgn (reduce (fn [sum neighbor]  ; determine whether neighbors with positive or negative prefs
-                                            (+ sum (amath/sgn (:mush-pref neighbor)))) ; predominate (or are equal); store sign of result.
-                                          0 neighbors)) ; returns zero if no neighbors
-        mush-pref (+ (* neighbors-sign extreme-pref) ; -1, 0, or 1 * extreme-pref
-                     (pref-noise rng)) ; allows s-snipes to explore preference space even when all snipes are s-snipes
-        scaled-appearance (- (mu/appearance mush) mush-mid-size)
-        eat? (pos? (* mush-pref scaled-appearance))]  ; eat if scaled appearance has same sign as mush-pref
-    [(assoc snipe :mush-pref mush-pref) eat?])) ; mush-pref will just be replaced next time, but this allows inspection
+  (if (= 0.0 (:mush-pref snipe))
+    (r-snipe-pref rng (assoc snipe :mush-pref (get-best-neighbor-pref rng snipe)) ; r-snipe-pref will pass back a snipe with this updated preference
+                  mush)
+    (r-snipe-pref rng snipe mush)))
 
-(defn OLD-this-env-neighbors
-  [snipe]
-  (let [{:keys [x y cfg-data$]} snipe
-        {:keys [popenv neighbor-radius]} @cfg-data$
-        {:keys [snipe-field]} popenv]
-    (.getHexagonalNeighbors snipe-field x y neighbor-radius Grid2D/TOROIDAL false)))
-
-(defn OLD-cross-env-neighbors
-  [snipe]
-  (let [{:keys [x y cfg-data$]} snipe
-        {:keys [popenv neighbor-radius env-width env-center]} @cfg-data$
-        {:keys [snipe-field]} popenv
-        shifted-x (+ x env-center)
-        cross-x (if (< shifted-x env-width)
-                  shifted-x
-                  (- shifted-x env-width))]
-    (concat 
-      (.getHexagonalNeighbors snipe-field  ; env for my kind of mushrooms
-                              x y
-                              neighbor-radius Grid2D/TOROIDAL false)
-      (.getHexagonalNeighbors snipe-field  ; env for the other kind of mushrooms
-                              cross-x y 
-                              neighbor-radius Grid2D/TOROIDAL false))))
-
-;; FIXME BUG: During init, this is called when creating each subenv, but
-;; at that point, there is no popenv--not until after the subenvs
-;; are created.  So we can't get subenvs from the popenv yet in
-;; the second line of the let.
-(defn subenv-loc-neighbors
-  "Returns a MASON sim.util.Bag containing all snipes in the hexagonal region 
-  around location <x,y> in the subenv corresponding to subenv-key, to a 
-  distance of neighbor-radius.  This may include the snipe at <x,y>."
-  [cfg-data subenv-key x y]
-  (let[{:keys [popenv neighbor-radius]} cfg-data
-       snipe-field (:snipe-field (subenv-key popenv))]
-    ;(println subenv-key snipe-field) ; DEBUG
-    (.getHexagonalNeighbors snipe-field x y neighbor-radius Grid2D/TOROIDAL true)))
-
-(defn this-subenv-loc-neighbors
-  "Returns a MASON sim.util.Bag containing all snipes in the hexagonal region 
-  around location <x,y> in its subenv, to a distance of neighbor-radius.  
-  This may include the snipe at <x,y>."
-  [cfg-data subenv-key x y]
-  (subenv-loc-neighbors cfg-data subenv-key x y))
-
-(defn both-subenvs-loc-neighbors
-  [cfg-data x y]
-  "Returns a MASON sim.util.Bag containing all snipes in the hexagonal region 
-  around location <x,y> in both of the subenvs, to a distance of neighbor-radius.  
-  This may include the snipe at <x,y>."
-  (.addAll (subenv-loc-neighbors cfg-data :west-subenv x y)
-           (subenv-loc-neighbors cfg-data :east-subenv x y)))
-
-;; Would it be faster to avoid doing all of the setup in the let twice for the both-subenvs version?
-(defn subenv-snipe-neighbors
-  "Returns a MASON sim.util.Bag containing all snipes in the hexagonal region 
-  around snipe's location in the subenv corresponding to subenv-key, to a 
-  distance of neighbor-radius.  This may include the original snipe."
-  [subenv-key snipe]
-  (let [{:keys [x y cfg-data$]} snipe]
-    (subenv-loc-neighbors @cfg-data$ subenv-key x y)))
-
-(defn this-subenv-snipe-neighbors
-  "Returns a MASON sim.util.Bag containing all snipes in the hexagonal region 
-  around snipe's location in its subenv, to a distance of neighbor-radius.  
-  This will include the original snipe."
-  [snipe]
-  (subenv-snipe-neighbors (:subenv-key snipe) snipe))
-
-(defn both-subenvs-snipe-neighbors
-  [snipe]
-  "Returns a MASON sim.util.Bag containing all snipes in the hexagonal region 
-  around snipe's location in both of the subenvs, to a distance of neighbor-radius.  
-  This will include the original snipe."
-  (let [neighbors (subenv-snipe-neighbors :west-subenv snipe)]
-    (.addAll neighbors (subenv-snipe-neighbors :east-subenv snipe))
-    neighbors))
+(defn get-best-neighbor-pref
+  "Get the preference of the best neighbor in both subenvs."
+  [rng snipe]
+  (:mush-pref 
+    (best-neighbor rng (both-subenvs-snipe-neighbors snipe))))
 
 (defn best-neighbor
   "Return the neighbor (or self) with the most energy.  If there's a tie, return
@@ -183,51 +129,49 @@
                                      :else (conj best-neighbors neighbor))))
                            [(first neighbors)] (next neighbors)))) ; neighbors should always at least include the "student" snipe
 
-(defn get-best-neighbor-pref
-  "Get the preference of the best neighbor in both subenvs."
-  [rng snipe]
-  (:mush-pref 
-    (best-neighbor rng (both-subenvs-snipe-neighbors snipe))))
+(defn both-subenvs-snipe-neighbors
+  [snipe]
+  "Returns a MASON sim.util.Bag containing all snipes in the hexagonal region 
+  around snipe's location in both of the subenvs, to a distance of neighbor-radius.  
+  This will include the original snipe."
+  (let [neighbors (subenv-snipe-neighbors :west-subenv snipe)]
+    (.addAll neighbors (subenv-snipe-neighbors :east-subenv snipe))
+    neighbors))
 
-(defn s-snipe-pref
-  "ADD HERE."
-  [rng snipe mush]
-  (if (= 0.0 (:mush-pref snipe))
-    (r-snipe-pref rng 
-                  (assoc snipe :mush-pref (get-best-neighbor-pref rng snipe))
-                  mush)
-    (r-snipe-pref rng snipe mush)))
+(defn this-subenv-snipe-neighbors
+  "Returns a MASON sim.util.Bag containing all snipes in the hexagonal region 
+  around snipe's location in its subenv, to a distance of neighbor-radius.  
+  This will include the original snipe."
+  [snipe]
+  (subenv-snipe-neighbors (:subenv-key snipe) snipe))
+
+(defn subenv-snipe-neighbors
+  "Returns a MASON sim.util.Bag containing all snipes in the hexagonal region 
+  around snipe's location in the subenv corresponding to subenv-key, to a 
+  distance of neighbor-radius.  This may include the original snipe."
+  [subenv-key snipe]
+  (let [{:keys [x y cfg-data$]} snipe]
+    (subenv-loc-neighbors @cfg-data$ subenv-key x y)))
+
+(defn subenv-loc-neighbors
+  "Returns a MASON sim.util.Bag containing all snipes in the hexagonal region 
+  around location <x,y> in the subenv corresponding to subenv-key, to a 
+  distance of neighbor-radius.  This may include the snipe at <x,y>."
+  [cfg-data subenv-key x y]
+  (let[{:keys [popenv neighbor-radius]} cfg-data
+       snipe-field (:snipe-field (subenv-key popenv))]
+    (.getHexagonalNeighbors snipe-field x y neighbor-radius Grid2D/TOROIDAL true)))
 
 
-(defn s-snipe-pref-success-bias
-  "Adopts mushroom preference with a sign like that of its most successful 
-  neighbor, where success is measured by current energy.  Ties are broken
-  randomly.  (Note this simple measure means that a snipe that's recently 
-  given birth and lost the birth cost may appear less successful than one 
-  who's e.g. never given birth but is approaching the birth threshold.)"
-  [rng snipe mush neighbors]
-  (let [{:keys [cfg-data$]} snipe
-        {:keys [mush-mid-size]} @cfg-data$
-        mush-pref (+ (:mush-pref (best-neighbor rng neighbors))
-                     (pref-noise rng)) ; allows s-snipes to explore preference space even when all snipes are s-snipes
-        scaled-appearance (- (mu/appearance mush) mush-mid-size)
-        eat? (pos? (* mush-pref scaled-appearance))]  ; eat if scaled appearance has same sign as mush-pref
-    [(assoc snipe :mush-pref mush-pref) eat?])) ; mush-pref will just be replaced next time, but this allows inspection
-
-(defn s-snipe-pref-success-bias-this-env
-  [rng snipe mush]
-  (s-snipe-pref-success-bias rng snipe mush (OLD-this-env-neighbors snipe)))
-
-(defn s-snipe-pref-success-bias-cross-env
-  [rng snipe mush]
-  (s-snipe-pref-success-bias rng snipe mush (OLD-cross-env-neighbors snipe)))
-
-(defn random-eat-snipe-pref
- "Decides by a coin toss whether to eat."
-  [rng snipe mush]
-  [snipe (pos? (pref-noise rng))])
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; TRIVIAL PREFERENCES (for testing)
 
 (defn always-eat-snipe-pref
  "Always eats."
   [rng snipe mush]
   [snipe true])
+
+(defn random-eat-snipe-pref
+ "Decides by a coin toss whether to eat."
+  [rng snipe mush]
+  [snipe (pos? (pref-noise rng))])
