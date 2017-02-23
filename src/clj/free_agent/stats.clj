@@ -7,6 +7,9 @@
            [clojure.pprint :as pp]
            [clojure.math.numeric-tower :as math]))
 
+;; FIXME contains obsolete fns:
+(declare map-kv get-pop-size inc-snipe-counts OLD-count-snipes sum-snipes avg-snipes get-freq maybe-get-freq count-dead-snipe get-k-snipe-freq count-live-snipes mean-vals avg-age avg-energy avg-mush-pref mean-ages mean-ages-live-snipe mean-ages-dead-snipe mean-energies mean-energies-live-snipe mean-energies-dead-snipe mean-prefs mean-prefs-live-snipe round-or-nil report-stats report-params)
+
 ;; from https://clojuredocs.org/clojure.core/reduce-kv#example-57d1e9dae4b0709b524f04eb
 (defn map-kv
   "Given a map coll, returns a similar map with the same keys and the result 
@@ -19,41 +22,22 @@
   [cfg-data]
   (count (:snipe-map (:popenv cfg-data))))
 
-;; DEPRECATED
-(defn inc-snipe-counts
-  "Increments the entry of map counts corresponding to the snipe class."
-  [counts s]
-  (cond (sn/k-snipe? s)            (update counts :k-snipe inc)
-        (sn/s-snipe? s)            (update counts :s-snipe inc)
-        (sn/r-snipe-pref-small? s) (update counts :r-snipe-pref-small inc)
-        :else                      (update counts :r-snipe-pref-big inc)))
-
-;; DEPRECATED
-(defn OLD-count-snipes
-  "Returns a map containing counts for numbers of snipes of the three kinds 
-  in snipes.  Keys are named after snipe classes: :k-snipe, 
-  :r-snipe-pref-small, :r-snipe-pref-big."
-  [snipes]
-  (reduce inc-snipe-counts
-          {:k-snipe 0, :s-snipe 0, :r-snipe-pref-small 0, :r-snipe-pref-big 0}
-          snipes))
-
 (defn sum-snipes
   "Given a simple collection (not a map) of snipes, returns a map containing
-  sums of values of snipes of different classes.  The sum is whatever function f
-  will determins about the snipes.  e.g. with no f argument, we just increment
-  the value to simply count the snipes in each class.  Keys are named after 
+  sums of values of snipes of different classes.  The sum is due to whatever 
+  function f determiness about the snipes.  e.g. with no f argument, we just 
+  increment the value to simply count the snipes in each class.  Keys are named after 
   snipe classes: :k-snipe, :r-snipe-pref-small, :r-snipe-pref-big, :s-snipe.
   An additional entry, :total, contains a total count of all snipes.  If there
   are additional collection arguments, the counts will be sums from all
   of the collections."
-  ([snipes] (sum-snipes snipes (fn [s v] (inc v))))
+  ([snipes] (sum-snipes snipes (fn [v _] (inc v))))
   ([snipes f]
    (let [summer (fn [sum s]
-                      (cond (sn/k-snipe? s) (update sum :k-snipe (partial f s))
-                            (sn/s-snipe? s) (update sum :s-snipe (partial f s))
-                            (sn/r-snipe-pref-small? s) (update sum :r-snipe-pref-small (partial f s))
-                            (sn/r-snipe-pref-big? s) (update sum :r-snipe-pref-big (partial f s))))]
+                      (cond (sn/k-snipe? s) (update sum :k-snipe f s) ; the value of the field in sum will be the first arg to f, followed by s
+                            (sn/s-snipe? s) (update sum :s-snipe f s)
+                            (sn/r-snipe-pref-small? s) (update sum :r-snipe-pref-small f s)
+                            (sn/r-snipe-pref-big? s) (update sum :r-snipe-pref-big f s)))]
      (reduce summer
              {:total (count snipes)
               :k-snipe 0 
@@ -66,6 +50,13 @@
           (map #(sum-snipes % f)
                (cons snipes more-snipes))))) ; cons is really cheap here
 
+(defn make-sum-fn
+  "Make a function passable to sum-snipes, using key k to extract a field
+  from a snipe s in order to add it to the value in the sum map."
+  [k]
+  (fn [v s]
+    (+ v (k s))))
+
 (defn avg-snipes
   "Given the result of sum-snipes, returns a map containing relative 
   frequencies of snipes of different classes, plus the total
@@ -77,6 +68,95 @@
                       (double (/ n total))
                       0))
             sums)))
+
+(defn count-dead-snipe
+  [cfg-data]
+  (let [{:keys [popenv]} cfg-data
+        {:keys [west-subenv east-subenv]} popenv
+        west-snipes (apply concat (:dead-snipes west-subenv))
+        east-snipes (apply concat (:dead-snipes east-subenv))]
+    (sum-snipes (concat west-snipes east-snipes))))
+
+(defn count-live-snipes
+  [cfg-data]
+  (let [{:keys [popenv]} cfg-data
+        {:keys [west-subenv east-subenv]} popenv
+        snipes (.elements (:snipe-field west-subenv))]
+    (.addAll snipes (.elements (:snipe-field east-subenv)))
+    (sum-snipes snipes)))
+
+(defn avg-age
+  "Returns a map of mean ages for snipes, with keys as in count-snipes. The
+  counts argument should be the result of count-snipes for the same snipes."
+  [snipes]
+  (avg-snipes
+    (sum-snipes snipes (make-sum-fn :age))))
+
+(defn avg-energy
+  "Returns a map of mean ages for snipes, with keys as in count-snipes. The
+  counts argument should be the result of count-snipes for the same snipes."
+  [snipes]
+  (avg-snipes
+    (sum-snipes snipes (make-sum-fn :energy))))
+
+(defn avg-mush-pref
+  "Returns a map of mean ages for snipes, with keys as in count-snipes. The
+  counts argument should be the result of count-snipes for the same snipes."
+  [snipes]
+  (avg-snipes
+    (sum-snipes snipes (make-sum-fn :mush-pref))))
+
+(defn round-or-nil
+  "Rounds its argument unless the argument is falsey, in which case it's simply
+  passed through as is."
+  [x]
+  (if x
+    (math/round x)
+    x))
+
+(defn sort-map
+  [m]
+  (into (sorted-map) m))
+
+(defn report-stats
+  "Report summary statistics to standard output."
+  ([cfg-data schedule] 
+   (print "At step" (.getSteps schedule) "")
+   (report-stats cfg-data))
+  ([cfg-data]
+   (let [popenv (:popenv cfg-data)
+         pop-size (get-pop-size cfg-data)
+         west-snipes (.elements (:snipe-field (:west-subenv popenv)))
+         east-snipes (.elements (:snipe-field (:east-subenv popenv)))
+         snipes (concat west-snipes east-snipes)
+         counts (sort-map (sum-snipes snipes))
+         freqs (sort-map (avg-snipes counts))
+         live-energies (sort-map (avg-energy snipes))
+         live-prefs (sort-map (avg-mush-pref snipes))
+         live-ages (sort-map (map-kv round-or-nil (avg-age snipes)))]
+         ;; dead-counts (into (sorted-map) (count-dead-snipe cfg-data)) FIXME
+         ;dead-ages (into (sorted-map) (map-kv round-or-nil (mean-ages-dead-snipe cfg-data dead-counts))) FIXME ; and ages are easier to read as integers
+
+     ;; ~{...~} iterates over a sequence; maps treated as sequences become sequences of pairs; 
+     ;; so we embed another ~{...~} to process the pair.  also note "~^," emits a comma iff there is more coming.
+     (pp/cl-format true "counts ~{~{~a ~d~}~^, ~}~%" counts)
+     (pp/cl-format true "freqs ~{~{~a ~d~}~^, ~}~%" freqs)
+     (pp/cl-format true "mean energies ~{~{~a ~@{~:[-~;~:*~$~]~}~}~^, ~}~%" live-energies) ; voodoo to print a number with ~$ if non-nil, or "-" otherwise. 
+     (pp/cl-format true "mean prefs ~{~{~a ~@{~:[-~;~:*~$~]~}~}~^, ~}~%" live-prefs)       ;  ...
+     (pp/cl-format true "mean ages ~{~{~a ~@{~:[-~;~:*~d~]~}~}~^, ~}~%" live-ages)         ;  It's needed because I treat an average as nil if no snipes
+     ;(pp/cl-format true "dead counts ~{~{~a ~d~}~^, ~}~%" dead-counts) ; 
+     ;(pp/cl-format true "mean dead ages ~{~{~a ~@{~:[-~;~:*~d~]~}~}~^, ~}~%" dead-ages)
+     )))
+
+(defn report-params
+  "Print parameters in cfg-data to standard output."
+  [cfg-data]
+  (let [kys (sort (keys cfg-data))]
+    (print "Parameters: ")
+    (println (map #(str (name %) "=" (% cfg-data)) kys))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; USED BY GUI INSPECTORS DEFINED IN free-agent.simconfig
 
 (def freqs$ (atom {}))
 
@@ -109,13 +189,9 @@
     (get-freq tick k popenv)
     0.0))
 
-(defn count-dead-snipe
-  [cfg-data]
-  (let [{:keys [popenv]} cfg-data
-        {:keys [west-subenv east-subenv]} popenv
-        west-snipes (apply concat (:dead-snipes west-subenv))
-        east-snipes (apply concat (:dead-snipes east-subenv))]
-    (sum-snipes (concat west-snipes east-snipes))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; OLD DEPRECATED/OBSOLETE CODE (maybe still in use)
 
 ;; OBSOLETE
 (defn get-k-snipe-freq
@@ -131,13 +207,24 @@
       (double (/ k-snipe-count pop-size)) 
       0))) ; avoid spurious div by zero at beginning of a run
 
-(defn count-live-snipe
-  [cfg-data]
-  (let [{:keys [popenv]} cfg-data
-        {:keys [west-subenv east-subenv]} popenv
-        snipes (.elements (:snipe-field west-subenv))]
-    (.addAll snipes (.elements (:snipe-field east-subenv)))
-    (sum-snipes snipes)))
+;; DEPRECATED
+(defn inc-snipe-counts
+  "Increments the entry of map counts corresponding to the snipe class."
+  [counts s]
+  (cond (sn/k-snipe? s)            (update counts :k-snipe inc)
+        (sn/s-snipe? s)            (update counts :s-snipe inc)
+        (sn/r-snipe-pref-small? s) (update counts :r-snipe-pref-small inc)
+        :else                      (update counts :r-snipe-pref-big inc)))
+
+;; DEPRECATED
+(defn OLD-count-snipes
+  "Returns a map containing counts for numbers of snipes of the three kinds 
+  in snipes.  Keys are named after snipe classes: :k-snipe, 
+  :r-snipe-pref-small, :r-snipe-pref-big."
+  [snipes]
+  (reduce inc-snipe-counts
+          {:k-snipe 0, :s-snipe 0, :r-snipe-pref-small 0, :r-snipe-pref-big 0}
+          snipes))
 
 ;; TODO OLD, BROKEN
 (defn mean-vals
@@ -170,30 +257,6 @@
                     nil)
                  (vals (into (sorted-map) val-totals))
                  (vals (into (sorted-map) counts))))))
-
-(defn avg-age
-  "Returns a map of mean ages for snipes, with keys as in count-snipes. The
-  counts argument should be the result of count-snipes for the same snipes."
-  [snipes]
-  (avg-snipes
-    (sum-snipes snipes 
-                (fn [s v] (+ v (:age s))))))
-
-(defn avg-energy
-  "Returns a map of mean ages for snipes, with keys as in count-snipes. The
-  counts argument should be the result of count-snipes for the same snipes."
-  [snipes]
-  (avg-snipes
-    (sum-snipes snipes 
-                (fn [s v] (+ v (:energy s))))))
-
-(defn avg-mush-pref
-  "Returns a map of mean ages for snipes, with keys as in count-snipes. The
-  counts argument should be the result of count-snipes for the same snipes."
-  [snipes]
-  (avg-snipes
-    (sum-snipes snipes 
-                (fn [s v] (+ v (:mush-pref s))))))
 
 ;; TODO OLD, BROKEN
 (defn mean-ages
@@ -245,45 +308,3 @@
   [cfg-data counts]
   (let [snipes (vals (:snipes (:popenv cfg-data)))]
     (mean-prefs cfg-data counts snipes)))
-
-(defn round-or-nil
-  "Rounds its argument unless the argument is falsey, in which case it's simply
-  passed through as is."
-  [x]
-  (if x
-    (math/round x)
-    x))
-
-;; TODO OLD, BROKEN
-(defn report-stats
-  "Report summary statistics to standard output."
-  ([cfg-data schedule] 
-   (print "At step" (.getSteps schedule) "")
-   (report-stats cfg-data))
-  ([cfg-data]
-   (let [popenv (:popenv cfg-data)
-         pop-size (get-pop-size cfg-data)
-         snipes (.elements (:snipe-field (:west-subenv popenv)))
-         _ (.addAll snipes (.elements (:snipe-field (:east-subenv popenv))))
-         freqs (into (sorted-map) (avg-snipes (sum-snipes snipes)))
-         live-counts (into (sorted-map) (sum-snipes snipes))
-         live-energies (into (sorted-map) (avg-energy snipes))
-         live-prefs (into (sorted-map) (avg-mush-pref snipes))
-         live-ages (into (sorted-map) (map-kv round-or-nil (avg-age snipes)))]
-         ;; dead-counts (into (sorted-map) (count-dead-snipe cfg-data)) FIXME
-         ;dead-ages (into (sorted-map) (map-kv round-or-nil (mean-ages-dead-snipe cfg-data dead-counts))) ; and ages are easier to read as integers
-     (pp/cl-format true "freqs ~{~{~a ~d~}~^, ~}~%" freqs) ; ~{...~} iterates over a sequence; maps treated as sequences become
-     (pp/cl-format true "live counts ~{~{~a ~d~}~^, ~}~%" live-counts) ; ~{...~} iterates over a sequence; maps treated as sequences become
-     ;(pp/cl-format true "dead counts ~{~{~a ~d~}~^, ~}~%" dead-counts) ;  sequences of pairs; so we embed another ~{...~} to process the pair.
-     (pp/cl-format true "mean live energies ~{~{~a ~@{~:[-~;~:*~$~]~}~}~^, ~}~%" live-energies) ; voodoo to print a number with ~$ if non-nil, or "-" otherwise. 
-     (pp/cl-format true "mean live prefs ~{~{~a ~@{~:[-~;~:*~$~]~}~}~^, ~}~%" live-prefs)       ;  ...
-     (pp/cl-format true "mean live ages ~{~{~a ~@{~:[-~;~:*~d~]~}~}~^, ~}~%" live-ages)         ;  It's needed because I treat an average as nil if no snipes
-     ;(pp/cl-format true "mean dead ages ~{~{~a ~@{~:[-~;~:*~d~]~}~}~^, ~}~%" dead-ages)
-     ))) ; also note "~^," emits a comma iff there is more coming
-
-(defn report-params
-  "Print parameters in cfg-data to standard output."
-  [cfg-data]
-  (let [kys (sort (keys cfg-data))]
-    (print "Parameters: ")
-    (println (map #(str (name %) "=" (% cfg-data)) kys))))
