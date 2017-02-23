@@ -131,9 +131,9 @@
          snipes (concat west-snipes east-snipes)
          counts (sort-map (sum-snipes snipes))
          freqs (sort-map (avg-snipes counts))
-         live-energies (sort-map (avg-energy snipes))
-         live-prefs (sort-map (avg-mush-pref snipes))
-         live-ages (sort-map (map-kv round-or-nil (avg-age snipes)))]
+         energies (sort-map (avg-energy snipes))
+         prefs (sort-map (avg-mush-pref snipes))
+         ages (sort-map (map-kv round-or-nil (avg-age snipes)))]
          ;; dead-counts (into (sorted-map) (count-dead-snipe cfg-data)) FIXME
          ;dead-ages (into (sorted-map) (map-kv round-or-nil (mean-ages-dead-snipe cfg-data dead-counts))) FIXME ; and ages are easier to read as integers
 
@@ -141,9 +141,9 @@
      ;; so we embed another ~{...~} to process the pair.  also note "~^," emits a comma iff there is more coming.
      (pp/cl-format true "counts ~{~{~a ~d~}~^, ~}~%" counts)
      (pp/cl-format true "freqs ~{~{~a ~d~}~^, ~}~%" freqs)
-     (pp/cl-format true "mean energies ~{~{~a ~@{~:[-~;~:*~$~]~}~}~^, ~}~%" live-energies) ; voodoo to print a number with ~$ if non-nil, or "-" otherwise. 
-     (pp/cl-format true "mean prefs ~{~{~a ~@{~:[-~;~:*~$~]~}~}~^, ~}~%" live-prefs)       ;  ...
-     (pp/cl-format true "mean ages ~{~{~a ~@{~:[-~;~:*~d~]~}~}~^, ~}~%" live-ages)         ;  It's needed because I treat an average as nil if no snipes
+     (pp/cl-format true "mean energies ~{~{~a ~@{~:[-~;~:*~$~]~}~}~^, ~}~%" energies) ; voodoo to print a number with ~$ if non-nil, or "-" otherwise. 
+     (pp/cl-format true "mean prefs ~{~{~a ~@{~:[-~;~:*~$~]~}~}~^, ~}~%" prefs)       ;  ...
+     (pp/cl-format true "mean ages ~{~{~a ~@{~:[-~;~:*~d~]~}~}~^, ~}~%" ages)         ;  It's needed because I treat an average as nil if no snipes
      ;(pp/cl-format true "dead counts ~{~{~a ~d~}~^, ~}~%" dead-counts) ; 
      ;(pp/cl-format true "mean dead ages ~{~{~a ~@{~:[-~;~:*~d~]~}~}~^, ~}~%" dead-ages)
      )))
