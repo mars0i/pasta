@@ -206,18 +206,6 @@
       (.setBackdrop display-backdrop-color)
       (.repaint))))
 
-;; EXPERIMENTAL
-(defn make-display
-  "Creates and configures a display, and then returns it."
-  [ui controller width height title visible?]
-  (let [display (Display2D. width height ui)
-        display-frame (.createFrame display)]
-    (.setClipping display false)
-    (.registerFrame controller display-frame)
-    (.setTitle display-frame title)
-    (.setVisible display-frame visible?)
-    display))
-
 ;; For hex grid, need to rescale display (based on HexaBugsWithUI.java around line 200 in Mason 19):
 (defn hex-scale-height
   [height]
@@ -227,6 +215,18 @@
   (* (/ 2.0 (math/sqrt 3)) 
      (+ 1 (* (- width 1)
              (/ 3.0 4.0)))))
+
+(defn make-display
+  "Creates and configures a display and display-frame, returns them as a pair."
+  [ui controller width height title visible?]
+  (let [display (Display2D. width height ui)
+        display-frame (.createFrame display)]
+    (.setClipping display false)
+    (.registerFrame controller display-frame)
+    (.setTitle display-frame title)
+    (.setVisible display-frame visible?)
+    [display display-frame]))
+
 (defn -init
   [this controller] ; fyi controller is called c in Java version
   (.superInit this controller)
@@ -236,30 +236,23 @@
         display-size (:env-display-size cfg-data)
         width  (hex-scale-width  (int (* display-size (:env-width cfg-data))))
         height (hex-scale-height (int (* display-size (:env-height cfg-data))))
-        display (Display2D. (+ subenv-gap (* 2 width)) height this) ; CREATE DISPLAY
-        display-frame (.createFrame display)
         bg-field-portrayal (:bg-field-portrayal ui-config)
         west-snipe-field-portrayal (:west-snipe-field-portrayal ui-config)
         east-snipe-field-portrayal (:east-snipe-field-portrayal ui-config)
         west-mush-field-portrayal (:west-mush-field-portrayal ui-config)
-        east-mush-field-portrayal (:east-mush-field-portrayal ui-config)]
+        east-mush-field-portrayal (:east-mush-field-portrayal ui-config)
+        [display display-frame] (make-display this controller (+ subenv-gap (* 2 width)) height "free-agent" true)]
     (reset! (:display ui-config) display) ; STORE DISPLAY FOR USE BY e.g. setup-portrayals
+    (reset! (:display-frame ui-config) display-frame)
     (doto display
-      (.setClipping false)
       ;; Remember: Order of attaching sets layering: Later attachments appear on top of earlier ones.
-      ;; note Clojure $ syntax for Java static nested classes:
-      ;;                                                  upper left corner: x     y 
+      ;; Note Clojure $ syntax for Java static nested classes.   upper left: x     y 
       (.attach bg-field-portrayal     "west background" (Rectangle2D$Double. 0     0 width height))
       (.attach west-mush-field-portrayal  "west mushs"  (Rectangle2D$Double. 0     0 width height))
       (.attach west-snipe-field-portrayal "west snipes" (Rectangle2D$Double. 0     0 width height))
       (.attach bg-field-portrayal     "east background" (Rectangle2D$Double. (+ width subenv-gap) 0 width height)) ; NOTE reusing same portrayal as above
       (.attach east-mush-field-portrayal  "east mushs"  (Rectangle2D$Double. (+ width subenv-gap) 0 width height))
-      (.attach east-snipe-field-portrayal "east snipes" (Rectangle2D$Double. (+ width subenv-gap) 0 width height)))
-    (reset! (:display-frame ui-config) display-frame)
-    (.registerFrame controller display-frame)
-    (doto display-frame 
-      (.setTitle "free-agent")
-      (.setVisible true))))
+      (.attach east-snipe-field-portrayal "east snipes" (Rectangle2D$Double. (+ width subenv-gap) 0 width height)))))
 
 (defn -quit
   [this]
