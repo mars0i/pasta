@@ -24,12 +24,6 @@
     :init init-instance-state))
 
 ;; display parameters:
-(def mush-pos-nutrition-shade 255) ; a grayscale value in [0,255]
-(def mush-neg-nutrition-shade 215) ; for white background
-;(def mush-neg-nutrition-shade 140) ; for black background
-(defn mush-color-fn [shade] (Color. shade (int (* 0.8 shade)) (int (* 0.3 shade))))
-(def mush-high-size-appearance 1.0) ; we don't scale mushroom size to modeled size, but
-(def mush-low-size-appearance 0.875) ; we display the low-size mushroom smaller
 ;; white background:
 (def bg-color (Color. 255 255 255))   ; color of background without grid (if show-grid is false)
 (def display-backdrop-color (Color. 64 64 64)) ; border around subenvs
@@ -47,6 +41,16 @@
 (defn k-snipe-color-fn [max-energy snipe] (Color. (snipe-shade-fn max-energy snipe) 0 0))
 (defn r-snipe-color-fn [max-energy snipe] (Color. 0 0 (snipe-shade-fn max-energy snipe)))
 (defn s-snipe-color-fn [max-energy snipe] (Color. 0 (snipe-shade-fn max-energy snipe) 0))
+(def mush-pos-nutrition-shade 255) ; DEPRECATED
+(def mush-neg-nutrition-shade 215) ; DEPRECATED
+(def west-mush-pos-nutrition-shade 255)
+(def west-mush-neg-nutrition-shade 215)
+(def east-mush-pos-nutrition-shade 255)
+(def east-mush-neg-nutrition-shade 215)
+;(def mush-neg-nutrition-shade 140) ; for black background
+(defn mush-color-fn [shade] (Color. shade (int (* 0.8 shade)) (int (* 0.3 shade))))
+(def mush-high-size-appearance 1.0) ; we don't scale mushroom size to modeled size, but
+(def mush-low-size-appearance 0.875) ; we display the low-size mushroom smaller
 (def org-offset 0.6) ; with simple hex portrayals to display grid, organisms off center; pass this to DrawInfo2D to correct.
 
 (defn -init-instance-state
