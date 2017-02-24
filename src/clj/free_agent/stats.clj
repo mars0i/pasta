@@ -86,17 +86,17 @@
 (defn count-dead-snipe
   [cfg-data]
   (let [{:keys [popenv]} cfg-data
-        {:keys [west-subenv east-subenv]} popenv
-        west-snipes (apply concat (:dead-snipes west-subenv))
-        east-snipes (apply concat (:dead-snipes east-subenv))]
+        {:keys [west east]} popenv
+        west-snipes (apply concat (:dead-snipes west))
+        east-snipes (apply concat (:dead-snipes east))]
     (sum-snipes (concat west-snipes east-snipes))))
 
 (defn count-live-snipes
   [cfg-data]
   (let [{:keys [popenv]} cfg-data
-        {:keys [west-subenv east-subenv]} popenv
-        snipes (.elements (:snipe-field west-subenv))]
-    (.addAll snipes (.elements (:snipe-field east-subenv)))
+        {:keys [west east]} popenv
+        snipes (.elements (:snipe-field west))]
+    (.addAll snipes (.elements (:snipe-field east)))
     (sum-snipes snipes)))
 
 (defn avg-age
@@ -137,8 +137,8 @@
   ([cfg-data]
    (let [popenv (:popenv cfg-data)
          pop-size (get-pop-size cfg-data)
-         west-snipes (.elements (:snipe-field (:west-subenv popenv)))
-         east-snipes (.elements (:snipe-field (:east-subenv popenv)))
+         west-snipes (.elements (:snipe-field (:west popenv)))
+         east-snipes (.elements (:snipe-field (:east popenv)))
          snipes (concat west-snipes east-snipes)
          west-counts (sort-map (sum-snipes west-snipes))
          east-counts (sort-map (sum-snipes east-snipes))
@@ -188,9 +188,9 @@
   current tick or not."
   [tick k popenv]
   (let [freqs (or (@freqs$ tick) ; if already got freqs for this tick, use 'em; else make 'em:
-                  (let [{:keys [west-subenv east-subenv]} popenv
-                        snipes (.elements (:snipe-field west-subenv))
-                        _ (.addAll snipes (.elements (:snipe-field east-subenv)))
+                  (let [{:keys [west east]} popenv
+                        snipes (.elements (:snipe-field west))
+                        _ (.addAll snipes (.elements (:snipe-field east)))
                         new-freqs (snipe-freqs (sum-snipes snipes))]
                     (reset! freqs$ {tick new-freqs})
                     new-freqs))]

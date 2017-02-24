@@ -32,7 +32,7 @@
                    mush-field    ; ObjectGrid2D
                    dead-snipes]) ; keep a record of dead snipes for later stats
 
-(defrecord PopEnv [west-subenv east-subenv snipe-map]) ; two SubEnvs, and map from ids to snipes
+(defrecord PopEnv [west east snipe-map]) ; two SubEnvs, and map from ids to snipes
 
 (defn setup-popenv-config!
   [cfg-data$]
@@ -42,7 +42,7 @@
     (swap! cfg-data$ assoc :max-pop-size (int (* env-width env-height carrying-proportion)))))
 
 (defn make-subenv
-  "Returns new SubEnv with mushs and snipes.  which-subenv is :west-subenv or :east-subenv."
+  "Returns new SubEnv with mushs and snipes.  subenv-key is :west or :east."
   [rng cfg-data$ subenv-key]
   (let [{:keys [env-width env-height]} @cfg-data$
         snipe-field (ObjectGrid2D. env-width env-height)
@@ -64,12 +64,12 @@
 
 (defn make-popenv
   [rng cfg-data$]
-  (let [west-subenv (make-subenv rng cfg-data$ :west-subenv)
-        east-subenv (make-subenv rng cfg-data$ :east-subenv)]
-    (PopEnv. west-subenv 
-             east-subenv
-             (make-snipe-map (:snipe-field west-subenv)
-                             (:snipe-field east-subenv)))))
+  (let [west (make-subenv rng cfg-data$ :west)
+        east (make-subenv rng cfg-data$ :east)]
+    (PopEnv. west 
+             east
+             (make-snipe-map (:snipe-field west)
+                             (:snipe-field east)))))
 
 (defn eat
   [rng cfg-data subenv]
@@ -95,16 +95,16 @@
   a new SubEnv.  (popenv is last for convenience with iterate.
   You can use partial use next-popenv with swap!.)"
   [rng cfg-data$ popenv]
-  (let [{:keys [west-subenv east-subenv]} popenv
-        west-subenv' (eat rng @cfg-data$ west-subenv) ; better to eat before reproduction--makes sense
-        east-subenv' (eat rng @cfg-data$ east-subenv) ; and avoids complexity with max energy
+  (let [{:keys [west east]} popenv
+        west' (eat rng @cfg-data$ west) ; better to eat before reproduction--makes sense
+        east' (eat rng @cfg-data$ east) ; and avoids complexity with max energy
         [west-snipe-field' east-snipe-field'] (snipes-reproduce rng cfg-data$ ; uses both fields: newborns could go anywhere
-                                                                (:snipe-field west-subenv')
-                                                                (:snipe-field east-subenv'))
-        west-subenv' (die-move rng @cfg-data$ (assoc west-subenv :snipe-field west-snipe-field'))
-        east-subenv' (die-move rng @cfg-data$ (assoc east-subenv :snipe-field east-snipe-field'))
-        snipe-map' (make-snipe-map (:snipe-field west-subenv) (:snipe-field east-subenv))]
-    (PopEnv. west-subenv' east-subenv' snipe-map')))
+                                                                (:snipe-field west')
+                                                                (:snipe-field east'))
+        west' (die-move rng @cfg-data$ (assoc west :snipe-field west-snipe-field'))
+        east' (die-move rng @cfg-data$ (assoc east :snipe-field east-snipe-field'))
+        snipe-map' (make-snipe-map (:snipe-field west) (:snipe-field east))]
+    (PopEnv. west' east' snipe-map')))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; CREATE AND PLACE ORGANISMS
@@ -169,12 +169,12 @@
 
 (defn add-mush!
   "Adds a mushroom to a random location in field.  subenv, which is 
-  :west-subenv or :east-subenv, determines which size is associated 
+  :west or :east, determines which size is associated 
   with which nutritional value."
   [rng cfg-data field x y subenv-key]
   (let [{:keys [mush-low-size mush-high-size 
                 mush-sd mush-pos-nutrition mush-neg-nutrition]} cfg-data
-        [low-mean-nutrition high-mean-nutrition] (if (= subenv-key :west-subenv) ; subenv determines whether low vs high reflectance
+        [low-mean-nutrition high-mean-nutrition] (if (= subenv-key :west) ; subenv determines whether low vs high reflectance
                                                    [mush-pos-nutrition mush-neg-nutrition]   ; paired with
                                                    [mush-neg-nutrition mush-pos-nutrition])] ; nutritious vs poison
     (.set field x y 
@@ -356,7 +356,7 @@
     (.shuffle mothers rng)
     (doseq [snipe mothers]
       (let [[num-births snipe'] (give-birth @cfg-data$ snipe)
-            parental-snipe-field' (if (= (:subenv-key snipe') :west-subenv)
+            parental-snipe-field' (if (= (:subenv-key snipe') :west)
                                     west-snipe-field'
                                     east-snipe-field')]
         ;; replace old snipe with one updated to reflect birth:
@@ -364,8 +364,8 @@
         ;; create and place newborns:
         (dotimes [_ num-births]
           (let [[child-snipe-field subenv-key] (if (< (ran/next-double rng) 0.5)   ; newborns are randomly 
-                                                 [west-snipe-field' :west-subenv]  ; assigned to a subenv
-                                                 [east-snipe-field' :east-subenv])]
+                                                 [west-snipe-field' :west]  ; assigned to a subenv
+                                                 [east-snipe-field' :east])]
             (add-organism-to-rand-loc! rng @cfg-data$ child-snipe-field env-width env-height ; add newborn of same type as parent
                                        (organism-setter (cond (sn/k-snipe? snipe') (partial sn/make-newborn-k-snipe cfg-data$ subenv-key)
                                                               (sn/r-snipe? snipe') (partial sn/make-newborn-r-snipe rng cfg-data$ subenv-key)

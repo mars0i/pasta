@@ -134,8 +134,8 @@
   "Returns a MASON sim.util.Bag containing all snipes in the hexagonal region 
   around snipe's location in both of the subenvs, to a distance of neighbor-radius.  
   This will include the original snipe."
-  (let [neighbors (subenv-snipe-neighbors :west-subenv snipe)]
-    (.addAll neighbors (subenv-snipe-neighbors :east-subenv snipe))
+  (let [neighbors (subenv-snipe-neighbors :west snipe)]
+    (.addAll neighbors (subenv-snipe-neighbors :east snipe))
     neighbors))
 
 (defn this-subenv-snipe-neighbors

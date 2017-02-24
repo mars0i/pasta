@@ -111,8 +111,8 @@
         rng (.random sim-config)
         cfg-data @cfg-data$
         popenv (:popenv cfg-data)
-        west-subenv (:west-subenv popenv)
-        east-subenv (:east-subenv popenv)
+        west (:west popenv)
+        east (:east popenv)
         max-energy (:max-energy cfg-data)
         birth-threshold (:birth-threshold cfg-data)
         mush-pos-nutrition (:mush-pos-nutrition cfg-data)
@@ -164,10 +164,10 @@
         east-mush-field-portrayal (:east-mush-field-portrayal ui-config)]
     ;; connect fields to their portrayals
     (.setField bg-field-portrayal (ObjectGrid2D. (:env-width cfg-data) (:env-height cfg-data)))
-    (.setField west-snipe-field-portrayal (:snipe-field west-subenv))
-    (.setField west-mush-field-portrayal (:mush-field west-subenv))
-    (.setField east-snipe-field-portrayal (:snipe-field east-subenv))
-    (.setField east-mush-field-portrayal (:mush-field east-subenv))
+    (.setField west-snipe-field-portrayal (:snipe-field west))
+    (.setField west-mush-field-portrayal (:mush-field west))
+    (.setField east-snipe-field-portrayal (:snipe-field east))
+    (.setField east-mush-field-portrayal (:mush-field east))
     ;; extra field portrayal to set a background color under the subenvs:
     (.setPortrayalForNull bg-field-portrayal (HexagonalPortrayal2D. bg-color 1.2))
     ; **NOTE** UNDERSCORES NOT HYPHENS IN free_agent CLASSNAMES BELOW:
@@ -189,11 +189,11 @@
     (.scheduleRepeatingImmediatelyAfter this-ui
                                         (reify Steppable 
                                           (step [this sim-state]
-                                            (let [{:keys [west-subenv east-subenv]} (:popenv @cfg-data$)]
-                                              (.setField west-snipe-field-portrayal (:snipe-field west-subenv))
-                                              (.setField west-mush-field-portrayal (:mush-field west-subenv))
-                                              (.setField east-snipe-field-portrayal (:snipe-field east-subenv))
-                                              (.setField east-mush-field-portrayal (:mush-field east-subenv))))))
+                                            (let [{:keys [west east]} (:popenv @cfg-data$)]
+                                              (.setField west-snipe-field-portrayal (:snipe-field west))
+                                              (.setField west-mush-field-portrayal (:mush-field west))
+                                              (.setField east-snipe-field-portrayal (:snipe-field east))
+                                              (.setField east-mush-field-portrayal (:mush-field east))))))
     ;; set up display:
     (doto display
       (.reset )
