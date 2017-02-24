@@ -217,15 +217,20 @@
              (/ 3.0 4.0)))))
 
 (defn make-display
-  "Creates and configures a display and display-frame, returns them as a pair."
-  [ui controller width height title visible?]
-  (let [display (Display2D. width height ui)
-        display-frame (.createFrame display)]
+  "Creates and configures a display and returns it."
+  [ui width height]
+  (let [display (Display2D. width height ui)]
     (.setClipping display false)
+    display))
+
+(defn make-display-frame
+  "Creates and configures a display-frame and returns it."
+  [display controller title visible?]
+  (let [display-frame (.createFrame display)]
     (.registerFrame controller display-frame)
     (.setTitle display-frame title)
     (.setVisible display-frame visible?)
-    [display display-frame]))
+    display-frame))
 
 (defn -init
   [this controller] ; fyi controller is called c in Java version
@@ -241,7 +246,8 @@
         east-snipe-field-portrayal (:east-snipe-field-portrayal ui-config)
         west-mush-field-portrayal (:west-mush-field-portrayal ui-config)
         east-mush-field-portrayal (:east-mush-field-portrayal ui-config)
-        [display display-frame] (make-display this controller (+ subenv-gap (* 2 width)) height "free-agent" true)]
+        display (make-display this (+ subenv-gap (* 2 width)) height)
+        display-frame (make-display-frame display controller "free-agent" true)]
     (reset! (:display ui-config) display) ; STORE DISPLAY FOR USE BY e.g. setup-portrayals
     (reset! (:display-frame ui-config) display-frame)
     (doto display
