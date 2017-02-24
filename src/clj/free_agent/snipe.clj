@@ -67,7 +67,7 @@
            perc/k-snipe-pref ; perceive: function for responding to mushrooms
            0.0               ; mush-pref begins with indifference
            energy            ; initial energy level
-           subenv-key        ; :west-subenv or :east-subenv
+           subenv-key        ; :west or :east
            x y               ; location of snipe on grid
            0                 ; age of snipe
            (atom false)      ; is snipe displayed circled in the GUI?
