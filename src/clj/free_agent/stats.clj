@@ -18,6 +18,12 @@
   (reduce-kv (fn [m k v] (assoc m k (f v)))
              (empty coll) coll))
 
+(defn div-or-zero
+  [d n]
+  (if (zero? n)
+    0
+    (/ d n)))
+
 (defn get-pop-size
   [cfg-data]
   (count (:snipe-map (:popenv cfg-data))))
@@ -57,17 +63,25 @@
   (fn [v s]
     (+ v (k s))))
 
-(defn avg-snipes
-  "Given the result of sum-snipes, returns a map containing relative 
+(defn snipe-freqs
+  "Given counts that result from sum-snipes, returns a map containing relative 
   frequencies of snipes of different classes, plus the total
   number of snipes examined.  Keys are named after snipe classes: :k-snipe, 
-  :r-snipe-pref-small, :r-snipe-pref-big, :s-snipe, plus :total."
-  [sums]
-  (let [total (:total sums)]
-    (map-kv (fn [n] (if (pos? n)
-                      (double (/ n total))
-                      0))
-            sums)))
+  :r-snipe-pref-small, :r-snipe-pref-big, :s-snipe, plus :total.  Doesn't
+  work with quantities other than counts."
+  [counts]
+  (let [total (:total counts)]
+    (if (pos? total)
+      (map-kv (fn [n] (double (/ n total))) counts)
+      (map-kv (fn [_] 0) counts))))
+
+(defn avg-snipes
+  "Computes the average of values in the result of (sum-snipe snipes f).
+  That is, divides each value in that result by the number of snipes
+  in that class.  If you use the two-argument version, make sure that
+  the counts argument comes from the same set of snipes."
+  ([snipes f] (avg-snipes snipes f (sum-snipes snipes)))
+  ([snipes f counts] (merge-with div-or-zero (sum-snipes snipes f) counts)))
 
 (defn count-dead-snipe
   [cfg-data]
@@ -88,23 +102,20 @@
 (defn avg-age
   "Returns a map of mean ages for snipes, with keys as in count-snipes. The
   counts argument should be the result of count-snipes for the same snipes."
-  [snipes]
-  (avg-snipes
-    (sum-snipes snipes (make-sum-fn :age))))
+  [snipes counts]
+  (avg-snipes snipes (make-sum-fn :age) counts))
 
 (defn avg-energy
   "Returns a map of mean ages for snipes, with keys as in count-snipes. The
   counts argument should be the result of count-snipes for the same snipes."
-  [snipes]
-  (avg-snipes
-    (sum-snipes snipes (make-sum-fn :energy))))
+  [snipes counts]
+  (avg-snipes snipes (make-sum-fn :energy) counts))
 
 (defn avg-mush-pref
   "Returns a map of mean ages for snipes, with keys as in count-snipes. The
   counts argument should be the result of count-snipes for the same snipes."
-  [snipes]
-  (avg-snipes
-    (sum-snipes snipes (make-sum-fn :mush-pref))))
+  [snipes counts]
+  (avg-snipes snipes (make-sum-fn :mush-pref) counts))
 
 (defn round-or-nil
   "Rounds its argument unless the argument is falsey, in which case it's simply
@@ -129,20 +140,24 @@
          west-snipes (.elements (:snipe-field (:west-subenv popenv)))
          east-snipes (.elements (:snipe-field (:east-subenv popenv)))
          snipes (concat west-snipes east-snipes)
-         counts (sort-map (sum-snipes snipes))
-         freqs (sort-map (avg-snipes counts))
-         energies (sort-map (avg-energy snipes))
-         prefs (sort-map (avg-mush-pref snipes))
-         ages (sort-map (map-kv round-or-nil (avg-age snipes)))]
+         west-counts (sort-map (sum-snipes west-snipes))
+         east-counts (sort-map (sum-snipes east-snipes))
+         counts (sort-map (merge-with + west-counts east-counts))
+         freqs (sort-map (snipe-freqs counts))
+         west-prefs (sort-map (avg-mush-pref west-snipes west-counts))
+         east-prefs (sort-map (avg-mush-pref east-snipes east-counts))
+         energies (sort-map (avg-energy snipes counts))
+         ages (sort-map (map-kv round-or-nil (avg-age snipes counts)))]
          ;; dead-counts (into (sorted-map) (count-dead-snipe cfg-data)) FIXME
          ;dead-ages (into (sorted-map) (map-kv round-or-nil (mean-ages-dead-snipe cfg-data dead-counts))) FIXME ; and ages are easier to read as integers
 
      ;; ~{...~} iterates over a sequence; maps treated as sequences become sequences of pairs; 
      ;; so we embed another ~{...~} to process the pair.  also note "~^," emits a comma iff there is more coming.
      (pp/cl-format true "counts ~{~{~a ~d~}~^, ~}~%" counts)
-     (pp/cl-format true "freqs ~{~{~a ~d~}~^, ~}~%" freqs)
+     (pp/cl-format true "freqs ~{~{~a ~3$~}~^, ~}~%" freqs)
+     (pp/cl-format true "mean west-prefs ~{~{~a ~@{~:[-~;~:*~5$~]~}~}~^, ~}~%" west-prefs)       ;  ...
+     (pp/cl-format true "mean east-prefs ~{~{~a ~@{~:[-~;~:*~5$~]~}~}~^, ~}~%" east-prefs)       ;  ...
      (pp/cl-format true "mean energies ~{~{~a ~@{~:[-~;~:*~$~]~}~}~^, ~}~%" energies) ; voodoo to print a number with ~$ if non-nil, or "-" otherwise. 
-     (pp/cl-format true "mean prefs ~{~{~a ~@{~:[-~;~:*~$~]~}~}~^, ~}~%" prefs)       ;  ...
      (pp/cl-format true "mean ages ~{~{~a ~@{~:[-~;~:*~d~]~}~}~^, ~}~%" ages)         ;  It's needed because I treat an average as nil if no snipes
      ;(pp/cl-format true "dead counts ~{~{~a ~d~}~^, ~}~%" dead-counts) ; 
      ;(pp/cl-format true "mean dead ages ~{~{~a ~@{~:[-~;~:*~d~]~}~}~^, ~}~%" dead-ages)
