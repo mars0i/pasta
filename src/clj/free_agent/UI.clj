@@ -41,14 +41,11 @@
 (defn k-snipe-color-fn [max-energy snipe] (Color. (snipe-shade-fn max-energy snipe) 0 0))
 (defn r-snipe-color-fn [max-energy snipe] (Color. 0 0 (snipe-shade-fn max-energy snipe)))
 (defn s-snipe-color-fn [max-energy snipe] (Color. 0 (snipe-shade-fn max-energy snipe) 0))
-(def mush-pos-nutrition-shade 255) ; DEPRECATED
-(def mush-neg-nutrition-shade 215) ; DEPRECATED
-(def west-mush-pos-nutrition-shade 255)
-(def west-mush-neg-nutrition-shade 215)
-(def east-mush-pos-nutrition-shade 255)
-(def east-mush-neg-nutrition-shade 215)
+(def mush-pos-nutrition-shade 190)
+(def mush-neg-nutrition-shade 150)
 ;(def mush-neg-nutrition-shade 140) ; for black background
-(defn mush-color-fn [shade] (Color. shade (int (* 0.8 shade)) (int (* 0.3 shade))))
+(defn west-mush-color-fn [shade] (Color. shade shade (int (* 0.6 shade))))
+(defn east-mush-color-fn [shade] (Color. shade shade shade))
 (def mush-high-size-appearance 1.0) ; we don't scale mushroom size to modeled size, but
 (def mush-low-size-appearance 0.875) ; we display the low-size mushroom smaller
 (def org-offset 0.6) ; with simple hex portrayals to display grid, organisms off center; pass this to DrawInfo2D to correct.
@@ -122,12 +119,19 @@
         display @(:display ui-config)
         ;; These portrayals should be local to setup-portrayals because 
         ;; proxy needs to capture the correct 'this', and we need cfg-data:
-        mush-portrayal (proxy [OvalPortrayal2D] []
+        west-mush-portrayal (proxy [OvalPortrayal2D] []
                          (draw [mush graphics info]  ; override method in super
                            (let [size  (if (= mush-high-size (:size mush)) mush-high-size-appearance mush-low-size-appearance)
                                  shade (if (neg? (:nutrition mush)) mush-neg-nutrition-shade mush-pos-nutrition-shade)]
                              (set! (.-scale this) size)                       ; superclass vars
-                             (set! (.-paint this) (mush-color-fn shade))
+                             (set! (.-paint this) (west-mush-color-fn shade))
+                             (proxy-super draw mush graphics (DrawInfo2D. info org-offset org-offset))))) ; last arg centers organism in hex cell
+        east-mush-portrayal (proxy [OvalPortrayal2D] []
+                         (draw [mush graphics info]  ; override method in super
+                           (let [size  (if (= mush-high-size (:size mush)) mush-high-size-appearance mush-low-size-appearance)
+                                 shade (if (neg? (:nutrition mush)) mush-neg-nutrition-shade mush-pos-nutrition-shade)]
+                             (set! (.-scale this) size)                       ; superclass vars
+                             (set! (.-paint this) (east-mush-color-fn shade))
                              (proxy-super draw mush graphics (DrawInfo2D. info org-offset org-offset))))) ; last arg centers organism in hex cell
         r-snipe-portrayal-pref-small (make-fnl-circled-portrayal 
                                        (proxy [ShapePortrayal2D] [ShapePortrayal2D/X_POINTS_TRIANGLE_DOWN 
@@ -173,8 +177,8 @@
     ; **NOTE** UNDERSCORES NOT HYPHENS IN free_agent CLASSNAMES BELOW:
     ;; connect portrayals to agents:
     ;; mushs:
-    (.setPortrayalForClass west-mush-field-portrayal free_agent.mush.Mush mush-portrayal)
-    (.setPortrayalForClass east-mush-field-portrayal free_agent.mush.Mush mush-portrayal)
+    (.setPortrayalForClass west-mush-field-portrayal free_agent.mush.Mush west-mush-portrayal)
+    (.setPortrayalForClass east-mush-field-portrayal free_agent.mush.Mush east-mush-portrayal)
     ;; west snipes:
     (.setPortrayalForClass west-snipe-field-portrayal free_agent.snipe.KSnipe k-snipe-portrayal)
     (.setPortrayalForClass west-snipe-field-portrayal free_agent.snipe.RSnipePrefSmall r-snipe-portrayal-pref-small)
