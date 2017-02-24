@@ -40,7 +40,8 @@
 ;    shade))
 (defn k-snipe-color-fn [max-energy snipe] (Color. (snipe-shade-fn max-energy snipe) 0 0))
 (defn r-snipe-color-fn [max-energy snipe] (Color. 0 0 (snipe-shade-fn max-energy snipe)))
-(defn s-snipe-color-fn [max-energy snipe] (Color. 0 (snipe-shade-fn max-energy snipe) 0))
+(defn s-snipe-color-fn [max-energy snipe] (Color. (snipe-shade-fn max-energy snipe) 0 (snipe-shade-fn max-energy snipe)))
+;(defn s-snipe-color-fn [max-energy snipe] (Color. 0 (snipe-shade-fn max-energy snipe) 0))
 (def mush-pos-nutrition-shade 190)
 (def mush-neg-nutrition-shade 150)
 ;(def mush-neg-nutrition-shade 140) ; for black background
