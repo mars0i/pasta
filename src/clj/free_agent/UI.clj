@@ -47,6 +47,7 @@
 ;(def mush-neg-nutrition-shade 140) ; for black background
 (defn west-mush-color-fn [shade] (Color. shade shade (int (* 0.6 shade))))
 (defn east-mush-color-fn [shade] (Color. shade shade shade))
+;(defn east-mush-color-fn [shade] (Color. shade shade shade 160)) ; semi-transparent mushrooms
 (def mush-high-size-appearance 1.0) ; we don't scale mushroom size to modeled size, but
 (def mush-low-size-appearance 0.875) ; we display the low-size mushroom smaller
 (def org-offset 0.6) ; with simple hex portrayals to display grid, organisms off center; pass this to DrawInfo2D to correct.
