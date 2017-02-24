@@ -191,7 +191,7 @@
                   (let [{:keys [west-subenv east-subenv]} popenv
                         snipes (.elements (:snipe-field west-subenv))
                         _ (.addAll snipes (.elements (:snipe-field east-subenv)))
-                        new-freqs (avg-snipes (sum-snipes snipes))]
+                        new-freqs (snipe-freqs (sum-snipes snipes))]
                     (reset! freqs$ {tick new-freqs})
                     new-freqs))]
     (k freqs)))
