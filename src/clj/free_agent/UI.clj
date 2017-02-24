@@ -206,6 +206,18 @@
       (.setBackdrop display-backdrop-color)
       (.repaint))))
 
+;; EXPERIMENTAL
+(defn make-display
+  "Creates and configures a display, and then returns it."
+  [ui controller width height title visible?]
+  (let [display (Display2D. width height ui)
+        display-frame (.createFrame display)]
+    (.setClipping display false)
+    (.registerFrame controller display-frame)
+    (.setTitle display-frame title)
+    (.setVisible display-frame visible?)
+    display))
+
 ;; For hex grid, need to rescale display (based on HexaBugsWithUI.java around line 200 in Mason 19):
 (defn hex-scale-height
   [height]
@@ -224,14 +236,14 @@
         display-size (:env-display-size cfg-data)
         width  (hex-scale-width  (int (* display-size (:env-width cfg-data))))
         height (hex-scale-height (int (* display-size (:env-height cfg-data))))
-        display (Display2D. (+ subenv-gap (* 2 width)) height this)
+        display (Display2D. (+ subenv-gap (* 2 width)) height this) ; CREATE DISPLAY
         display-frame (.createFrame display)
         bg-field-portrayal (:bg-field-portrayal ui-config)
         west-snipe-field-portrayal (:west-snipe-field-portrayal ui-config)
         east-snipe-field-portrayal (:east-snipe-field-portrayal ui-config)
         west-mush-field-portrayal (:west-mush-field-portrayal ui-config)
         east-mush-field-portrayal (:east-mush-field-portrayal ui-config)]
-    (reset! (:display ui-config) display)
+    (reset! (:display ui-config) display) ; STORE DISPLAY FOR USE BY e.g. setup-portrayals
     (doto display
       (.setClipping false)
       ;; Remember: Order of attaching sets layering: Later attachments appear on top of earlier ones.
