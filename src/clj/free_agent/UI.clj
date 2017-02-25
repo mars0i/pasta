@@ -30,7 +30,8 @@
 ;; black background
 ;(def bg-color (Color. 0 0 0))   ; color of background without grid (if show-grid is false)
 ;(def display-backdrop-color (Color. 70 70 70))
-(def subenv-gap 5)
+(def two-up-subenv-gap 5)
+(def superimposed-subenv-offset 1)
 (def snipe-size 0.55)
 (defn snipe-shade-fn [max-energy snipe] (int (+ 64 (* 190 (/ (:energy snipe) max-energy)))))
 ;(defn snipe-shade-fn [max-energy snipe]   ; DEBUG VERSION
@@ -236,12 +237,12 @@
 
 ;; Remember: Order of attaching sets layering: Later attachments appear on top of earlier ones.
 (defn attach-portrayals!
-  "Attach field portrayals in portrayals to display with upper left corner 
+  "Attach field-portrayals in portrayals-with-labels to display with upper left corner 
   at x y in display and with width and height.  Order of portrayals determines
   how their layered, with earlier portrayals under later ones."
-  [display portrayals x y field-width field-height]
-  (doseq [portrayal portrayals]
-    (.attach display portrayal  "" 
+  [display portrayals-with-labels x y field-width field-height]
+  (doseq [[portrayal label] portrayals-with-labels]
+    (.attach display portrayal label
              (Rectangle2D$Double. x y field-width field-height)))) ; note Clojure $ syntax for Java static nested classes
 
 (defn -init
@@ -258,22 +259,28 @@
         east-mush-field-portrayal (:east-mush-field-portrayal ui-config)
         west-snipe-field-portrayal (:west-snipe-field-portrayal ui-config)
         east-snipe-field-portrayal (:east-snipe-field-portrayal ui-config)
-        two-up-display (setup-display this (+ subenv-gap (* 2 width)) height)
+        two-up-width (+ two-up-subenv-gap (* 2 width))
+        two-up-display (setup-display this two-up-width height)
         two-up-display-frame (setup-display-frame two-up-display controller "west subenv  and  east subenv   " true)
         superimposed-display (setup-display this width height)
         superimposed-display-frame (setup-display-frame superimposed-display controller "overlapping subenvs" true)]
     (reset! (:two-up-display ui-config) two-up-display)
     (reset! (:two-up-display-frame ui-config) two-up-display-frame)
-    (attach-portrayals! two-up-display [bg-field-portrayal west-mush-field-portrayal west-snipe-field-portrayal]
+    (attach-portrayals! two-up-display [[bg-field-portrayal "west bg"]] 0 0 two-up-width height)
+    (attach-portrayals! two-up-display [[west-mush-field-portrayal "west mush"]
+                                        [west-snipe-field-portrayal "west snip"]]
                         0 0 width height)
-    (attach-portrayals! two-up-display [bg-field-portrayal east-mush-field-portrayal east-snipe-field-portrayal]
-                        (+ width subenv-gap) 0 width height)
+    (attach-portrayals! two-up-display [[east-mush-field-portrayal "east mush"]
+                                        [east-snipe-field-portrayal "east snipe"]]
+                        (+ width two-up-subenv-gap) 0 width height)
     (reset! (:superimposed-display ui-config) superimposed-display)
     (reset! (:superimposed-display-frame ui-config) superimposed-display-frame)
-    (attach-portrayals! superimposed-display 
-                        [bg-field-portrayal 
-                         west-mush-field-portrayal east-mush-field-portrayal 
-                         west-snipe-field-portrayal east-snipe-field-portrayal]
+    (attach-portrayals! superimposed-display [[bg-field-portrayal "bg"]] 0 0 (+ width superimposed-subenv-offset) height)
+    (attach-portrayals! superimposed-display [[east-mush-field-portrayal "east mush"] 
+                                              [east-snipe-field-portrayal "east snipe"]]
+                        superimposed-subenv-offset 0 width height)
+    (attach-portrayals! superimposed-display [[west-mush-field-portrayal "west mush"] 
+                                              [west-snipe-field-portrayal "west snipe"]]
                         0 0 width height)
     ))
 
