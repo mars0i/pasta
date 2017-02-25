@@ -259,13 +259,23 @@
         west-snipe-field-portrayal (:west-snipe-field-portrayal ui-config)
         east-snipe-field-portrayal (:east-snipe-field-portrayal ui-config)
         two-up-display (setup-display this (+ subenv-gap (* 2 width)) height)
-        two-up-display-frame (setup-display-frame two-up-display controller "free-agent" true)]
-    (reset! (:two-up-display ui-config) two-up-display) ; STORE DISPLAY FOR USE BY e.g. setup-portrayals
+        two-up-display-frame (setup-display-frame two-up-display controller "west subenv  and  east subenv   " true)
+        superimposed-display (setup-display this width height)
+        superimposed-display-frame (setup-display-frame superimposed-display controller "overlapping subenvs" true)]
+    (reset! (:two-up-display ui-config) two-up-display)
     (reset! (:two-up-display-frame ui-config) two-up-display-frame)
-    (attach-portrayals! two-up-display [bg-field-portrayal west-mush-field-portrayal west-snipe-field-portrayal] 
+    (attach-portrayals! two-up-display [bg-field-portrayal west-mush-field-portrayal west-snipe-field-portrayal]
                         0 0 width height)
     (attach-portrayals! two-up-display [bg-field-portrayal east-mush-field-portrayal east-snipe-field-portrayal]
-                        (+ width subenv-gap) 0 width height)))
+                        (+ width subenv-gap) 0 width height)
+    (reset! (:superimposed-display ui-config) superimposed-display)
+    (reset! (:superimposed-display-frame ui-config) superimposed-display-frame)
+    (attach-portrayals! superimposed-display 
+                        [bg-field-portrayal 
+                         west-mush-field-portrayal east-mush-field-portrayal 
+                         west-snipe-field-portrayal east-snipe-field-portrayal]
+                        0 0 width height)
+    ))
 
 (defn -quit
   [this]
