@@ -216,14 +216,14 @@
      (+ 1 (* (- width 1)
              (/ 3.0 4.0)))))
 
-(defn make-display
+(defn setup-display
   "Creates and configures a display and returns it."
   [ui width height]
   (let [display (Display2D. width height ui)]
     (.setClipping display false)
     display))
 
-(defn make-display-frame
+(defn setup-display-frame
   "Creates and configures a display-frame and returns it."
   [display controller title visible?]
   (let [display-frame (.createFrame display)]
@@ -231,6 +231,16 @@
     (.setTitle display-frame title)
     (.setVisible display-frame visible?)
     display-frame))
+
+;; Remember: Order of attaching sets layering: Later attachments appear on top of earlier ones.
+(defn attach-portrayals!
+  "Attach field portrayals in portrayals to display with upper left corner 
+  at x y in display and with width and height.  Order of portrayals determines
+  how their layered, with earlier portrayals under later ones."
+  [display portrayals x y field-width field-height]
+  (doseq [portrayal portrayals]
+    (.attach display portrayal  "" 
+             (Rectangle2D$Double. x y field-width field-height)))) ; note Clojure $ syntax for Java static nested classes
 
 (defn -init
   [this controller] ; fyi controller is called c in Java version
@@ -246,19 +256,14 @@
         east-snipe-field-portrayal (:east-snipe-field-portrayal ui-config)
         west-mush-field-portrayal (:west-mush-field-portrayal ui-config)
         east-mush-field-portrayal (:east-mush-field-portrayal ui-config)
-        display (make-display this (+ subenv-gap (* 2 width)) height)
-        display-frame (make-display-frame display controller "free-agent" true)]
+        display (setup-display this (+ subenv-gap (* 2 width)) height)
+        display-frame (setup-display-frame display controller "free-agent" true)]
     (reset! (:display ui-config) display) ; STORE DISPLAY FOR USE BY e.g. setup-portrayals
     (reset! (:display-frame ui-config) display-frame)
-    (doto display
-      ;; Remember: Order of attaching sets layering: Later attachments appear on top of earlier ones.
-      ;; Note Clojure $ syntax for Java static nested classes.   upper left: x     y 
-      (.attach bg-field-portrayal     "west background" (Rectangle2D$Double. 0     0 width height))
-      (.attach west-mush-field-portrayal  "west mushs"  (Rectangle2D$Double. 0     0 width height))
-      (.attach west-snipe-field-portrayal "west snipes" (Rectangle2D$Double. 0     0 width height))
-      (.attach bg-field-portrayal     "east background" (Rectangle2D$Double. (+ width subenv-gap) 0 width height)) ; NOTE reusing same portrayal as above
-      (.attach east-mush-field-portrayal  "east mushs"  (Rectangle2D$Double. (+ width subenv-gap) 0 width height))
-      (.attach east-snipe-field-portrayal "east snipes" (Rectangle2D$Double. (+ width subenv-gap) 0 width height)))))
+    (attach-portrayals! display [bg-field-portrayal west-mush-field-portrayal west-snipe-field-portrayal] 
+                        0 0 width height)
+    (attach-portrayals! display [bg-field-portrayal east-mush-field-portrayal east-snipe-field-portrayal]
+                        (+ width subenv-gap) 0 width height)))
 
 (defn -quit
   [this]
