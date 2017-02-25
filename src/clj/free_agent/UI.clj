@@ -31,7 +31,7 @@
 ;(def bg-color (Color. 0 0 0))   ; color of background without grid (if show-grid is false)
 ;(def display-backdrop-color (Color. 70 70 70))
 (def two-up-subenv-gap 5)
-(def superimposed-subenv-offset 1)
+(def superimposed-subenv-offset 3)
 (def snipe-size 0.55)
 (defn snipe-shade-fn [max-energy snipe] (int (+ 64 (* 190 (/ (:energy snipe) max-energy)))))
 ;(defn snipe-shade-fn [max-energy snipe]   ; DEBUG VERSION
@@ -46,8 +46,12 @@
 (def mush-pos-nutrition-shade 190)
 (def mush-neg-nutrition-shade 150)
 ;(def mush-neg-nutrition-shade 140) ; for black background
-(defn west-mush-color-fn [shade] (Color. shade shade (int (* 0.6 shade))))
-(defn east-mush-color-fn [shade] (Color. shade shade shade))
+(defn west-mush-color-fn 
+  ([shade] (Color. shade shade (int (* 0.6 shade))))
+  ([shade alpha] (Color. shade shade (int (* 0.6 shade)) alpha)))
+(defn east-mush-color-fn 
+  ([shade] (Color. shade shade shade))
+  ([shade alpha] (Color. shade shade shade alpha)))
 ;(defn east-mush-color-fn [shade] (Color. shade shade shade 160)) ; semi-transparent mushrooms
 (def mush-high-size-appearance 1.0) ; we don't scale mushroom size to modeled size, but
 (def mush-low-size-appearance 0.875) ; we display the low-size mushroom smaller
@@ -62,6 +66,7 @@
                :bg-field-portrayal (HexaObjectGridPortrayal2D.) ; can be used to put a background or grid only under subenvs
                :west-snipe-field-portrayal (HexaObjectGridPortrayal2D.)
                :west-mush-field-portrayal (HexaObjectGridPortrayal2D.)
+               :shady-west-mush-field-portrayal (HexaObjectGridPortrayal2D.)
                :east-snipe-field-portrayal (HexaObjectGridPortrayal2D.)
                :east-mush-field-portrayal (HexaObjectGridPortrayal2D.)}])
 
@@ -122,6 +127,7 @@
         effective-max-energy (min birth-threshold max-energy)
         ;effective-max-energy max-energy ; DEBUG VERSION
         two-up-display @(:two-up-display ui-config)
+        superimposed-display @(:superimposed-display ui-config)
         ;; These portrayals should be local to setup-portrayals because 
         ;; proxy needs to capture the correct 'this', and we need cfg-data:
         west-mush-portrayal (proxy [OvalPortrayal2D] []
@@ -131,6 +137,13 @@
                              (set! (.-scale this) size)                       ; superclass vars
                              (set! (.-paint this) (west-mush-color-fn shade))
                              (proxy-super draw mush graphics (DrawInfo2D. info org-offset org-offset))))) ; last arg centers organism in hex cell
+        shady-west-mush-portrayal (proxy [OvalPortrayal2D] []
+                                    (draw [mush graphics info]  ; override method in super
+                                      (let [size  (if (= mush-high-size (:size mush)) mush-high-size-appearance mush-low-size-appearance)
+                                            shade (if (neg? (:nutrition mush)) mush-neg-nutrition-shade mush-pos-nutrition-shade)]
+                                        (set! (.-scale this) size)                       ; superclass vars
+                                        (set! (.-paint this) (west-mush-color-fn shade 220))
+                                        (proxy-super draw mush graphics (DrawInfo2D. info org-offset org-offset))))) ; last arg centers organism in hex cell
         east-mush-portrayal (proxy [OvalPortrayal2D] []
                          (draw [mush graphics info]  ; override method in super
                            (let [size  (if (= mush-high-size (:size mush)) mush-high-size-appearance mush-low-size-appearance)
@@ -170,11 +183,13 @@
         west-snipe-field-portrayal (:west-snipe-field-portrayal ui-config)
         east-snipe-field-portrayal (:east-snipe-field-portrayal ui-config)
         west-mush-field-portrayal (:west-mush-field-portrayal ui-config)
+        shady-west-mush-field-portrayal (:shady-west-mush-field-portrayal ui-config)
         east-mush-field-portrayal (:east-mush-field-portrayal ui-config)]
     ;; connect fields to their portrayals
     (.setField bg-field-portrayal (ObjectGrid2D. (:env-width cfg-data) (:env-height cfg-data)))
     (.setField west-snipe-field-portrayal (:snipe-field west))
     (.setField west-mush-field-portrayal (:mush-field west))
+    (.setField shady-west-mush-field-portrayal (:mush-field west))
     (.setField east-snipe-field-portrayal (:snipe-field east))
     (.setField east-mush-field-portrayal (:mush-field east))
     ;; extra field portrayal to set a background color under the subenvs:
@@ -183,6 +198,7 @@
     ;; connect portrayals to agents:
     ;; mushs:
     (.setPortrayalForClass west-mush-field-portrayal free_agent.mush.Mush west-mush-portrayal)
+    (.setPortrayalForClass shady-west-mush-field-portrayal free_agent.mush.Mush shady-west-mush-portrayal)
     (.setPortrayalForClass east-mush-field-portrayal free_agent.mush.Mush east-mush-portrayal)
     ;; west snipes:
     (.setPortrayalForClass west-snipe-field-portrayal free_agent.snipe.KSnipe k-snipe-portrayal)
@@ -205,6 +221,10 @@
                                               (.setField east-mush-field-portrayal (:mush-field east))))))
     ;; set up display:
     (doto two-up-display
+      (.reset )
+      (.setBackdrop display-backdrop-color)
+      (.repaint))
+    (doto superimposed-display
       (.reset )
       (.setBackdrop display-backdrop-color)
       (.repaint))))
@@ -256,6 +276,7 @@
         height (hex-scale-height (int (* display-size (:env-height cfg-data))))
         bg-field-portrayal (:bg-field-portrayal ui-config)
         west-mush-field-portrayal (:west-mush-field-portrayal ui-config)
+        shady-west-mush-field-portrayal (:shady-west-mush-field-portrayal ui-config)
         east-mush-field-portrayal (:east-mush-field-portrayal ui-config)
         west-snipe-field-portrayal (:west-snipe-field-portrayal ui-config)
         east-snipe-field-portrayal (:east-snipe-field-portrayal ui-config)
@@ -276,24 +297,26 @@
     (reset! (:superimposed-display ui-config) superimposed-display)
     (reset! (:superimposed-display-frame ui-config) superimposed-display-frame)
     (attach-portrayals! superimposed-display [[bg-field-portrayal "bg"]] 0 0 (+ width superimposed-subenv-offset) height)
-    (attach-portrayals! superimposed-display [[east-mush-field-portrayal "east mush"] 
-                                              [east-snipe-field-portrayal "east snipe"]]
-                        superimposed-subenv-offset 0 width height)
-    (attach-portrayals! superimposed-display [[west-mush-field-portrayal "west mush"] 
-                                              [west-snipe-field-portrayal "west snipe"]]
-                        0 0 width height)
+    (attach-portrayals! superimposed-display [[east-mush-field-portrayal "east mush"]] superimposed-subenv-offset 0 width height)
+    (attach-portrayals! superimposed-display [[shady-west-mush-field-portrayal "west mush"]] 0 0 width height)
+    (attach-portrayals! superimposed-display [[east-snipe-field-portrayal "east snipe"]] superimposed-subenv-offset 0 width height)
+    (attach-portrayals! superimposed-display [[west-snipe-field-portrayal "west snipe"]] 0 0 width height)
     ))
 
 (defn -quit
   [this]
-  (.superQuit this)  ; combine in doto?
+  (.superQuit this)
   (let [ui-config (.getUIState this)
         two-up-display (:two-up-display ui-config)
-        two-up-display-frame (:two-up-display-frame ui-config)]
-    (when two-up-display-frame
-      (.dispose two-up-display-frame))
+        two-up-display-frame (:two-up-display-frame ui-config)
+        superimposed-display (:superimposed-display ui-config)
+        superimposed-display-frame (:superimposed-display-frame ui-config)]
+    (when two-up-display-frame (.dispose two-up-display-frame))
+    (when superimposed-display-frame (.dispose superimposed-display-frame))
     (reset! (:two-up-display ui-config) nil)
-    (reset! (:two-up-display-frame ui-config) nil)))
+    (reset! (:two-up-display-frame ui-config) nil)
+    (reset! (:superimposed-display ui-config) nil)
+    (reset! (:superimposed-display-frame ui-config) nil)))
 
 ;; Try this:
 ;; (let [snipes (.elements (:snipe-field (:popenv @cfg-data$))) N (count snipes) energies (map :energy snipes)] [N (/ (apply + energies) N)])
