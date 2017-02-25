@@ -54,8 +54,10 @@
 
 (defn -init-instance-state
   [& args]
-  [(vec args) {:display (atom nil)       ; will be replaced in init because we need to pass the UI instance to it
-               :display-frame (atom nil) ; will be replaced in init because we need to pass the display to it
+  [(vec args) {:two-up-display (atom nil)       ; will be replaced in init because we need to pass the UI instance to it
+               :two-up-display-frame (atom nil) ; will be replaced in init because we need to pass the display to it
+               :superimposed-display (atom nil) ; ditto
+               :superimposed-display-frame (atom nil) ; ditto
                :bg-field-portrayal (HexaObjectGridPortrayal2D.) ; can be used to put a background or grid only under subenvs
                :west-snipe-field-portrayal (HexaObjectGridPortrayal2D.)
                :west-mush-field-portrayal (HexaObjectGridPortrayal2D.)
@@ -118,7 +120,7 @@
         mush-high-size (:mush-high-size cfg-data)
         effective-max-energy (min birth-threshold max-energy)
         ;effective-max-energy max-energy ; DEBUG VERSION
-        display @(:display ui-config)
+        two-up-display @(:two-up-display ui-config)
         ;; These portrayals should be local to setup-portrayals because 
         ;; proxy needs to capture the correct 'this', and we need cfg-data:
         west-mush-portrayal (proxy [OvalPortrayal2D] []
@@ -201,7 +203,7 @@
                                               (.setField east-snipe-field-portrayal (:snipe-field east))
                                               (.setField east-mush-field-portrayal (:mush-field east))))))
     ;; set up display:
-    (doto display
+    (doto two-up-display
       (.reset )
       (.setBackdrop display-backdrop-color)
       (.repaint))))
@@ -252,29 +254,29 @@
         width  (hex-scale-width  (int (* display-size (:env-width cfg-data))))
         height (hex-scale-height (int (* display-size (:env-height cfg-data))))
         bg-field-portrayal (:bg-field-portrayal ui-config)
-        west-snipe-field-portrayal (:west-snipe-field-portrayal ui-config)
-        east-snipe-field-portrayal (:east-snipe-field-portrayal ui-config)
         west-mush-field-portrayal (:west-mush-field-portrayal ui-config)
         east-mush-field-portrayal (:east-mush-field-portrayal ui-config)
-        display (setup-display this (+ subenv-gap (* 2 width)) height)
-        display-frame (setup-display-frame display controller "free-agent" true)]
-    (reset! (:display ui-config) display) ; STORE DISPLAY FOR USE BY e.g. setup-portrayals
-    (reset! (:display-frame ui-config) display-frame)
-    (attach-portrayals! display [bg-field-portrayal west-mush-field-portrayal west-snipe-field-portrayal] 
+        west-snipe-field-portrayal (:west-snipe-field-portrayal ui-config)
+        east-snipe-field-portrayal (:east-snipe-field-portrayal ui-config)
+        two-up-display (setup-display this (+ subenv-gap (* 2 width)) height)
+        two-up-display-frame (setup-display-frame two-up-display controller "free-agent" true)]
+    (reset! (:two-up-display ui-config) two-up-display) ; STORE DISPLAY FOR USE BY e.g. setup-portrayals
+    (reset! (:two-up-display-frame ui-config) two-up-display-frame)
+    (attach-portrayals! two-up-display [bg-field-portrayal west-mush-field-portrayal west-snipe-field-portrayal] 
                         0 0 width height)
-    (attach-portrayals! display [bg-field-portrayal east-mush-field-portrayal east-snipe-field-portrayal]
+    (attach-portrayals! two-up-display [bg-field-portrayal east-mush-field-portrayal east-snipe-field-portrayal]
                         (+ width subenv-gap) 0 width height)))
 
 (defn -quit
   [this]
   (.superQuit this)  ; combine in doto?
   (let [ui-config (.getUIState this)
-        display (:display ui-config)
-        display-frame (:display-frame ui-config)]
-    (when display-frame
-      (.dispose display-frame))
-    (reset! (:display ui-config) nil)
-    (reset! (:display-frame ui-config) nil)))
+        two-up-display (:two-up-display ui-config)
+        two-up-display-frame (:two-up-display-frame ui-config)]
+    (when two-up-display-frame
+      (.dispose two-up-display-frame))
+    (reset! (:two-up-display ui-config) nil)
+    (reset! (:two-up-display-frame ui-config) nil)))
 
 ;; Try this:
 ;; (let [snipes (.elements (:snipe-field (:popenv @cfg-data$))) N (count snipes) energies (map :energy snipes)] [N (/ (apply + energies) N)])
