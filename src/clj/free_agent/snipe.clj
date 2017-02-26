@@ -29,7 +29,7 @@
 
 ;; K-strategy snipes use individual learning to determine which size of mushrooms 
 ;; are nutritious.  This takes time and can involve eating many poisonous mushrooms.
-(defrecord KSnipe [id perceive mush-pref energy subenv-key x y age circled$ cfg-data$]
+(defrecord KSnipe [id perceive mush-pref energy subenv x y age circled$ cfg-data$]
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Object
@@ -39,20 +39,20 @@
 ;; size mushrooms, which may be the poisonous kind in their environment--or not.
 ;; Their children might have either size preference.  This means that the ones
 ;; that have the "right" preference can usually reproduce more quickly than k-snipes.
-(defrecord RSnipePrefSmall [id perceive mush-pref energy subenv-key x y age circled$ cfg-data$] ; r-snipe that prefers small mushrooms
+(defrecord RSnipePrefSmall [id perceive mush-pref energy subenv x y age circled$ cfg-data$] ; r-snipe that prefers small mushrooms
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Object
   (toString [this] (str "<RSnipePrefSmall #" id ">")))
 
-(defrecord RSnipePrefBig [id perceive mush-pref energy subenv-key x y age circled$ cfg-data$] ; r-snipe that prefers large mushrooms
+(defrecord RSnipePrefBig [id perceive mush-pref energy subenv x y age circled$ cfg-data$] ; r-snipe that prefers large mushrooms
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Object
   (toString [this] (str "<RSnipePrefBig #" id ">")))
 
 ;; Social snipes learn from the preferences of other nearby snipes.
-(defrecord SSnipe [id perceive mush-pref energy subenv-key x y age circled$ cfg-data$]
+(defrecord SSnipe [id perceive mush-pref energy subenv x y age circled$ cfg-data$]
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Object
@@ -62,65 +62,65 @@
 ;; SNIPE MAKER FUNCTIONS
 
 (defn make-k-snipe 
-  [cfg-data$ energy subenv-key x y]
+  [cfg-data$ energy subenv x y]
   (KSnipe. (next-id)
            perc/k-snipe-pref ; perceive: function for responding to mushrooms
            0.0               ; mush-pref begins with indifference
            energy            ; initial energy level
-           subenv-key        ; :west or :east
+           subenv        ; :west or :east
            x y               ; location of snipe on grid
            0                 ; age of snipe
            (atom false)      ; is snipe displayed circled in the GUI?
            cfg-data$))       ; contains global parameters for snipe operation
 
 (defn make-r-snipe
-  [rng cfg-data$ energy subenv-key x y]
+  [rng cfg-data$ energy subenv x y]
   (let [extreme-pref (:extreme-pref @cfg-data$)]
     (if (< (ran/next-double rng) 0.5)
-      (RSnipePrefSmall. (next-id) perc/r-snipe-pref (- extreme-pref) energy subenv-key x y 0 (atom false) cfg-data$)
-      (RSnipePrefBig.   (next-id) perc/r-snipe-pref extreme-pref     energy subenv-key x y 0 (atom false) cfg-data$))))
+      (RSnipePrefSmall. (next-id) perc/r-snipe-pref (- extreme-pref) energy subenv x y 0 (atom false) cfg-data$)
+      (RSnipePrefBig.   (next-id) perc/r-snipe-pref extreme-pref     energy subenv x y 0 (atom false) cfg-data$))))
 
 (defn make-s-snipe 
-  [rng cfg-data$ energy subenv-key x y]
+  [rng cfg-data$ energy subenv x y]
   (SSnipe. (next-id)
            perc/s-snipe-pref ; use simple r-snipe method but a different starting strategy
            0.0               ; will be set soon by s-snipe-pref
            energy
-           subenv-key
+           subenv
            x y
            0
            (atom false)
            cfg-data$))
 
 (defn make-newborn-k-snipe 
-  [cfg-data$ subenv-key x y]
+  [cfg-data$ subenv x y]
   (let [{:keys [initial-energy]} @cfg-data$]
-    (make-k-snipe cfg-data$ initial-energy subenv-key x y)))
+    (make-k-snipe cfg-data$ initial-energy subenv x y)))
 
 (defn make-newborn-r-snipe
-  [rng cfg-data$ subenv-key x y]
+  [rng cfg-data$ subenv x y]
   (let [{:keys [initial-energy]} @cfg-data$]
-    (make-r-snipe rng cfg-data$ initial-energy subenv-key x y)))
+    (make-r-snipe rng cfg-data$ initial-energy subenv x y)))
 
 (defn make-newborn-s-snipe 
-  [rng cfg-data$ subenv-key x y]
+  [rng cfg-data$ subenv x y]
   (let [{:keys [initial-energy]} @cfg-data$]
-    (make-s-snipe rng cfg-data$ initial-energy subenv-key x y)))
+    (make-s-snipe rng cfg-data$ initial-energy subenv x y)))
 
 (defn make-rand-k-snipe 
   "Create k-snipe with random energy (from rand-energy)."
-  [rng cfg-data$ subenv-key x y]
-  (make-k-snipe cfg-data$ (rand-energy rng @cfg-data$) subenv-key x y))
+  [rng cfg-data$ subenv x y]
+  (make-k-snipe cfg-data$ (rand-energy rng @cfg-data$) subenv x y))
 
 (defn make-rand-r-snipe 
   "Create r-snipe with random energy (from rand-energy)."
-  [rng cfg-data$ subenv-key x y]
-  (make-r-snipe rng cfg-data$ (rand-energy rng @cfg-data$) subenv-key x y))
+  [rng cfg-data$ subenv x y]
+  (make-r-snipe rng cfg-data$ (rand-energy rng @cfg-data$) subenv x y))
 
 (defn make-rand-s-snipe 
   "Create s-snipe with random energy (from rand-energy)."
-  [rng cfg-data$ subenv-key x y]
-  (make-s-snipe rng cfg-data$ (rand-energy rng @cfg-data$) subenv-key x y))
+  [rng cfg-data$ subenv x y]
+  (make-s-snipe rng cfg-data$ (rand-energy rng @cfg-data$) subenv x y))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MAKE-PROPERTIES FUNCTION

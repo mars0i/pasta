@@ -356,7 +356,7 @@
     (.shuffle mothers rng)
     (doseq [snipe mothers]
       (let [[num-births snipe'] (give-birth @cfg-data$ snipe)
-            parental-snipe-field' (if (= (:subenv-key snipe') :west)
+            parental-snipe-field' (if (= (:subenv snipe') :west)
                                     west-snipe-field'
                                     east-snipe-field')]
         ;; replace old snipe with one updated to reflect birth:

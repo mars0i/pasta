@@ -143,23 +143,23 @@
   around snipe's location in its subenv, to a distance of neighbor-radius.  
   This will include the original snipe."
   [snipe]
-  (subenv-snipe-neighbors (:subenv-key snipe) snipe))
+  (subenv-snipe-neighbors (:subenv snipe) snipe))
 
 (defn subenv-snipe-neighbors
   "Returns a MASON sim.util.Bag containing all snipes in the hexagonal region 
-  around snipe's location in the subenv corresponding to subenv-key, to a 
+  around snipe's location in the subenv corresponding to subenv, to a 
   distance of neighbor-radius.  This may include the original snipe."
-  [subenv-key snipe]
+  [subenv snipe]
   (let [{:keys [x y cfg-data$]} snipe]
-    (subenv-loc-neighbors @cfg-data$ subenv-key x y)))
+    (subenv-loc-neighbors @cfg-data$ subenv x y)))
 
 (defn subenv-loc-neighbors
   "Returns a MASON sim.util.Bag containing all snipes in the hexagonal region 
-  around location <x,y> in the subenv corresponding to subenv-key, to a 
+  around location <x,y> in the subenv corresponding to subenv, to a 
   distance of neighbor-radius.  This may include the snipe at <x,y>."
-  [cfg-data subenv-key x y]
+  [cfg-data subenv x y]
   (let[{:keys [popenv neighbor-radius]} cfg-data
-       snipe-field (:snipe-field (subenv-key popenv))]
+       snipe-field (:snipe-field (subenv popenv))]
     (.getHexagonalNeighbors snipe-field x y neighbor-radius Grid2D/TOROIDAL true)))
 
 
