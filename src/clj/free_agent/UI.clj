@@ -296,7 +296,7 @@
         two-up-display (setup-display this two-up-width height)
         two-up-display-frame (setup-display-frame two-up-display controller "west subenv  and  east subenv   " true)
         superimposed-display (setup-display this width height)
-        superimposed-display-frame (setup-display-frame superimposed-display controller "overlapping subenvs" true)]
+        superimposed-display-frame (setup-display-frame superimposed-display controller "overlapping subenvs" false)] ; false supposed to hide it, but fails
     ;; "two-up" display with subenvs side by side:
     (reset! (:two-up-display ui-config) two-up-display)
     (reset! (:two-up-display-frame ui-config) two-up-display-frame)
