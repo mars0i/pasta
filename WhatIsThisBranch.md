@@ -1,3 +1,3 @@
-In UI.clj, this branch illustrates how to set up multiple
-fields in different places within the display.
-(Proof of concept.  What's there is not useable as is.)
+This branch has two display windows, one containing separate west and
+east field side-by-side, and the other containing both fields on top
+of each other.
