@@ -25,12 +25,8 @@
 
 ;; display parameters:
 ;; white background:
-(def bg-color (Color. 255 255 255))   ; color of background without grid (if show-grid is false)
+;(def bg-color (Color. 255 255 255))   ; color of background without grid (if show-grid is false)
 (def display-backdrop-color (Color. 64 64 64)) ; border around subenvs
-;; black background
-;(def bg-color (Color. 0 0 0))   ; color of background without grid (if show-grid is false)
-;(def display-backdrop-color (Color. 70 70 70))
-(def two-up-subenv-gap 5)
 (def superimposed-subenv-offset 3.5)
 (def snipe-size 0.55)
 (defn snipe-shade-fn [max-energy snipe] (int (+ 64 (* 190 (/ (:energy snipe) max-energy)))))
@@ -58,11 +54,13 @@
 
 (defn -init-instance-state
   [& args]
-  [(vec args) {:two-up-display (atom nil)       ; will be replaced in init because we need to pass the UI instance to it
-               :two-up-display-frame (atom nil) ; will be replaced in init because we need to pass the display to it
+  [(vec args) {:west-display (atom nil)       ; will be replaced in init because we need to pass the UI instance to it
+               :west-display-frame (atom nil) ; will be replaced in init because we need to pass the display to it
+               :east-display (atom nil)       ; ditto
+               :east-display-frame (atom nil) ;ditto
                :superimposed-display (atom nil) ; ditto
                :superimposed-display-frame (atom nil) ; ditto
-               :bg-field-portrayal (HexaObjectGridPortrayal2D.) ; can be used to put a background or grid only under subenvs
+               ;:bg-field-portrayal (HexaObjectGridPortrayal2D.) ; can be used to put a background or grid only under subenvs
                :west-snipe-field-portrayal (HexaObjectGridPortrayal2D.)
                :west-mush-field-portrayal (HexaObjectGridPortrayal2D.)
                ;:shady-west-mush-field-portrayal (HexaObjectGridPortrayal2D.)
@@ -126,7 +124,8 @@
         mush-high-size (:mush-high-size cfg-data)
         effective-max-energy (min birth-threshold max-energy)
         ;effective-max-energy max-energy ; DEBUG VERSION
-        two-up-display @(:two-up-display ui-config)
+        west-display @(:west-display ui-config)
+        east-display @(:east-display ui-config)
         superimposed-display @(:superimposed-display ui-config)
         ;; These portrayals should be local to setup-portrayals because 
         ;; proxy needs to capture the correct 'this', and we need cfg-data:
@@ -186,7 +185,7 @@
                                 (set! (.-paint this) (s-snipe-color-fn effective-max-energy snipe)) ; paint var is in superclass
                                 (proxy-super draw snipe graphics (DrawInfo2D. info (* 1.5 org-offset) (* 1.5 org-offset))))) ; see above re last arg
                             Color/black)
-        bg-field-portrayal (:bg-field-portrayal ui-config)
+        ;bg-field-portrayal (:bg-field-portrayal ui-config)
         west-snipe-field-portrayal (:west-snipe-field-portrayal ui-config)
         east-snipe-field-portrayal (:east-snipe-field-portrayal ui-config)
         west-mush-field-portrayal (:west-mush-field-portrayal ui-config)
@@ -194,7 +193,7 @@
         shady-east-mush-field-portrayal (:shady-east-mush-field-portrayal ui-config)
         east-mush-field-portrayal (:east-mush-field-portrayal ui-config)]
     ;; connect fields to their portrayals
-    (.setField bg-field-portrayal (ObjectGrid2D. (:env-width cfg-data) (:env-height cfg-data)))
+    ;(.setField bg-field-portrayal (ObjectGrid2D. (:env-width cfg-data) (:env-height cfg-data)))
     (.setField west-snipe-field-portrayal (:snipe-field west))
     (.setField west-mush-field-portrayal (:mush-field west))
     ;(.setField shady-west-mush-field-portrayal (:mush-field west))
@@ -202,7 +201,7 @@
     (.setField east-snipe-field-portrayal (:snipe-field east))
     (.setField east-mush-field-portrayal (:mush-field east))
     ;; extra field portrayal to set a background color under the subenvs:
-    (.setPortrayalForNull bg-field-portrayal (HexagonalPortrayal2D. bg-color 1.2))
+    ;(.setPortrayalForNull bg-field-portrayal (HexagonalPortrayal2D. bg-color 1.2))
     ; **NOTE** UNDERSCORES NOT HYPHENS IN free_agent CLASSNAMES BELOW:
     ;; connect portrayals to agents:
     ;; mushs:
@@ -231,14 +230,13 @@
                                               (.setField east-snipe-field-portrayal (:snipe-field east))
                                               (.setField east-mush-field-portrayal (:mush-field east))))))
     ;; set up display:
-    (doto two-up-display
-      (.reset )
-      (.setBackdrop display-backdrop-color)
-      (.repaint))
-    (doto superimposed-display
-      (.reset )
-      (.setBackdrop display-backdrop-color)
-      (.repaint))))
+    (doto west-display         (.reset) (.repaint))
+    (doto east-display         (.reset) (.repaint))
+    (doto superimposed-display (.reset) (.repaint))))
+
+;    (doto west-display         (.reset) (.setBackdrop display-backdrop-color) (.repaint))
+;    (doto east-display         (.reset) (.setBackdrop display-backdrop-color) (.repaint))
+;    (doto superimposed-display (.reset) (.setBackdrop display-backdrop-color) (.repaint))))
 
 ;; For hex grid, need to rescale display (based on HexaBugsWithUI.java around line 200 in Mason 19):
 (defn hex-scale-height
@@ -285,51 +283,58 @@
         display-size (:env-display-size cfg-data)
         width  (hex-scale-width  (int (* display-size (:env-width cfg-data))))
         height (hex-scale-height (int (* display-size (:env-height cfg-data))))
-        bg-field-portrayal (:bg-field-portrayal ui-config)
+        ;bg-field-portrayal (:bg-field-portrayal ui-config)
         west-mush-field-portrayal (:west-mush-field-portrayal ui-config)
         ;shady-west-mush-field-portrayal (:shady-west-mush-field-portrayal ui-config)
         shady-east-mush-field-portrayal (:shady-east-mush-field-portrayal ui-config)
         east-mush-field-portrayal (:east-mush-field-portrayal ui-config)
         west-snipe-field-portrayal (:west-snipe-field-portrayal ui-config)
         east-snipe-field-portrayal (:east-snipe-field-portrayal ui-config)
-        two-up-width (+ two-up-subenv-gap (* 2 width))
-        two-up-display (setup-display this two-up-width height)
-        two-up-display-frame (setup-display-frame two-up-display controller "west subenv  and  east subenv   " true)
+        west-display (setup-display this width height)
+        west-display-frame (setup-display-frame west-display controller "west subenv" true)
+        east-display (setup-display this width height)
+        east-display-frame (setup-display-frame east-display controller "east subenv" true)
         superimposed-display (setup-display this width height)
         superimposed-display-frame (setup-display-frame superimposed-display controller "overlapping subenvs" false)] ; false supposed to hide it, but fails
-    ;; "two-up" display with subenvs side by side:
-    (reset! (:two-up-display ui-config) two-up-display)
-    (reset! (:two-up-display-frame ui-config) two-up-display-frame)
-    (attach-portrayals! two-up-display [[bg-field-portrayal "west bg"] ; two separate bg portrayals so line between subenvs will be visible
-                                        [west-mush-field-portrayal "west mush"]
-                                        [west-snipe-field-portrayal "west snip"]]
-                        0 0 width height)
-    (attach-portrayals! two-up-display [[bg-field-portrayal "eat bg"]
-                                        [east-mush-field-portrayal "east mush"]
-                                        [east-snipe-field-portrayal "east snipe"]]
-                        (+ width two-up-subenv-gap) 0 width height)
-    ;; "superimposed" display with subenvs occupying the same space on the screen:
+    (reset! (:west-display ui-config) west-display)
+    (reset! (:west-display-frame ui-config) west-display-frame)
+    (reset! (:east-display ui-config) east-display)
+    (reset! (:east-display-frame ui-config) east-display-frame)
+    (reset! (:superimposed-display ui-config) superimposed-display)
     (reset! (:superimposed-display ui-config) superimposed-display)
     (reset! (:superimposed-display-frame ui-config) superimposed-display-frame)
-    (attach-portrayals! superimposed-display [[bg-field-portrayal "bg"]] 0 0 (+ width superimposed-subenv-offset) height)
+    (attach-portrayals! west-display [;[bg-field-portrayal "west bg"] ; two separate bg portrayals so line between subenvs will be visible
+                                      [west-mush-field-portrayal "west mush"]
+                                      [west-snipe-field-portrayal "west snip"]]
+                        0 0 width height)
+    (attach-portrayals! east-display [;[bg-field-portrayal "east bg"]
+                                      [east-mush-field-portrayal "east mush"]
+                                      [east-snipe-field-portrayal "east snipe"]]
+                        0 0 width height)
+    ;; "superimposed" display with subenvs occupying the same space on the screen:
+    ;(attach-portrayals! superimposed-display [[bg-field-portrayal "bg"]] 0 0 (+ width superimposed-subenv-offset) height)
     (attach-portrayals! superimposed-display [[west-mush-field-portrayal "west mush"]] 0 0 width height)
     (attach-portrayals! superimposed-display [[shady-east-mush-field-portrayal "east mush"]] superimposed-subenv-offset 0 width height)
     (attach-portrayals! superimposed-display [[west-snipe-field-portrayal "west snipe"]] 0 0 width height)
-    (attach-portrayals! superimposed-display [[east-snipe-field-portrayal "east snipe"]] superimposed-subenv-offset 0 width height)
-    ))
+    (attach-portrayals! superimposed-display [[east-snipe-field-portrayal "east snipe"]] superimposed-subenv-offset 0 width height)))
 
 (defn -quit
   [this]
   (.superQuit this)
   (let [ui-config (.getUIState this)
-        two-up-display (:two-up-display ui-config)
-        two-up-display-frame (:two-up-display-frame ui-config)
+        west-display (:west-display ui-config)
+        west-display-frame (:west-display-frame ui-config)
+        east-display (:east-display ui-config)
+        east-display-frame (:east-display-frame ui-config)
         superimposed-display (:superimposed-display ui-config)
         superimposed-display-frame (:superimposed-display-frame ui-config)]
-    (when two-up-display-frame (.dispose two-up-display-frame))
+    (when west-display-frame (.dispose west-display-frame))
+    (when east-display-frame (.dispose east-display-frame))
     (when superimposed-display-frame (.dispose superimposed-display-frame))
-    (reset! (:two-up-display ui-config) nil)
-    (reset! (:two-up-display-frame ui-config) nil)
+    (reset! (:west-display ui-config) nil)
+    (reset! (:west-display-frame ui-config) nil)
+    (reset! (:east-display ui-config) nil)
+    (reset! (:east-display-frame ui-config) nil)
     (reset! (:superimposed-display ui-config) nil)
     (reset! (:superimposed-display-frame ui-config) nil)))
 
