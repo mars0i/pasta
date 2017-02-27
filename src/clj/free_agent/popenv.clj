@@ -101,9 +101,9 @@
         [west-snipe-field' east-snipe-field'] (snipes-reproduce rng cfg-data$ ; uses both fields: newborns could go anywhere
                                                                 (:snipe-field west')
                                                                 (:snipe-field east'))
-        west' (die-move rng @cfg-data$ (assoc west :snipe-field west-snipe-field'))
-        east' (die-move rng @cfg-data$ (assoc east :snipe-field east-snipe-field'))
-        snipe-map' (make-snipe-map (:snipe-field west) (:snipe-field east))]
+        west' (die-move rng @cfg-data$ (assoc west' :snipe-field west-snipe-field'))
+        east' (die-move rng @cfg-data$ (assoc east' :snipe-field east-snipe-field'))
+        snipe-map' (make-snipe-map (:snipe-field west') (:snipe-field east'))]
     (PopEnv. west' east' snipe-map')))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
