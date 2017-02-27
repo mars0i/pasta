@@ -194,12 +194,12 @@
         east-mush-field-portrayal (:east-mush-field-portrayal ui-config)]
     ;; connect fields to their portrayals
     ;(.setField bg-field-portrayal (ObjectGrid2D. (:env-width cfg-data) (:env-height cfg-data)))
-    (.setField west-snipe-field-portrayal (:snipe-field west))
     (.setField west-mush-field-portrayal (:mush-field west))
-    ;(.setField shady-west-mush-field-portrayal (:mush-field west))
-    (.setField shady-east-mush-field-portrayal (:mush-field east))
-    (.setField east-snipe-field-portrayal (:snipe-field east))
     (.setField east-mush-field-portrayal (:mush-field east))
+    (.setField shady-east-mush-field-portrayal (:mush-field east))
+    ;(.setField shady-west-mush-field-portrayal (:mush-field west))
+    (.setField west-snipe-field-portrayal (:snipe-field west))
+    (.setField east-snipe-field-portrayal (:snipe-field east))
     ;; extra field portrayal to set a background color under the subenvs:
     ;(.setPortrayalForNull bg-field-portrayal (HexagonalPortrayal2D. bg-color 1.2))
     ; **NOTE** UNDERSCORES NOT HYPHENS IN free_agent CLASSNAMES BELOW:
@@ -207,9 +207,8 @@
     ;; mushs:
     (.setPortrayalForClass west-mush-field-portrayal free_agent.mush.Mush west-mush-portrayal)
     (.setPortrayalForClass east-mush-field-portrayal free_agent.mush.Mush east-mush-portrayal)
-    ;(.setPortrayalForClass shady-west-mush-field-portrayal free_agent.mush.Mush shady-west-mush-portrayal)
     (.setPortrayalForClass shady-east-mush-field-portrayal free_agent.mush.Mush shady-east-mush-portrayal)
-    (.setPortrayalForClass east-mush-field-portrayal free_agent.mush.Mush east-mush-portrayal)
+    ;(.setPortrayalForClass shady-west-mush-field-portrayal free_agent.mush.Mush shady-west-mush-portrayal)
     ;; west snipes:
     (.setPortrayalForClass west-snipe-field-portrayal free_agent.snipe.KSnipe k-snipe-portrayal)
     (.setPortrayalForClass west-snipe-field-portrayal free_agent.snipe.RSnipePrefSmall r-snipe-portrayal-pref-small)
@@ -226,9 +225,10 @@
                                           (step [this sim-state]
                                             (let [{:keys [west east]} (:popenv @cfg-data$)]
                                               (.setField west-snipe-field-portrayal (:snipe-field west))
-                                              (.setField west-mush-field-portrayal (:mush-field west))
                                               (.setField east-snipe-field-portrayal (:snipe-field east))
-                                              (.setField east-mush-field-portrayal (:mush-field east))))))
+                                              (.setField west-mush-field-portrayal (:mush-field west))
+                                              (.setField east-mush-field-portrayal (:mush-field east))
+                                              (.setField shady-east-mush-field-portrayal (:mush-field east))))))
     ;; set up display:
     (doto west-display         (.reset) (.repaint))
     (doto east-display         (.reset) (.repaint))
