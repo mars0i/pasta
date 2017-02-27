@@ -1,3 +1,2 @@
-In UI.clj, this branch illustrates how to set up multiple
-fields in different places within the display.
-(Proof of concept.  What's there is not useable as is.)
+As of 2/26/2017 the plan is to have three displays, one for the west
+fields, one for the east fields, and one with them overlaid.
