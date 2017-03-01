@@ -1,6 +1,9 @@
 ### MASON Makefile
 #### By Sean Luke
 
+### MODIFIED BY MARSHALL ABRAMS TO EXCLUDE ALL SAMPLE APPS
+### ALSO CHANGE errout in Console.java to true
+
 #### Relevant Stuff:
 #### To see all your make options:  type   make help
 #### To add flags (like -O) to javac:  change the FLAGS variable below
