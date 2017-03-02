@@ -13,11 +13,13 @@
                  [net.mikera/vectorz-clj "0.45.0"]
                  [incanter "1.5.7"]
                  [criterium "0.4.4"] ; to use, e.g.: (use '[criterium.core :as c])
-                 ;; These do NOT need to be in my lib dir.  I'm getting them from Maven Central:
-                 [javax.media/jmf "2.1.1e"]    ; for MASON
-                 [org.jfree/jcommon "1.0.21"]    ; for MASON
-                 [org.jfree/jfreechart "1.0.17"] ; for MASON
-                 [org.beanshell/bsh "2.0b4"]]    ; for MASON
+                 ;; Libs that MASON wants and can be gotten from maven.org, so they don't need to be in my lib dir:
+                 [javax.media/jmf "2.1.1e"]
+                 ;[com.lowagie/itext "1.2"] ; version that comes with MASON. Not in maven.org.
+                 ;[com.lowagie/itext "4.2.2"] ; a version in maven.org but that only makes pngs, not pdfs
+                 [org.jfree/jcommon "1.0.21"]
+                 [org.jfree/jfreechart "1.0.17"]
+                 [org.beanshell/bsh "2.0b4"]]
 
   :plugins [[lein-expand-resource-paths "0.0.1"]] ; allows wildcards in resource-paths (https://github.com/dchelimsky/lein-expand-resource-paths)
   :jvm-opts ["-Xms2g"]
