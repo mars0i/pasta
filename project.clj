@@ -13,6 +13,8 @@
                  [net.mikera/vectorz-clj "0.45.0"]
                  [incanter "1.5.7"]
                  [criterium "0.4.4"] ; to use, e.g.: (use '[criterium.core :as c])
+                 ;; These do NOT need to be in my lib dir.  I'm getting them from Maven Central:
+                 [javax.media/jmf "2.1.1e"]    ; for MASON
                  [org.jfree/jcommon "1.0.21"]    ; for MASON
                  [org.jfree/jfreechart "1.0.17"] ; for MASON
                  [org.beanshell/bsh "2.0b4"]]    ; for MASON
@@ -27,9 +29,9 @@
   ;:aot [free-agent.SimConfig free-agent.UI]
   :profiles {:nogui {:main free-agent.SimConfig} ; execute this with 'lein with-profile nogui run'
              :gui   {:main free-agent.UI}      ; execute this with 'lein with-profile gui run'
-             ;:uberjar {:aot [free-agent.snipe free-agent.mush free-agent.popenv free-agent.SimConfig free-agent.UI]
-             ;          :main free-agent.UI
-             ;          :manifest {"Class-Path" ~#(clojure.string/join \space (leiningen.core.classpath/get-classpath %))}}
+             :uberjar {:aot [free-agent.snipe free-agent.mush free-agent.SimConfig free-agent.UI]
+                       :main free-agent.UI
+                       :manifest {"Class-Path" ~#(clojure.string/join \space (leiningen.core.classpath/get-classpath %))}}
              }
              
   :target-path "target/%s"
