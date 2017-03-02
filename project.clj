@@ -16,7 +16,7 @@
                  ;; Libs that MASON wants and can be gotten from maven.org, so they don't need to be in my lib dir:
                  [javax.media/jmf "2.1.1e"]
                  ;[com.lowagie/itext "1.2"] ; version that comes with MASON. Not in maven.org.
-                 ;[com.lowagie/itext "4.2.2"] ; a version in maven.org but that only makes pngs, not pdfs
+                 [com.lowagie/itext "1.2.3"] ; this is in maven.org
                  [org.jfree/jcommon "1.0.21"]
                  [org.jfree/jfreechart "1.0.17"]
                  [org.beanshell/bsh "2.0b4"]]
