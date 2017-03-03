@@ -13,6 +13,7 @@
                  [net.mikera/vectorz-clj "0.45.0"]
                  [incanter "1.5.7"]
                  [criterium "0.4.4"] ; to use, e.g.: (use '[criterium.core :as c])
+                 [mason "19"] ; can be installed in local maven repo: uncomment lein-localrepo below and run 'lein localrepo install lib/mason.19.noAddlApps.jar mason 19'
                  ;; Libs that MASON wants and can be gotten from maven.org, so they don't need to be in my lib dir:
                  [javax.media/jmf "2.1.1e"]
                  ;[com.lowagie/itext "1.2"] ; version that comes with MASON. Not in maven.org.
@@ -21,19 +22,21 @@
                  [org.jfree/jfreechart "1.0.17"]
                  [org.beanshell/bsh "2.0b4"]]
 
-  :plugins [[lein-expand-resource-paths "0.0.1"]] ; allows wildcards in resource-paths (https://github.com/dchelimsky/lein-expand-resource-paths)
+  ;:plugins [;[lein-localrepo "0.5.3"]
+  ;          [lein-expand-resource-paths "0.0.1"]] ; allows wildcards in resource-paths (https://github.com/dchelimsky/lein-expand-resource-paths)
+
   :jvm-opts ["-Xms2g"]
-  ;:javac-opts ["-target" "1.5" "-source" "1.5"] ; This is what's used to compile MASON.
-  :resource-paths ["lib/*"]
+  ;:resource-paths ["lib/*"]
   :source-paths ["src/clj"]
-  ;:main free-agent.SimConfig
+  :main free-agent.UI
   :aot [free-agent.mush free-agent.snipe free-agent.popenv free-agent.SimConfig free-agent.UI]
   ;:aot [free-agent.SimConfig free-agent.UI]
   :profiles {:nogui {:main free-agent.SimConfig} ; execute this with 'lein with-profile nogui run'
              :gui   {:main free-agent.UI}      ; execute this with 'lein with-profile gui run'
-             :uberjar {:aot [free-agent.snipe free-agent.mush free-agent.SimConfig free-agent.UI]
-                       :main free-agent.UI
-                       :manifest {"Class-Path" ~#(clojure.string/join \space (leiningen.core.classpath/get-classpath %))}}
+             :uberjar {:aot :all ;[free-agent.snipe free-agent.mush free-agent.SimConfig free-agent.UI]
+                       ;:main free-agent.UI
+                       ;:manifest {"Class-Path" ~#(clojure.string/join \space (leiningen.core.classpath/get-classpath %))}
+                       }
              }
              
   :target-path "target/%s"
