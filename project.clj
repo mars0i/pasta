@@ -22,19 +22,20 @@
                  [org.jfree/jfreechart "1.0.17"]
                  [org.beanshell/bsh "2.0b4"]]
 
-  ;:plugins [;[lein-localrepo "0.5.3"]
+  ;:plugins [[lein-localrepo "0.5.3"]
   ;          [lein-expand-resource-paths "0.0.1"]] ; allows wildcards in resource-paths (https://github.com/dchelimsky/lein-expand-resource-paths)
 
   :jvm-opts ["-Xms2g"]
   ;:resource-paths ["lib/*"]
   :source-paths ["src/clj"]
-  :main free-agent.UI
+  ;:main free-agent.UI
   :aot [free-agent.mush free-agent.snipe free-agent.popenv free-agent.SimConfig free-agent.UI]
   ;:aot [free-agent.SimConfig free-agent.UI]
   :profiles {:nogui {:main free-agent.SimConfig} ; execute this with 'lein with-profile nogui run'
              :gui   {:main free-agent.UI}      ; execute this with 'lein with-profile gui run'
              :uberjar {:aot :all ;[free-agent.snipe free-agent.mush free-agent.SimConfig free-agent.UI]
-                       ;:main free-agent.UI
+                       :main free-agent.UI
+                       ;:main free-agent.SimConfig
                        ;:manifest {"Class-Path" ~#(clojure.string/join \space (leiningen.core.classpath/get-classpath %))}
                        }
              }
