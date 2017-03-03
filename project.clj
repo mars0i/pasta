@@ -9,7 +9,7 @@
                  [org.clojure/tools.cli "0.3.5"]
                  [org.clojure/data.csv "0.1.3"]
                  [org.clojure/algo.generic "0.1.2"] ; fmap comes in handy now and then
-                 [incanter "1.5.7"]
+                 ;[incanter "1.5.7"]
                  ;[net.mikera/core.matrix "0.57.0"]
                  ;[net.mikera/vectorz-clj "0.45.0"]
                  ;[criterium "0.4.4"] ; to use, e.g.: (use '[criterium.core :as c])
