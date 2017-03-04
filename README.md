@@ -175,4 +175,4 @@ released under a different license.
 processing, predictive coding. cf. integral control, mean-field
 approximation, variational methods.
 
-<a id="joke1" href="#joke1ref"><sup>1</sup></a>Yes--this pasta has mushrooms in it.  Yum!
+<a id="joke1" href="#joke1ref"><sup>2</sup></a>Yes--this pasta has mushrooms in it.  Yum!
