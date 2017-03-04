@@ -39,15 +39,18 @@ bounded resources or population size.  The simulation produces
 qualitatively similar results whether the population is growing or has
 reached its maximum size, for example.
 
-My starting points on PEM are Rafal Bogacz, "A tutorial on the free-energy
-framework for modelling perception and learning", *Journal of
-Mathematical Psychology*, Available online 14 December 2015, ISSN
-0022-2496, http://dx.doi.org/10.1016/j.jmp.2015.11.003, and
-  Harriet Feldman and Karl Friston, "Attention, Uncertainty, and
-  Free-Energy", *Frontiers in Human Neuroscience* 4, 2010,
+My starting points on PEM are Rafal Bogacz, "A tutorial on the
+free-energy framework for modelling perception and learning", *Journal
+of Mathematical Psychology* 76 Part B, Feb. 2017, pp. 198-211,
+http://dx.doi.org/10.1016/j.jmp.2015.11.003, and Harriet Feldman and
+Karl Friston, "Attention, Uncertainty, and Free-Energy", *Frontiers in
+Human Neuroscience* 4, 2010,
 http://dx.doi.org/10.3389/fnhum.2010.00215.  However, the model
 implemented here in the k-snipe agents is very simple and very
-different.
+different.  Andy Clark's book <em>Surfing Uncertainty</a> (Oxford
+2015) contains a nice non-technical discussion of PEM.  Jakob Hohwy's
+<em>The Predictive Mind</a> (Oxford 2014) also contains a
+non-technical discussion of PEM.
 
 ## Overview of simulation
 
