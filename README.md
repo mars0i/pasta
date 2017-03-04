@@ -68,7 +68,7 @@ strategy does the opposite.
 There are two contiguous environments.  In the left side hand
 environment, small mushrooms are nutrious (yellow) and large mushrooms
 are poisonous (gray-brown-green).  In the right side environment, large
-mushrooms are nutritious and small mushrooms are poisonous.
+mushrooms are nutritious and small mushrooms are poisonous.<a id="joke1ref" href="#joke1"><sup>2</sup></a> 
 
 Snipes gain energy from eating nutritious mushrooms, and lose energy
 from eating poisonous mushrooms.  Snipes that accumulate sufficient
@@ -173,3 +173,5 @@ released under a different license.
 <a id="WhatsPEMnote" href="#WhatsPEMref"><sup>1</sup></a> Prediction energy minimzation: AKA free-energy minimization, predictive
 processing, predictive coding. cf. integral control, mean-field
 approximation, variational methods.
+
+<a id="joke1" href="#joke1ref"><sup>1</sup></a>Yes--this pasta has mushrooms in it.  Yum!
