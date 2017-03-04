@@ -102,8 +102,11 @@ of Chicago Press 2006.)
 
 Snipes' energy levels are reflected in their brightness, with greater
 brightness indicating more energy.  Mushroom color indicates
-nutritiousness.  Brighter/lighter colors indicating that a mushroom
-would give energy if eaten.
+nutritiousness/poisonousness:  Darker colors indicate nutritiousness,
+while lighter colors indicate poisonousness.  (The color difference
+between environments has no functional meaning, but can be thought of
+as indicating a difference between mushroom species that snipes are
+unable to perceive.)
 
 ## Installation
 

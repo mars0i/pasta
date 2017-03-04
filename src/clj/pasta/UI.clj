@@ -39,8 +39,8 @@
 (defn r-snipe-color-fn [max-energy snipe] (Color. 0 0 (snipe-shade-fn max-energy snipe)))
 (defn s-snipe-color-fn [max-energy snipe] (Color. (snipe-shade-fn max-energy snipe) 0 (snipe-shade-fn max-energy snipe)))
 ;(defn s-snipe-color-fn [max-energy snipe] (Color. 0 (snipe-shade-fn max-energy snipe) 0))
-(def mush-pos-nutrition-shade 200)
-(def mush-neg-nutrition-shade 150)
+(def mush-pos-nutrition-shade 150)
+(def mush-neg-nutrition-shade 200)
 (defn west-mush-color-fn 
   ([shade] (Color. shade shade (int (* 0.6 shade))))
   ([shade alpha] (Color. shade shade (int (* 0.6 shade)) alpha)))
