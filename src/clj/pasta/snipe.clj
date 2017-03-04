@@ -192,11 +192,11 @@
   (dissoc snipe :cfg-data$))
 
 ;; note underscores
-(defn k-snipe? [s] (instance? free_agent.snipe.KSnipe s))
-(defn r-snipe-pref-small? [s] (instance? free_agent.snipe.RSnipePrefSmall s))
-(defn r-snipe-pref-big?   [s] (instance? free_agent.snipe.RSnipePrefBig s))
+(defn k-snipe? [s] (instance? pasta.snipe.KSnipe s))
+(defn r-snipe-pref-small? [s] (instance? pasta.snipe.RSnipePrefSmall s))
+(defn r-snipe-pref-big?   [s] (instance? pasta.snipe.RSnipePrefBig s))
 (defn r-snipe? [s] (or (r-snipe-pref-small? s) (r-snipe-pref-big? s)))
-(defn s-snipe? [s] (instance? free_agent.snipe.SSnipe s))
+(defn s-snipe? [s] (instance? pasta.snipe.SSnipe s))
 
 ;; Switching to simple, non-gensym version so that this also tracks
 ;; total number of snipes that have lived.

@@ -202,23 +202,22 @@
     (.setField east-snipe-field-portrayal (:snipe-field east))
     ;; extra field portrayal to set a background color under the subenvs:
     ;(.setPortrayalForNull bg-field-portrayal (HexagonalPortrayal2D. bg-color 1.2))
-    ; **NOTE** UNDERSCORES NOT HYPHENS IN free_agent CLASSNAMES BELOW:
     ;; connect portrayals to agents:
     ;; mushs:
-    (.setPortrayalForClass west-mush-field-portrayal free_agent.mush.Mush west-mush-portrayal)
-    (.setPortrayalForClass east-mush-field-portrayal free_agent.mush.Mush east-mush-portrayal)
-    (.setPortrayalForClass shady-east-mush-field-portrayal free_agent.mush.Mush shady-east-mush-portrayal)
-    ;(.setPortrayalForClass shady-west-mush-field-portrayal free_agent.mush.Mush shady-west-mush-portrayal)
+    (.setPortrayalForClass west-mush-field-portrayal pasta.mush.Mush west-mush-portrayal)
+    (.setPortrayalForClass east-mush-field-portrayal pasta.mush.Mush east-mush-portrayal)
+    (.setPortrayalForClass shady-east-mush-field-portrayal pasta.mush.Mush shady-east-mush-portrayal)
+    ;(.setPortrayalForClass shady-west-mush-field-portrayal pasta.mush.Mush shady-west-mush-portrayal)
     ;; west snipes:
-    (.setPortrayalForClass west-snipe-field-portrayal free_agent.snipe.KSnipe k-snipe-portrayal)
-    (.setPortrayalForClass west-snipe-field-portrayal free_agent.snipe.RSnipePrefSmall r-snipe-portrayal-pref-small)
-    (.setPortrayalForClass west-snipe-field-portrayal free_agent.snipe.RSnipePrefBig   r-snipe-portrayal-pref-big)
-    (.setPortrayalForClass west-snipe-field-portrayal free_agent.snipe.SSnipe s-snipe-portrayal)
+    (.setPortrayalForClass west-snipe-field-portrayal pasta.snipe.KSnipe k-snipe-portrayal)
+    (.setPortrayalForClass west-snipe-field-portrayal pasta.snipe.RSnipePrefSmall r-snipe-portrayal-pref-small)
+    (.setPortrayalForClass west-snipe-field-portrayal pasta.snipe.RSnipePrefBig   r-snipe-portrayal-pref-big)
+    (.setPortrayalForClass west-snipe-field-portrayal pasta.snipe.SSnipe s-snipe-portrayal)
     ;; east snipes:
-    (.setPortrayalForClass east-snipe-field-portrayal free_agent.snipe.KSnipe k-snipe-portrayal)
-    (.setPortrayalForClass east-snipe-field-portrayal free_agent.snipe.RSnipePrefSmall r-snipe-portrayal-pref-small)
-    (.setPortrayalForClass east-snipe-field-portrayal free_agent.snipe.RSnipePrefBig   r-snipe-portrayal-pref-big)
-    (.setPortrayalForClass east-snipe-field-portrayal free_agent.snipe.SSnipe s-snipe-portrayal)
+    (.setPortrayalForClass east-snipe-field-portrayal pasta.snipe.KSnipe k-snipe-portrayal)
+    (.setPortrayalForClass east-snipe-field-portrayal pasta.snipe.RSnipePrefSmall r-snipe-portrayal-pref-small)
+    (.setPortrayalForClass east-snipe-field-portrayal pasta.snipe.RSnipePrefBig   r-snipe-portrayal-pref-big)
+    (.setPortrayalForClass east-snipe-field-portrayal pasta.snipe.SSnipe s-snipe-portrayal)
     ;; Since popenvs are updated functionally, have to tell the ui about the new popenv on every timestep:
     (.scheduleRepeatingImmediatelyAfter this-ui
                                         (reify Steppable 

@@ -1,6 +1,6 @@
-(defproject free-agent "0.1.0-SNAPSHOT"
+(defproject pasta "0.2.0-SNAPSHOT"
   :description "Agent-based simulation with free energy minimization within agents."
-  :url "https://github.com/mars0i/free-agent"
+  :url "https://github.com/mars0i/pasta"
   :license {:name "Gnu General Public License version 3.0"
             :url "http://www.gnu.org/copyleft/gpl.html"}
   :dependencies [[org.clojure/clojure "1.9.0-alpha14"]
@@ -28,14 +28,14 @@
    :jvm-opts ["-Xms2g"]
    ;:resource-paths ["lib/*"]
    :source-paths ["src/clj"]
-   ;:main free-agent.UI
-   :aot [free-agent.mush free-agent.snipe free-agent.popenv free-agent.SimConfig free-agent.UI]
-   ;:aot [free-agent.SimConfig free-agent.UI]
-   :profiles {:nogui {:main free-agent.SimConfig} ; execute this with 'lein with-profile nogui run'
-              :gui   {:main free-agent.UI}      ; execute this with 'lein with-profile gui run'
-              :uberjar {:aot :all ;[free-agent.snipe free-agent.mush free-agent.SimConfig free-agent.UI]
-                        :main free-agent.UI
-                        ;:main free-agent.SimConfig
+   ;:main pasta.UI
+   :aot [pasta.mush pasta.snipe pasta.popenv pasta.SimConfig pasta.UI]
+   ;:aot [pasta.SimConfig pasta.UI]
+   :profiles {:nogui {:main pasta.SimConfig} ; execute this with 'lein with-profile nogui run'
+              :gui   {:main pasta.UI}      ; execute this with 'lein with-profile gui run'
+              :uberjar {:aot :all ;[pasta.snipe pasta.mush pasta.SimConfig pasta.UI]
+                        :main pasta.UI
+                        ;:main pasta.SimConfig
                         ;:manifest {"Class-Path" ~#(clojure.string/join \space (leiningen.core.classpath/get-classpath %))}
                         }
               }
@@ -45,12 +45,12 @@
 
 
 ;; simple default version:
-;  :main ^:skip-aot free-agent.UI
+;  :main ^:skip-aot pasta.UI
 ;  :target-path "target/%s"
 ;  :profiles {:uberjar {:aot :all}})
 
   ;:java-source-paths ["src/java"]
-  ;:main ^:skip-aot free-agent.core
+  ;:main ^:skip-aot pasta.core
   ; jvm-opts ["-Xms1g"]
   ;:jvm-opts ["-Dclojure.compiler.disable-locals-clearing=true"] ; ???: FASTER, and may be useful to debuggers. see https://groups.google.com/forum/#!msg/clojure/8a1FjNvh-ZQ/DzqDz4oKMj0J
   ;:jvm-opts ["-XX:+TieredCompilation" "-XX:TieredStopAtLevel=1"] ; setting this to 1 will produce faster startup but will disable extra optimization of long-running processes
