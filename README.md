@@ -18,17 +18,17 @@ environments.  These agents are known as "r-snipes".
 
 ## More info
 
+The name of this project comes from the r-snipes' strategy of
+producing lots of offspring, many of whom will be maladapted to their
+environment and die.  This is like testing pasta by throwing it against
+the wall to see what sticks.
+
 k-snipes implement a certain kind of evolutionary  <a
 href="http://www.oxfordreference.com/view/10.1093/acref/9780199766444.001.0001/acref-9780199766444-e-3642?rskey=KrGgBD&result=1">K
 strategy</a>, while r-snipes implement a certain kind of evolutionary <a
 href="http://www.oxfordreference.com/view/10.1093/acref/9780199766444.001.0001/acref-9780199766444-e-6006?rskey=XfTY4o&result=1">r
 strategy</a>.  (These terms are not always defined in precisely the same
 way.)  s-snipes, or "social snipes", it turns out, also implement an r-strategy.
-
-The name of this project comes from the r-snipes strategy of
-producing lots of offspring, many of whom will be maladapted to their
-environment and die.  This is like testing pasta by throwing it against
-the wall to see what sticks.
 
 Note that in this model, the K vs r strategies have nothing to do with
 K vs r selection in the sense of responding to having or not having
