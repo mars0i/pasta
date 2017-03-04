@@ -158,9 +158,6 @@ and by default the REPL will try to list the contents of atoms, so if
 you allow any snipe to print to the terminal, you'll set off an
 infinite loop that will result in a stack overflow.  Sorry about that!
 
-(4) (TODO: Explain how to run by hand in the REPL without interacting
-with the GUI.) 
-
 
 ## License
 
