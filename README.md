@@ -15,7 +15,28 @@ environments.  These agents are known as "r-snipes".
 * Agents that engage in a simple form of social learning by copying
   from nearby agents ("s-snipes").
 
-(My starting points are Rafal Bogacz, "A tutorial on the free-energy
+
+## More info
+
+k-snipes implement a certain kind of evolutionary  <a
+href="http://www.oxfordreference.com/view/10.1093/acref/9780199766444.001.0001/acref-9780199766444-e-3642?rskey=KrGgBD&result=1">K
+strategy</a>, while r-snipes implement a certain kind of evolutionary <a
+href="http://www.oxfordreference.com/view/10.1093/acref/9780199766444.001.0001/acref-9780199766444-e-6006?rskey=XfTY4o&result=1">r
+strategy</a>.  (These terms are not always defined in precisely the same
+way.)  s-snipes, or "social snipes", it turns out, also implement an r-strategy.
+
+The name of this project comes from the r-snipes strategy of
+producing lots of offspring, many of whom will be maladapted to their
+environment and die.  This is like testing pasta by throwing it against
+the wall to see what sticks.
+
+Note that in this model, the K vs r strategies have nothing to do with
+K vs r selection in the sense of responding to having or not having
+bounded resources or population size.  The simulation produces
+qualitatively similar results whether the population is growing or has
+reached its maximum size, for example.
+
+My starting points on PEM are Rafal Bogacz, "A tutorial on the free-energy
 framework for modelling perception and learning", *Journal of
 Mathematical Psychology*, Available online 14 December 2015, ISSN
 0022-2496, http://dx.doi.org/10.1016/j.jmp.2015.11.003, and
@@ -23,20 +44,21 @@ Mathematical Psychology*, Available online 14 December 2015, ISSN
   Free-Energy", *Frontiers in Human Neuroscience* 4, 2010,
 http://dx.doi.org/10.3389/fnhum.2010.00215.  However, the model
 implemented here in the k-snipe agents is very simple and very
-different.)
+different.
 
 ## Overview of simulation
 
-The point is to compare two evolutionary strategies and see which is
+The point is to compare evolutionary strategies and see which is
 selected for under specific parameter combinations.  One strategy, a
 variant of what's called a "K strategy", here uses a model of learning
-based on prediction error minimization.  The other strategy, a variant
-of what's known as an r strategy, here produces offspring that are
-simply predisposed to certain behaviors and don't learn.  The *general*
-concepts are that r strategists tend to produce more offspring, but many
-of them die without reproduction, while K strategists are less likely to
-die, but produce fewer offspring.  Roughly, an r strategy prioritizes
-quantity over quality, while a K strategy does the opposite.
+that I view as a model of prediction error minimization.  The other
+strategy, a variant of what's known as an r strategy, here produces
+offspring that are simply predisposed to certain behaviors and don't
+learn.  The *general* concepts are that r strategists tend to produce
+more offspring, but many of them die without reproduction, while K
+strategists are less likely to die, but produce fewer offspring.
+Roughly, an r strategy prioritizes quantity over quality, while a K
+strategy does the opposite.
 
 There are two contiguous environments.  In the left side hand
 environment, small mushrooms are nutrious (yellow) and large mushrooms
@@ -52,19 +74,23 @@ k-snipes (red circles) initially eat mushrooms randomly, but learn to
 eat mushrooms whose size (normally distributed) signal indicates that
 they are probably nutrious.
 
-r-snipes (blue squares and triangles) never learn.  They produce
+r-snipes (blue triangles) never learn.  They produce
 offspring that exhibit developmental differences: Roughly half of any
 snipe's offspring (squares) always prefer large mushrooms; the others
 (triangles) always prefer small mushrooms.  Those suited to the
 environment in which they live tend to survive and reproduce, and those
 unsuited to their environment tend to die before reproduction.
 
-Snipes sometimes wander into the other environment.  (This is the way
-that an r-snipe born into the "wrong" environment might survive, or that
-one born into the "right" environment might die.)  The likelihood of
-this occurring depends on the shape of the environment. If it's very
-wide and not very tall, this happens less often than when the
-environment is narrow and tall.
+s-snipes use a social learning (cultural transmission) strategy known
+as "success bias".  This is a form of "model bias" because it's a bias
+toward learning from "models" (teachers, influencers) who have certain
+properties. An newborn s-snipe (purple squares) look around at nearby
+snipes, and copies the current mushroom size preference of whichever
+snipe has the most energy.  If there are no nearby snipes, the s-snipe
+tries again on the next timestep.  Once it adopts a preference, the
+preference never changes.  (For more on cultural transmission biases
+see e.g. Richerson and Boyd's <em>Not by Genes Alone</em>, University
+of Chicago Press 2006.)
 
 ## Installation
 
