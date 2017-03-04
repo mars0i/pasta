@@ -48,7 +48,7 @@ Human Neuroscience* 4, 2010,
 http://dx.doi.org/10.3389/fnhum.2010.00215.  However, the model
 implemented here in the k-snipe agents is very simple and very
 different.  Andy Clark's <em>Surfing Uncertainty</em> (Oxford 2015)
-and Jakob Hohwy's <em>The Predictive Mind</em> (Oxford 2014) contain a
+and Jakob Hohwy's <em>The Predictive Mind</em> (Oxford 2014) contain
 non-technical discussions of PEM.
 
 ## Overview of simulation
