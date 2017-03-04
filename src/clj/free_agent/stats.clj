@@ -3,9 +3,9 @@
 ;; the file LICENSE.
 
 (ns free-agent.stats
-  (require [free-agent.snipe :as sn]
-           [clojure.pprint :as pp]
-           [clojure.math.numeric-tower :as math]))
+  (:require [free-agent.snipe :as sn]
+            [clojure.pprint :as pp]
+            [clojure.math.numeric-tower :as math]))
 
 ;; FIXME contains obsolete fns:
 (declare map-kv get-pop-size inc-snipe-counts OLD-count-snipes sum-snipes avg-snipes get-freq maybe-get-freq count-dead-snipe get-k-snipe-freq count-live-snipes mean-vals avg-age avg-energy avg-mush-pref mean-ages mean-ages-live-snipe mean-ages-dead-snipe mean-energies mean-energies-live-snipe mean-energies-dead-snipe mean-prefs mean-prefs-live-snipe round-or-nil report-stats report-params)
