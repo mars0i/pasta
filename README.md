@@ -1,11 +1,11 @@
-# free-agent
+# pasta
 
-Agent-based simulation with a very simple model of prediction error
-minimization in some agents.
+Agent-based simulation with:
 
-(Prediction energy minimzation: AKA free-energy minimization, predictive
-processing, predictive coding. cf. integral control, mean-field
-approximation, variational methods.)
+* A very simple model of prediction error
+minimization<sup id="WhatsPEMsuperscript">1(#WhatsPEM)</sup> (PEM) in some agents.  (I do mean *model*; what these
+agents do, internally, is much simpler than what's usually meant by
+PEM.)
 
 (My starting points are Rafal Bogacz, "A tutorial on the free-energy
 framework for modelling perception and learning", *Journal of
@@ -130,3 +130,8 @@ under the [Gnu General Public License version
 3.0](http://www.gnu.org/copyleft/gpl.html) as specified in the file
 LICENSE, except where noted, or where code has been included that was
 released under a different license.
+
+
+<a id="WhatsPEM"><sup>1</sup></a>Prediction energy minimzation: AKA free-energy minimization, predictive
+processing, predictive coding. cf. integral control, mean-field
+approximation, variational methods.
