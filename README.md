@@ -2,10 +2,10 @@
 
 Agent-based simulation with:
 
-* A very simple model of prediction error
-minimization<sup id="WhatsPEMsuperscript">1(#a1)</sup> (PEM) in some agents.  (I do mean *model*; what these
-agents do, internally, is much simpler than what's usually meant by
-PEM.)
+* A very simple model of prediction error minimization<a
+href="#WhatsPEM" id="WhatsPEMref"><sup>1</sup></a> (PEM) in
+some agents.  (I do mean *model*; what these agents do, internally, is
+much simpler than what's usually meant by PEM.)
 
 (My starting points are Rafal Bogacz, "A tutorial on the free-energy
 framework for modelling perception and learning", *Journal of
@@ -133,6 +133,6 @@ released under a different license.
 
 ##
 
-<a id="a1"><sup>1</sup></a>Prediction energy minimzation: AKA free-energy minimization, predictive
+<a id="WhatsPEM" href="WhatsPEMref"><sup>1</sup></a> Prediction energy minimzation: AKA free-energy minimization, predictive
 processing, predictive coding. cf. integral control, mean-field
 approximation, variational methods.
