@@ -3,7 +3,7 @@
 Agent-based simulation with:
 
 * A very simple model of prediction error
-minimization<sup id="WhatsPEMsuperscript">1(#WhatsPEM)</sup> (PEM) in some agents.  (I do mean *model*; what these
+minimization<sup id="WhatsPEMsuperscript">1(#a1)</sup> (PEM) in some agents.  (I do mean *model*; what these
 agents do, internally, is much simpler than what's usually meant by
 PEM.)
 
@@ -131,7 +131,8 @@ under the [Gnu General Public License version
 LICENSE, except where noted, or where code has been included that was
 released under a different license.
 
+##
 
-<a id="WhatsPEM"><sup>1</sup></a>Prediction energy minimzation: AKA free-energy minimization, predictive
+<a id="a1"><sup>1</sup></a>Prediction energy minimzation: AKA free-energy minimization, predictive
 processing, predictive coding. cf. integral control, mean-field
 approximation, variational methods.
