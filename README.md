@@ -73,30 +73,37 @@ large mushrooms are nutritious and small mushrooms are poisonous.
 
 Snipes gain energy from eating nutritious mushrooms, and lose energy
 from eating poisonous mushrooms.  Snipes that accumulate sufficient
-energy give birth, and lose energy as a result of the birth.  All
-newborn snipes are placed in a random location at birth.
+energy give birth, and lose energy as a result of the birth.  At
+birth, each newborn snipe is placed at a random location in a randomly
+chosen environment.
 
 k-snipes (red circles) initially eat mushrooms randomly, but learn to
-eat mushrooms whose size (normally distributed) signal indicates that
-they are probably nutritious.
+eat mushrooms whose size signal (which is normally distributed)
+indicates that they are probably nutritious.
 
-r-snipes (blue triangles) never learn.  They produce
-offspring that exhibit developmental differences: Roughly half of any
-snipe's offspring (squares) always prefer large mushrooms; the others
-(triangles) always prefer small mushrooms.  Those suited to the
-environment in which they live tend to survive and reproduce, and those
-unsuited to their environment tend to die before reproduction.
+r-snipes (blue triangles) never learn.  They produce offspring that
+exhibit developmental differences: Roughly half of any snipe's
+offspring (upward-pointing triangles) always prefer large mushrooms;
+the others (downward-pointing triangles) always prefer small
+mushrooms.  Those suited to the environment in which they live tend to
+survive and reproduce, and those unsuited to their environment
+generally to die before reproduction.
 
-s-snipes use a social learning (cultural transmission) strategy known
+s-snipes use a social learning, or cultural transmission strategy known
 as "success bias".  This is a form of "model bias" because it's a bias
 toward learning from "models" (teachers, influencers) who have certain
-properties. An newborn s-snipe (purple squares) look around at nearby
+properties. A newborn s-snipe (purple square) looks around at nearby
 snipes, and copies the current mushroom size preference of whichever
 snipe has the most energy.  If there are no nearby snipes, the s-snipe
 tries again on the next timestep.  Once it adopts a preference, the
 preference never changes.  (For more on cultural transmission biases
 see e.g. Richerson and Boyd's <em>Not by Genes Alone</em>, University
 of Chicago Press 2006.)
+
+Snipes' energy levels are reflected in their brightness, with greater
+brightness indicating more energy.  Mushroom color indicates
+nutritiousness.  Brighter/lighter colors indicating that a mushroom
+would give energy if eaten.
 
 ## Installation
 
