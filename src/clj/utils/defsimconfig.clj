@@ -207,7 +207,7 @@
                          :init init-genclass-sym
                          :main true
                          :methods (vec (concat (make-accessor-sigs get-syms# set-syms# ui-field-types#)
-                                               (map #(vector % [] java.lang.Object) dom-syms#)
+                                               (map #(vector % [] 'java.lang.Object) dom-syms#)
                                                (:methods addl-opts-map)))} 
          gen-class-opts# (into gen-class-opts# (dissoc addl-opts-map :exposes-methods :methods))]
      `(do
