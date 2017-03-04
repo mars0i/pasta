@@ -40,7 +40,7 @@ qualitatively similar results whether the population is growing or has
 reached its maximum size, for example.
 
 My starting points on PEM are Rafal Bogacz, "A tutorial on the
-free-energy framework for modelling perception and learning", *Journal
+free-energy framework for modeling perception and learning", *Journal
 of Mathematical Psychology* 76 Part B, Feb. 2017, pp. 198-211,
 http://dx.doi.org/10.1016/j.jmp.2015.11.003, and Harriet Feldman and
 Karl Friston, "Attention, Uncertainty, and Free-Energy", *Frontiers in
@@ -67,7 +67,7 @@ strategy does the opposite.
 
 Snipes eat mushrooms.<a id="joke1ref" href="#joke1"><sup>2</sup></a> 
 There are two contiguous environments.  In the left side hand
-environment, small mushrooms are nutrious (yellow) and large mushrooms
+environment, small mushrooms are nutritious (yellow) and large mushrooms
 are poisonous (gray-brown-green).  In the right side environment,
 large mushrooms are nutritious and small mushrooms are poisonous.
 
@@ -78,7 +78,7 @@ newborn snipes are placed in a random location at birth.
 
 k-snipes (red circles) initially eat mushrooms randomly, but learn to
 eat mushrooms whose size (normally distributed) signal indicates that
-they are probably nutrious.
+they are probably nutritious.
 
 r-snipes (blue triangles) never learn.  They produce
 offspring that exhibit developmental differences: Roughly half of any
@@ -109,7 +109,7 @@ To install, once you clone this repo:
 You need Leiningen (http://leiningen.org).  Then change to the root
 directory of the repo, and run 'lein deps'.  This will install the right
 version of Clojure, if necessary, along with a number of Clojure
-libraries and such that free-agent needs.
+libraries and such that pasta needs.
 
 You'll also need to download the MASON jar file mason.19.jar (or a later
 version, probably), and MASON libraries.tar.gz or libraries.zip file.
@@ -121,9 +121,9 @@ jars in the same places as the others.
 
 ## Running
 
-Ways to run free-agent:
+Ways to run pasta:
 
-(1) Running `src/scripts/gui` will start the GUI version of free-agent.
+(1) Running `src/scripts/gui` will start the GUI version of pasta.
 
 (2) Running `src/scripts/nogui` will start the command line version.  You
 may want to run it with `-?` as argument first to see the possible command
@@ -134,7 +134,7 @@ same as running `lein repl`, but displays some helpful suggestions.
 e.g. it suggests that you can start the GUI using 
 some variation on the following Clojure commands:
 
-   (use 'free-agent.UI) (def cfg (repl-gui))
+   (use 'pasta.UI) (def cfg (repl-gui))
 
 If you run these, the GUI should start up, and you can run the program
 from there. However, you can also use the REPL to examine the state of
@@ -171,7 +171,7 @@ released under a different license.
 
 ##
 
-<a id="WhatsPEMnote" href="#WhatsPEMref"><sup>1</sup></a> Prediction energy minimzation: AKA free-energy minimization, predictive
+<a id="WhatsPEMnote" href="#WhatsPEMref"><sup>1</sup></a> Prediction energy minimization: AKA free-energy minimization, predictive
 processing, predictive coding. cf. integral control, mean-field
 approximation, variational methods.
 
