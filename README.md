@@ -47,9 +47,9 @@ Karl Friston, "Attention, Uncertainty, and Free-Energy", *Frontiers in
 Human Neuroscience* 4, 2010,
 http://dx.doi.org/10.3389/fnhum.2010.00215.  However, the model
 implemented here in the k-snipe agents is very simple and very
-different.  Andy Clark's book <em>Surfing Uncertainty</a> (Oxford
+different.  Andy Clark's book <em>Surfing Uncertainty</em> (Oxford
 2015) contains a nice non-technical discussion of PEM.  Jakob Hohwy's
-<em>The Predictive Mind</a> (Oxford 2014) also contains a
+<em>The Predictive Mind</em> (Oxford 2014) also contains a
 non-technical discussion of PEM.
 
 ## Overview of simulation
