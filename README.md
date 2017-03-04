@@ -2,10 +2,18 @@
 
 Agent-based simulation with:
 
-* A very simple model of prediction error minimization<a
-href="#a1" id="a1ref"><sup>1</sup></a> (PEM) in
-some agents.  (I do mean *model*; what these agents do, internally, is
-much simpler than what's usually meant by PEM.)
+* A very simple model of individual learning by prediction error
+minimization<a href="#WhatsPEMnote" id="WhatsPEMref"><sup>1</sup></a>
+(PEM) in some agents, known as "k-snipes".  (I do mean *model*; what
+these agents do, internally, is much simpler than what's usually meant
+by PEM.)
+
+* Agents that don't learn, but produce different types of offspring
+that are well suited or poorly suited for survival in different
+environments.  These agents are known as "r-snipes".
+
+* Agents that engage in a simple form of social learning by copying
+  from nearby agents ("s-snipes").
 
 (My starting points are Rafal Bogacz, "A tutorial on the free-energy
 framework for modelling perception and learning", *Journal of
@@ -133,6 +141,6 @@ released under a different license.
 
 ##
 
-<a id="a1" href="#a1ref"><sup>1</sup></a> Prediction energy minimzation: AKA free-energy minimization, predictive
+<a id="WhatsPEMnote" href="#WhatsPEMref"><sup>1</sup></a> Prediction energy minimzation: AKA free-energy minimization, predictive
 processing, predictive coding. cf. integral control, mean-field
 approximation, variational methods.
