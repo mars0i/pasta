@@ -123,15 +123,16 @@ Ways to run free-agent:
 may want to run it with `-?` as argument first to see the possible command
 line options.
 
-(3) Start the Clojure REPL with `lein repl`.  Then you can start the
-   GUI with some variation on the following Clojure commands:
+(3) Running `src/scripts/repl` will start the Clojure REPL.  This is the
+same as running `lein repl`, but displays some helpful suggestions.
+e.g. it suggests that you can start the GUI using 
+some variation on the following Clojure commands:
 
-   (use 'free-agent.UI)
-   (def cfg (repl-gui))
+   (use 'free-agent.UI) (def cfg (repl-gui))
 
-The GUI should start up, and you can run the program from there.
-However, you can also use the REPL to examine the state of the
-program:
+If you run these, the GUI should start up, and you can run the program
+from there. However, you can also use the REPL to examine the state of
+the program:
 
     (def cfg-data$ (.simConfigData cfg))
 
