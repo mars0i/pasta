@@ -15,7 +15,7 @@ environments.  These agents are known as "r-snipes".
 * Agents that engage in a simple form of social learning by copying
   from nearby agents ("s-snipes").
 
-Author: <a href="http://members.logical.net/~marshall">Marshall Abrams</a>
+<a href="http://members.logical.net/~marshall">Marshall Abrams</a>
 
 See info about LICENSE below.
 
