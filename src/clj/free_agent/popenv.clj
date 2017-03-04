@@ -2,9 +2,9 @@
 ;; under the Gnu General Public License version 3.0 as specified in the
 ;; the file LICENSE.
 
-(ns free-agent.popenv
-  (:require [free-agent.snipe :as sn]
-            [free-agent.mush :as mu]
+(ns pasta.popenv
+  (:require [pasta.snipe :as sn]
+            [pasta.mush :as mu]
             [utils.random :as ran]
             [utils.random-utils :as ranu]
             [clojure.math.numeric-tower :as nmath])

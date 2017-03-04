@@ -2,10 +2,10 @@
 ;;; is distributed under the Gnu General Public License version 3.0 as
 ;;; specified in the file LICENSE.
 
-(ns free-agent.UI
-  (:require [free-agent.SimConfig :as cfg]
+(ns pasta.UI
+  (:require [pasta.SimConfig :as cfg]
             [clojure.math.numeric-tower :as math])
-  (:import [free-agent mush snipe SimConfig]
+  (:import [pasta mush snipe SimConfig]
            [sim.engine Steppable Schedule Stoppable]
            [sim.field.grid ObjectGrid2D] ; normally doesn't belong in UI: a hack to use a field portrayal to display a background pattern
            [sim.portrayal DrawInfo2D SimpleInspector]
@@ -15,7 +15,7 @@
            [java.awt.geom Rectangle2D$Double] ; note wierd Clojure syntax for Java static nested class
            [java.awt Color])
   (:gen-class
-    :name free-agent.UI
+    :name pasta.UI
     :extends sim.display.GUIState
     :main true
     :exposes {state {:get getState}}  ; accessor for field in superclass that will contain my SimConfig after main creates instances of this class with it.
@@ -69,7 +69,7 @@
                :east-mush-field-portrayal (HexaObjectGridPortrayal2D.)}])
 
 ;; see doc/getName.md
-(defn -getName-void [this] "free-agent") ; override method in super. Should cause this string to be displayed as title of config window of gui, but it doesn't.
+(defn -getName-void [this] "pasta") ; override method in super. Should cause this string to be displayed as title of config window of gui, but it doesn't.
 
 ;; Override methods in sim.display.GUIState so that UI can make graphs, etc.
 (defn -getSimulationInspectedObject [this] (.state this))
@@ -88,7 +88,7 @@
   (let [sim-config (SimConfig. (System/currentTimeMillis))]  ; CREATE AN INSTANCE OF my SimConfig
     (cfg/record-commandline-args! args) 
     (when @cfg/commandline (cfg/set-sim-config-data-from-commandline! sim-config cfg/commandline))
-    (.setVisible (Console. (free-agent.UI. sim-config)) true)))  ; THIS IS WHAT CONNECTS THE GUI TO my SimState subclass SimConfig
+    (.setVisible (Console. (pasta.UI. sim-config)) true)))  ; THIS IS WHAT CONNECTS THE GUI TO my SimState subclass SimConfig
 
 ;; This is called by the pause and go buttons when starting from fully stopped.
 (defn -start
@@ -343,18 +343,18 @@
 (defn repl-gui
   "Convenience function to init and start GUI from the REPL.
   Returns the new SimConfig object.  Usage e.g.:
-  (use 'free-agent.UI) 
+  (use 'pasta.UI) 
   (let [[cfg ui] (repl-gui)] (def cfg cfg) (def ui ui)) ; considered bad practice--but convenient in this case
   (def data$ (.simConfigData cfg))"
   []
   (let [sim-config (SimConfig. (System/currentTimeMillis))
-        ui (free-agent.UI. sim-config)]
+        ui (pasta.UI. sim-config)]
     (.setVisible (Console. ui) true)
     [sim-config ui]))
 
 (defmacro repl-gui-with-defs
   "Calls repl-gui to start the gui, then creates top-level definitions:
-  cfg as a free-agent.SimConfig (i.e. a SimState), ui as a free-agent.UI
+  cfg as a pasta.SimConfig (i.e. a SimState), ui as a pasta.UI
   (i.e. a GUIState) that references cfg, and data$ as an atom containing 
   cfg's SimConfigData stru."
   []

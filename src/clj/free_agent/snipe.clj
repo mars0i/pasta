@@ -2,13 +2,13 @@
 ;; under the Gnu General Public License version 3.0 as specified in the
 ;; the file LICENSE.
 
-(ns free-agent.snipe
+(ns pasta.snipe
   (:require [clojure.math.numeric-tower :as math]
-            [free-agent.perception :as perc]
+            [pasta.perception :as perc]
             [utils.random :as ran])
   (:import [sim.util Properties SimpleProperties Propertied])
   (:gen-class                 ; so it can be aot-compiled
-     :name free-agent.snipe)) ; without :name other aot classes won't find it
+     :name pasta.snipe)) ; without :name other aot classes won't find it
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

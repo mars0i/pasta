@@ -2,10 +2,10 @@
 ;; under the Gnu General Public License version 3.0 as specified in the
 ;; the file LICENSE.
 
-(ns free-agent.mush
+(ns pasta.mush
   (:require [utils.random :as ran])
   (:gen-class                ; so it can be aot-compiled
-    :name free-agent.mush))  ; without :name other aot classes won't find it
+    :name pasta.mush))  ; without :name other aot classes won't find it
 
 ;; Could be a bottleneck if reproduction starts happening in different threads.  In that case I could switch to e.g. (str (gensym "i")) as in intermmitran.
 ;(def prev-mush-id (atom -1)) ; first inc'ed value will be 0

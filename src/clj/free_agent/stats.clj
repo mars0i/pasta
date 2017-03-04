@@ -2,8 +2,8 @@
 ;; under the Gnu General Public License version 3.0 as specified in the
 ;; the file LICENSE.
 
-(ns free-agent.stats
-  (:require [free-agent.snipe :as sn]
+(ns pasta.stats
+  (:require [pasta.snipe :as sn]
             [clojure.pprint :as pp]
             [clojure.math.numeric-tower :as math]))
 
@@ -171,7 +171,7 @@
     (println (map #(str (name %) "=" (% cfg-data)) kys))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; USED BY GUI INSPECTORS DEFINED IN free-agent.simconfig
+;; USED BY GUI INSPECTORS DEFINED IN pasta.simconfig
 
 (def freqs$ (atom {}))
 

@@ -2,18 +2,18 @@
 ;; under the Gnu General Public License version 3.0 as specified in the
 ;; the file LICENSE.
 
-(ns free-agent.SimConfig
+(ns pasta.SimConfig
   (:require [clojure.tools.cli]
             [utils.defsimconfig :as defcfg]
-            [free-agent.snipe :as sn]
-            [free-agent.popenv :as pe]
-            [free-agent.stats :as stats])
+            [pasta.snipe :as sn]
+            [pasta.popenv :as pe]
+            [pasta.stats :as stats])
   (:import [sim.engine Steppable Schedule]
            [sim.util Interval]
            [ec.util MersenneTwisterFast]
            [java.lang String]
-           [free-agent.popenv.PopEnv]))
-;; import free-agent.SimConfig separately below
+           [pasta.popenv.PopEnv]))
+;; import pasta.SimConfig separately below
 ;; (if done here, fails when aot-compiling from a clean project)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -50,7 +50,7 @@
                       [env-display-size   12.0  double  false       ["-D" "How large to display the env in gui by default." :parse-fn #(Double. %)]]
                       [extreme-pref      100.0  double  false] ; mush preference value for r-snipes and s-snipes
                       [max-pop-size        0    long    false]
-                      [popenv            nil   free-agent.popenv.PopEnv false]]
+                      [popenv            nil   pasta.popenv.PopEnv false]]
   :methods [[getPopSize [] long] ; additional options here. this one is for def below; it will get merged into the generated :methods component.
             [getKSnipeFreq [] double]
             [getRSnipePrefSmallFreq [] double]
@@ -82,7 +82,7 @@
 (defn -main
   [& args]
   (record-commandline-args! args) ; The SimConfig isn't available yet, so store commandline args for later access by start().
-  (sim.engine.SimState/doLoop free-agent.SimConfig (into-array String args)) ;; FIXME RUNTIME EXCEPTION HERE
+  (sim.engine.SimState/doLoop pasta.SimConfig (into-array String args)) ;; FIXME RUNTIME EXCEPTION HERE
   (System/exit 0))
 
 (defn -start

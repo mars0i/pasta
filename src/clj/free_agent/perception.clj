@@ -2,9 +2,9 @@
 ;; under the Gnu General Public License version 3.0 as specified in the
 ;; the file LICENSE.
 
-(ns free-agent.perception
+(ns pasta.perception
   (:require [clojure.algo.generic.math-functions :as amath]
-            [free-agent.mush :as mu]
+            [pasta.mush :as mu]
             [utils.random :as ran]
             [utils.random-utils :as ranu])
   (:import [sim.field.grid Grid2D]))
