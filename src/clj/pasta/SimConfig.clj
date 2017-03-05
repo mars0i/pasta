@@ -48,6 +48,7 @@
                       [env-width          40    long    false       ["-w" "Width of env.  Must be an even number." :parse-fn #(Long. %)]] ; Haven't figured out how to change 
                       [env-height         40    long    false       ["-h" "Height of env. Must be an even number." :parse-fn #(Long. %)]] ;  within app without distortion
                       [env-display-size   12.0  double  false       ["-D" "How large to display the env in gui by default." :parse-fn #(Double. %)]]
+                      [use-gui           false  boolean false       ["-g" "Use GUI even when commandline options passed." :parse-fn #(Boolean. %)]]
                       [extreme-pref      100.0  double  false] ; mush preference value for r-snipes and s-snipes
                       [max-pop-size        0    long    false]
                       [popenv            nil   pasta.popenv.PopEnv false]]
