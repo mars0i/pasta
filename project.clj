@@ -29,10 +29,11 @@
    ;:resource-paths ["lib/*"]
    :source-paths ["src/clj"]
    ;:main pasta.UI
-   :aot [pasta.mush pasta.snipe pasta.popenv pasta.SimConfig pasta.UI]
+   :aot [pasta.mush pasta.snipe pasta.popenv pasta.SimConfig pasta.UI pasta.core]
    ;:aot [pasta.SimConfig pasta.UI]
    :profiles {:nogui {:main pasta.SimConfig} ; execute this with 'lein with-profile nogui run'
               :gui   {:main pasta.UI}      ; execute this with 'lein with-profile gui run'
+              :core  {:main pasta.core}
               :uberjar {:aot :all ;[pasta.snipe pasta.mush pasta.SimConfig pasta.UI]
                         :main pasta.UI
                         ;:main pasta.SimConfig

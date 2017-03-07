@@ -86,6 +86,11 @@
   (sim.engine.SimState/doLoop pasta.SimConfig (into-array String args))
   (System/exit 0))
 
+(defn mein
+  "Externally available wrapper for -main."
+  [args]
+  (apply -main args)) ; have to use apply since already in a seq
+
 (defn -start
   "Function that's called to (re)start a new simulation run."
   [^SimConfig this]

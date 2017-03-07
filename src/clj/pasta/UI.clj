@@ -90,6 +90,11 @@
     (when @cfg/commandline$ (cfg/set-sim-config-data-from-commandline! sim-config cfg/commandline$)) ; we can do this in -main because we have a SimConfig
     (.setVisible (Console. (pasta.UI. sim-config)) true)))  ; THIS IS WHAT CONNECTS THE GUI TO my SimState subclass SimConfig
 
+(defn mein
+  "Externally available wrapper for -main."
+  [args]
+  (apply -main args)) ; have to use apply since already in a seq
+
 ;; This is called by the pause and go buttons when starting from fully stopped.
 (defn -start
   [this-ui]
