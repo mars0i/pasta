@@ -35,7 +35,7 @@
               :gui   {:main pasta.UI}      ; execute this with 'lein with-profile gui run'
               :core  {:main pasta.core}
               :uberjar {:aot :all ;[pasta.snipe pasta.mush pasta.SimConfig pasta.UI]
-                        :main pasta.UI
+                        :main pasta.core
                         ;:main pasta.SimConfig
                         ;:manifest {"Class-Path" ~#(clojure.string/join \space (leiningen.core.classpath/get-classpath %))}
                         }
