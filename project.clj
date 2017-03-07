@@ -34,12 +34,11 @@
    :profiles {:nogui {:main pasta.SimConfig} ; execute this with 'lein with-profile nogui run'
               :gui   {:main pasta.UI}      ; execute this with 'lein with-profile gui run'
               :core  {:main pasta.core}
-              :uberjar {:aot :all ;[pasta.snipe pasta.mush pasta.SimConfig pasta.UI]
-                        :main pasta.core
-                        ;:main pasta.SimConfig
-                        ;:manifest {"Class-Path" ~#(clojure.string/join \space (leiningen.core.classpath/get-classpath %))}
-                        }
-              }
+              :uberjar {;:aot :all ; wrong order of compilation
+                        :aot [utils.random utils.random-utils  ; spell out by hand so core isn't compiled too early
+                              pasta.mush pasta.snipe pasta.popenv pasta.perception ; doesn't work
+                              pasta.stats pasta.SimConfig pasta.UI pasta.core]
+                        :main pasta.core}}
               
    :target-path "target/%s"
  )
