@@ -87,7 +87,7 @@
   [& args]
   (let [sim-config (SimConfig. (System/currentTimeMillis))]  ; CREATE AN INSTANCE OF my SimConfig
     (cfg/record-commandline-args! args) 
-    (when @cfg/commandline (cfg/set-sim-config-data-from-commandline! sim-config cfg/commandline)) ; we can do this in -main because we have a SimConfig
+    (when @cfg/commandline$ (cfg/set-sim-config-data-from-commandline! sim-config cfg/commandline$)) ; we can do this in -main because we have a SimConfig
     (.setVisible (Console. (pasta.UI. sim-config)) true)))  ; THIS IS WHAT CONNECTS THE GUI TO my SimState subclass SimConfig
 
 ;; This is called by the pause and go buttons when starting from fully stopped.

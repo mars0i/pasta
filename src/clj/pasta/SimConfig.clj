@@ -23,7 +23,7 @@
 ;;    (require '[utils.defsimconfig :as defcfg])
 ;;    (pprint (macroexpand-1 '<insert defsimconfig call>))
 
-(def commandline (atom nil)) ; Needed by defsimconfig and other code below if we're defining commandline options
+(def commandline$ (atom nil)) ; Needed by defsimconfig and other code below if we're defining commandline options
 
 ;;                 field name      initial-value type  in ui? with range?
 (defcfg/defsimconfig [[num-k-snipes       25    long    [0 500]     ["-K" "Size of k-snipe subpopulation" :parse-fn #(Long. %)]]
@@ -83,7 +83,7 @@
 (defn -main
   [& args]
   (record-commandline-args! args) ; The SimConfig isn't available yet, so store commandline args for later access by start().
-  (sim.engine.SimState/doLoop pasta.SimConfig (into-array String args)) ;; FIXME RUNTIME EXCEPTION HERE
+  (sim.engine.SimState/doLoop pasta.SimConfig (into-array String args))
   (System/exit 0))
 
 (defn -start
@@ -91,7 +91,7 @@
   [^SimConfig this]
   (.superStart this)
   ;; If user passed commandline options, use them to set parameters, rather than defaults:
-  (when @commandline (set-sim-config-data-from-commandline! this commandline))
+  (when @commandline$ (set-sim-config-data-from-commandline! this commandline$))
   ;; Construct core data structures of the simulation:
   (let [^Schedule schedule (.schedule this)
         ^SimConfigData cfg-data$ (.simConfigData this)
