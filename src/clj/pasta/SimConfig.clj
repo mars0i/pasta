@@ -45,8 +45,8 @@
                       [neighbor-radius     5    long    [1 10]      ["-r" "s-snipe neighbors are no more than this distance away." :parse-fn #(Long. %)]]
                       [report-every        0    long    true        ["-i" "Report basic stats every i ticks after the first one (0 = never)." :parse-fn #(Long. %)]]
                       [max-ticks           0    long    false       ["-t" "Stop after this number of timesteps have run, or never if 0." :parse-fn #(Long. %)]]
-                      [env-width          40    long    false       ["-w" "Width of env.  Must be an even number." :parse-fn #(Long. %)]] ; Haven't figured out how to change 
-                      [env-height         40    long    false       ["-h" "Height of env. Must be an even number." :parse-fn #(Long. %)]] ;  within app without distortion
+                      [env-width          40    long    [10 250]    ["-w" "Width of env.  Must be an even number." :parse-fn #(Long. %)]] ; Haven't figured out how to change 
+                      [env-height         40    long    [10 250]    ["-h" "Height of env. Must be an even number." :parse-fn #(Long. %)]] ;  within app without distortion
                       [env-display-size   12.0  double  false       ["-D" "How large to display the env in gui by default." :parse-fn #(Double. %)]]
                       [use-gui           false  boolean false       ["-g" "If -g, use GUI; otherwise use GUI if and only if +g or there are no commandline options." :parse-fn #(Boolean. %)]]
                       [extreme-pref      100.0  double  false] ; mush preference value for r-snipes and s-snipes
