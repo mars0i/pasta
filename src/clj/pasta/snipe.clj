@@ -6,7 +6,8 @@
   (:require [clojure.math.numeric-tower :as math]
             [pasta.perception :as perc]
             [utils.random :as ran])
-  (:import [sim.util Properties SimpleProperties Propertied])
+  (:import [sim.util Properties SimpleProperties Propertied]
+           [sim.portrayal Oriented2D])
   (:gen-class                 ; so it can be aot-compiled
      :name pasta.snipe)) ; without :name other aot classes won't find it
 
@@ -32,6 +33,12 @@
 (defrecord KSnipe [id perceive mush-pref energy subenv x y age circled$ cfg-data$]
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
+  Oriented2D
+  (orientation2D [this] 
+    (let [extreme-pref 0.001] ; k-snipe prefs are small
+      (* Math/PI               ; convert to radians in 180 degrees
+         (inc (/ (:mush-pref this) ; scale as fraction of extreme pref and then add 1 to make it positive
+                 extreme-pref)))))
   Object
   (toString [_] (str "<KSnipe #" id">")))
 
@@ -55,6 +62,12 @@
 (defrecord SSnipe [id perceive mush-pref energy subenv x y age circled$ cfg-data$]
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
+  Oriented2D
+  (orientation2D [this] 
+    (let [extreme-pref (:extreme-pref @(:cfg-data$ this))]
+      (* Math/PI               ; convert to radians in 180 degrees
+         (inc (/ (:mush-pref this) ; scale as fraction of extreme pref and then add 1 to make it positive
+                 extreme-pref)))))
   Object
   (toString [_] (str "<SSnipe #" id">")))
 
