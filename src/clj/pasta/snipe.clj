@@ -25,6 +25,22 @@
 ;; display snipes of different types differently in the UI if they're represented
 ;; by different Java classes.
 
+;; Notes on Orientation2D, etc.:
+;; value   orientation
+;;   0       3:00
+;;  pi/2     6:00
+;;   pi      9:00
+;;  -pi      9:00
+;; 1.5*pi   12:00
+;; -pi/2    12:00
+;; FIXME THIS IS *REALLY* SLOW
+(defn pref-orientation
+  [minimum maximum value]
+  (let [size (- maximum minimum) ; can I move this out so it's not recalc'ed every time?
+        normalized-value (- (/ (- value minimum) size) ; scale value so it's in [-0.5 0.5]
+                            0.5)]
+    (* normalized-value Math/PI)))
+
 ;; The two atom fields at the end are there solely for interactions with the UI.
 ;; Propertied/properties is used by GUI to allow inspectors to follow a fnlly updated agent.
 
@@ -34,13 +50,20 @@
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Oriented2D
-  (orientation2D [this] 
-    (let [extreme-pref 0.001] ; k-snipe prefs are small
-      (* Math/PI               ; convert to radians in 180 degrees
-         (inc (/ (:mush-pref this) ; scale as fraction of extreme pref and then add 1 to make it positive
-                 extreme-pref)))))
+  (orientation2D [this] (pref-orientation -0.002 0.002 (:mush-pref this))) ; TODO FIX THESE HARCODED VALUES?
   Object
   (toString [_] (str "<KSnipe #" id">")))
+
+;; Social snipes learn from the preferences of other nearby snipes.
+(defrecord SSnipe [id perceive mush-pref energy subenv x y age circled$ cfg-data$]
+  Propertied
+  (properties [original-snipe] (make-properties id cfg-data$))
+  Oriented2D
+  (orientation2D [this] 
+    (let [extreme-pref (:extreme-pref @(:cfg-data$ this))] ; can I pull this out so doesn't have to run every time for every snipe?
+      (pref-orientation (- extreme-pref) extreme-pref (:mush-pref this))))
+  Object
+  (toString [_] (str "<SSnipe #" id">")))
 
 ;; r-strategy snipes don't learn: They go right to work eating their preferred
 ;; size mushrooms, which may be the poisonous kind in their environment--or not.
@@ -57,19 +80,6 @@
   (properties [original-snipe] (make-properties id cfg-data$))
   Object
   (toString [this] (str "<RSnipePrefBig #" id ">")))
-
-;; Social snipes learn from the preferences of other nearby snipes.
-(defrecord SSnipe [id perceive mush-pref energy subenv x y age circled$ cfg-data$]
-  Propertied
-  (properties [original-snipe] (make-properties id cfg-data$))
-  Oriented2D
-  (orientation2D [this] 
-    (let [extreme-pref (:extreme-pref @(:cfg-data$ this))]
-      (* Math/PI               ; convert to radians in 180 degrees
-         (inc (/ (:mush-pref this) ; scale as fraction of extreme pref and then add 1 to make it positive
-                 extreme-pref)))))
-  Object
-  (toString [_] (str "<SSnipe #" id">")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; SNIPE MAKER FUNCTIONS
