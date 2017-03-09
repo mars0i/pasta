@@ -44,7 +44,7 @@
                       [carrying-proportion 0.25 double  [0.1 0.9]   ["-c" "Snipes are randomly culled when number exceed this times # of cells." :parse-fn #(Double. %)]]
                       [neighbor-radius     5    long    [1 10]      ["-r" "s-snipe neighbors are no more than this distance away." :parse-fn #(Long. %)]]
                       [report-every        0    long    true        ["-i" "Report basic stats every i ticks after the first one (0 = never)." :parse-fn #(Long. %)]]
-                      [max-ticks           0    long    false       ["-t" "Stop after this number of timesteps have run, or never if 0." :parse-fn #(Long. %)]]
+                      [max-ticks           0    long    true        ["-t" "Stop after this number of timesteps have run, or never if 0." :parse-fn #(Long. %)]]
                       [env-width          40    long    [10 250]    ["-w" "Width of env.  Must be an even number." :parse-fn #(Long. %)]] ; Haven't figured out how to change 
                       [env-height         40    long    [10 250]    ["-h" "Height of env. Must be an even number." :parse-fn #(Long. %)]] ;  within app without distortion
                       [env-display-size   12.0  double  false       ["-D" "How large to display the env in gui by default." :parse-fn #(Double. %)]]
