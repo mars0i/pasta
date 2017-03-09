@@ -184,7 +184,7 @@
                                 (draw [snipe graphics info] ; override method in super
                                   (set! (.-paint this) (k-snipe-color-fn effective-max-energy snipe)) ; superclass var
                                   (proxy-super draw snipe graphics (DrawInfo2D. info org-offset org-offset)))) ; see above re last arg
-                              0 0.5 Color/black)
+                              0 0.6 Color/red OrientedPortrayal2D/SHAPE_COMPASS)
                             Color/red)
         s-snipe-portrayal (make-fnl-circled-portrayal 
                             (OrientedPortrayal2D.
@@ -192,7 +192,7 @@
                                 (draw [snipe graphics info] ; orverride method in super
                                   (set! (.-paint this) (s-snipe-color-fn effective-max-energy snipe)) ; paint var is in superclass
                                   (proxy-super draw snipe graphics (DrawInfo2D. info (* 1.5 org-offset) (* 1.5 org-offset))))) ; see above re last arg
-                              0 0.5 Color/black)
+                              0 0.6 (Color. 255 0 255) OrientedPortrayal2D/SHAPE_LINE)
                             Color/black)
         ;bg-field-portrayal (:bg-field-portrayal ui-config)
         west-snipe-field-portrayal (:west-snipe-field-portrayal ui-config)
