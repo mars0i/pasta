@@ -38,8 +38,11 @@
   [minimum maximum value]
   (let [size (- maximum minimum) ; can I move this out so it's not recalc'ed every time?
         normalized-value (- (/ (- value minimum) size) ; scale value so it's in [-0.5 0.5]
-                            0.5)]
-    (* normalized-value Math/PI)))
+                            0.5)
+        orientation (* -1 normalized-value Math/PI)]
+    (min (* 0.5 Math/PI)
+         (max (* -0.5 Math/PI) 
+              orientation)))) ; even given normalization some schemes might produce values outside the range
 
 ;; The two atom fields at the end are there solely for interactions with the UI.
 ;; Propertied/properties is used by GUI to allow inspectors to follow a fnlly updated agent.
