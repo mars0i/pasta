@@ -4,6 +4,7 @@
 
 (ns pasta.stats
   (:require [pasta.snipe :as sn]
+            [utils.map2csv :as m2c]
             [clojure.pprint :as pp]
             [clojure.math.numeric-tower :as math]))
 
@@ -129,7 +130,7 @@
   [m]
   (into (sorted-map) m))
 
-(defn report-stats
+(defn write-stats-to-console
   "Report summary statistics to standard output."
   ([cfg-data schedule] 
    (print "At step" (.getSteps schedule) "")
@@ -163,12 +164,29 @@
      ;(pp/cl-format true "mean dead ages ~{~{~a ~@{~:[-~;~:*~d~]~}~}~^, ~}~%" dead-ages)
      )))
 
-(defn report-params
+;; TODO add conditioning on :write-csv
+(defn report-stats
+  ([cfg-data schedule] (write-stats-to-console cfg-data schedule))
+  ([cfg-data]          (write-stats-to-console cfg-data)))
+
+(defn write-params-to-console
   "Print parameters in cfg-data to standard output."
   [cfg-data]
   (let [kys (sort (keys cfg-data))]
     (print "Parameters: ")
     (println (map #(str (name %) "=" (% cfg-data)) kys))))
+
+(defn write-params-to-file
+  ([cfg-data] (if-let [basename (:csv-file cfg-data)]
+                (write-params-to-file cfg-data (str basename "params.csv"))
+                (write-params-to-file cfg-data (str (:seed cfg-data) "params.csv"))))
+  ([cfg-data f] (m2c/spit-map f cfg-data)))
+
+(defn report-params
+  [cfg-data]
+  (if (:write-csv cfg-data)
+    (write-params-to-file cfg-data)
+    (write-params-to-console cfg-data)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; USED BY GUI INSPECTORS DEFINED IN pasta.simconfig
