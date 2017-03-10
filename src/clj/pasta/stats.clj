@@ -178,7 +178,7 @@
 
 (defn write-params-to-file
   ([cfg-data] (write-params-to-file cfg-data 
-                                    (str (:csv-file cfg-data) 
+                                    (str (:csv-basename cfg-data) 
                                          "Params" 
                                          (:seed cfg-data)
                                          ".csv")))
