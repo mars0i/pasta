@@ -123,7 +123,7 @@
                                   (.stop stoppable)
                                   (stats/report-stats @cfg-data$ schedule) ; FIXME BROKEN FOR NEW TWO-ENV CONFIG
                                   (println)
-                                  ;(stats/report-params @cfg-data$)
+                                  (stats/report-params @cfg-data$)
                                   (.kill sim-state))))) ; end program after cleaning up Mason stuff
       ;; maybe report stats periodically
       (when (pos? report-every)
