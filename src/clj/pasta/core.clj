@@ -1,3 +1,7 @@
+;; This software is copyright 2016, 2017 by Marshall Abrams, and is distributed
+;; under the Gnu General Public License version 3.0 as specified in the
+;; the file LICENSE.
+
 (ns pasta.core
   (:require [pasta.SimConfig :as cfg]
             [pasta.UI :as ui])

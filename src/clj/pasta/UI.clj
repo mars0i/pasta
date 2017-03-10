@@ -1,4 +1,4 @@
-;;; This software is copyright 2015, 2016 by Marshall Abrams, and
+;;; This software is copyright 2015, 2016, 2017 by Marshall Abrams, and
 ;;; is distributed under the Gnu General Public License version 3.0 as
 ;;; specified in the file LICENSE.
 
