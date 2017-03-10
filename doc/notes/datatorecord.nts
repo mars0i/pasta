@@ -1,0 +1,17 @@
+Data that I might want to record per-tick or on designated ticks
+
+k-snipe, s-snipe, r-snipe counts
+	overall
+	per positive/negative pref
+	per subenv
+summary stats, per all of the categories above, for live snipes'
+	age
+	energy
+	prefs
+summary stats, per all of the categories above, for dead snipes'
+	age
+	prefs ?
+	(not energy--it's zero)
+
+no need:
+frequencies (since can be calculated from counts)
