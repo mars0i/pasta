@@ -1,2 +1,2 @@
-This is the master branch, so whatever's here is, theoretically,
-what should be, or was.
+unified-r-snipe is a branch in which I switch to a single r-snipe
+class instead of having two separate classes.
