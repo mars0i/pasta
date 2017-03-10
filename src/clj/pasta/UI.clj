@@ -10,7 +10,7 @@
            [sim.field.grid ObjectGrid2D] ; normally doesn't belong in UI: a hack to use a field portrayal to display a background pattern
            [sim.portrayal DrawInfo2D SimpleInspector]
            [sim.portrayal.grid HexaObjectGridPortrayal2D]; FastHexaObjectGridPortrayal2D ObjectGridPortrayal2D
-           [sim.portrayal.simple OvalPortrayal2D RectanglePortrayal2D HexagonalPortrayal2D CircledPortrayal2D ShapePortrayal2D OrientedPortrayal2D]
+           [sim.portrayal.simple OvalPortrayal2D RectanglePortrayal2D CircledPortrayal2D ShapePortrayal2D OrientedPortrayal2D FacetedPortrayal2D] ; HexagonalPortrayal2D 
            [sim.display Console Display2D]
            [java.awt.geom Rectangle2D$Double] ; note wierd Clojure syntax for Java static nested class
            [java.awt Color])
@@ -106,7 +106,7 @@
 (defn make-fnl-circled-portrayal
   "Create a subclass of CircledPortrayal2D that tracks snipes by id
   rather than by pointer identity."
-  [child-portrayal color]
+  [color child-portrayal]
   (proxy [CircledPortrayal2D] [child-portrayal color false]
     (draw [snipe graphics info]
       (.setCircleShowing this @(:circled$ snipe))
@@ -122,24 +122,6 @@
 ;   (draw [snipe graphics info] ; override method in super
 ;     (set! (.-paint this) (r-snipe-color-fn effective-max-energy snipe)) ; paint var is in superclass
 ;     (proxy-super draw snipe graphics (DrawInfo2D. info (* 0.75 org-offset) (* 0.55 org-offset)))))) ; see above re last arg
-
-;; FIXME (probably by deletion)
-;; Horrible kludgey way to try to make shapes to pass to ShapePortrayal2D
-;; by tricking it into calling buildPolygon, which isn't normally accessible
-;; from here. Doesn't work, though.  And evil regardless.
-(def a-double-array (double-array 0))
-(def triangle-up-shape$ (atom nil))
-(def triangle-down-shape$ (atom nil))
-(.draw (proxy [ShapePortrayal2D] [a-double-array a-double-array]
-         (draw [_ _ _]
-           (reset! triangle-up-shape$
-                   (proxy-super buildPolygon ShapePortrayal2D/X_POINTS_TRIANGLE_UP ShapePortrayal2D/Y_POINTS_TRIANGLE_UP))))
-       nil nil nil)
-(.draw (proxy [ShapePortrayal2D] [a-double-array a-double-array]
-         (draw [_ _ _]
-           (reset! triangle-down-shape$
-                   (proxy-super buildPolygon ShapePortrayal2D/X_POINTS_TRIANGLE_DOWN ShapePortrayal2D/Y_POINTS_TRIANGLE_DOWN))))
-       nil nil nil)
 
 ;; TODO abstract out some of the repetition below
 (defn setup-portrayals
@@ -186,31 +168,39 @@
                                         (set! (.-paint this) (east-mush-color-fn shade 200))
                                         (proxy-super draw mush graphics (DrawInfo2D. info org-offset org-offset))))) ; last arg centers organism in hex cell
         ;; r-snipes are displayed with one of two different shapes
-        r-snipe-portrayal (make-fnl-circled-portrayal 
-                            (proxy [ShapePortrayal2D] [@triangle-up-shape$ (* 1.1 snipe-size)] ; we won't know which shape to use until 
-                              (draw [snipe graphics info]                                    ;  snipe is passed to draw, so maybe
-                                (when (neg? (:mush-pref snipe))                              ;  change shape then if pref is neg
-                                  (set! (.-shape this) @triangle-down-shape$))
-                                (set! (.-paint this) (r-snipe-color-fn effective-max-energy snipe)) ; paint var is in superclass
-                                (proxy-super draw snipe graphics (DrawInfo2D. info (* 0.75 org-offset) (* 0.55 org-offset))))) ; see above re last arg
-                            Color/blue)
+        r-snipe-portrayal (make-fnl-circled-portrayal Color/blue
+                             ;; FacetedPortrayal2D chooses which of several portrayals to use:
+                             (proxy [FacetedPortrayal2D] [(into-array ; make array of ShapePortrayal2Ds
+                                                             ;; up triangle portrayal:
+                                                             [(proxy [ShapePortrayal2D][ShapePortrayal2D/X_POINTS_TRIANGLE_UP
+                                                                                        ShapePortrayal2D/Y_POINTS_TRIANGLE_UP
+                                                                                        (* 1.1 snipe-size)]
+                                                                (draw [snipe graphics info]
+                                                                  (set! (.-paint this) (r-snipe-color-fn effective-max-energy snipe)) ; paint var is in superclass
+                                                                  (proxy-super draw snipe graphics (DrawInfo2D. info (* 0.75 org-offset) (* 0.55 org-offset))))) ; see above re last arg
+                                                              ;; down triangle portrayal:
+                                                              (proxy [ShapePortrayal2D] [ShapePortrayal2D/X_POINTS_TRIANGLE_DOWN
+                                                                                         ShapePortrayal2D/Y_POINTS_TRIANGLE_DOWN
+                                                                                         (* 1.1 snipe-size)]
+                                                                (draw [snipe graphics info]
+                                                                  (set! (.-paint this) (r-snipe-color-fn effective-max-energy snipe))
+                                                                  (proxy-super draw snipe graphics (DrawInfo2D. info (* 0.75 org-offset) (* 0.55 org-offset)))))])] ; end of constructor arg
+                                (getChildIndex [snipe idxs] (if (pos? (:mush-pref snipe)) 0 1)))) ; determines which ShapePortrayal2D is chosen
         ;; k-snipes and s-snipes include pointers to display mush-prefs:
-        k-snipe-portrayal (make-fnl-circled-portrayal 
-                            (OrientedPortrayal2D.
-                              (proxy [OvalPortrayal2D] [(* 1.1 snipe-size)]
-                                (draw [snipe graphics info] ; override method in super
-                                  (set! (.-paint this) (k-snipe-color-fn effective-max-energy snipe)) ; superclass var
-                                  (proxy-super draw snipe graphics (DrawInfo2D. info org-offset org-offset)))) ; see above re last arg
-                              0 0.6 Color/red OrientedPortrayal2D/SHAPE_COMPASS)
-                            Color/red)
-        s-snipe-portrayal (make-fnl-circled-portrayal 
-                            (OrientedPortrayal2D.
-                              (proxy [RectanglePortrayal2D] [(* 0.915 snipe-size)] ; squares need to be bigger than circles
-                                (draw [snipe graphics info] ; orverride method in super
-                                  (set! (.-paint this) (s-snipe-color-fn effective-max-energy snipe)) ; paint var is in superclass
-                                  (proxy-super draw snipe graphics (DrawInfo2D. info (* 1.5 org-offset) (* 1.5 org-offset))))) ; see above re last arg
-                              0 0.6 (Color. 255 0 255) OrientedPortrayal2D/SHAPE_LINE)
-                            Color/black)
+        k-snipe-portrayal (make-fnl-circled-portrayal Color/red
+                             (OrientedPortrayal2D.
+                               (proxy [OvalPortrayal2D] [(* 1.1 snipe-size)]
+                                 (draw [snipe graphics info] ; override method in super
+                                   (set! (.-paint this) (k-snipe-color-fn effective-max-energy snipe)) ; superclass var
+                                   (proxy-super draw snipe graphics (DrawInfo2D. info org-offset org-offset)))) ; see above re last arg
+                               0 0.6 Color/red OrientedPortrayal2D/SHAPE_COMPASS))
+        s-snipe-portrayal (make-fnl-circled-portrayal Color/black
+                             (OrientedPortrayal2D.
+                               (proxy [RectanglePortrayal2D] [(* 0.915 snipe-size)] ; squares need to be bigger than circles
+                                 (draw [snipe graphics info] ; orverride method in super
+                                   (set! (.-paint this) (s-snipe-color-fn effective-max-energy snipe)) ; paint var is in superclass
+                                   (proxy-super draw snipe graphics (DrawInfo2D. info (* 1.5 org-offset) (* 1.5 org-offset))))) ; see above re last arg
+                               0 0.6 (Color. 255 0 255) OrientedPortrayal2D/SHAPE_LINE))
         ;bg-field-portrayal (:bg-field-portrayal ui-config)
         west-snipe-field-portrayal (:west-snipe-field-portrayal ui-config)
         east-snipe-field-portrayal (:east-snipe-field-portrayal ui-config)
@@ -237,25 +227,25 @@
     ;; west snipes:
     (.setPortrayalForClass west-snipe-field-portrayal pasta.snipe.KSnipe k-snipe-portrayal)
     (.setPortrayalForClass west-snipe-field-portrayal pasta.snipe.RSnipe r-snipe-portrayal)
-    (.setPortrayalForClass west-snipe-field-portrayal pasta.snipe.SSnipe s-snipe-portrayal)
-    ;; east snipes:
-    (.setPortrayalForClass east-snipe-field-portrayal pasta.snipe.KSnipe k-snipe-portrayal)
-    (.setPortrayalForClass east-snipe-field-portrayal pasta.snipe.RSnipe r-snipe-portrayal)
-    (.setPortrayalForClass east-snipe-field-portrayal pasta.snipe.SSnipe s-snipe-portrayal)
-    ;; Since popenvs are updated functionally, have to tell the ui about the new popenv on every timestep:
-    (.scheduleRepeatingImmediatelyAfter this-ui
-                                        (reify Steppable 
-                                          (step [this sim-state]
-                                            (let [{:keys [west east]} (:popenv @cfg-data$)]
-                                              (.setField west-snipe-field-portrayal (:snipe-field west))
-                                              (.setField east-snipe-field-portrayal (:snipe-field east))
-                                              (.setField west-mush-field-portrayal (:mush-field west))
-                                              (.setField east-mush-field-portrayal (:mush-field east))
-                                              (.setField shady-east-mush-field-portrayal (:mush-field east))))))
-    ;; set up display:
-    (doto west-display         (.reset) (.repaint))
-    (doto east-display         (.reset) (.repaint))
-    (doto superimposed-display (.reset) (.repaint))))
+(.setPortrayalForClass west-snipe-field-portrayal pasta.snipe.SSnipe s-snipe-portrayal)
+;; east snipes:
+(.setPortrayalForClass east-snipe-field-portrayal pasta.snipe.KSnipe k-snipe-portrayal)
+(.setPortrayalForClass east-snipe-field-portrayal pasta.snipe.RSnipe r-snipe-portrayal)
+(.setPortrayalForClass east-snipe-field-portrayal pasta.snipe.SSnipe s-snipe-portrayal)
+;; Since popenvs are updated functionally, have to tell the ui about the new popenv on every timestep:
+(.scheduleRepeatingImmediatelyAfter this-ui
+                                    (reify Steppable 
+                                      (step [this sim-state]
+                                        (let [{:keys [west east]} (:popenv @cfg-data$)]
+                                          (.setField west-snipe-field-portrayal (:snipe-field west))
+                                          (.setField east-snipe-field-portrayal (:snipe-field east))
+                                          (.setField west-mush-field-portrayal (:mush-field west))
+                                          (.setField east-mush-field-portrayal (:mush-field east))
+                                          (.setField shady-east-mush-field-portrayal (:mush-field east))))))
+;; set up display:
+(doto west-display         (.reset) (.repaint))
+(doto east-display         (.reset) (.repaint))
+(doto superimposed-display (.reset) (.repaint))))
 
 ;    (doto west-display         (.reset) (.setBackdrop display-backdrop-color) (.repaint))
 ;    (doto east-display         (.reset) (.setBackdrop display-backdrop-color) (.repaint))
