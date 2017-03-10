@@ -57,7 +57,7 @@
                       [popenv            nil   pasta.popenv.PopEnv false]]
   :methods [[getPopSize [] long] ; additional options here. this one is for def below; it will get merged into the generated :methods component.
             [getKSnipeFreq [] double]
-            [getRSnipePref [] double]
+            [getRSnipeFreq [] double]
             [getSSnipeFreq [] double]])
 
 (defn curr-step [cfg] (.getSteps (.schedule cfg)))
