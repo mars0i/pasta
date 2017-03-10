@@ -123,6 +123,23 @@
 ;     (set! (.-paint this) (r-snipe-color-fn effective-max-energy snipe)) ; paint var is in superclass
 ;     (proxy-super draw snipe graphics (DrawInfo2D. info (* 0.75 org-offset) (* 0.55 org-offset)))))) ; see above re last arg
 
+;; FIXME (probably by deletion)
+;; Horrible kludgey way to try to make shapes to pass to ShapePortrayal2D
+;; by tricking it into calling buildPolygon, which isn't normally accessible
+;; from here. Doesn't work, though.  And evil regardless.
+(def a-double-array (double-array 0))
+(def triangle-up-shape$ (atom nil))
+(def triangle-down-shape$ (atom nil))
+(.draw (proxy [ShapePortrayal2D] [a-double-array a-double-array]
+         (draw [_ _ _]
+           (reset! triangle-up-shape$
+                   (proxy-super buildPolygon ShapePortrayal2D/X_POINTS_TRIANGLE_UP ShapePortrayal2D/Y_POINTS_TRIANGLE_UP))))
+       nil nil nil)
+(.draw (proxy [ShapePortrayal2D] [a-double-array a-double-array]
+         (draw [_ _ _]
+           (reset! triangle-down-shape$
+                   (proxy-super buildPolygon ShapePortrayal2D/X_POINTS_TRIANGLE_DOWN ShapePortrayal2D/Y_POINTS_TRIANGLE_DOWN))))
+       nil nil nil)
 
 ;; TODO abstract out some of the repetition below
 (defn setup-portrayals
@@ -169,15 +186,11 @@
                                         (set! (.-paint this) (east-mush-color-fn shade 200))
                                         (proxy-super draw mush graphics (DrawInfo2D. info org-offset org-offset))))) ; last arg centers organism in hex cell
         ;; r-snipes are displayed with one of two different shapes
-        temp-double-array (double-array 0)
-        temp-shape-portrayal (ShapePortrayal2D. temp-double-array temp-double-array)
-        triangle-up-shape   (.buildPolygon temp-shape-portrayal ShapePortrayal2D/X_POINTS_TRIANGLE_UP ShapePortrayal2D/Y_POINTS_TRIANGLE_UP)     ; doesn't work because 
-        triangle-down-shape (.buildPolygon temp-shape-portrayal ShapePortrayal2D/X_POINTS_TRIANGLE_DOWN ShapePortrayal2D/Y_POINTS_TRIANGLE_DOWN) ; buildPolygon is package protected
         r-snipe-portrayal (make-fnl-circled-portrayal 
-                            (proxy [ShapePortrayal2D] [triangle-up-shape (* 1.1 snipe-size)] ; we won't know which shape to use until 
+                            (proxy [ShapePortrayal2D] [@triangle-up-shape$ (* 1.1 snipe-size)] ; we won't know which shape to use until 
                               (draw [snipe graphics info]                                    ;  snipe is passed to draw, so maybe
                                 (when (neg? (:mush-pref snipe))                              ;  change shape then if pref is neg
-                                  (set! (.-shape this) triangle-down-shape))
+                                  (set! (.-shape this) @triangle-down-shape$))
                                 (set! (.-paint this) (r-snipe-color-fn effective-max-energy snipe)) ; paint var is in superclass
                                 (proxy-super draw snipe graphics (DrawInfo2D. info (* 0.75 org-offset) (* 0.55 org-offset))))) ; see above re last arg
                             Color/blue)
