@@ -21,14 +21,13 @@
 (defn data-row
   "Returns values from map m sorted to match column name order."
   [m]
-  (keys
-    (into (sorted-map) m)))
+  (vals (into (sorted-map) m)))
 
 (defn spit-csv
   "Given a sequence of sequences of data, opens a file and writes to it
   using write-csv.  Options are those that can be passed to spit or writer."
   [f rows & options]
-   (with-open [w (apply io/writer f options)]
+   (with-open [w (apply io/writer f options)] ; could use :quote? true but doesn't work?
      (csv/write-csv w rows)))
 
 (defn spit-map
