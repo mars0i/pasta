@@ -35,7 +35,7 @@
   "Writes map m to file f with keys formatted by label-row and values formatted
   by data-row.  Options are those that can be passed to spit or writer."
   [f m & options]
-  (apply split-csv f 
+  (apply spit-csv f 
                    [(label-row m) (data-row m)]
                    options))
 
@@ -44,9 +44,9 @@
   keys by label-row to file f, writes values from each map, one map per row 
   formatted by data-row. Options are those that can be passed to spit or writer."
   [f ms & options]
-  (apply split-csv f 
-                   (cons (label-row (first m))
-                         (map data-row m))
+  (apply spit-csv f 
+                   (cons (label-row (first ms))
+                         (map data-row ms))
                    options))
 
 (defn spit-map-seqs
@@ -56,7 +56,7 @@
   created from the values of the maps in each sequence in mss.  Options are 
   those that can be passed to spit or writer."
   [f mss & options]
-  (apply split-csv f 
-                   (cons (mapcat label-row (first ms))
-                         (mapcat data-row ms))
+  (apply spit-csv f 
+                   (cons (mapcat label-row (first mss))
+                         (mapcat data-row mss))
                    options))
