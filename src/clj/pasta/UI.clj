@@ -147,34 +147,32 @@
         ;; These portrayals should be local to setup-portrayals because proxy needs to capture the correct 'this', and we need cfg-data:
         ;; Different mushroom portrayals for west and east environments:
         west-mush-portrayal (proxy [OvalPortrayal2D] []
-                         (draw [mush graphics info]  ; override method in super
-                           (let [size  (if (= mush-high-size (:size mush)) mush-high-size-appearance mush-low-size-appearance)
-                                 shade (if (neg? (:nutrition mush)) mush-neg-nutrition-shade mush-pos-nutrition-shade)]
-                             (set! (.-scale this) size)                       ; superclass vars
-                             (set! (.-paint this) (west-mush-color-fn shade))
-                             (proxy-super draw mush graphics (DrawInfo2D. info org-offset org-offset))))) ; last arg centers organism in hex cell
+                              (draw [mush graphics info]  ; override method in super
+                                (let [size  (if (= mush-high-size (:size mush)) mush-high-size-appearance mush-low-size-appearance)
+                                      shade (if (neg? (:nutrition mush)) mush-neg-nutrition-shade mush-pos-nutrition-shade)]
+                                  (set! (.-scale this) size)                       ; superclass vars
+                                  (set! (.-paint this) (west-mush-color-fn shade))
+                                  (proxy-super draw mush graphics (DrawInfo2D. info org-offset org-offset))))) ; last arg centers organism in hex cell
         east-mush-portrayal (proxy [OvalPortrayal2D] []
-                         (draw [mush graphics info]  ; override method in super
-                           (let [size  (if (= mush-high-size (:size mush)) mush-high-size-appearance mush-low-size-appearance)
-                                 shade (if (neg? (:nutrition mush)) mush-neg-nutrition-shade mush-pos-nutrition-shade)]
-                             (set! (.-scale this) size)                       ; superclass vars
-                             (set! (.-paint this) (east-mush-color-fn shade))
-                             (proxy-super draw mush graphics (DrawInfo2D. info org-offset org-offset))))) ; last arg centers organism in hex cell
+                              (draw [mush graphics info]  ; override method in super
+                                (let [size  (if (= mush-high-size (:size mush)) mush-high-size-appearance mush-low-size-appearance)
+                                      shade (if (neg? (:nutrition mush)) mush-neg-nutrition-shade mush-pos-nutrition-shade)]
+                                  (set! (.-scale this) size)                       ; superclass vars
+                                  (set! (.-paint this) (east-mush-color-fn shade))
+                                  (proxy-super draw mush graphics (DrawInfo2D. info org-offset org-offset))))) ; last arg centers organism in hex cell
         ;; In the overlapping-environments display, make the mushrooms on the upper layer semi-translucent:
         shady-east-mush-portrayal (proxy [OvalPortrayal2D] []
-                         (draw [mush graphics info]  ; override method in super
-                           (let [size  (if (= mush-high-size (:size mush)) mush-high-size-appearance mush-low-size-appearance)
-                                 shade (if (neg? (:nutrition mush)) mush-neg-nutrition-shade mush-pos-nutrition-shade)]
-                             (set! (.-scale this) size)                       ; superclass vars
-                             (set! (.-paint this) (east-mush-color-fn shade 200))
-                             (proxy-super draw mush graphics (DrawInfo2D. info org-offset org-offset))))) ; last arg centers organism in hex cell
+                                    (draw [mush graphics info]  ; override method in super
+                                      (let [size  (if (= mush-high-size (:size mush)) mush-high-size-appearance mush-low-size-appearance)
+                                            shade (if (neg? (:nutrition mush)) mush-neg-nutrition-shade mush-pos-nutrition-shade)]
+                                        (set! (.-scale this) size)                       ; superclass vars
+                                        (set! (.-paint this) (east-mush-color-fn shade 200))
+                                        (proxy-super draw mush graphics (DrawInfo2D. info org-offset org-offset))))) ; last arg centers organism in hex cell
         ;; r-snipes are displayed with one of two different shapes
-        triangle-up-shape   (java.awt.Polygon. ShapePortrayal2D/X_POINTS_TRIANGLE_UP
-                                               ShapePortrayal2D/Y_POINTS_TRIANGLE_UP
-                                               (.length ShapePortrayal2D/X_POINTS_TRIANGLE_UP))
-        triangle-down-shape (java.awt.Polygon. ShapePortrayal2D/X_POINTS_TRIANGLE_DOWN
-                                               ShapePortrayal2D/Y_POINTS_TRIANGLE_DOWN
-                                               (.length ShapePortrayal2D/X_POINTS_TRIANGLE_DOWN))
+        temp-double-array (double-array 0)
+        temp-shape-portrayal (ShapePortrayal2D. temp-double-array temp-double-array)
+        triangle-up-shape   (.buildPolygon temp-shape-portrayal ShapePortrayal2D/X_POINTS_TRIANGLE_UP ShapePortrayal2D/Y_POINTS_TRIANGLE_UP)     ; doesn't work because 
+        triangle-down-shape (.buildPolygon temp-shape-portrayal ShapePortrayal2D/X_POINTS_TRIANGLE_DOWN ShapePortrayal2D/Y_POINTS_TRIANGLE_DOWN) ; buildPolygon is package protected
         r-snipe-portrayal (make-fnl-circled-portrayal 
                             (proxy [ShapePortrayal2D] [triangle-up-shape (* 1.1 snipe-size)] ; we won't know which shape to use until 
                               (draw [snipe graphics info]                                    ;  snipe is passed to draw, so maybe
