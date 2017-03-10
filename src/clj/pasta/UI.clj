@@ -156,23 +156,17 @@
                              (set! (.-scale this) size)                       ; superclass vars
                              (set! (.-paint this) (east-mush-color-fn shade 200))
                              (proxy-super draw mush graphics (DrawInfo2D. info org-offset org-offset))))) ; last arg centers organism in hex cell
-        ;; There are two kinds of r-snipes so that we can display with two different portrayals:
-        r-snipe-portrayal-pref-small (make-fnl-circled-portrayal 
-                                       (proxy [ShapePortrayal2D] [ShapePortrayal2D/X_POINTS_TRIANGLE_DOWN 
-                                                                  ShapePortrayal2D/Y_POINTS_TRIANGLE_DOWN
-                                                                  (* 1.1 snipe-size)]
-                                         (draw [snipe graphics info] ; orverride method in super
-                                           (set! (.-paint this) (r-snipe-color-fn effective-max-energy snipe)) ; paint var is in superclass
-                                           (proxy-super draw snipe graphics (DrawInfo2D. info (* 0.75 org-offset) (* 0.55 org-offset))))) ; see above re last arg
-                                       Color/blue)
-        r-snipe-portrayal-pref-big (make-fnl-circled-portrayal 
-                                     (proxy [ShapePortrayal2D] [ShapePortrayal2D/X_POINTS_TRIANGLE_UP 
-                                                                ShapePortrayal2D/Y_POINTS_TRIANGLE_UP
-                                                                (* 1.1 snipe-size)]
-                                       (draw [snipe graphics info] ; orverride method in super
-                                         (set! (.-paint this) (r-snipe-color-fn effective-max-energy snipe)) ; paint var is in superclass
-                                         (proxy-super draw snipe graphics (DrawInfo2D. info (* 0.75 org-offset) (* 0.55 org-offset))))) ; see above re last arg
-                                     Color/blue)
+        ;; r-snipes are displayed with one of two different shapes
+        r-snipe-portrayal (make-fnl-circled-portrayal 
+                            (proxy [ShapePortrayal2D] 
+                              (conj (if (pos? (:mush-pref this))
+                                      [ShapePortrayal2D/X_POINTS_TRIANGLE_UP ShapePortrayal2D/Y_POINTS_TRIANGLE_UP]
+                                      [ShapePortrayal2D/X_POINTS_TRIANGLE_DOWN ShapePortrayal2D/Y_POINTS_TRIANGLE_DOWN])
+                                (* 1.1 snipe-size))
+                              (draw [snipe graphics info] ; override method in super
+                                (set! (.-paint this) (r-snipe-color-fn effective-max-energy snipe)) ; paint var is in superclass
+                                (proxy-super draw snipe graphics (DrawInfo2D. info (* 0.75 org-offset) (* 0.55 org-offset))))) ; see above re last arg
+                            Color/blue)
         ;; k-snipes and s-snipes include pointers to display mush-prefs:
         k-snipe-portrayal (make-fnl-circled-portrayal 
                             (OrientedPortrayal2D.
@@ -215,13 +209,11 @@
     ;(.setPortrayalForClass shady-west-mush-field-portrayal pasta.mush.Mush shady-west-mush-portrayal)
     ;; west snipes:
     (.setPortrayalForClass west-snipe-field-portrayal pasta.snipe.KSnipe k-snipe-portrayal)
-    (.setPortrayalForClass west-snipe-field-portrayal pasta.snipe.RSnipePrefSmall r-snipe-portrayal-pref-small)
-    (.setPortrayalForClass west-snipe-field-portrayal pasta.snipe.RSnipePrefBig   r-snipe-portrayal-pref-big)
+    (.setPortrayalForClass west-snipe-field-portrayal pasta.snipe.RSnipe r-snipe-portrayal)
     (.setPortrayalForClass west-snipe-field-portrayal pasta.snipe.SSnipe s-snipe-portrayal)
     ;; east snipes:
     (.setPortrayalForClass east-snipe-field-portrayal pasta.snipe.KSnipe k-snipe-portrayal)
-    (.setPortrayalForClass east-snipe-field-portrayal pasta.snipe.RSnipePrefSmall r-snipe-portrayal-pref-small)
-    (.setPortrayalForClass east-snipe-field-portrayal pasta.snipe.RSnipePrefBig   r-snipe-portrayal-pref-big)
+    (.setPortrayalForClass east-snipe-field-portrayal pasta.snipe.RSnipe r-snipe-portrayal)
     (.setPortrayalForClass east-snipe-field-portrayal pasta.snipe.SSnipe s-snipe-portrayal)
     ;; Since popenvs are updated functionally, have to tell the ui about the new popenv on every timestep:
     (.scheduleRepeatingImmediatelyAfter this-ui

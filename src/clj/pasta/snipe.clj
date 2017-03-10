@@ -73,17 +73,11 @@
 ;; size mushrooms, which may be the poisonous kind in their environment--or not.
 ;; Their children might have either size preference.  This means that the ones
 ;; that have the "right" preference can usually reproduce more quickly than k-snipes.
-(defrecord RSnipePrefSmall [id perceive mush-pref energy subenv x y age circled$ cfg-data$] ; r-snipe that prefers small mushrooms
+(defrecord RSnipe [id perceive mush-pref energy subenv x y age circled$ cfg-data$] ; r-snipe that prefers small mushrooms
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Object
-  (toString [this] (str "<RSnipePrefSmall #" id ">")))
-
-(defrecord RSnipePrefBig [id perceive mush-pref energy subenv x y age circled$ cfg-data$] ; r-snipe that prefers large mushrooms
-  Propertied
-  (properties [original-snipe] (make-properties id cfg-data$))
-  Object
-  (toString [this] (str "<RSnipePrefBig #" id ">")))
+  (toString [this] (str "<RSnipe #" id ">")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; SNIPE MAKER FUNCTIONS
@@ -104,8 +98,8 @@
   [rng cfg-data$ energy subenv x y]
   (let [extreme-pref (:extreme-pref @cfg-data$)]
     (if (< (ran/next-double rng) 0.5)
-      (RSnipePrefSmall. (next-id) perc/r-snipe-pref (- extreme-pref) energy subenv x y 0 (atom false) cfg-data$)
-      (RSnipePrefBig.   (next-id) perc/r-snipe-pref extreme-pref     energy subenv x y 0 (atom false) cfg-data$))))
+      (RSnipe. (next-id) perc/r-snipe-pref (- extreme-pref) energy subenv x y 0 (atom false) cfg-data$)
+      (RSnipe. (next-id) perc/r-snipe-pref extreme-pref     energy subenv x y 0 (atom false) cfg-data$))))
 
 (defn make-s-snipe 
   [rng cfg-data$ energy subenv x y]
@@ -220,9 +214,7 @@
 
 ;; note underscores
 (defn k-snipe? [s] (instance? pasta.snipe.KSnipe s))
-(defn r-snipe-pref-small? [s] (instance? pasta.snipe.RSnipePrefSmall s))
-(defn r-snipe-pref-big?   [s] (instance? pasta.snipe.RSnipePrefBig s))
-(defn r-snipe? [s] (or (r-snipe-pref-small? s) (r-snipe-pref-big? s)))
+(defn r-snipe? [s] (instance? pasta.snipe.RSnipe s))
 (defn s-snipe? [s] (instance? pasta.snipe.SSnipe s))
 
 ;; Switching to simple, non-gensym version so that this also tracks
