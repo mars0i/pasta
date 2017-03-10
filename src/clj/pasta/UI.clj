@@ -132,8 +132,8 @@
         west-display @(:west-display ui-config)
         east-display @(:east-display ui-config)
         superimposed-display @(:superimposed-display ui-config)
-        ;; These portrayals should be local to setup-portrayals because 
-        ;; proxy needs to capture the correct 'this', and we need cfg-data:
+        ;; These portrayals should be local to setup-portrayals because proxy needs to capture the correct 'this', and we need cfg-data:
+        ;; Different mushroom portrayals for west and east environments:
         west-mush-portrayal (proxy [OvalPortrayal2D] []
                          (draw [mush graphics info]  ; override method in super
                            (let [size  (if (= mush-high-size (:size mush)) mush-high-size-appearance mush-low-size-appearance)
@@ -141,13 +141,6 @@
                              (set! (.-scale this) size)                       ; superclass vars
                              (set! (.-paint this) (west-mush-color-fn shade))
                              (proxy-super draw mush graphics (DrawInfo2D. info org-offset org-offset))))) ; last arg centers organism in hex cell
-        ;shady-west-mush-portrayal (proxy [OvalPortrayal2D] []
-        ;                            (draw [mush graphics info]  ; override method in super
-        ;                              (let [size  (if (= mush-high-size (:size mush)) mush-high-size-appearance mush-low-size-appearance)
-        ;                                    shade (if (neg? (:nutrition mush)) mush-neg-nutrition-shade mush-pos-nutrition-shade)]
-        ;                                (set! (.-scale this) size)                       ; superclass vars
-        ;                                (set! (.-paint this) (west-mush-color-fn shade 220))
-        ;                                (proxy-super draw mush graphics (DrawInfo2D. info org-offset org-offset))))) ; last arg centers organism in hex cell
         east-mush-portrayal (proxy [OvalPortrayal2D] []
                          (draw [mush graphics info]  ; override method in super
                            (let [size  (if (= mush-high-size (:size mush)) mush-high-size-appearance mush-low-size-appearance)
@@ -155,6 +148,7 @@
                              (set! (.-scale this) size)                       ; superclass vars
                              (set! (.-paint this) (east-mush-color-fn shade))
                              (proxy-super draw mush graphics (DrawInfo2D. info org-offset org-offset))))) ; last arg centers organism in hex cell
+        ;; In the overlapping-environments display, make the mushrooms on the upper layer semi-translucent:
         shady-east-mush-portrayal (proxy [OvalPortrayal2D] []
                          (draw [mush graphics info]  ; override method in super
                            (let [size  (if (= mush-high-size (:size mush)) mush-high-size-appearance mush-low-size-appearance)
@@ -162,6 +156,7 @@
                              (set! (.-scale this) size)                       ; superclass vars
                              (set! (.-paint this) (east-mush-color-fn shade 200))
                              (proxy-super draw mush graphics (DrawInfo2D. info org-offset org-offset))))) ; last arg centers organism in hex cell
+        ;; There are two kinds of r-snipes so that we can display with two different portrayals:
         r-snipe-portrayal-pref-small (make-fnl-circled-portrayal 
                                        (proxy [ShapePortrayal2D] [ShapePortrayal2D/X_POINTS_TRIANGLE_DOWN 
                                                                   ShapePortrayal2D/Y_POINTS_TRIANGLE_DOWN
@@ -178,13 +173,14 @@
                                          (set! (.-paint this) (r-snipe-color-fn effective-max-energy snipe)) ; paint var is in superclass
                                          (proxy-super draw snipe graphics (DrawInfo2D. info (* 0.75 org-offset) (* 0.55 org-offset))))) ; see above re last arg
                                      Color/blue)
+        ;; k-snipes and s-snipes include pointers to display mush-prefs:
         k-snipe-portrayal (make-fnl-circled-portrayal 
                             (OrientedPortrayal2D.
                               (proxy [OvalPortrayal2D] [(* 1.1 snipe-size)]
                                 (draw [snipe graphics info] ; override method in super
                                   (set! (.-paint this) (k-snipe-color-fn effective-max-energy snipe)) ; superclass var
                                   (proxy-super draw snipe graphics (DrawInfo2D. info org-offset org-offset)))) ; see above re last arg
-                              0 0.5 Color/black)
+                              0 0.6 Color/red OrientedPortrayal2D/SHAPE_COMPASS)
                             Color/red)
         s-snipe-portrayal (make-fnl-circled-portrayal 
                             (OrientedPortrayal2D.
@@ -192,7 +188,7 @@
                                 (draw [snipe graphics info] ; orverride method in super
                                   (set! (.-paint this) (s-snipe-color-fn effective-max-energy snipe)) ; paint var is in superclass
                                   (proxy-super draw snipe graphics (DrawInfo2D. info (* 1.5 org-offset) (* 1.5 org-offset))))) ; see above re last arg
-                              0 0.5 Color/black)
+                              0 0.6 (Color. 255 0 255) OrientedPortrayal2D/SHAPE_LINE)
                             Color/black)
         ;bg-field-portrayal (:bg-field-portrayal ui-config)
         west-snipe-field-portrayal (:west-snipe-field-portrayal ui-config)

@@ -53,7 +53,7 @@
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Oriented2D
-  (orientation2D [this] (pref-orientation -0.002 0.002 (:mush-pref this))) ; TODO FIX THESE HARCODED VALUES?
+  (orientation2D [this] (pref-orientation -0.001 0.001 (:mush-pref this))) ; TODO FIX THESE HARCODED VALUES?
   Object
   (toString [_] (str "<KSnipe #" id">")))
 
@@ -62,11 +62,12 @@
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Oriented2D
-  (orientation2D [this] 
-    (let [extreme-pref (:extreme-pref @(:cfg-data$ this))] ; can I pull this out so doesn't have to run every time for every snipe?
-      (pref-orientation (- extreme-pref) extreme-pref (:mush-pref this))))
+  (orientation2D [this] (pref-orientation -0.001 0.001 (:mush-pref this))) ; TODO FIX THESE HARCODED VALUES?
   Object
   (toString [_] (str "<SSnipe #" id">")))
+
+  ;  (let [extreme-pref (:extreme-pref @(:cfg-data$ this))] ; can I pull this out so doesn't have to run every time for every snipe?
+  ;    (pref-orientation (- extreme-pref) extreme-pref (:mush-pref this))))
 
 ;; r-strategy snipes don't learn: They go right to work eating their preferred
 ;; size mushrooms, which may be the poisonous kind in their environment--or not.
