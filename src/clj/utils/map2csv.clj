@@ -12,11 +12,17 @@
   [k]
   (st/replace (name k) #"-" "_"))
 
-(defn column-names
+(defn make-column-name-row
   "Returns sorted column label strings made from keys in map m."
   [m]
   (map keyword-to-column-name
        (sort (keys m))))
+
+(defn make-data-row
+  "Returns values from map m sorted to match column name order."
+  [m]
+  (keys
+    (into (sorted-map) m)))
 
 (defn spit-csv
   "Given a sequence of sequences of data, opens a file and writes to it
