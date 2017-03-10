@@ -177,9 +177,11 @@
     (println (map #(str (name %) "=" (% cfg-data)) kys))))
 
 (defn write-params-to-file
-  ([cfg-data] (if-let [basename (:csv-file cfg-data)]
-                (write-params-to-file cfg-data (str basename "params.csv"))
-                (write-params-to-file cfg-data (str "params" (:seed cfg-data) ".csv"))))
+  ([cfg-data] (write-params-to-file cfg-data 
+                                    (str (:csv-file cfg-data) 
+                                         "Params" 
+                                         (:seed cfg-data)
+                                         ".csv")))
   ([cfg-data f] (m2c/spit-map f cfg-data)))
 
 (defn report-params

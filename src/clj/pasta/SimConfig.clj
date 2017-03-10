@@ -51,7 +51,7 @@
                       [use-gui           false  boolean false       ["-g" "If -g, use GUI; otherwise use GUI if and only if +g or there are no commandline options." :parse-fn #(Boolean. %)]]
                       [extreme-pref        1.0  double  true        ["-x" "Absolute value of r-snipe preferences." :parse-fn #(Double. %)]]
                       [write-csv         false  boolean false       ["-w" "Write data to file instead of printing it to console." :parse-fn #(Boolean. %)]]
-                      [csv-basename      nil    string  false       ["-f" "Base name of files to append data to.  Otherwise new filenames generated from seed." :parse-fn #(Boolean. %)]]
+                      [csv-basename       ""    java.lang.String false ["-f" "Base name of files to append data to.  Otherwise new filenames generated from seed." :parse-fn #(String. %)]]
                       [max-pop-size        0    long    false]
                       [seed              nil    long    false] ; convenience field to store SimConfig's seed
                       [popenv            nil   pasta.popenv.PopEnv false]]
