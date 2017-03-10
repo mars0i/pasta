@@ -57,17 +57,16 @@
                       [popenv            nil   pasta.popenv.PopEnv false]]
   :methods [[getPopSize [] long] ; additional options here. this one is for def below; it will get merged into the generated :methods component.
             [getKSnipeFreq [] double]
-            [getRSnipePrefSmallFreq [] double]
-            [getRSnipePrefBigFreq [] double]
+            [getRSnipePref [] double]
             [getSSnipeFreq [] double]])
 
 (defn curr-step [cfg] (.getSteps (.schedule cfg)))
 (defn curr-popenv [cfg] (:popenv @(.simConfigData cfg)))
 ;; NOTE these get called on every tick in GUI even if not reported:
-(defn -getPopSize [^SimConfig this] (stats/get-pop-size @(.simConfigData this)))
-(defn -getKSnipeFreq          [^SimConfig this] (stats/maybe-get-freq (curr-step this) :k-snipe            (curr-popenv this)))
+(defn -getPopSize    [^SimConfig this] (stats/get-pop-size @(.simConfigData this)))
+(defn -getKSnipeFreq [^SimConfig this] (stats/maybe-get-freq (curr-step this) :k-snipe (curr-popenv this)))
 (defn -getRSnipeFreq [^SimConfig this] (stats/maybe-get-freq (curr-step this) :r-snipe (curr-popenv this)))
-(defn -getSSnipeFreq          [^SimConfig this] (stats/maybe-get-freq (curr-step this) :s-snipe            (curr-popenv this)))
+(defn -getSSnipeFreq [^SimConfig this] (stats/maybe-get-freq (curr-step this) :s-snipe (curr-popenv this)))
 
 ;; no good reason to put this into the defsimconfig macro since it doesn't include any
 ;; field-specific code.  Easier to redefine if left here.

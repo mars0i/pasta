@@ -112,6 +112,18 @@
       (.setCircleShowing this @(:circled$ snipe))
       (proxy-super draw snipe graphics info))))
 
+;; doesn't work (yet)
+;(defmacro r-snipe-proxy []
+;`(proxy [ShapePortrayal2D] 
+;   ~(let [[x-points y-points] (if (pos? (:mush-pref this))
+;                               [ShapePortrayal2D/X_POINTS_TRIANGLE_UP ShapePortrayal2D/Y_POINTS_TRIANGLE_UP]
+;                               [ShapePortrayal2D/X_POINTS_TRIANGLE_DOWN ShapePortrayal2D/Y_POINTS_TRIANGLE_DOWN])]
+;     (conj [x-points y-points] (* 1.1 snipe-size)))
+;   (draw [snipe graphics info] ; override method in super
+;     (set! (.-paint this) (r-snipe-color-fn effective-max-energy snipe)) ; paint var is in superclass
+;     (proxy-super draw snipe graphics (DrawInfo2D. info (* 0.75 org-offset) (* 0.55 org-offset)))))) ; see above re last arg
+
+
 ;; TODO abstract out some of the repetition below
 (defn setup-portrayals
   [this-ui]  ; instead of 'this': avoid confusion with e.g. proxy below
@@ -157,13 +169,17 @@
                              (set! (.-paint this) (east-mush-color-fn shade 200))
                              (proxy-super draw mush graphics (DrawInfo2D. info org-offset org-offset))))) ; last arg centers organism in hex cell
         ;; r-snipes are displayed with one of two different shapes
+        triangle-up-shape   (java.awt.Polygon. ShapePortrayal2D/X_POINTS_TRIANGLE_UP
+                                               ShapePortrayal2D/Y_POINTS_TRIANGLE_UP
+                                               (.length ShapePortrayal2D/X_POINTS_TRIANGLE_UP))
+        triangle-down-shape (java.awt.Polygon. ShapePortrayal2D/X_POINTS_TRIANGLE_DOWN
+                                               ShapePortrayal2D/Y_POINTS_TRIANGLE_DOWN
+                                               (.length ShapePortrayal2D/X_POINTS_TRIANGLE_DOWN))
         r-snipe-portrayal (make-fnl-circled-portrayal 
-                            (proxy [ShapePortrayal2D] 
-                              (conj (if (pos? (:mush-pref this))
-                                      [ShapePortrayal2D/X_POINTS_TRIANGLE_UP ShapePortrayal2D/Y_POINTS_TRIANGLE_UP]
-                                      [ShapePortrayal2D/X_POINTS_TRIANGLE_DOWN ShapePortrayal2D/Y_POINTS_TRIANGLE_DOWN])
-                                (* 1.1 snipe-size))
-                              (draw [snipe graphics info] ; override method in super
+                            (proxy [ShapePortrayal2D] [triangle-up-shape (* 1.1 snipe-size)] ; we won't know which shape to use until 
+                              (draw [snipe graphics info]                                    ;  snipe is passed to draw, so maybe
+                                (when (neg? (:mush-pref snipe))                              ;  change shape then if pref is neg
+                                  (set! (.-shape this) triangle-down-shape))
                                 (set! (.-paint this) (r-snipe-color-fn effective-max-energy snipe)) ; paint var is in superclass
                                 (proxy-super draw snipe graphics (DrawInfo2D. info (* 0.75 org-offset) (* 0.55 org-offset))))) ; see above re last arg
                             Color/blue)
