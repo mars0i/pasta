@@ -168,6 +168,25 @@
           (sp/transform sp/MAP-VALS group-by-subenv)                 ; replaces each coll of snipes by a map by subenv
           (sp/transform [sp/MAP-VALS sp/MAP-VALS] group-by-pref))))) ; replaces each coll of snipes by a map by pos/neg mush-pref
 
+(defn sum-by
+  [k xs]
+  (reduce (fn [sum x] (+ sum (k x)))
+          0.0 xs))
+
+(defn subpop-stats
+  [snipes]
+   (let [num-snipes (count snipes)
+         avg-energy (/ (sum-by :energy snipes) num-snipes)
+         avg-age (/ (sum-by :age snipes) num-snipes)]
+     {:count num-snipes :energy avg-energy :age avg-age}))
+
+(defn snipe-stats
+  ([classified-snipes schedule] 
+   (assoc (snipe-stats classified-snipes) :step (.getSteps schedule)))
+  ([classified-snipes]
+   (sp/transform [sp/MAP-VALS sp/MAP-VALS sp/MAP-VALS] 
+                 subpop-stats
+                 classified-snipes)))
 
 ;; TODO rewrite using new data collection functions
 (defn write-stats-to-console
