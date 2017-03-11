@@ -15,3 +15,28 @@ summary stats, per all of the categories above, for dead snipes'
 
 no need:
 frequencies (since can be calculated from counts)
+
+------------
+
+Or: I could record every state of every snipe ....
+
+------------
+
+OK, so suppose I just record the finest-grained summary data:
+
+for all chosen times t
+  for each of 2 subenvs
+    for each of 3 snipe types
+      for each of 2 preference signs pos vs neg, record:
+        the count at t
+	the average energy at t
+	the average pref? note I'm already breaking it into pos vs neg pref snipes
+	the average age?
+
+So that's 2-4 data elements for 12 classifications
+
+In an ideal world this would be a 4D array.
+
+then again, the immediate need is just relative frequencies or counts
+
+(think about dead snipes separately, later)
