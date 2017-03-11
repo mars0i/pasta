@@ -29,6 +29,14 @@
   [cfg-data]
   (count (:snipe-map (:popenv cfg-data))))
 
+(defn prefix-map-keys
+  "Make a map that's like m but that has new keys in whihc string prefix is
+  prepended to the name of every key in map m."
+  [prefix m]
+  (zipmap (map #(keyword (str prefix "-" (name %)))
+               (keys m))
+          (vals m)))
+
 (defn sum-snipes
   "Given a simple collection (not a map) of snipes, returns a map containing
   sums of values of snipes of different classes.  The sum is due to whatever 
@@ -127,6 +135,33 @@
 (defn sort-map
   [m]
   (into (sorted-map) m))
+
+(defn classify-snipe
+  [snipe]
+  (cond (sn/k-snipe? snipe) :k-snipe
+        (sn/r-snipe? snipe) :r-snipe
+        (sn/s-snipe? snipe) :s-snipe
+        :else nil))
+
+(defn classify-pref
+  [snipe]
+  (cond (pos? (:mush-pref snipe)) :pos-pref
+        (neg? (:mush-pref snipe)) :neg-pref
+        :else :zero-pref))
+
+(defn classify-snipes
+  "Returns a hierarchical data map of snipes arranged in categories."
+  ([cfg-data schedule] 
+   (update (classify-snipes cfg-data) :step (.getSteps schedule)))
+  ([cfg-data]
+   (let [popenv (:popenv cfg-data)
+         west-snipes (.elements (:snipe-field (:west popenv)))
+         east-snipes (.elements (:snipe-field (:east popenv)))
+         west-snipes (group-by classify-snipe west-snipes)
+         east-snipes (group-by classify-snipe east-snipes)
+         west-snipes (map-kv #(group-by classify-pref %) west-snipes)
+         east-snipes (map-kv #(group-by classify-pref %) east-snipes)]
+     {:west west-snipes :east east-snipes})))
 
 (defn write-stats-to-console
   "Report summary statistics to standard output."
