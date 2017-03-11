@@ -6,12 +6,14 @@
   (:require [pasta.snipe :as sn]
             [utils.map2csv :as m2c]
             [clojure.pprint :as pp]
-            [clojure.math.numeric-tower :as math]))
+            [clojure.math.numeric-tower :as math]
+            [com.rpl.specter :as sp]))
 
 ;; FIXME contains obsolete fns:
 (declare map-kv get-pop-size inc-snipe-counts OLD-count-snipes sum-snipes avg-snipes get-freq maybe-get-freq count-dead-snipe get-k-snipe-freq count-live-snipes mean-vals avg-age avg-energy avg-mush-pref mean-ages mean-ages-live-snipe mean-ages-dead-snipe mean-energies mean-energies-live-snipe mean-energies-dead-snipe mean-prefs mean-prefs-live-snipe round-or-nil report-stats report-params)
 
 ;; from https://clojuredocs.org/clojure.core/reduce-kv#example-57d1e9dae4b0709b524f04eb
+;; Or consider using Specter's (transform MAP-VALS ...)
 (defn map-kv
   "Given a map coll, returns a similar map with the same keys and the result 
   of applying f to each value."
@@ -136,33 +138,38 @@
   [m]
   (into (sorted-map) m))
 
-(defn classify-snipe
+(defn classify-by-snipe-class
   [snipe]
   (cond (sn/k-snipe? snipe) :k-snipe
         (sn/r-snipe? snipe) :r-snipe
         (sn/s-snipe? snipe) :s-snipe
         :else nil))
 
-(defn classify-pref
+(defn classify-by-pref
   [snipe]
   (cond (pos? (:mush-pref snipe)) :pos-pref
         (neg? (:mush-pref snipe)) :neg-pref
         :else :zero-pref))
 
+(def group-by-snipe-class (partial group-by classify-by-snipe-class))
+(def group-by-pref (partial group-by classify-by-pref))
+(def group-by-subenv (partial group-by :subenv))
+
 (defn classify-snipes
   "Returns a hierarchical data map of snipes arranged in categories."
   ([cfg-data schedule] 
-   (update (classify-snipes cfg-data) :step (.getSteps schedule)))
+   (assoc (classify-snipes cfg-data) :step (.getSteps schedule)))
   ([cfg-data]
    (let [popenv (:popenv cfg-data)
-         west-snipes (.elements (:snipe-field (:west popenv)))
-         east-snipes (.elements (:snipe-field (:east popenv)))
-         west-snipes (group-by classify-snipe west-snipes)
-         east-snipes (group-by classify-snipe east-snipes)
-         west-snipes (map-kv #(group-by classify-pref %) west-snipes)
-         east-snipes (map-kv #(group-by classify-pref %) east-snipes)]
-     {:west west-snipes :east east-snipes})))
+         snipes (concat (.elements (:snipe-field (:west popenv)))
+                        (.elements (:snipe-field (:east popenv))))]
+     (->> snipes
+          (group-by-snipe-class)                                     ; creates a map by snipe class
+          (sp/transform sp/MAP-VALS group-by-subenv)                 ; replaces each coll of snipes by a map by subenv
+          (sp/transform [sp/MAP-VALS sp/MAP-VALS] group-by-pref))))) ; replaces each coll of snipes by a map by pos/neg mush-pref
 
+
+;; TODO rewrite using new data collection functions
 (defn write-stats-to-console
   "Report summary statistics to standard output."
   ([cfg-data schedule] 
