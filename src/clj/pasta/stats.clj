@@ -175,7 +175,6 @@
 
 (defn subpop-stats
   [snipes]
-  (println (map class snipes))
    (let [num-snipes (count snipes)
          avg-energy (/ (sum-by :energy snipes) num-snipes) ; FIXME assumes there are > 0 snipes
          avg-age (/ (sum-by :age snipes) num-snipes)]
@@ -194,7 +193,6 @@
                  [sp/STAY coll?])))  ; if it's not a map, but it's a coll, then do stuff with it
                                      ; otherwise, just leave whatever you find there alone
 
-;; First arbitrary-recursion version
 (defn snipe-stats
   "Given a hierarchy of maps produced by classify-snipes (optionally
   with extra map entries such as one listing the step at which the
