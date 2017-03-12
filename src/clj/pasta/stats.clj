@@ -175,8 +175,9 @@
 
 (defn subpop-stats
   [snipes]
+  (println (map class snipes))
    (let [num-snipes (count snipes)
-         avg-energy (/ (sum-by :energy snipes) num-snipes)
+         avg-energy (/ (sum-by :energy snipes) num-snipes) ; FIXME assumes there are > 0 snipes
          avg-age (/ (sum-by :age snipes) num-snipes)]
      {:count num-snipes :energy avg-energy :age avg-age}))
 
@@ -184,8 +185,7 @@
 ;; structure that includes a :step element.  I don't follow the ugly Specter convention 
 ;; of naming navigators with all-caps symbols.  This code based on example under "Recursive 
 ;; navigation" at http://nathanmarz.com/blog/clojures-missing-piece.html .
-(def ^{:doc
-  "Specter navigator that recurses into recursively embedded maps of arbitrary 
+(def ^{:doc "Specter navigator that recurses into recursively embedded maps of arbitrary 
   depth, operating only on non-map collection leaf values (including sets,
   despite the name of the navigator)."}
   leaf-seqs (sp/recursive-path [] p
@@ -194,6 +194,7 @@
                  [sp/STAY coll?])))  ; if it's not a map, but it's a coll, then do stuff with it
                                      ; otherwise, just leave whatever you find there alone
 
+;; First arbitrary-recursion version
 (defn snipe-stats
   "Given a hierarchy of maps produced by classify-snipes (optionally
   with extra map entries such as one listing the step at which the
@@ -204,6 +205,17 @@
   (sp/transform [leaf-seqs]
                 subpop-stats
                 classified-snipes))
+
+;(defn snipe-stats-doesntwork
+;  "Given a hierarchy of maps produced by classify-snipes (optionally
+;  with extra map entries such as one listing the step at which the
+;  data was collected), returns a map with the same structure but
+;  with leaf snipe collections replaced by maps of summary statistics
+;  produced by subpop-stats."
+;  [classified-snipes]
+;  (sp/transform (sp/walker sequential?) ; this NPEs because sequential? returns true on MapEntrys, and then I try to do calculations on their elements
+;                subpop-stats
+;                classified-snipes))
 
 ;; This version is easier to understand, but is restricted to
 ;; maps of maps of maps 
