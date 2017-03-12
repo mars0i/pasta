@@ -180,13 +180,41 @@
          avg-age (/ (sum-by :age snipes) num-snipes)]
      {:count num-snipes :energy avg-energy :age avg-age}))
 
+;; Specter navigator operator that allows me to run snipe-stats on a classified snipes 
+;; structure that includes a :step element.  I don't follow the ugly Specter convention 
+;; of naming navigators with all-caps symbols.  This code based on example under "Recursive 
+;; navigation" at http://nathanmarz.com/blog/clojures-missing-piece.html .
+(def ^{:doc
+  "Specter navigator that recurses into recursively embedded maps of arbitrary 
+  depth, operating only on non-map collection leaf values (including sets,
+  despite the name of the navigator)."}
+  leaf-seqs (sp/recursive-path [] p
+              (sp/if-path map?       ; if you encounter a map
+                 [sp/MAP-VALS p]     ; then look at all of its vals, and the rest of the structure (i.e. p)
+                 [sp/STAY coll?])))  ; if it's not a map, but it's a coll, then do stuff with it
+                                     ; otherwise, just leave whatever you find there alone
+
 (defn snipe-stats
-  ([classified-snipes schedule] 
-   (assoc (snipe-stats classified-snipes) :step (.getSteps schedule)))
-  ([classified-snipes]
-   (sp/transform [sp/MAP-VALS sp/MAP-VALS sp/MAP-VALS] 
-                 subpop-stats
-                 classified-snipes)))
+  "Given a hierarchy of maps produced by classify-snipes (optionally
+  with extra map entries such as one listing the step at which the
+  data was collected), returns a map with the same structure but
+  with leaf snipe collections replaced by maps of summary statistics
+  produced by subpop-stats."
+  [classified-snipes]
+  (sp/transform [leaf-seqs]
+                subpop-stats
+                classified-snipes))
+
+;; This version is easier to understand, but is restricted to
+;; maps of maps of maps 
+;; in which leaf values are always non-map collections:
+;(defn snipe-stats
+;  ([classified-snipes schedule] 
+;   (assoc (snipe-stats classified-snipes) :step (.getSteps schedule)))
+;  ([classified-snipes]
+;   (sp/transform [sp/MAP-VALS sp/MAP-VALS sp/MAP-VALS] 
+;                 subpop-stats
+;                 classified-snipes)))
 
 ;; TODO rewrite using new data collection functions
 (defn write-stats-to-console
