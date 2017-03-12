@@ -180,10 +180,19 @@
          avg-age (/ (sum-by :age snipes) num-snipes)]
      {:count num-snipes :energy avg-energy :age avg-age}))
 
+;; leaf-seqs
 ;; Specter navigator operator that allows me to run snipe-stats on a classified snipes 
 ;; structure that includes a :step element.  I don't follow the ugly Specter convention 
 ;; of naming navigators with all-caps symbols.  This code based on example under "Recursive 
 ;; navigation" at http://nathanmarz.com/blog/clojures-missing-piece.html .
+;; Note that while there is no primitive test for a non-map collection, because of the way
+;; that MAP-VALS works, the code below only tests for coll? when we are no longer looking at 
+;; a map; it functions as a test for all non-map collections at that point.
+;; (You might think that this function could be replaced by (walker sequential?), but
+;; walker walks into maps as if they were sequences, and then sees MapEntrys as sequences.
+;; Maybe would work with some more complex predicate instead of sequential?, but then
+;; you're doing that multiple-test on every node.  I think that the def I give below
+;; is probably better.) 
 (def ^{:doc "Specter navigator that recurses into recursively embedded maps of arbitrary 
   depth, operating only on non-map collection leaf values (including sets,
   despite the name of the navigator)."}
@@ -200,31 +209,9 @@
   with leaf snipe collections replaced by maps of summary statistics
   produced by subpop-stats."
   [classified-snipes]
-  (sp/transform [leaf-seqs]
+  (sp/transform [leaf-seqs]  ; or e.g. [sp/MAP-VALS sp/MAP-VALS], but that's restricted to exactly two levels
                 subpop-stats
                 classified-snipes))
-
-;(defn snipe-stats-doesntwork
-;  "Given a hierarchy of maps produced by classify-snipes (optionally
-;  with extra map entries such as one listing the step at which the
-;  data was collected), returns a map with the same structure but
-;  with leaf snipe collections replaced by maps of summary statistics
-;  produced by subpop-stats."
-;  [classified-snipes]
-;  (sp/transform (sp/walker sequential?) ; this NPEs because sequential? returns true on MapEntrys, and then I try to do calculations on their elements
-;                subpop-stats
-;                classified-snipes))
-
-;; This version is easier to understand, but is restricted to
-;; maps of maps of maps 
-;; in which leaf values are always non-map collections:
-;(defn snipe-stats
-;  ([classified-snipes schedule] 
-;   (assoc (snipe-stats classified-snipes) :step (.getSteps schedule)))
-;  ([classified-snipes]
-;   (sp/transform [sp/MAP-VALS sp/MAP-VALS sp/MAP-VALS] 
-;                 subpop-stats
-;                 classified-snipes)))
 
 ;; TODO rewrite using new data collection functions
 (defn write-stats-to-console
