@@ -40,3 +40,27 @@ In an ideal world this would be a 4D array.
 then again, the immediate need is just relative frequencies or counts
 
 (think about dead snipes separately, later)
+
+======================================
+
+For R, I'll need a dataframe for Lattice, with columns:
+
+step subenv[west, east] snipe-class[k, r, s] pref[pos, neg]
+and
+count[or freq?] avg-energy avg-pref avg-age
+
+If I'm starting from a structure that goes
+:step
+snipe types
+	subenvs
+		pref-sign
+
+I need a sequence of column names, and then sequences of data, both in order:
+
+           class of  pref
+step, subenv, snipe, sign, count, energy, pref, age
+
+In effect I'm listing the whole path and then tacking on the contents of the leaf node
+(with step as a special case)
+
+
