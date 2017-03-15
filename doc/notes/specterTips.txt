@@ -105,3 +105,136 @@ sort of
 if you're curious, it's actually a wrapper around the lower level local-declarepath and providepath
 9:55
 those two can be used to make mutually recursive paths
+
+---------------------------------------------------
+
+user=> (pprint a)
+{:a1 {:b1 {:c1 1, :c2 2}, :b2 {:c1 3, :c2 4}},
+ :a2 {:b1 {:c1 5, :c2 6}, :b2 {:c1 7, :c2 8}}}
+nil
+user=> (pprint (select [(recursive-path [] p (if-path map? [MAP-VALS p] [STAY]))] a))
+[1 2 3 4 5 6 7 8]
+nil
+user=> (pprint (select [(recursive-path [] p (if-path #(and (map? %) (map? (first (vals %)))) [MAP-VALS p] [STAY]))] a))
+[{:c1 1, :c2 2} {:c1 3, :c2 4} {:c1 5, :c2 6} {:c1 7, :c2 8}]
+nil
+
+user=> (pprint s)
+{:k
+ {:east {:zero-pref [25 10.96 0.0 0.0]},
+  :west {:zero-pref [25 8.56 0.0 0.0]}},
+ :r
+ {:east
+  {:neg-pref [11 8.818181818181818 -1.0 0.0],
+   :pos-pref [14 8.285714285714286 1.0 0.0]},
+  :west
+  {:neg-pref [12 7.916666666666667 -1.0 0.0],
+   :pos-pref [13 12.538461538461538 1.0 0.0]}},
+ :s
+ {:east {:zero-pref [25 10.48 0.0 0.0]},
+  :west {:zero-pref [25 9.12 0.0 0.0]}},
+ :step 0}
+nil
+user=> (pprint (select [(recursive-path [] p (if-path map? [MAP-VALS p] [STAY]))] s))
+[[25 10.96 0.0 0.0]
+ [25 8.56 0.0 0.0]
+ [11 8.818181818181818 -1.0 0.0]
+ [14 8.285714285714286 1.0 0.0]
+ [12 7.916666666666667 -1.0 0.0]
+ [13 12.538461538461538 1.0 0.0]
+ [25 10.48 0.0 0.0]
+ [25 9.12 0.0 0.0]
+ 0]
+nil
+user=> (pprint (select [(recursive-path [] p (if-path #(and (map? %) (map? (first (vals %)))) [MAP-VALS p] [STAY]))] s))
+[{:zero-pref [25 10.96 0.0 0.0]}
+ {:zero-pref [25 8.56 0.0 0.0]}
+ {:neg-pref [11 8.818181818181818 -1.0 0.0],
+  :pos-pref [14 8.285714285714286 1.0 0.0]}
+ {:neg-pref [12 7.916666666666667 -1.0 0.0],
+  :pos-pref [13 12.538461538461538 1.0 0.0]}
+ {:zero-pref [25 10.48 0.0 0.0]}
+ {:zero-pref [25 9.12 0.0 0.0]}
+ 0]
+
+-------------------------------------------
+
+Based on the spfun def above:
+
+user=> (pprint a)
+{:a1 {:b1 {:c1 1, :c2 2}, :b2 {:c1 3, :c2 4}},
+ :a2 {:b1 {:c1 5, :c2 6}, :b2 {:c1 7, :c2 8}}}
+nil
+user=> (select [(recursive-path [] p (if-path map? (continue-then-stay MAP-VALS p))) MAP-KEYS] a)
+[:c1 :c2 :c1 :c2 :b1 :b2 :c1 :c2 :c1 :c2 :b1 :b2 :a1 :a2]
+
+formatted:
+
+b ;=> {:b1 {:c1 1, :c2 2}, :b2 {:c1 3, :c2 4}}
+
+(select [(recursive-path [] p
+           (if-path map?
+	     (continue-then-stay MAP-VALS p)))
+         MAP-KEYS]
+	b)
+;=> [:c1 :c2 :c1 :c2 :b1 :b2]
+
+==================================
+
+Based on an answer to vikeri a week ago:
+
+b ;=> {:b1 {:c1 1, :c2 2}, :b2 {:c1 3, :c2 4}}
+
+(select [(recursive-path [] p
+           (if-path map?
+             (continue-then-stay MAP-VALS p)))
+         MAP-KEYS]
+    b)
+;=> [:c1 :c2 :c1 :c2 :b1 :b2]
+
+(edited)
+12:14
+Just want to check my understanding of how this works.
+12:16
+If the current element is a map, then get its vals and continue with the path, p, but also, return the current element and pass it to MAP-KEYS.  So what keeps coming out of all that are the keys, and they are what are wrapped in vector.  Something like that?
+12:18
+Or rather MAP-VALS p causes p into which we recurse to be bound to the outputs of MAP-VALS.  But also the entire map element at that point is passed to MAP-KEYS.
+nathanmarz
+12:21 PM
+better to think of it one step at a time
+12:21
+@mars0i the recursive-path part navigates to all maps reachable via navigations to map vals
+12:21
+then for each map navigated to, it navigates to the keys
+12:22
+because of the continue-then-stay, transformations happen first on more descendant maps
+12:22
+whereas with stay-then-continue the opposite would be true
+mars0i
+12:23 PM
+Ah, cool about stay-then-continue.  I didn't want the keys in reverse order.
+12:24
+Maybe what I wrote applies better to it.
+12:24
+Thanks again.
+nathanmarz
+12:24 PM
+worth looking at their implementations https://github.com/nathanmarz/specter/blob/master/src/clj/com/rpl/specter.cljc#L1204
+GitHub
+nathanmarz/specter
+specter - Clojure(Script)'s missing piece
+12:24
+thin wrappers around multi-path
+mars0i
+12:27 PM
+OK, I see.   This is also helping me understand multi-path.
+
+
+
+user=> b
+{:b1 {:c1 1, :c2 2}, :b2 {:c1 3, :c2 4}}
+user=> (select [(recursive-path [] p (if-path map? (continue-then-stay MAP-VALS p))) MAP-KEYS] b)
+[:c1 :c2 :c1 :c2 :b1 :b2]
+user=> (select [(recursive-path [] p (if-path map? (stay-then-continue MAP-VALS p))) MAP-KEYS] b)
+[:b1 :b2 :c1 :c2 :c1 :c2]
+
