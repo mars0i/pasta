@@ -1,0 +1,107 @@
+@nathanmarz #specter on slack 3/6/2017:
+
+(defn spfun [m] 
+  (let [p (recursive-path [] p
+            (if-path map?
+	      (continue-then-stay MAP-VALS p)))]
+         (select [p MAP-KEYS] m)))
+
+
+@nathanmarz on #specter in Clojurians on slack 3/15/2017:
+
+@mars0i continue-then-stay does literally what it says
+first it navigates to the given path
+then it navigates to itself
+(transform (continue-then-stay STAY) inc 1) will return 3, because it navigates to itself, then navigates to itself again
+p in that example is bound to itself (aka the entire path definition given )
+so for TREE-VALUES, what it's saying is: if navigated at a vector, navigate to each element of the vector and recurse
+otherwise (meaning not at a vector), just stay navigated at that point (finish recursing)
+the [] argument i used to specify arguments to the resulting path
+basically the result of recursive-path will be a function if any arguments are provided
+
+
+he's referring to this in his "missing piece" blog post:
+
+(def TREE-VALUES
+  (recursive-path [] p
+    (if-path vector?
+      [ALL p]
+      STAY)))
+
+------------------------------------------
+
+
+mars0i
+9:43 AM
+Thanks @nathanmarz.  That's very helpful.  I'm still trying to get my head wrapped around some things that aren't intuitive for me yet. I still don't understand what p is doing in if-path branches in recursive-path.  Here's an example I've been using:
+9:43
+
+(def a {:a1 {:b1 {:c1 1, :c2 2}, :b2 {:c1 3, :c2 4}},
+ :a2 {:b1 {:c1 5, :c2 6}, :b2 {:c1 7, :c2 8}}})
+
+9:48
+(select [(recursive-path [] p (if-path map? [MAP-VALS p] [STAY]))] a) produces [1 2 3 4 5 6 7 8], i.e. the leaf node values.  Why do I follow MAP-VALS with p?  Leaving out p  just produces the original map wrapped in a vector, so I know I need p, to get the leaf nodes, but I don't understand why.  Normally, if I have a path operator like MAP-VALS in a vector, it's the first navigation operation, and then the next one is applied, and so on.  Here it feels as if p is an argument that's passed to MAP-VALS, maybe.  Is that correct?  So that [MAP-VALS p] within recursive-path  (or if-path?) is semantically different from, a sequence of navigators immediately after select or transform?
+nathanmarz
+9:49 AM
+no, p is just the next navigation to do after MAP-VALS
+9:49
+think of it just like regular recursion
+9:49
+
+(defn foo [i]
+  (if (= 0 i)
+    1
+    (* 2 (foo (dec i)))))
+
+mars0i
+9:49 AM
+What is the value of p?
+nathanmarz
+9:49 AM
+foo refers to itself there, just like how p refers to the overall path
+9:49
+p is (if-path map? [MAP-VALS p] [STAY]))
+9:50
+the effect of using p there is to continue going to all map vals until a non-map is encountered
+mars0i
+9:50 AM
+I know I might seem dense.  I'm just not in the mindset yet, but want to be.
+nathanmarz
+9:50 AM
+(btw you don't need the [] if it's just a single navigator)
+9:50
+the second branch of if-path can just be STAY
+9:51
+are you comfortable with recursion with functions?
+mars0i
+9:52 AM
+Ah, maybe I see.  So recursive-path doesn't in itself cause recursion
+to occur.  It just sets up a context in which it can occur.  The
+recursion is implemented by using the p that it binds, in if-path.
+nathanmarz
+9:52 AM
+that's right
+mars0i
+9:52 AM
+Yes, no problem with recursion.  It's a reasonable question to ask.
+nathanmarz
+9:52 AM
+I see where you were confused now
+mars0i
+9:52 AM
+The Little Lisper set me straight decades ago.
+nathanmarz
+9:53 AM
+recursive-path does absolutely nothing except provide you with an object that references itself
+9:53
+(recursive-path [] p [ALL even?]) is the same as [ALL even?]
+mars0i
+9:54 AM
+OK.  That helps a lot.  Thanks.  It's just like a special kind of let.
+nathanmarz
+9:54 AM
+sort of
+9:55
+if you're curious, it's actually a wrapper around the lower level local-declarepath and providepath
+9:55
+those two can be used to make mutually recursive paths
