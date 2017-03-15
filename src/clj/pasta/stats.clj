@@ -193,7 +193,8 @@
          avg-energy (/ (sum-by :energy snipes) num-snipes) ; FIXME assumes there are > 0 snipes
          avg-pref (/ (sum-by :mush-pref snipes) num-snipes)
          avg-age (/ (sum-by :age snipes) num-snipes)]
-     {:count num-snipes :energy avg-energy :pref avg-pref :age avg-age}))
+     [num-snipes avg-energy avg-pref avg-age]))
+     ;{:count num-snipes :energy avg-energy :pref avg-pref :age avg-age}
 
 ;; leaf-seqs
 ;; Specter navigator operator that allows me to run snipe-stats on a classified snipes 
