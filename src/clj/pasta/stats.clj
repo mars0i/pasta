@@ -12,6 +12,8 @@
 ;; FIXME contains obsolete fns:
 (declare map-kv get-pop-size inc-snipe-counts OLD-count-snipes sum-snipes avg-snipes get-freq maybe-get-freq count-dead-snipe get-k-snipe-freq count-live-snipes mean-vals avg-age avg-energy avg-mush-pref mean-ages mean-ages-live-snipe mean-ages-dead-snipe mean-energies mean-energies-live-snipe mean-energies-dead-snipe mean-prefs mean-prefs-live-snipe round-or-nil report-stats report-params)
 
+;; FIXME There is a lot of obsolete code that needs to be removed.
+
 ;; from https://clojuredocs.org/clojure.core/reduce-kv#example-57d1e9dae4b0709b524f04eb
 ;; Or consider using Specter's (transform MAP-VALS ...)
 (defn map-kv
@@ -20,6 +22,14 @@
   [f coll]
   (reduce-kv (fn [m k v] (assoc m k (f v)))
              (empty coll) coll))
+
+(defn sorted-group-by
+  [f coll]
+  (into (sorted-map) (group-by f coll)))
+
+(defn sort-map
+  [m]
+  (into (sorted-map) m))
 
 (defn div-or-zero
   [d n]
@@ -134,10 +144,6 @@
     (math/round x)
     x))
 
-(defn sort-map
-  [m]
-  (into (sorted-map) m))
-
 (defn classify-by-snipe-class
   [snipe]
   (cond (sn/k-snipe? snipe) :k
@@ -151,9 +157,17 @@
         (neg? (:mush-pref snipe)) :neg-pref
         :else :zero-pref))
 
-(def group-by-snipe-class (partial group-by classify-by-snipe-class))
-(def group-by-pref (partial group-by classify-by-pref))
-(def group-by-subenv (partial group-by :subenv))
+(def group-by-snipe-class (partial sorted-group-by classify-by-snipe-class))
+(def group-by-pref (partial sorted-group-by classify-by-pref))
+(def group-by-subenv (partial sorted-group-by :subenv))
+
+;(defn group-by-snipe-class [snipes] (into (sorted-map) (group-by classify-by-snipe-class snipes)))
+;(defn group-by-pref [snipes] (into (sorted-map) (group-by classify-by-pref snipes)))
+;(defn group-by-subenv [snipes] (into (sorted-map) (group-by classify-by-subenv snipes)))
+
+;(def group-by-snipe-class (partial group-by classify-by-snipe-class))
+;(def group-by-pref (partial group-by classify-by-pref))
+;(def group-by-subenv (partial group-by :subenv))
 
 (defn classify-snipes
   "Returns a hierarchical data map of snipes arranged in categories."
@@ -202,6 +216,9 @@
                  [sp/MAP-VALS p]     ; then look at all of its vals, and the rest of the structure (i.e. p)
                  [sp/STAY coll?])))  ; if it's not a map, but it's a coll, then do stuff with it
                                      ; otherwise, just leave whatever you find there alone
+
+;; note this:
+;; (flatten (transform [(recursive-path [] p (if-path map? (continue-then-stay MAP-VALS p)))] first a))
 
 (defn snipe-stats
   "Given a hierarchy of maps produced by classify-snipes (optionally
