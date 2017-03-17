@@ -73,15 +73,27 @@
                trie)
        [prefix])))
 
-;; my notes toward a Specter solution based on amalloy's answer:
-(def keypaths-nav (recursive-path [] p
-                     (if-path #(or (not (map? %)) (empty? %))
-                        [STAY '[[]]]
-                        [MAP-VALS p])))
+;; Nathan Marz's versions, from 
+;; https://clojurians.slack.com/archives/C0FVDQLQ5/p1489779215484550
+;; (I subsequently added them as answers to the question above.)
 
-(defn specter-keypaths [m]
-  (transform keypaths-nav key m))
+;; Simple versioN:
+(defn simple-specter-keypaths [m]
+  (let [p (recursive-path [] p
+            (if-path map?
+              [ALL (collect-one FIRST) LAST p]
+              STAY))]
+    (map butlast (select p m))))
 
+;; More efficient version:
+(defn fast-specter-keypaths [m]
+  (let [p (recursive-path [] p
+            (if-path map?
+              [ALL
+               (if-path [LAST map?]
+                [(collect-one FIRST) LAST p]
+                FIRST)]))]
+    (select p m)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Versions that return intermediate keypaths as well:
