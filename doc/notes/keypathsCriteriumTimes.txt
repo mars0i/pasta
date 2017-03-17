@@ -1,0 +1,103 @@
+s:
+{:k
+ {:east {:pos-pref [20 7.6 1.605181872980592E-4 448.85]},
+  :west
+  {:neg-pref
+   [23 11.304347826086957 -1.8240096918861176E-4 490.2173913043478],
+   :zero-pref [1 10.0 0.0 15.0]}},
+ :r
+ {:east
+  {:neg-pref [7 7.142857142857143 -1.0 413.85714285714283],
+   :pos-pref [14 13.928571428571429 1.0 354.5]},
+  :west
+  {:neg-pref [20 14.65 -1.0 399.15],
+   :pos-pref [15 7.466666666666667 1.0 341.3333333333333]}},
+ :s
+ {:east
+  {:neg-pref [8 5.875 -0.6250461156326299 334.75],
+   :pos-pref [10 13.1 0.40002224863589575 441.1],
+   :zero-pref [1 10.0 0.0 2.0]},
+  :west
+  {:neg-pref
+   [27 13.555555555555555 -0.5185658791637303 355.3333333333333],
+   :pos-pref [2 12.5 0.5000312231507049 406.5]}},
+ :step 501}
+
+
+;; In amalloy's version, the outer sequence is lazy, but the inner ones are
+;; not.  So we have to wrap doall at the top level to get a valid result:
+(bench '(def _ (doall (amalloy-keypaths s))))
+Evaluation count : 3401423940 in 60 samples of 56690399 calls.
+             Execution time mean : 11.879436 ns
+    Execution time std-deviation : 0.214159 ns
+   Execution time lower quantile : 11.594474 ns ( 2.5%)
+   Execution time upper quantile : 12.308463 ns (97.5%)
+                   Overhead used : 5.215254 ns
+Found 1 outliers in 60 samples (1.6667 %)
+	low-severe	 1 (1.6667 %)
+ Variance from outliers : 7.7769 % Variance is slightly inflated by outliers
+
+(bench '(def _ (AlexMiller-keypaths s)))
+Evaluation count : 3552957840 in 60 samples of 59215964 calls.
+             Execution time mean : 11.977866 ns
+    Execution time std-deviation : 0.415157 ns
+   Execution time lower quantile : 11.568402 ns ( 2.5%)
+   Execution time upper quantile : 13.195447 ns (97.5%)
+                   Overhead used : 5.215254 ns
+Found 5 outliers in 60 samples (8.3333 %)
+	low-severe	 3 (5.0000 %)
+	low-mild	 2 (3.3333 %)
+ Variance from outliers : 20.6490 % Variance is moderately inflated by outliers
+
+
+
+(bench '(def _ (AWebb-keypaths s)))
+Evaluation count : 3535458600 in 60 samples of 58924310 calls.
+             Execution time mean : 11.859956 ns
+    Execution time std-deviation : 0.251990 ns
+   Execution time lower quantile : 11.494220 ns ( 2.5%)
+   Execution time upper quantile : 12.342661 ns (97.5%)
+                   Overhead used : 5.215254 ns
+Found 1 outliers in 60 samples (1.6667 %)
+	low-severe	 1 (1.6667 %)
+ Variance from outliers : 9.4231 % Variance is slightly inflated by outliers
+
+(bench '(def _ (miner49r-keypaths s)))
+Evaluation count : 3540294600 in 60 samples of 59004910 calls.
+             Execution time mean : 11.877917 ns
+    Execution time std-deviation : 0.270699 ns
+   Execution time lower quantile : 11.355921 ns ( 2.5%)
+   Execution time upper quantile : 12.535639 ns (97.5%)
+                   Overhead used : 5.215254 ns
+Found 6 outliers in 60 samples (10.0000 %)
+	low-severe	 1 (1.6667 %)
+	low-mild	 5 (8.3333 %)
+ Variance from outliers : 10.9842 % Variance is moderately inflated by outliers
+nil
+
+
+;; The first test of noisesmith was slightly slower than the other methods,
+;; so I ran it a second time, and found that it doesn't seem to be slower.
+(bench '(def _ (noisesmith-keypaths s)))
+Evaluation count : 3227564280 in 60 samples of 53792738 calls.
+             Execution time mean : 12.695701 ns
+    Execution time std-deviation : 1.041849 ns
+   Execution time lower quantile : 11.593196 ns ( 2.5%)
+   Execution time upper quantile : 15.036230 ns (97.5%)
+                   Overhead used : 5.215254 ns
+Found 1 outliers in 60 samples (1.6667 %)
+	low-severe	 1 (1.6667 %)
+ Variance from outliers : 60.1961 % Variance is severely inflated by outliers
+
+(bench '(def _ (noisesmith-keypaths s)))
+Evaluation count : 3514738680 in 60 samples of 58578978 calls.
+             Execution time mean : 11.895310 ns
+    Execution time std-deviation : 0.269445 ns
+   Execution time lower quantile : 11.432119 ns ( 2.5%)
+   Execution time upper quantile : 12.391736 ns (97.5%)
+                   Overhead used : 5.215254 ns
+
+Found 1 outliers in 60 samples (1.6667 %)
+	low-severe	 1 (1.6667 %)
+ Variance from outliers : 10.9758 % Variance is moderately inflated by outliers
+

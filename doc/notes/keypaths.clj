@@ -56,18 +56,7 @@
              m))
     []))
 
-;; noisesmith's at duplicate question:
-;; http://stackoverflow.com/questions/25268818/get-key-chains-of-a-tree-in-clojure
-(defn noisesmith-keypaths
-  ([trie] (down-strings trie []))
-  ([trie prefix]
-     (if (map? trie)
-       (mapcat (fn [[k v]]
-                 (noisesmith-keypaths v (conj prefix k)))
-               trie)
-       [prefix])))
-
-;; amalloy's:
+;; amalloy's (note you have to wrap result in doall or vec for time trials):
 (defn amalloy-keypaths [m]
   (if (or (not (map? m))
           (empty? m))
@@ -76,14 +65,25 @@
           subkey (amalloy-keypaths v)]
       (cons k subkey))))
 
+;; noisesmith's at duplicate question:
+;; http://stackoverflow.com/questions/25268818/get-key-chains-of-a-tree-in-clojure
+(defn noisesmith-keypaths
+  ([trie] (noisesmith-keypaths trie []))
+  ([trie prefix]
+     (if (map? trie)
+       (mapcat (fn [[k v]]
+                 (noisesmith-keypaths v (conj prefix k)))
+               trie)
+       [prefix])))
+
 ;; my notes toward a Specter solution based on amalloy's answer:
 (def keypaths-nav (recursive-path [] p
                      (if-path #(or (not (map? %)) (empty? %))
-                        STAY
+                        [STAY '[[]]]
                         [MAP-VALS p])))
 
 (defn specter-keypaths [m]
-  (transform keypaths-nav specter-keypaths m))
+  (transform keypaths-nav key m))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
