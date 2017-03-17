@@ -4,8 +4,17 @@
 
 (ns pasta.core
   (:require [pasta.SimConfig :as cfg]
-            [pasta.UI :as ui])
+            [pasta.UI :as ui]
+            [clojure.pprint]) ; for *print-right-margin*
   (:gen-class))
+
+;; Always handy at the repl
+(defn set-pprint-width 
+  "Sets width for pretty-printing with pprint and pp."
+  [cols] 
+  (alter-var-root 
+    #'clojure.pprint/*print-right-margin* 
+    (constantly cols)))
 
 (defn -main
   [& args]

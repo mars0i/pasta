@@ -232,6 +232,19 @@
                 subpop-stats
                 classified-snipes))
 
+;; Based on answers by amalloy at
+;; http://stackoverflow.com/questions/21768802/how-can-i-get-the-nested-keys-of-a-map-in-clojure:
+;; and noisesmith's at
+;; http://stackoverflow.com/questions/25268818/get-key-chains-of-a-tree-in-clojure
+(defn flatten-stats
+  [stats]
+  (cond (map? stats) (for [[k v] stats           ; for every MapEntry
+                           ks (flatten-stats v)] ; and every subsidiary seq returned
+                       (cons (name k) ks))       ; add key's name to each seq returned
+        (sequential? stats) [stats] ; start with data from vectors in innermost vals
+        :else (throw 
+                (Exception. (str "stats structure has inappropriate components: " stats)))))
+
 ;; TODO rewrite using new data collection functions
 (defn write-stats-to-console
   "Report summary statistics to standard output."

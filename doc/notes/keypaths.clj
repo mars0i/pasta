@@ -11,12 +11,9 @@
 (def dra {:a :A :b :B :c {:d :D} :e {:f {:g :G :h :H}}})
 
 ;; Other data examples:
-(def b {:b1 {:c1 1, :c2 2}
-        :b2 {:c1 3, :c2 4}})
+(def b {:b1 {:c1 1, :c2 2} :b2 {:c1 3, :c2 4}})
 
-(def a {:a1 {:b1 {:c1 1, :c2 2}
-             :b2 {:c2 3}}
-        :a2 {:b2 {:c1 4 :c2 5}}})
+(def a {:a1 {:b1 {:c1 1, :c2 2} :b2 {:c2 3}} :a2 {:b2 {:c1 4 :c2 5}}}) 
 
 ;; miner49r's:
 (defn miner49r-keypaths
