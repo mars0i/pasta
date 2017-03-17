@@ -196,6 +196,8 @@
      [num-snipes avg-energy avg-pref avg-age]))
      ;{:count num-snipes :energy avg-energy :pref avg-pref :age avg-age}
 
+(def csv-header ["step" "snipe_class" "subenv" "pref_dir" "count" "energy" "pref" "age"])
+
 ;; leaf-seqs
 ;; Specter navigator operator that allows me to run snipe-stats on a classified snipes 
 ;; structure that includes a :step element.  I don't follow the ugly Specter convention 
@@ -243,7 +245,13 @@
                        (cons (name k) ks))       ; add key's name to each seq returned
         (sequential? stats) [stats] ; start with data from vectors in innermost vals
         :else (throw 
-                (Exception. (str "stats structure has inappropriate components: " stats)))))
+                (Exception. (str "stats structure has an unexpected component: " stats)))))
+
+(defn stats-at-step-for-csv
+  [stats-at-step]
+  (let [step (:step stats-at-step)
+        stats (dissoc stats-at-step :step)]
+    (map #(cons step %) (flatten-stats stats))))
 
 ;; TODO rewrite using new data collection functions
 (defn write-stats-to-console
