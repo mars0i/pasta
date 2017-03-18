@@ -105,6 +105,8 @@
 ;; https://clojurians.slack.com/archives/C0FVDQLQ5/p1489779215484550
 ;; (I subsequently added them as answers to the question above.)
 
+(use 'com.rpl.specter)
+
 ;; Simple version:
 (defn simple-specter-keypaths [m]
   (let [p (recursive-path [] p
@@ -163,11 +165,20 @@
 
 (use 'criterium.core)
 
+(defn make-big-map
+  "Make an embedded map structure with width entries at each level, and
+  depth levels.  There will be width^depth paths through the structure."
+  [width depth]
+  (if (pos? depth)
+    (zipmap (range width) 
+            (repeat (make-big-map width (dec depth))))
+    nil))
+
 (defn test-keypath-fns
-  []
+  [m]
   (doseq [[nam fun] keypath-fns]
     (println "-------------------------------------------------------\n" nam)
-    (bench '(def _ (doall (fun s500))))))
+    (bench '(def _ (doall (fun m))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Versions that return intermediate keypaths as well:
