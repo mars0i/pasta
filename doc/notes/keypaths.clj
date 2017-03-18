@@ -68,9 +68,9 @@
               :leaf (recur (z/next t), (conj paths (first (z/node t)))))))))
 
 ;; Alex Miller's:
+;; (note you have to wrap result in doall or vec for time trials, because I removed his vec call)
 (defn AlexMiller-keypaths [m]
   (if (map? m)
-    (vec 
      (mapcat (fn [[k v]]
                (let [sub (AlexMiller-keypaths v)
                      nested (map #(into [k] %)
@@ -78,10 +78,11 @@
                  (if (seq nested)
                    nested
                    [[k]])))
-             m))
+             m)
     []))
 
-;; amalloy's (note you have to wrap result in doall or vec for time trials):
+;; amalloy's:
+;; (note you have to wrap result in doall or vec for time trials)
 (defn amalloy-keypaths [m]
   (if (or (not (map? m))
           (empty? m))
@@ -92,6 +93,7 @@
 
 ;; noisesmith's at duplicate question:
 ;; http://stackoverflow.com/questions/25268818/get-key-chains-of-a-tree-in-clojure
+;; (note you have to wrap result in doall or vec for time trials)
 (defn noisesmith-keypaths
   ([trie] (noisesmith-keypaths trie []))
   ([trie prefix]
@@ -108,6 +110,7 @@
 (use 'com.rpl.specter)
 
 ;; Simple version:
+;; (note you have to wrap result in doall or vec for time trials)
 (defn simple-specter-keypaths [m]
   (let [p (recursive-path [] p
             (if-path map?
@@ -178,7 +181,7 @@
   [m]
   (doseq [[nam fun] keypath-fns]
     (println "-------------------------------------------------------\n" nam)
-    (bench '(def _ (doall (fun m))))))
+    (bench (def _ (doall (fun m))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Versions that return intermediate keypaths as well:
