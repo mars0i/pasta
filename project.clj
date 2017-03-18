@@ -13,7 +13,7 @@
                  ;[incanter "1.5.7"]
                  ;[net.mikera/core.matrix "0.57.0"]
                  ;[net.mikera/vectorz-clj "0.45.0"]
-                 ;[criterium "0.4.4"] ; to use, e.g.: (use '[criterium.core :as c])
+                 [criterium "0.4.4"] ; to use, e.g.: (use '[criterium.core :as c])
                  [mason "19"] ; (slightly hacked version) can be installed in local maven repo: uncomment lein-localrepo below, run 'lein localrepo install lib/mason.19.noAddlApps.jar mason 19'
                  ;; Libs that MASON wants and can be gotten from maven.org, so they don't need to be in my lib dir:
                  [javax.media/jmf "2.1.1e"]
