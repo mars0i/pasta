@@ -23,6 +23,8 @@ s:
    :pos-pref [2 12.5 0.5000312231507049 406.5]}},
  :step 501}
 
+==============================================================
+Times on MacBook Air
 
 ;; In amalloy's version, the outer sequence is lazy, but the inner ones are
 ;; not.  So we have to wrap doall at the top level to get a valid result:
@@ -101,3 +103,203 @@ Found 1 outliers in 60 samples (1.6667 %)
 	low-severe	 1 (1.6667 %)
  Variance from outliers : 10.9758 % Variance is moderately inflated by outliers
 
+==============================================================
+Times on MacBook Pro (2016)
+Two runs of all functions:
+
+user=> (test-keypath-fns)
+Evaluation count : 23453188380 in 60 samples of 390886473 calls.
+             Execution time mean : 0.869330 ns
+    Execution time std-deviation : 0.073926 ns
+   Execution time lower quantile : 0.752401 ns ( 2.5%)
+   Execution time upper quantile : 1.002927 ns (97.5%)
+                   Overhead used : 1.726439 ns
+
+Found 1 outliers in 60 samples (1.6667 %)
+	low-severe	 1 (1.6667 %)
+ Variance from outliers : 61.8889 % Variance is severely inflated by outliers
+Evaluation count : 23560002540 in 60 samples of 392666709 calls.
+             Execution time mean : 0.937617 ns
+    Execution time std-deviation : 0.076819 ns
+   Execution time lower quantile : 0.829725 ns ( 2.5%)
+   Execution time upper quantile : 1.049793 ns (97.5%)
+                   Overhead used : 1.726439 ns
+
+Found 1 outliers in 60 samples (1.6667 %)
+	low-severe	 1 (1.6667 %)
+ Variance from outliers : 60.1914 % Variance is severely inflated by outliers
+Evaluation count : 22395972300 in 60 samples of 373266205 calls.
+
+             Execution time mean : 0.858606 ns
+    Execution time std-deviation : 0.058453 ns
+   Execution time lower quantile : 0.778343 ns ( 2.5%)
+   Execution time upper quantile : 1.005509 ns (97.5%)
+                   Overhead used : 1.726439 ns
+
+Found 4 outliers in 60 samples (6.6667 %)
+	low-severe	 2 (3.3333 %)
+	low-mild	 2 (3.3333 %)
+ Variance from outliers : 51.7351 % Variance is severely inflated by outliers
+user=> (load-file "doc/notes/keypaths.clj")
+#'user/miner49r-keypaths-all
+user=> (test-keypath-fns)
+user=> (test-keypath-fns)
+-------------------------------------------------------
+ miner49r-keypaths
+Evaluation count : 10920731820 in 60 samples of 182012197 calls.
+             Execution time mean : 4.076472 ns
+    Execution time std-deviation : 0.176891 ns
+   Execution time lower quantile : 3.852799 ns ( 2.5%)
+   Execution time upper quantile : 4.446132 ns (97.5%)
+                   Overhead used : 1.726439 ns
+
+Found 2 outliers in 60 samples (3.3333 %)
+	low-severe	 2 (3.3333 %)
+ Variance from outliers : 30.2798 % Variance is moderately inflated by outliers
+-------------------------------------------------------
+ AWebb-keypaths
+Evaluation count : 10507804500 in 60 samples of 175130075 calls.
+             Execution time mean : 4.168825 ns
+    Execution time std-deviation : 0.119703 ns
+   Execution time lower quantile : 4.001568 ns ( 2.5%)
+   Execution time upper quantile : 4.398052 ns (97.5%)
+                   Overhead used : 1.726439 ns
+
+Found 2 outliers in 60 samples (3.3333 %)
+	low-severe	 1 (1.6667 %)
+	low-mild	 1 (1.6667 %)
+ Variance from outliers : 15.7893 % Variance is moderately inflated by outliers
+-------------------------------------------------------
+ AlexMiller-keypaths
+Evaluation count : 10276347660 in 60 samples of 171272461 calls.
+             Execution time mean : 4.194537 ns
+    Execution time std-deviation : 0.144423 ns
+   Execution time lower quantile : 3.954044 ns ( 2.5%)
+   Execution time upper quantile : 4.376038 ns (97.5%)
+                   Overhead used : 1.726439 ns
+
+Found 1 outliers in 60 samples (1.6667 %)
+	low-severe	 1 (1.6667 %)
+ Variance from outliers : 20.6355 % Variance is moderately inflated by outliers
+-------------------------------------------------------
+ amalloy-keypaths
+Evaluation count : 10555693320 in 60 samples of 175928222 calls.
+             Execution time mean : 4.070389 ns
+    Execution time std-deviation : 0.123871 ns
+   Execution time lower quantile : 3.855768 ns ( 2.5%)
+   Execution time upper quantile : 4.316158 ns (97.5%)
+                   Overhead used : 1.726439 ns
+-------------------------------------------------------
+ noisesmith-keypaths
+Evaluation count : 10623325740 in 60 samples of 177055429 calls.
+             Execution time mean : 4.117250 ns
+    Execution time std-deviation : 0.211363 ns
+   Execution time lower quantile : 3.784710 ns ( 2.5%)
+   Execution time upper quantile : 4.530432 ns (97.5%)
+                   Overhead used : 1.726439 ns
+-------------------------------------------------------
+ simple-specter-keypaths
+Evaluation count : 10434029820 in 60 samples of 173900497 calls.
+             Execution time mean : 4.189009 ns
+    Execution time std-deviation : 0.102751 ns
+   Execution time lower quantile : 4.010850 ns ( 2.5%)
+   Execution time upper quantile : 4.375666 ns (97.5%)
+                   Overhead used : 1.726439 ns
+
+Found 2 outliers in 60 samples (3.3333 %)
+	low-severe	 2 (3.3333 %)
+ Variance from outliers : 12.5639 % Variance is moderately inflated by outliers
+-------------------------------------------------------
+ fast-specter-keypaths
+Evaluation count : 10529431980 in 60 samples of 175490533 calls.
+             Execution time mean : 4.165272 ns
+    Execution time std-deviation : 0.103962 ns
+   Execution time lower quantile : 3.936066 ns ( 2.5%)
+   Execution time upper quantile : 4.352410 ns (97.5%)
+                   Overhead used : 1.726439 ns
+
+
+
+
+user=> (test-keypath-fns)
+-------------------------------------------------------
+ miner49r-keypaths
+Evaluation count : 10239480720 in 60 samples of 170658012 calls.
+             Execution time mean : 4.226513 ns
+    Execution time std-deviation : 0.190937 ns
+   Execution time lower quantile : 3.930270 ns ( 2.5%)
+   Execution time upper quantile : 4.695517 ns (97.5%)
+                   Overhead used : 1.726439 ns
+
+Found 7 outliers in 60 samples (11.6667 %)
+	low-severe	 1 (1.6667 %)
+	low-mild	 4 (6.6667 %)
+	high-mild	 2 (3.3333 %)
+ Variance from outliers : 31.9155 % Variance is moderately inflated by outliers
+-------------------------------------------------------
+ AWebb-keypaths
+Evaluation count : 10397784900 in 60 samples of 173296415 calls.
+             Execution time mean : 4.225891 ns
+    Execution time std-deviation : 0.132744 ns
+   Execution time lower quantile : 3.937124 ns ( 2.5%)
+   Execution time upper quantile : 4.461520 ns (97.5%)
+                   Overhead used : 1.726439 ns
+
+Found 2 outliers in 60 samples (3.3333 %)
+	low-severe	 1 (1.6667 %)
+	low-mild	 1 (1.6667 %)
+ Variance from outliers : 18.9443 % Variance is moderately inflated by outliers
+-------------------------------------------------------
+ AlexMiller-keypaths
+Evaluation count : 10283078100 in 60 samples of 171384635 calls.
+             Execution time mean : 4.216022 ns
+    Execution time std-deviation : 0.120748 ns
+   Execution time lower quantile : 3.955961 ns ( 2.5%)
+   Execution time upper quantile : 4.453029 ns (97.5%)
+                   Overhead used : 1.726439 ns
+
+Found 2 outliers in 60 samples (3.3333 %)
+	low-severe	 1 (1.6667 %)
+	low-mild	 1 (1.6667 %)
+ Variance from outliers : 15.7848 % Variance is moderately inflated by outliers
+-------------------------------------------------------
+ amalloy-keypaths
+Evaluation count : 10162356060 in 60 samples of 169372601 calls.
+             Execution time mean : 4.198011 ns
+    Execution time std-deviation : 0.147990 ns
+   Execution time lower quantile : 3.986099 ns ( 2.5%)
+   Execution time upper quantile : 4.557596 ns (97.5%)
+                   Overhead used : 1.726439 ns
+
+Found 3 outliers in 60 samples (5.0000 %)
+	low-severe	 1 (1.6667 %)
+	low-mild	 2 (3.3333 %)
+ Variance from outliers : 22.1924 % Variance is moderately inflated by outliers
+-------------------------------------------------------
+ noisesmith-keypaths
+Evaluation count : 10133225460 in 60 samples of 168887091 calls.
+             Execution time mean : 4.160323 ns
+    Execution time std-deviation : 0.128221 ns
+   Execution time lower quantile : 3.983606 ns ( 2.5%)
+   Execution time upper quantile : 4.488383 ns (97.5%)
+                   Overhead used : 1.726439 ns
+
+Found 2 outliers in 60 samples (3.3333 %)
+	low-severe	 2 (3.3333 %)
+ Variance from outliers : 17.4118 % Variance is moderately inflated by outliers
+-------------------------------------------------------
+ simple-specter-keypaths
+Evaluation count : 10271030100 in 60 samples of 171183835 calls.
+             Execution time mean : 4.185000 ns
+    Execution time std-deviation : 0.081539 ns
+   Execution time lower quantile : 4.053120 ns ( 2.5%)
+   Execution time upper quantile : 4.344599 ns (97.5%)
+                   Overhead used : 1.726439 ns
+-------------------------------------------------------
+ fast-specter-keypaths
+Evaluation count : 10491755700 in 60 samples of 174862595 calls.
+             Execution time mean : 4.159967 ns
+    Execution time std-deviation : 0.087476 ns
+   Execution time lower quantile : 3.958423 ns ( 2.5%)
+   Execution time upper quantile : 4.296205 ns (97.5%)
+                   Overhead used : 1.726439 ns
