@@ -105,13 +105,28 @@
 ;; https://clojurians.slack.com/archives/C0FVDQLQ5/p1489779215484550
 ;; (I subsequently added them as answers to the question above.)
 
-;; Simple versioN:
+;; Simple version:
 (defn simple-specter-keypaths [m]
   (let [p (recursive-path [] p
             (if-path map?
               [ALL (collect-one FIRST) LAST p]
               STAY))]
     (map butlast (select p m))))
+;; Explanation:
+;; I'm given a map of maps of ... and
+;; (A) since it's a map
+;; it's passed to the first collection of navigators, which begins with ALL, so
+;; for each MapEntry in the map
+;; add its first element (key) to:
+;; passing its last element (val) to ... now recurse (which is what p does),
+;; i.e. for each of those map vals continue at (A)
+;;
+;; On each of these branches, we eventually get to a non-map;
+;; return it and stop processing on that branch (STAY).
+;;
+;; However, this last thing returned is not one of the keys, it's
+;; the terminal val.  So we end up with the leaf vals in each
+;; sequence.  To strip them out, map butlast over the entire result.
 
 ;; More efficient version:
 (defn fast-specter-keypaths [m]
@@ -122,6 +137,20 @@
                 [(collect-one FIRST) LAST p]
                 FIRST)]))]
     (select p m)))
+;; Explanation:
+;; I'm given a map of maps of ... and
+;; (A) since it's a map
+;; it's passed to ALL, i.e.
+;; for each MapEntry e in the map,
+;;   if e's val is also a map
+;;     add its first element (key) to:
+;;     passing its last element (val) to ... now recurse (which is what p does),
+;;     i.e. for each of those map vals continue at (A)
+;;   or if e's val is not a map, then
+;;     get its first element, i.e. its key
+;; On each of these branches, we eventually get to a non-map,
+;; in which case stop processing on that branch and return nothing.
+
 
 ;; For easy testing:
 (def keypath-fns [["miner49r-keypaths"	     miner49r-keypaths]
