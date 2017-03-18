@@ -156,15 +156,26 @@
 ;; On each of these branches, we eventually get to a non-map,
 ;; in which case stop processing on that branch and return nothing.
 
+;; If you actually want the leaf node data, you can use the simple
+;; Specter version without mapping butlast over the result:
+(defn simple-specter-keypaths-with-leaves [m]
+  (let [p (recursive-path [] p
+            (if-path map?
+              [ALL (collect-one FIRST) LAST p]
+              STAY))]
+    (select p m)))
+
+
 
 ;; For easy testing:
 (def keypath-fns [["simple-specter-keypaths" simple-specter-keypaths]
                   ["fast-specter-keypaths"   fast-specter-keypaths]
+                  ["miner49r-keypaths"	     miner49r-keypaths]
                   ["amalloy-keypaths"	     amalloy-keypaths]
                   ["noisesmith-keypaths"     noisesmith-keypaths]
-                  ["miner49r-keypaths"	     miner49r-keypaths]
+                  ["AWebb-keypaths"	     AWebb-keypaths]
                   ["AlexMiller-keypaths"     AlexMiller-keypaths]
-                  ["AWebb-keypaths"	     AWebb-keypaths]])
+                  ["simple-specter-keypaths-with-leaves" simple-specter-keypaths-with-leaves]])
 
 (use 'criterium.core)
 
