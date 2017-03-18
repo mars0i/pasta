@@ -155,13 +155,13 @@
 
 
 ;; For easy testing:
-(def keypath-fns [["miner49r-keypaths"	     miner49r-keypaths]
-                  ["AWebb-keypaths"	     AWebb-keypaths]
-                  ["AlexMiller-keypaths"     AlexMiller-keypaths]
+(def keypath-fns [["simple-specter-keypaths" simple-specter-keypaths]
+                  ["fast-specter-keypaths"   fast-specter-keypaths]
                   ["amalloy-keypaths"	     amalloy-keypaths]
                   ["noisesmith-keypaths"     noisesmith-keypaths]
-                  ["simple-specter-keypaths" simple-specter-keypaths]
-                  ["fast-specter-keypaths"   fast-specter-keypaths]])
+                  ["miner49r-keypaths"	     miner49r-keypaths]
+                  ["AlexMiller-keypaths"     AlexMiller-keypaths]
+                  ["AWebb-keypaths"	     AWebb-keypaths]])
 
 (use 'criterium.core)
 
@@ -170,7 +170,7 @@
   depth levels.  There will be width^depth paths through the structure."
   [width depth]
   (if (pos? depth)
-    (zipmap (range width) 
+    (zipmap (map #(keyword (str "k" %)) (range width))
             (repeat (make-big-map width (dec depth))))
     nil))
 
