@@ -7,7 +7,7 @@
             [utils.map2csv :as m2c]
             [clojure.pprint :as pp]
             [clojure.math.numeric-tower :as math]
-            [com.rpl.specter :as sp]))
+            [com.rpl.specter :as s]))
 
 ;; FIXME contains obsolete fns:
 (declare map-kv get-pop-size inc-snipe-counts OLD-count-snipes sum-snipes avg-snipes get-freq maybe-get-freq count-dead-snipe get-k-snipe-freq count-live-snipes mean-vals avg-age avg-energy avg-mush-pref mean-ages mean-ages-live-snipe mean-ages-dead-snipe mean-energies mean-energies-live-snipe mean-energies-dead-snipe mean-prefs mean-prefs-live-snipe round-or-nil report-stats report-params)
@@ -179,8 +179,8 @@
                         (.elements (:snipe-field (:east popenv))))]
      (->> snipes
           (group-by-snipe-class)                                     ; creates a map by snipe class
-          (sp/transform sp/MAP-VALS group-by-subenv)                 ; replaces each coll of snipes by a map by subenv
-          (sp/transform [sp/MAP-VALS sp/MAP-VALS] group-by-pref))))) ; replaces each coll of snipes by a map by pos/neg mush-pref
+          (s/transform s/MAP-VALS group-by-subenv)                 ; replaces each coll of snipes by a map by subenv
+          (s/transform [s/MAP-VALS s/MAP-VALS] group-by-pref))))) ; replaces each coll of snipes by a map by pos/neg mush-pref
 
 (defn sum-by
   [k xs]
@@ -214,10 +214,10 @@
 (def ^{:doc "Specter navigator that recurses into recursively embedded maps of arbitrary 
   depth, operating only on non-map collection leaf values (including sets,
   despite the name of the navigator)."}
-  leaf-seqs (sp/recursive-path [] p
-              (sp/if-path map?       ; if you encounter a map
-                 [sp/MAP-VALS p]     ; then look at all of its vals, and the rest of the structure (i.e. p)
-                 [sp/STAY coll?])))  ; if it's not a map, but it's a coll, then do stuff with it
+  leaf-seqs (s/recursive-path [] p
+              (s/if-path map?       ; if you encounter a map
+                 [s/MAP-VALS p]     ; then look at all of its vals, and the rest of the structure (i.e. p)
+                 [s/STAY coll?])))  ; if it's not a map, but it's a coll, then do stuff with it
                                      ; otherwise, just leave whatever you find there alone
 
 ;; note this:
@@ -230,7 +230,7 @@
   with leaf snipe collections replaced by maps of summary statistics
   produced by subpop-stats."
   [classified-snipes]
-  (sp/transform [leaf-seqs]  ; or e.g. [sp/MAP-VALS sp/MAP-VALS], but that's restricted to exactly two levels
+  (s/transform [leaf-seqs]  ; or e.g. [s/MAP-VALS s/MAP-VALS], but that's restricted to exactly two levels
                 subpop-stats
                 classified-snipes))
 
@@ -238,20 +238,39 @@
 ;; http://stackoverflow.com/questions/21768802/how-can-i-get-the-nested-keys-of-a-map-in-clojure:
 ;; and noisesmith's at
 ;; http://stackoverflow.com/questions/25268818/get-key-chains-of-a-tree-in-clojure
-(defn flatten-stats
+(defn square-stats
   [stats]
   (cond (map? stats) (for [[k v] stats           ; for every MapEntry
-                           ks (flatten-stats v)] ; and every subsidiary seq returned
+                           ks (square-stats* v)] ; and every subsidiary seq returned
                        (cons (name k) ks))       ; add key's name to each seq returned
-        (sequential? stats) [stats] ; start with data from vectors in innermost vals
-        :else (throw 
-                (Exception. (str "stats structure has an unexpected component: " stats)))))
+        :else [stats])) ; start with data from vectors in innermost vals
+
+;        (sequential? stats) [stats] ; start with data from vectors in innermost vals
+;        :else (throw 
+;                (Exception. (str "stats structure has an unexpected component: " stats)))))
+
+;; Specter version based on version by Nathan Marz at
+;; https://clojurians.slack.com/archives/C0FVDQLQ5/p1489779215484550
+;; CAN I GET RID OF THE CONCAT AND ALL AT END?
+;; cf. Nathan Marz's other version in keypaths.clj
+(defn square-stats*
+  [stats]
+  (let [not-quite-flat (s/select (s/recursive-path [] p
+                                    (s/if-path map?
+                                       [s/ALL                                 ; for each MapEntry
+                                        (s/collect-one s/FIRST (s/view name)) ; add the name of its key to
+                                        s/LAST p]                             ; passing its val to <recurse>
+                                       s/STAY)) ; return what we've got (a val from a map), and stop this branch
+                                  stats)]
+    (map #(concat (butlast %)
+                  (last %))
+         not-quite-flat)))
 
 (defn stats-at-step-for-csv
   [stats-at-step]
   (let [step (:step stats-at-step)
         stats (dissoc stats-at-step :step)]
-    (map #(cons step %) (flatten-stats stats))))
+    (map #(cons step %) (square-stats stats))))
 
 ;; TODO rewrite using new data collection functions
 (defn write-stats-to-console
