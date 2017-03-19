@@ -153,9 +153,9 @@
 
 (defn classify-by-pref
   [snipe]
-  (cond (pos? (:mush-pref snipe)) :pos-pref
-        (neg? (:mush-pref snipe)) :neg-pref
-        :else :zero-pref))
+  (cond (pos? (:mush-pref snipe)) :pos
+        (neg? (:mush-pref snipe)) :neg
+        :else :zero))
 
 (def group-by-snipe-class (partial sorted-group-by classify-by-snipe-class))
 (def group-by-pref (partial sorted-group-by classify-by-pref))
@@ -170,17 +170,20 @@
 ;(def group-by-subenv (partial group-by :subenv))
 
 (defn classify-snipes
-  "Returns a hierarchical data map of snipes arranged in categories."
-  ([cfg-data schedule] 
-   (assoc (classify-snipes cfg-data) :step (.getSteps schedule)))
-  ([cfg-data]
+  "Returns a hierarchical map of maps of maps of colls of snipes in categories."
+  [cfg-data]
    (let [popenv (:popenv cfg-data)
          snipes (concat (.elements (:snipe-field (:west popenv)))
                         (.elements (:snipe-field (:east popenv))))]
      (->> snipes
-          (group-by-snipe-class)                                     ; creates a map by snipe class
-          (s/transform s/MAP-VALS group-by-subenv)                 ; replaces each coll of snipes by a map by subenv
-          (s/transform [s/MAP-VALS s/MAP-VALS] group-by-pref))))) ; replaces each coll of snipes by a map by pos/neg mush-pref
+          (group-by-snipe-class)                                 ; creates a map by snipe class
+          (s/transform s/MAP-VALS group-by-subenv)               ; replaces each coll of snipes by a map by subenv
+          (s/transform [s/MAP-VALS s/MAP-VALS] group-by-pref)))) ; replaces each coll of snipes by a map by pos/neg mush-pref
+
+(defn classify-snipes-at-step
+  [cfg-data schedule]
+  {:data (classify-snipes cfg-data) 
+   :step (.getSteps schedule)})
 
 (defn sum-by
   [k xs]
@@ -188,6 +191,8 @@
           0.0 xs))
 
 (defn subpop-stats
+  "Given a collection of snipes, returns a sequence of summary statistics:
+  count, average energy, average mush preference, and average age."
   [snipes]
    (let [num-snipes (count snipes)
          avg-energy (/ (sum-by :energy snipes) num-snipes) ; FIXME assumes there are > 0 snipes
@@ -196,7 +201,7 @@
      [num-snipes avg-energy avg-pref avg-age]))
      ;{:count num-snipes :energy avg-energy :pref avg-pref :age avg-age}
 
-(def csv-header ["step" "snipe_class" "subenv" "pref_dir" "count" "energy" "pref" "age"])
+(def csv-header ["step" "snipe_class" "subenv" "pref_sign" "count" "energy" "pref" "age"])
 
 ;; leaf-seqs
 ;; Specter navigator operator that allows me to run snipe-stats on a classified snipes 
@@ -217,8 +222,8 @@
   leaf-seqs (s/recursive-path [] p
               (s/if-path map?       ; if you encounter a map
                  [s/MAP-VALS p]     ; then look at all of its vals, and the rest of the structure (i.e. p)
-                 [s/STAY coll?])))  ; if it's not a map, but it's a coll, then do stuff with it
-                                     ; otherwise, just leave whatever you find there alone
+                 [s/STAY coll?])))  ; if it's not a map, but it's a coll, then return it to do stuff with it
+                                    ; otherwise, just leave whatever you find there alone
 
 ;; note this:
 ;; (flatten (transform [(recursive-path [] p (if-path map? (continue-then-stay MAP-VALS p)))] first a))
@@ -239,6 +244,11 @@
 ;; and noisesmith's at
 ;; http://stackoverflow.com/questions/25268818/get-key-chains-of-a-tree-in-clojure
 (defn square-stats
+  "Given an embedded map structure with sequences of per-category snipe summary
+  statistics at the leaves, returns a collection of sequences with string versions
+  of the map keys, representing category names, followed by the summary statistics.
+  (This prepares the data for writing to a CSV file that can be easily read into
+  an R dataframe for use by Lattice graphics.)"
   [stats]
   (cond (map? stats) (for [[k v] stats           ; for every MapEntry
                            ks (square-stats v)] ; and every subsidiary seq returned
@@ -254,6 +264,11 @@
 ;; CAN I GET RID OF THE CONCAT AND ALL AT END?
 ;; cf. Nathan Marz's other version in keypaths.clj
 (defn square-stats*
+  "Given an embedded map structure with sequences of per-category snipe summary
+  statistics at the leaves, returns a collection of sequences with string versions
+  of the map keys, representing category names, followed by the summary statistics.
+  (This prepares the data for writing to a CSV file that can be easily read into
+  an R dataframe for use by Lattice graphics.)"
   [stats]
   (let [not-quite-flat (s/select (s/recursive-path [] p
                                     (s/if-path map?
