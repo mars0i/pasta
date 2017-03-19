@@ -241,7 +241,7 @@
 (defn square-stats
   [stats]
   (cond (map? stats) (for [[k v] stats           ; for every MapEntry
-                           ks (square-stats* v)] ; and every subsidiary seq returned
+                           ks (square-stats v)] ; and every subsidiary seq returned
                        (cons (name k) ks))       ; add key's name to each seq returned
         :else [stats])) ; start with data from vectors in innermost vals
 
