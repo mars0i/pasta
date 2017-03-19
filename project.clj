@@ -3,7 +3,7 @@
   :url "https://github.com/mars0i/pasta"
   :license {:name "Gnu General Public License version 3.0"
             :url "http://www.gnu.org/copyleft/gpl.html"}
-  :dependencies [[org.clojure/clojure "1.9.0-alpha14"]
+  :dependencies [[org.clojure/clojure "1.9.0-alpha15"]
                  ;[org.clojure/clojure "1.8.0"]
                  [org.clojure/math.numeric-tower "0.0.4"]
                  [org.clojure/tools.cli "0.3.5"]
