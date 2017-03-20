@@ -250,10 +250,11 @@
   (This prepares the data for writing to a CSV file that can be easily read into
   an R dataframe for use by Lattice graphics.)"
   [stats]
+  (doall 
   (cond (map? stats) (for [[k v] stats           ; for every MapEntry
                            ks (square-stats v)] ; and every subsidiary seq returned
                        (cons (name k) ks))       ; add key's name to each seq returned
-        :else [stats])) ; start with data from vectors in innermost vals
+        :else [stats]))) ; start with data from vectors in innermost vals
 
 ;        (sequential? stats) [stats] ; start with data from vectors in innermost vals
 ;        :else (throw 
@@ -268,12 +269,14 @@
    (reduce-kv (fn [res k v]   ; res accumulates the sequence of sequences
                 (if (map? v)
                   (into res (square-stats* (conj prev (name k)) v)) ; if it's a map, recurse into val, adding key to prev
-                  (conj res (concat (conj prev (name k)) v)))) ; otherwise add the most recent key and then add the inner seq to res
+                  (conj res (doall (concat (conj prev (name k)) v))))) ; otherwise add the most recent key and then add the inner seq to res
               []    ; outer sequence starts empty
               m)))
 
+;; Based on answers by miner49r at
+;; http://stackoverflow.com/questions/21768802/how-can-i-get-the-nested-keys-of-a-map-in-clojure:
 (defn square-stats**
-  ([m] (square-stats* [] m))
+  ([m] (square-stats** [] m))
   ([prev m]                   ; prev is the keys previously accumulated in one inner sequence
    (reduce-kv (fn [res k v]   ; res accumulates the sequence of sequences
                 (if (map? v)
@@ -303,14 +306,14 @@
                                         s/LAST p]                             ; passing its val to <recurse>
                                        s/STAY)) ; return what we've got (a val from a map), and stop this branch
                                   stats)]
-    (map #(concat (butlast %)
-                  (last %))
-         not-quite-flat)))
+    (doall (map #(doall (concat (butlast %)
+                                (last %)))
+         not-quite-flat))))
 
 (defn stats-at-step-for-csv
   [stats-at-step]
   (let [step (:step stats-at-step)
-        stats (dissoc stats-at-step :step)]
+        stats (:data stats-at-step)]
     (map #(cons step %) (square-stats stats))))
 
 ;; TODO rewrite using new data collection functions
