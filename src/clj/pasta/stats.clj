@@ -260,7 +260,6 @@
 ;        :else (throw 
 ;                (Exception. (str "stats structure has an unexpected component: " stats)))))
 
-
 ;; Based on answers by miner49r at
 ;; http://stackoverflow.com/questions/21768802/how-can-i-get-the-nested-keys-of-a-map-in-clojure:
 (defn square-stats*
@@ -289,10 +288,7 @@
 ;; https://clojurians.slack.com/archives/C0FVDQLQ5/p1489779215484550
 ;; CAN I GET RID OF THE CONCAT AND ALL AT END?
 ;; cf. Nathan Marz's other version in keypaths.clj
-;; Nathan Marz says: @mars0i for that it's best to just fix it after the selection, with regular clojure or a transform call
-;; it's possible to do it in one path with specter's zipper integration, but it won't be particularly elegant
-;; See https://clojurians.slack.com/archives/C0FVDQLQ5/p1489970585037139
-(defn square-stats***
+(defn square-stats*
   "Given an embedded map structure with sequences of per-category snipe summary
   statistics at the leaves, returns a collection of sequences with string versions
   of the map keys, representing category names, followed by the summary statistics.
