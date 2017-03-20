@@ -180,11 +180,6 @@
           (s/transform s/MAP-VALS group-by-subenv)               ; replaces each coll of snipes by a map by subenv
           (s/transform [s/MAP-VALS s/MAP-VALS] group-by-pref)))) ; replaces each coll of snipes by a map by pos/neg mush-pref
 
-(defn classify-snipes-at-step
-  [cfg-data schedule]
-  {:data (classify-snipes cfg-data) 
-   :step (.getSteps schedule)})
-
 (defn sum-by
   [k xs]
   (reduce (fn [sum x] (+ sum (k x)))
@@ -243,7 +238,7 @@
 ;; http://stackoverflow.com/questions/21768802/how-can-i-get-the-nested-keys-of-a-map-in-clojure:
 ;; See oldcode.clj or commits af85d66 and 340c313 for alternative defs, and 
 ;; doc/notes/squarestatstimes.txt for speed comparison.  This version and a similar one
-;; were about twice as fast as two others on a representative stats data tree from one run.
+;; were about twice as fast as two others on representative stats data trees.
 (defn square-stats
   "Given an embedded map structure with sequences of per-category snipe summary
   statistics at the leaves, returns a collection of sequences with string versions
@@ -255,15 +250,55 @@
    (reduce-kv (fn [result k v] ; result accumulates the sequence of sequences
                 (if (map? v)
                   (into result (square-stats (conj prev (name k)) v)) ; if it's a map, recurse into val, adding key to prev
-                  (conj res (concat (conj prev (name k)) v)))) ; otherwise add the most recent key and then add the inner seq to res
+                  (conj result (concat (conj prev (name k)) v)))) ; otherwise add the most recent key and then add the inner data seq to result
               []    ; outer sequence starts empty
               stats)))
 
-(defn stats-at-step-for-csv
+(defn make-stats-at-step
+  [cfg-data schedule]
+  {:step (.getSteps schedule)
+   :stats (snipe-stats (classify-snipes cfg-data))})
+
+(defn square-stats-at-step-for-csv
   [stats-at-step]
   (let [step (:step stats-at-step)
-        stats (dissoc stats-at-step :step)]
-    (map #(cons step %) (square-stats stats))))
+        squared-stats (square-stats (:stats stats-at-step))]
+    (map #(cons step %) squared-stats)))
+
+;; Illustration of usage:
+;;
+;;    user=> (def s804 (square-stats-at-step-for-csv (make-stats-at-step @data$ (.schedule cfg))))
+;;    #'user/s804
+;;    user=> (def s911 (square-stats-at-step-for-csv (make-stats-at-step @data$ (.schedule cfg))))
+;;    #'user/s911
+;;    user=> (pprint (cons csv-header (concat s804 s911)))
+;;    (["step" "snipe_class" "subenv" "pref_sign" "count" "energy" "pref" "age"]
+;;     (804 "k" "east" "pos" 23 11.26086956521739 2.7933525400119586E-4 600.0869565217391)
+;;     (804 "k" "west" "neg" 39 13.35897435897436 -2.194019839094257E-4 581.9230769230769)
+;;     (804 "r" "east" "neg" 25 7.24 -1.0 263.48)
+;;     (804 "r" "east" "pos" 35 14.714285714285714 1.0 444.34285714285716)
+;;     (804 "r" "west" "neg" 37 15.08108108108108 -1.0 466.8918918918919)
+;;     (804 "r" "west" "pos" 24 7.333333333333333 1.0 523.625)
+;;     (804 "s" "east" "neg" 20 6.55 -0.650021630731745 345.55)
+;;     (804 "s" "east" "pos" 21 13.904761904761905 0.9048001299409795 484.57142857142856)
+;;     (804 "s" "east" "zero" 1 10.0 0.0 4.0)
+;;     (804 "s" "west" "neg" 47 14.297872340425531 -0.7447054437863198 451.72340425531917)
+;;     (804 "s" "west" "pos" 12 7.583333333333333 0.916669501580321 316.1666666666667)
+;;     (804 "s" "west" "zero" 1 10.0 0.0 14.0)
+;;     (911 "k" "east" "pos" 28 10.714285714285714 2.7141106574043447E-4 593.1428571428571)
+;;     (911 "k" "west" "neg" 41 13.121951219512194 -2.481524592827564E-4 648.3658536585366)
+;;     (911 "k" "west" "pos" 2 12.5 5.415420603792033E-6 218.0)
+;;     (911 "k" "west" "zero" 1 10.0 0.0 31.0)
+;;     (911 "r" "east" "neg" 31 6.967741935483871 -1.0 230.32258064516128)
+;;     (911 "r" "east" "pos" 39 15.256410256410257 1.0 500.79487179487177)
+;;     (911 "r" "west" "neg" 46 14.826086956521738 -1.0 471.3695652173913)
+;;     (911 "r" "west" "pos" 25 7.12 1.0 487.68)
+;;     (911 "s" "east" "neg" 24 6.416666666666667 -0.6667013107370153 356.9583333333333)
+;;     (911 "s" "east" "pos" 26 14.615384615384615 0.8846628654367455 487.7307692307692)
+;;     (911 "s" "east" "zero" 1 10.0 0.0 6.0)
+;;     (911 "s" "west" "neg" 52 14.576923076923077 -0.7692529972684045 511.7307692307692)
+;;     (911 "s" "west" "pos" 15 7.266666666666667 0.866699845811923 288.53333333333336)
+;;     (911 "s" "west" "zero" 3 10.0 0.0 9.0))
 
 ;; TODO rewrite using new data collection functions
 (defn write-stats-to-console
