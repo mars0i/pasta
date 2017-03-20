@@ -251,10 +251,10 @@
   an R dataframe for use by Lattice graphics.)"
   [stats]
   (doall 
-  (cond (map? stats) (for [[k v] stats           ; for every MapEntry
-                           ks (square-stats v)] ; and every subsidiary seq returned
-                       (cons (name k) ks))       ; add key's name to each seq returned
-        :else [stats]))) ; start with data from vectors in innermost vals
+    (cond (map? stats) (for [[k v] stats           ; for every MapEntry
+                             ks (square-stats v)] ; and every subsidiary seq returned
+                         (cons (name k) ks))       ; add key's name to each seq returned
+          :else [stats]))) ; start with data from vectors in innermost vals
 
 ;        (sequential? stats) [stats] ; start with data from vectors in innermost vals
 ;        :else (throw 
@@ -310,13 +310,37 @@
                                 (last %)))
          not-quite-flat))))
 
+(use 'criterium.core)
+
+(defn test-square-stats
+  "Benchmark all four square-stats defs with three different stats structures. 
+  Assumes that appropriate doall's have been included into the square-stats code."
+  [stats1 stats2 stats3]
+  (println "=============\namalloy" 'square-stats)
+  (bench (def r1 (square-stats stats1)))
+  (bench (def r2 (square-stats stats2)))
+  (bench (def r3 (square-stats stats3)))
+  (println "=============\nminer49r 1" 'square-stats*)
+  (bench (def r1 (square-stats* stats1)))
+  (bench (def r2 (square-stats* stats2)))
+  (bench (def r3 (square-stats* stats3)))
+  (println "=============\nminer49r 2" 'square-stats**)
+  (bench (def r1 (square-stats** stats1)))
+  (bench (def r2 (square-stats** stats2)))
+  (bench (def r3 (square-stats** stats3)))
+  (println "=============\nspecter" 'square-stats***)
+  (bench (def r1 (square-stats*** stats1)))
+  (bench (def r2 (square-stats*** stats2)))
+  (bench (def r3 (square-stats*** stats3))))
+
+
 (defn stats-at-step-for-csv
   [stats-at-step]
   (let [step (:step stats-at-step)
         stats (:data stats-at-step)]
     (map #(cons step %) (square-stats stats))))
 
-;; TODO rewrite using new data collection functions
+;;TODO rewrite using new data collection functions
 (defn write-stats-to-console
   "Report summary statistics to standard output."
   ([cfg-data schedule] 
