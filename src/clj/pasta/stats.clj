@@ -255,7 +255,7 @@
    (reduce-kv (fn [result k v] ; result accumulates the sequence of sequences
                 (if (map? v)
                   (into result (square-stats (conj prev (name k)) v)) ; if it's a map, recurse into val, adding key to prev
-                  (conj result (reduce conj prev (cons (name k) v))))) ; otherwise add the most recent key and summary stats, then add the inner seq to result
+                  (conj res (concat (conj prev (name k)) v)))) ; otherwise add the most recent key and then add the inner seq to res
               []    ; outer sequence starts empty
               stats)))
 
