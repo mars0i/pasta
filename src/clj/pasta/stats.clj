@@ -250,15 +250,15 @@
   (This prepares the data for writing to a CSV file that can be easily read into
   an R dataframe for use by Lattice graphics.)"
   [stats]
-  (doall 
   (cond (map? stats) (for [[k v] stats           ; for every MapEntry
                            ks (square-stats v)] ; and every subsidiary seq returned
                        (cons (name k) ks))       ; add key's name to each seq returned
-        :else [stats]))) ; start with data from vectors in innermost vals
+        :else [stats])) ; start with data from vectors in innermost vals
 
 ;        (sequential? stats) [stats] ; start with data from vectors in innermost vals
 ;        :else (throw 
 ;                (Exception. (str "stats structure has an unexpected component: " stats)))))
+
 
 ;; Based on answers by miner49r at
 ;; http://stackoverflow.com/questions/21768802/how-can-i-get-the-nested-keys-of-a-map-in-clojure:
@@ -268,14 +268,12 @@
    (reduce-kv (fn [res k v]   ; res accumulates the sequence of sequences
                 (if (map? v)
                   (into res (square-stats* (conj prev (name k)) v)) ; if it's a map, recurse into val, adding key to prev
-                  (conj res (doall (concat (conj prev (name k)) v))))) ; otherwise add the most recent key and then add the inner seq to res
+                  (conj res (concat (conj prev (name k)) v)))) ; otherwise add the most recent key and then add the inner seq to res
               []    ; outer sequence starts empty
               m)))
 
-;; Based on answers by miner49r at
-;; http://stackoverflow.com/questions/21768802/how-can-i-get-the-nested-keys-of-a-map-in-clojure:
 (defn square-stats**
-  ([m] (square-stats** [] m))
+  ([m] (square-stats* [] m))
   ([prev m]                   ; prev is the keys previously accumulated in one inner sequence
    (reduce-kv (fn [res k v]   ; res accumulates the sequence of sequences
                 (if (map? v)
@@ -288,7 +286,10 @@
 ;; https://clojurians.slack.com/archives/C0FVDQLQ5/p1489779215484550
 ;; CAN I GET RID OF THE CONCAT AND ALL AT END?
 ;; cf. Nathan Marz's other version in keypaths.clj
-(defn square-stats*
+;; Nathan Marz says: @mars0i for that it's best to just fix it after the selection, with regular clojure or a transform call
+;; it's possible to do it in one path with specter's zipper integration, but it won't be particularly elegant
+;; See https://clojurians.slack.com/archives/C0FVDQLQ5/p1489970585037139
+(defn square-stats***
   "Given an embedded map structure with sequences of per-category snipe summary
   statistics at the leaves, returns a collection of sequences with string versions
   of the map keys, representing category names, followed by the summary statistics.
@@ -302,14 +303,14 @@
                                         s/LAST p]                             ; passing its val to <recurse>
                                        s/STAY)) ; return what we've got (a val from a map), and stop this branch
                                   stats)]
-    (doall (map #(doall (concat (butlast %)
-                                (last %)))
-         not-quite-flat))))
+    (map #(concat (butlast %)
+                  (last %))
+         not-quite-flat)))
 
 (defn stats-at-step-for-csv
   [stats-at-step]
   (let [step (:step stats-at-step)
-        stats (:data stats-at-step)]
+        stats (dissoc stats-at-step :step)]
     (map #(cons step %) (square-stats stats))))
 
 ;; TODO rewrite using new data collection functions
