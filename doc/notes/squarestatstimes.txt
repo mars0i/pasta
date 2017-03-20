@@ -58,3 +58,222 @@ Found 3 outliers in 60 samples (5.0000 %)
 	low-severe	 3 (5.0000 %)
  Variance from outliers : 1.6389 % Variance is slightly inflated by outliers
 
+tests of alternative square-stats versions (with added doall's)
+on three stats structures, from steps 100, 500, and 800 in
+the same run.  From commit d288069 of branch square-stats-alternatives-with-doall.
+(This is essentially the same as commit 340c313 on master.)
+
+
+================================================================
+More tests 3/20/2017
+from branch square-stats-alternatives-with-doall, which is the
+same as above but adds a testing function which I used to test
+on three different stats structures.
+
+user=> (pprint s100)
+{:k
+ {:east
+  {:neg [1 5.0 -1.962324494890822E-6 101.0],
+   :pos [20 9.45 4.072326802282023E-5 98.25]},
+  :west
+  {:neg [25 10.84 -3.8173033817344055E-5 101.0],
+   :pos [3 10.666666666666666 1.5439350551057697E-5 95.0]}},
+ :r
+ {:east
+  {:neg [14 9.642857142857142 -1.0 90.57142857142857],
+   :pos [9 12.88888888888889 1.0 101.0]},
+  :west
+  {:neg [14 11.214285714285714 -1.0 97.0],
+   :pos [11 11.454545454545455 1.0 96.9090909090909]}},
+ :s
+ {:east
+  {:neg [7 7.857142857142857 -0.4285779252408072 96.42857142857143],
+   :pos [13 9.23076923076923 0.6153883132116857 101.0],
+   :zero [2 5.5 0.0 101.0]},
+  :west
+  {:neg [17 12.529411764705882 -0.5882423651300632 99.11764705882354],
+   :pos [7 9.428571428571429 0.5714351218231182 101.0],
+   :zero [3 18.333333333333332 0.0 101.0]}}}
+nil
+user=> (pprint s500)
+{:k
+ {:east
+  {:pos
+   [21 11.571428571428571 1.593573204709736E-4 439.85714285714283],
+   :zero [1 10.0 0.0 4.0]},
+  :west
+  {:neg
+   [29 9.413793103448276 -1.6870539411242776E-4 461.37931034482756]}},
+ :r
+ {:east
+  {:neg [12 8.916666666666666 -1.0 299.5833333333333],
+   :pos [14 14.142857142857142 1.0 391.7142857142857]},
+  :west
+  {:neg [18 14.555555555555555 -1.0 424.1666666666667],
+   :pos [13 7.846153846153846 1.0 308.15384615384613]}},
+ :s
+ {:east
+  {:neg [12 6.166666666666667 -0.5000460846280109 278.25],
+   :pos [18 13.555555555555555 0.6111256485401518 423.3333333333333],
+   :zero [1 10.0 0.0 87.0]},
+  :west
+  {:neg [25 14.32 -0.6800074657240489 392.6],
+   :pos [9 9.11111111111111 0.4444594858466573 224.11111111111111]}}}
+nil
+user=> (pprint s900)
+{:k
+ {:east
+  {:neg [1 11.0 -4.216115047486886E-6 68.0],
+   :pos
+   [24 9.666666666666666 2.4555027543314713E-4 692.6666666666666]},
+  :west
+  {:neg [29 10.379310344827585 -2.9899563987657613E-4 744.0],
+   :pos [1 8.0 1.6852484924830316E-5 113.0]}},
+ :r
+ {:east
+  {:neg [17 8.411764705882353 -1.0 304.05882352941177],
+   :pos [24 14.541666666666666 1.0 571.125]},
+  :west
+  {:neg [38 14.289473684210526 -1.0 499.6842105263158],
+   :pos [15 5.733333333333333 1.0 355.8666666666667]}},
+ :s
+ {:east
+  {:neg [22 7.636363636363637 -0.6818513680901072 243.22727272727272],
+   :pos [32 15.3125 0.7187766589586541 550.5],
+   :zero [1 10.0 0.0 10.0]},
+  :west
+  {:neg [43 14.348837209302326 -0.7209608227465928 540.2325581395348],
+   :pos [11 7.909090909090909 0.5454910979571327 290.54545454545456],
+   :zero [2 10.0 0.0 11.0]}}}
+nil
+user=> (test-square-stats s100 s500 s900) ; the three structures are tested in order for each square-stats function
+=============
+amalloy square-stats
+Evaluation count : 882600 in 60 samples of 14710 calls.
+             Execution time mean : 68.105069 µs
+    Execution time std-deviation : 786.794290 ns
+   Execution time lower quantile : 66.496374 µs ( 2.5%)
+   Execution time upper quantile : 69.956448 µs (97.5%)
+                   Overhead used : 5.150325 ns
+
+Found 2 outliers in 60 samples (3.3333 %)
+	low-severe	 2 (3.3333 %)
+ Variance from outliers : 1.6389 % Variance is slightly inflated by outliers
+Evaluation count : 997620 in 60 samples of 16627 calls.
+             Execution time mean : 60.905642 µs
+    Execution time std-deviation : 719.216171 ns
+   Execution time lower quantile : 59.650198 µs ( 2.5%)
+   Execution time upper quantile : 62.331932 µs (97.5%)
+                   Overhead used : 5.150325 ns
+
+Found 2 outliers in 60 samples (3.3333 %)
+	low-severe	 2 (3.3333 %)
+ Variance from outliers : 1.6389 % Variance is slightly inflated by outliers
+Evaluation count : 877080 in 60 samples of 14618 calls.
+             Execution time mean : 69.898338 µs
+    Execution time std-deviation : 3.310257 µs
+   Execution time lower quantile : 67.284684 µs ( 2.5%)
+   Execution time upper quantile : 80.286058 µs (97.5%)
+                   Overhead used : 5.150325 ns
+
+Found 7 outliers in 60 samples (11.6667 %)
+	low-severe	 2 (3.3333 %)
+	low-mild	 5 (8.3333 %)
+ Variance from outliers : 33.5776 % Variance is moderately inflated by outliers
+=============
+miner49r 1 square-stats*
+Evaluation count : 1688940 in 60 samples of 28149 calls.
+             Execution time mean : 35.894155 µs
+    Execution time std-deviation : 575.574883 ns
+   Execution time lower quantile : 35.033651 µs ( 2.5%)
+   Execution time upper quantile : 37.191709 µs (97.5%)
+                   Overhead used : 5.150325 ns
+
+Found 3 outliers in 60 samples (5.0000 %)
+	low-severe	 2 (3.3333 %)
+	low-mild	 1 (1.6667 %)
+ Variance from outliers : 1.6389 % Variance is slightly inflated by outliers
+Evaluation count : 1856580 in 60 samples of 30943 calls.
+             Execution time mean : 32.692044 µs
+    Execution time std-deviation : 569.599047 ns
+   Execution time lower quantile : 31.914231 µs ( 2.5%)
+   Execution time upper quantile : 33.490014 µs (97.5%)
+                   Overhead used : 5.150325 ns
+
+Found 1 outliers in 60 samples (1.6667 %)
+	low-severe	 1 (1.6667 %)
+ Variance from outliers : 6.2854 % Variance is slightly inflated by outliers
+Evaluation count : 1675800 in 60 samples of 27930 calls.
+             Execution time mean : 35.818650 µs
+    Execution time std-deviation : 424.747525 ns
+   Execution time lower quantile : 35.180461 µs ( 2.5%)
+   Execution time upper quantile : 36.883051 µs (97.5%)
+                   Overhead used : 5.150325 ns
+
+Found 3 outliers in 60 samples (5.0000 %)
+	low-severe	 2 (3.3333 %)
+	low-mild	 1 (1.6667 %)
+ Variance from outliers : 1.6389 % Variance is slightly inflated by outliers
+=============
+miner49r 2 square-stats**
+Evaluation count : 1638600 in 60 samples of 27310 calls.
+             Execution time mean : 37.265709 µs
+    Execution time std-deviation : 443.862443 ns
+   Execution time lower quantile : 36.661169 µs ( 2.5%)
+   Execution time upper quantile : 37.938927 µs (97.5%)
+                   Overhead used : 5.150325 ns
+
+Found 1 outliers in 60 samples (1.6667 %)
+	low-severe	 1 (1.6667 %)
+ Variance from outliers : 1.6389 % Variance is slightly inflated by outliers
+Evaluation count : 1817700 in 60 samples of 30295 calls.
+             Execution time mean : 34.759457 µs
+    Execution time std-deviation : 3.024898 µs
+   Execution time lower quantile : 33.494266 µs ( 2.5%)
+   Execution time upper quantile : 38.857359 µs (97.5%)
+                   Overhead used : 5.150325 ns
+
+Found 4 outliers in 60 samples (6.6667 %)
+	low-severe	 1 (1.6667 %)
+	low-mild	 3 (5.0000 %)
+ Variance from outliers : 63.5472 % Variance is severely inflated by outliers
+Evaluation count : 1621980 in 60 samples of 27033 calls.
+             Execution time mean : 37.358687 µs
+    Execution time std-deviation : 513.384458 ns
+   Execution time lower quantile : 36.536462 µs ( 2.5%)
+   Execution time upper quantile : 38.649560 µs (97.5%)
+                   Overhead used : 5.150325 ns
+
+Found 3 outliers in 60 samples (5.0000 %)
+	low-severe	 3 (5.0000 %)
+ Variance from outliers : 1.6389 % Variance is slightly inflated by outliers
+=============
+specter square-stats***
+Evaluation count : 750660 in 60 samples of 12511 calls.
+             Execution time mean : 80.338134 µs
+    Execution time std-deviation : 2.277346 µs
+   Execution time lower quantile : 78.269013 µs ( 2.5%)
+   Execution time upper quantile : 82.846759 µs (97.5%)
+                   Overhead used : 5.150325 ns
+
+Found 2 outliers in 60 samples (3.3333 %)
+	low-severe	 1 (1.6667 %)
+	low-mild	 1 (1.6667 %)
+ Variance from outliers : 15.7664 % Variance is moderately inflated by outliers
+Evaluation count : 834180 in 60 samples of 13903 calls.
+             Execution time mean : 72.499722 µs
+    Execution time std-deviation : 955.998597 ns
+   Execution time lower quantile : 70.635440 µs ( 2.5%)
+   Execution time upper quantile : 74.202923 µs (97.5%)
+                   Overhead used : 5.150325 ns
+
+Found 1 outliers in 60 samples (1.6667 %)
+	low-severe	 1 (1.6667 %)
+ Variance from outliers : 1.6389 % Variance is slightly inflated by outliers
+Evaluation count : 744900 in 60 samples of 12415 calls.
+             Execution time mean : 80.585005 µs
+    Execution time std-deviation : 1.031947 µs
+   Execution time lower quantile : 78.957341 µs ( 2.5%)
+   Execution time upper quantile : 82.489539 µs (97.5%)
+                   Overhead used : 5.150325 ns
+ 
