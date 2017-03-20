@@ -1,0 +1,60 @@
+3/20/2017
+pasta
+git commit 340c313
+
+Comparison of speeds of different versions of square-stats.
+
+Note that all lazy seqs, even if internal, were wrapped in
+doall in the source code.
+
+amalloy square-stats
+Evaluation count : 1054560 in 60 samples of 17576 calls.
+             Execution time mean : 57.988277 µs
+    Execution time std-deviation : 1.335110 µs
+   Execution time lower quantile : 56.797490 µs ( 2.5%)
+   Execution time upper quantile : 61.463075 µs (97.5%)
+                   Overhead used : 5.091398 ns
+
+Found 3 outliers in 60 samples (5.0000 %)
+	low-severe	 1 (1.6667 %)
+	low-mild	 2 (3.3333 %)
+ Variance from outliers : 10.9980 % Variance is moderately inflated by outliers
+=============
+miner49r 1 square-stats*
+Evaluation count : 2032140 in 60 samples of 33869 calls.
+             Execution time mean : 29.366937 µs
+    Execution time std-deviation : 426.502188 ns
+   Execution time lower quantile : 28.751032 µs ( 2.5%)
+   Execution time upper quantile : 30.212681 µs (97.5%)
+                   Overhead used : 5.091398 ns
+
+Found 2 outliers in 60 samples (3.3333 %)
+	low-severe	 1 (1.6667 %)
+	low-mild	 1 (1.6667 %)
+ Variance from outliers : 1.6389 % Variance is slightly inflated by outliers
+=============
+miner49r 2 square-stats**
+Evaluation count : 2009100 in 60 samples of 33485 calls.
+             Execution time mean : 30.032733 µs
+    Execution time std-deviation : 414.684311 ns
+   Execution time lower quantile : 29.440494 µs ( 2.5%)
+   Execution time upper quantile : 30.784565 µs (97.5%)
+                   Overhead used : 5.091398 ns
+
+Found 2 outliers in 60 samples (3.3333 %)
+	low-severe	 1 (1.6667 %)
+	low-mild	 1 (1.6667 %)
+ Variance from outliers : 1.6389 % Variance is slightly inflated by outliers
+=============
+specter square-stats***
+Evaluation count : 904680 in 60 samples of 15078 calls.
+             Execution time mean : 66.670057 µs
+    Execution time std-deviation : 867.322816 ns
+   Execution time lower quantile : 65.273841 µs ( 2.5%)
+   Execution time upper quantile : 68.821779 µs (97.5%)
+                   Overhead used : 5.091398 ns
+
+Found 3 outliers in 60 samples (5.0000 %)
+	low-severe	 3 (5.0000 %)
+ Variance from outliers : 1.6389 % Variance is slightly inflated by outliers
+
