@@ -95,3 +95,88 @@
   [rng snipe mush]
   (s-snipe-pref-success-bias rng snipe mush (OLD-cross-env-neighbors snipe)))
 
+(defn snipe-stats
+  "Given a hierarchy of maps produced by classify-snipes (optionally
+  with extra map entries such as one listing the step at which the
+  data was collected), returns a map with the same structure but
+  with leaf snipe collections replaced by maps of summary statistics
+  produced by subpop-stats."
+  [classified-snipes]
+  (s/transform [leaf-seqs]  ; or e.g. [s/MAP-VALS s/MAP-VALS], but that's restricted to exactly two levels
+                subpop-stats
+                classified-snipes))
+
+;; Based on answers by amalloy at
+;; http://stackoverflow.com/questions/21768802/how-can-i-get-the-nested-keys-of-a-map-in-clojure:
+;; and noisesmith's at
+;; http://stackoverflow.com/questions/25268818/get-key-chains-of-a-tree-in-clojure
+(defn square-stats
+  "Given an embedded map structure with sequences of per-category snipe summary
+  statistics at the leaves, returns a collection of sequences with string versions
+  of the map keys, representing category names, followed by the summary statistics.
+  (This prepares the data for writing to a CSV file that can be easily read into
+  an R dataframe for use by Lattice graphics.)"
+  [stats]
+  (cond (map? stats) (for [[k v] stats           ; for every MapEntry
+                           ks (square-stats v)] ; and every subsidiary seq returned
+                       (cons (name k) ks))       ; add key's name to each seq returned
+        :else [stats])) ; start with data from vectors in innermost vals
+
+;        (sequential? stats) [stats] ; start with data from vectors in innermost vals
+;        :else (throw 
+;                (Exception. (str "stats structure has an unexpected component: " stats)))))
+
+
+;; Based on answers by miner49r at
+;; http://stackoverflow.com/questions/21768802/how-can-i-get-the-nested-keys-of-a-map-in-clojure:
+(defn square-stats*
+  ([m] (square-stats* [] m))
+  ([prev m]                   ; prev is the keys previously accumulated in one inner sequence
+   (reduce-kv (fn [res k v]   ; res accumulates the sequence of sequences
+                (if (map? v)
+                  (into res (square-stats* (conj prev (name k)) v)) ; if it's a map, recurse into val, adding key to prev
+                  (conj res (concat (conj prev (name k)) v)))) ; otherwise add the most recent key and then add the inner seq to res
+              []    ; outer sequence starts empty
+              m)))
+
+;; Based on answers by miner49r at
+;; http://stackoverflow.com/questions/21768802/how-can-i-get-the-nested-keys-of-a-map-in-clojure:
+(defn square-stats**
+  "Given an embedded map structure with sequences of per-category snipe summary
+  statistics at the leaves, returns a collection of sequences with string versions
+  of the map keys, representing category names, followed by the summary statistics.
+  (This prepares the data for writing to a CSV file that can be easily read into
+  an R dataframe for use by Lattice graphics.)"
+  ([m] (square-stats* [] m))
+  ([prev m]                   ; prev is the keys previously accumulated in one inner sequence
+   (reduce-kv (fn [res k v]   ; res accumulates the sequence of sequences
+                (if (map? v)
+                  (into res (square-stats** (conj prev (name k)) v)) ; if it's a map, recurse into val, adding key to prev
+                  (conj res (reduce conj prev (cons (name k) v))))) ; otherwise add the most recent key and summary stats, then add the inner seq to res
+              []    ; outer sequence starts empty
+              m)))
+
+;; Specter version based on version by Nathan Marz at
+;; https://clojurians.slack.com/archives/C0FVDQLQ5/p1489779215484550
+;; CAN I GET RID OF THE CONCAT AND ALL AT END?
+;; cf. Nathan Marz's other version in keypaths.clj
+;; Nathan Marz says: @mars0i for that it's best to just fix it after the selection, with regular clojure or a transform call
+;; it's possible to do it in one path with specter's zipper integration, but it won't be particularly elegant
+;; See https://clojurians.slack.com/archives/C0FVDQLQ5/p1489970585037139
+(defn square-stats***
+  "Given an embedded map structure with sequences of per-category snipe summary
+  statistics at the leaves, returns a collection of sequences with string versions
+  of the map keys, representing category names, followed by the summary statistics.
+  (This prepares the data for writing to a CSV file that can be easily read into
+  an R dataframe for use by Lattice graphics.)"
+  [stats]
+  (let [not-quite-flat (s/select (s/recursive-path [] p
+                                    (s/if-path map?
+                                       [s/ALL                                 ; for each MapEntry
+                                        (s/collect-one s/FIRST (s/view name)) ; add the name of its key to
+                                        s/LAST p]                             ; passing its val to <recurse>
+                                       s/STAY)) ; return what we've got (a val from a map), and stop this branch
+                                  stats)]
+    (map #(concat (butlast %)
+                  (last %))
+         not-quite-flat)))
