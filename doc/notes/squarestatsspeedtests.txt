@@ -1,6 +1,7 @@
 tests of alternative square-stats versions (with added doall's)
 on three stats structures, from steps 100, 500, and 800 in
-the same run.
+the same run.  From commit d288069 of branch square-stats-alternatives-with-doall.
+(This is essentially the same as commit 340c313 on master.)
 
 user=> (pprint s100)
 {:k
