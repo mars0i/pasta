@@ -340,7 +340,9 @@
         east-display (:east-display ui-config)
         east-display-frame (:east-display-frame ui-config)
         superimposed-display (:superimposed-display ui-config)
-        superimposed-display-frame (:superimposed-display-frame ui-config)]
+        superimposed-display-frame (:superimposed-display-frame ui-config)
+        sim-config (.getState this)
+        cfg-data$ (.simConfigData sim-config)]
     (when west-display-frame (.dispose west-display-frame))
     (when east-display-frame (.dispose east-display-frame))
     (when superimposed-display-frame (.dispose superimposed-display-frame))
@@ -349,7 +351,9 @@
     (reset! (:east-display ui-config) nil)
     (reset! (:east-display-frame ui-config) nil)
     (reset! (:superimposed-display ui-config) nil)
-    (reset! (:superimposed-display-frame ui-config) nil)))
+    (reset! (:superimposed-display-frame ui-config) nil)
+    (when-let [writer (:csv-writer @cfg-data$)]
+      (.close writer))))
 
 ;; Try this:
 ;; (let [snipes (.elements (:snipe-field (:popenv @cfg-data$))) N (count snipes) energies (map :energy snipes)] [N (/ (apply + energies) N)])
