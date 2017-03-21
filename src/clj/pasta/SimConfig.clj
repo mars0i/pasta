@@ -85,7 +85,7 @@
 
 (defn -main
   [& args]
-  ;(record-commandline-args! args) ; The SimConfig isn't available yet, so store commandline args for later access by start().
+  (record-commandline-args! args) ; The SimConfig isn't available yet, so store commandline args for later access by start().
   (sim.engine.SimState/doLoop pasta.SimConfig (into-array String args))
   (System/exit 0))
 
@@ -118,34 +118,39 @@
     ;; Run it:
     (let [write-csv (:write-csv @cfg-data$)
           report-every (double (:report-every @cfg-data$))
-          max-ticks (:max-ticks @cfg-data$)
-          stoppable (.scheduleRepeating schedule Schedule/EPOCH 0 ; epoch = starting at beginning, 0 means run this first during timestep
-                        (reify Steppable 
-                          (step [this sim-state]
-                            (swap! cfg-data$ update :popenv (partial pe/next-popenv rng cfg-data$)))))]
+          max-ticks (:max-ticks @cfg-data$)]
       ;; TODO probably need to wrap this in a try/catch:
       (when write-csv
-        (println "writing") ; DEBUG
         (let [basename (or (:csv-basename @cfg-data$) (str "pasta" (.seed this)))
               filename (str basename ".csv")]
-          (swap! cfg-data$ :csv-writer (clojure.java.io/writer filename)))) ; the file is open now
-      ;; Stop simulation when condition satisfied (TODO will add additional conditions later):
-      (.scheduleRepeating schedule Schedule/EPOCH 1 ; 1 = i.e. after main previous Steppable that runs the simulation
-                          (reify Steppable
-                            (step [this sim-state]
+          (swap! cfg-data$ assoc :csv-writer (clojure.java.io/writer filename))
+          (.write (:csv-writer @cfg-data$) "Yow!\n") ; DEBUG
+          (.close (:csv-writer @cfg-data$)) ; DEBUG
+          )) ; the file is open now
+      ;; This runs the simulation:
+      (let [stoppable (.scheduleRepeating schedule Schedule/EPOCH 0 ; epoch = starting at beginning, 0 means run this first during timestep
+                                          (reify Steppable 
+                                            (step [this sim-state]
+                                              (swap! cfg-data$ update :popenv (partial pe/next-popenv rng cfg-data$)))))]
+        ;; Stop simulation when condition satisfied (TODO will add additional conditions later):
+        (.scheduleRepeating schedule Schedule/EPOCH 1 ; 1 = i.e. after main previous Steppable that runs the simulation
+                            (reify Steppable
+                              (step [this sim-state]
                                 (when (and (pos? max-ticks) ; run forever if max-ticks = 0
                                            (>= (.getSteps schedule) max-ticks)) ; = s/b enough, but >= as failsafe
                                   (.stop stoppable)
                                   (stats/report-stats @cfg-data$ schedule) ; FIXME BROKEN FOR NEW TWO-ENV CONFIG
                                   (println)
                                   (stats/report-params @cfg-data$)
+                                  (when-let [writer (:csv-writer @cfg-data$)]
+                                    (.close writer))
                                   (.kill sim-state))))) ; end program after cleaning up Mason stuff
-      ;; maybe report stats periodically
-      (when (pos? report-every)
-        (.scheduleRepeating schedule report-every 1 ; first tick to report at; ordering within tick
-                            (reify Steppable
-                              (step [this sim-state]
-                                (when (< (.getSteps schedule) max-ticks) ; don't report if this is the last tick
-                                  (stats/report-stats @cfg-data$ schedule) ; FIXME BROKEN FOR NEW TWO-ENV CONFIG
-                                  (println))))
-                            report-every))))) ; repeat this often
+        ;; maybe report stats periodically
+        (when (pos? report-every)
+          (.scheduleRepeating schedule report-every 1 ; first tick to report at; ordering within tick
+                              (reify Steppable
+                                (step [this sim-state]
+                                  (when (< (.getSteps schedule) max-ticks) ; don't report if this is the last tick
+                                    (stats/report-stats @cfg-data$ schedule) ; FIXME BROKEN FOR NEW TWO-ENV CONFIG
+                                    (println))))
+                              report-every)))))) ; repeat this often
