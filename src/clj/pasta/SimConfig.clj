@@ -52,7 +52,7 @@
                       [use-gui           false  boolean false       ["-g" "If -g, use GUI; otherwise use GUI if and only if +g or there are no commandline options." :parse-fn #(Boolean. %)]]
                       [extreme-pref        1.0  double  true        ["-x" "Absolute value of r-snipe preferences." :parse-fn #(Double. %)]]
                       [write-csv         false  boolean false       ["-w" "Write data to file instead of printing it to console." :parse-fn #(Boolean. %)]]
-                      [csv-basename       ""   java.lang.String false ["-f" "Base name of files to append data to.  Otherwise new filenames generated from seed." :parse-fn #(String. %)]]
+                      [csv-basename       nil  java.lang.String false ["-f" "Base name of files to append data to.  Otherwise new filenames generated from seed." :parse-fn #(String. %)]]
                       [csv-writer        nil   java.io.BufferedWriter false]
                       [max-pop-size        0    long    false]
                       [seed              nil    long    false] ; convenience field to store SimConfig's seed
@@ -124,8 +124,8 @@
         (let [basename (or (:csv-basename @cfg-data$) (str "pasta" (.seed this)))
               filename (str basename ".csv")]
           (swap! cfg-data$ assoc :csv-writer (clojure.java.io/writer filename))
-          (.write (:csv-writer @cfg-data$) "Yow!\n") ; DEBUG
-          (.close (:csv-writer @cfg-data$)) ; DEBUG
+          (.write (:csv-writer @cfg-data$) (str "Yow!" (.seed this)"\n")) ; DEBUG
+          ;(.close (:csv-writer @cfg-data$)) ; DEBUG
           )) ; the file is open now
       ;; This runs the simulation:
       (let [stoppable (.scheduleRepeating schedule Schedule/EPOCH 0 ; epoch = starting at beginning, 0 means run this first during timestep
@@ -151,6 +151,6 @@
                               (reify Steppable
                                 (step [this sim-state]
                                   (when (< (.getSteps schedule) max-ticks) ; don't report if this is the last tick
-                                    (stats/report-stats @cfg-data$ schedule) ; FIXME BROKEN FOR NEW TWO-ENV CONFIG
+                                    (stats/report-stats @cfg-data$ schedule)
                                     (println))))
                               report-every)))))) ; repeat this often

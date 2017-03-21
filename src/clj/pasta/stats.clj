@@ -5,6 +5,7 @@
 (ns pasta.stats
   (:require [pasta.snipe :as sn]
             [utils.map2csv :as m2c]
+            [clojure.data.csv :as csv]
             [clojure.pprint :as pp]
             [clojure.math.numeric-tower :as math]
             [com.rpl.specter :as s]))
@@ -255,17 +256,19 @@
               stats)))
 
 (defn make-stats-at-step
-  [cfg-data schedule]
-  {:step (.getSteps schedule)
+  [cfg-data cfg]
+  {:run (.seed cfg)
+   :step (.getSteps (.schedule cfg))
    :stats (snipe-stats (classify-snipes cfg-data))})
 
 (defn square-stats-at-step-for-csv
   [stats-at-step]
-  (let [step (:step stats-at-step)
+  (let [run (:run stats-at-step)
+        step (:step stats-at-step)
         squared-stats (square-stats (:stats stats-at-step))]
-    (map #(cons step %) squared-stats)))
+    (map #(into [run step] %) squared-stats)))
 
-;; Illustration of usage:
+;; Illustration of usage for old version:
 ;;
 ;;    user=> (def s804 (square-stats-at-step-for-csv (make-stats-at-step @data$ (.schedule cfg))))
 ;;    #'user/s804
@@ -299,6 +302,15 @@
 ;;     (911 "s" "west" "neg" 52 14.576923076923077 -0.7692529972684045 511.7307692307692)
 ;;     (911 "s" "west" "pos" 15 7.266666666666667 0.866699845811923 288.53333333333336)
 ;;     (911 "s" "west" "zero" 3 10.0 0.0 9.0))
+
+(defn write-stats-to-csv
+  "Given a SimState cfg and a cfg-data, get current statistics and write to file in a format
+  useful for reading into an R datagrame."
+  [cfg cfg-data]
+  (csv/write-csv (:csv-writer cfg-data)
+                 (square-stats-at-step-for-csv
+                   (make-stats-at-step cfg-data cfg))))
+
 
 ;; TODO rewrite using new data collection functions
 (defn write-stats-to-console
