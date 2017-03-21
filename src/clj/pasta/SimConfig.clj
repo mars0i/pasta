@@ -4,6 +4,7 @@
 
 (ns pasta.SimConfig
   (:require [clojure.tools.cli]
+            [clojure.java.io]
             [utils.defsimconfig :as defcfg]
             [pasta.snipe :as sn]
             [pasta.popenv :as pe]
@@ -51,7 +52,8 @@
                       [use-gui           false  boolean false       ["-g" "If -g, use GUI; otherwise use GUI if and only if +g or there are no commandline options." :parse-fn #(Boolean. %)]]
                       [extreme-pref        1.0  double  true        ["-x" "Absolute value of r-snipe preferences." :parse-fn #(Double. %)]]
                       [write-csv         false  boolean false       ["-w" "Write data to file instead of printing it to console." :parse-fn #(Boolean. %)]]
-                      [csv-basename       ""    java.lang.String false ["-f" "Base name of files to append data to.  Otherwise new filenames generated from seed." :parse-fn #(String. %)]]
+                      [csv-basename       ""   java.lang.String false ["-f" "Base name of files to append data to.  Otherwise new filenames generated from seed." :parse-fn #(String. %)]]
+                      [csv-writer        nil   java.io.BufferedWriter false]
                       [max-pop-size        0    long    false]
                       [seed              nil    long    false] ; convenience field to store SimConfig's seed
                       [popenv            nil   pasta.popenv.PopEnv false]]
@@ -92,6 +94,14 @@
   [args]
   (apply -main args)) ; have to use apply since already in a seq
 
+(defn -stop
+  [^SimConfig this]
+  (let [^SimConfigData cfg-data$ (.simConfigData this)
+        writer (:csv-writer @cfg-data$)]
+    (when writer
+      (.close writer)
+      (swap! cfg-data$ :csv-writer nil))))
+
 (defn -start
   "Function that's called to (re)start a new simulation run."
   [^SimConfig this]
@@ -106,12 +116,19 @@
     (pe/setup-popenv-config! cfg-data$)
     (swap! cfg-data$ assoc :popenv (pe/make-popenv rng cfg-data$)) ; create new popenv
     ;; Run it:
-    (let [report-every (double (:report-every @cfg-data$))
+    (let [write-csv (:write-csv @cfg-data$)
+          report-every (double (:report-every @cfg-data$))
           max-ticks (:max-ticks @cfg-data$)
           stoppable (.scheduleRepeating schedule Schedule/EPOCH 0 ; epoch = starting at beginning, 0 means run this first during timestep
                         (reify Steppable 
                           (step [this sim-state]
                             (swap! cfg-data$ update :popenv (partial pe/next-popenv rng cfg-data$)))))]
+      ;; TODO probably need to wrap this in a try/catch:
+      (when write-csv
+        (println "writing") ; DEBUG
+        (let [basename (or (:csv-basename @cfg-data$) (str "pasta" (.seed this)))
+              filename (str basename ".csv")]
+          (swap! cfg-data$ :csv-writer (clojure.java.io/writer filename)))) ; the file is open now
       ;; Stop simulation when condition satisfied (TODO will add additional conditions later):
       (.scheduleRepeating schedule Schedule/EPOCH 1 ; 1 = i.e. after main previous Steppable that runs the simulation
                           (reify Steppable
