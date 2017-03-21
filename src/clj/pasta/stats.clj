@@ -315,8 +315,8 @@
 ;; TODO rewrite using new data collection functions
 (defn write-stats-to-console
   "Report summary statistics to standard output."
-  ([cfg-data schedule] 
-   (print "At step" (.getSteps schedule) "")
+  ([cfg cfg-data] 
+   (print "At step" (.getSteps (.schedule cfg)) "")
    (report-stats cfg-data))
   ([cfg-data]
    (let [popenv (:popenv cfg-data)
@@ -349,8 +349,7 @@
 
 ;; TODO add conditioning on :write-csv
 (defn report-stats
-  ([cfg-data schedule] (write-stats-to-console cfg-data schedule))
-  ([cfg-data]          (write-stats-to-console cfg-data)))
+  [cfg cfg-data] (write-stats-to-console cfg-data cfg))
 
 (defn write-params-to-console
   "Print parameters in cfg-data to standard output."

@@ -139,9 +139,7 @@
                                 (when (and (pos? max-ticks) ; run forever if max-ticks = 0
                                            (>= (.getSteps schedule) max-ticks)) ; = s/b enough, but >= as failsafe
                                   (.stop stoppable)
-                                  (stats/report-stats @cfg-data$ schedule) ; FIXME BROKEN FOR NEW TWO-ENV CONFIG
-                                  (println)
-                                  (stats/report-params @cfg-data$)
+                                  (stats/report-stats @cfg-data$ sim-state)
                                   (when-let [writer (:csv-writer @cfg-data$)]
                                     (.close writer))
                                   (.kill sim-state))))) ; end program after cleaning up Mason stuff
