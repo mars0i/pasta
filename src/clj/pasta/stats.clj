@@ -350,7 +350,7 @@
 (defn write-params-to-file
   ([cfg-data] (write-params-to-file cfg-data 
                                     (str (:csv-basename cfg-data) 
-                                         "Params" 
+                                         "params" 
                                          (:seed cfg-data)
                                          ".csv")))
   ([cfg-data f] (m2c/spit-map f cfg-data)))
