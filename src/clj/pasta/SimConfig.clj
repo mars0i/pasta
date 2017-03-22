@@ -125,8 +125,10 @@
       (when write-csv
         (let [basename (or (:csv-basename @cfg-data$) (str "pasta" seed))
               filename (str basename ".csv")
-              writer (clojure.java.io/writer filename)] ; open file
-          (csv/write-csv writer [stats/csv-header]) ; wrap vector in vector--that's what write-csv wants
+              add-to-file? (.exists (clojure.java.io/file filename)) ; should we create new file, or add to an older one?
+              writer (clojure.java.io/writer filename :append add-to-file?)]
+          (when-not add-to-file?
+            (csv/write-csv writer [stats/csv-header])) ; wrap vector in vector--that's what write-csv wants
           (swap! cfg-data$ assoc :csv-writer writer))) ; store handle
       ;; This runs the simulation:
       (let [stoppable (.scheduleRepeating schedule Schedule/EPOCH 0 ; epoch = starting at beginning, 0 means run this first during timestep
