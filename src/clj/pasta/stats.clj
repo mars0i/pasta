@@ -320,7 +320,7 @@
 
 (defn report-stats
   [cfg-data seed step] 
-  (if (:write-csv cfg-data)
+  (if (:write-to-csv cfg-data)
     (write-stats-to-csv cfg-data seed step)
     (write-stats-to-console cfg-data step)))
 
@@ -341,7 +341,7 @@
 
 (defn report-params
   [cfg-data]
-  (if (:write-csv cfg-data)
+  (if (:write-to-csv cfg-data)
     (write-params-to-file cfg-data)
     (write-params-to-console cfg-data)))
 
