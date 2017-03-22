@@ -52,7 +52,7 @@
                       [env-display-size   12.0  double  false       ["-D" "How large to display the env in gui by default." :parse-fn #(Double. %)]]
                       [use-gui           false  boolean false       ["-g" "If -g, use GUI; otherwise use GUI if and only if +g or there are no commandline options." :parse-fn #(Boolean. %)]]
                       [extreme-pref        1.0  double  true        ["-x" "Absolute value of r-snipe preferences." :parse-fn #(Double. %)]]
-                      [write-to-csv      false  boolean false       ["-w" "Write data to file instead of printing it to console." :parse-fn #(Boolean. %)]]
+                      [write-csv         false  boolean false       ["-w" "Write data to file instead of printing it to console." :parse-fn #(Boolean. %)]]
                       [csv-basename       nil  java.lang.String false ["-f" "Base name of files to append data to.  Otherwise new filenames generated from seed." :parse-fn #(String. %)]]
                       [csv-writer        nil   java.io.BufferedWriter false]
                       [max-pop-size        0    long    false]
@@ -99,10 +99,9 @@
   [^SimConfig this]
   (let [^SimConfigData cfg-data$ (.simConfigData this)
         writer (:csv-writer @cfg-data$)]
-    ;(when writer
-    ;  (.close writer)
-    ;  (swap! cfg-data$ :csv-writer nil))
-    ))
+    (when writer
+      (.close writer)
+      (swap! cfg-data$ :csv-writer nil))))
 
 (defn run-sim
   [sim-cfg rng cfg-data$ seed]
@@ -123,8 +122,8 @@
                                 (when (>= steps max-ticks) ; = s/b enough, but >= as failsafe
                                   (.stop stoppable)
                                   (stats/report-stats @cfg-data$ seed steps)
-                                  ;(when-let [writer (:csv-writer @cfg-data$)]
-                                  ;  (.close writer))
+                                  (when-let [writer (:csv-writer @cfg-data$)]
+                                    (.close writer))
                                   (.kill sim-state))))))) ; end program after cleaning up Mason stuff
     ;; maybe report stats periodically
     (when (pos? report-every)
@@ -150,17 +149,15 @@
     (pe/setup-popenv-config! cfg-data$)
     (swap! cfg-data$ assoc :popenv (pe/make-popenv rng cfg-data$)) ; create new popenv
     ;; Run it:
-    (if (:write-to-csv @cfg-data$)
-      (let [basename (or (:csv-basename @cfg-data$) (str "pasta" seed))
-            filename (str basename ".csv")
-            add-to-file? (.exists (clojure.java.io/file filename))] ; should we create new file, or add to an older one?
-        (with-open [writer (clojure.java.io/writer filename :append add-to-file?)]
-          (println "in with-open")
-          (swap! cfg-data$ assoc :csv-writer writer) ; store handle
+    (let [write-csv (:write-csv @cfg-data$)]
+      ;; TODO probably need to wrap this in a try/catch:
+      (when write-csv
+        (let [basename (or (:csv-basename @cfg-data$) (str "pasta" seed))
+              filename (str basename ".csv")
+              add-to-file? (.exists (clojure.java.io/file filename)) ; should we create new file, or add to an older one?
+              writer (clojure.java.io/writer filename :append add-to-file?)]
           (when-not add-to-file?
             (csv/write-csv writer [stats/csv-header])) ; wrap vector in vector--that's what write-csv wants
-          (run-sim this rng cfg-data$ seed)))
-      (do (println "running outside of with-open")
-      (run-sim this rng cfg-data$ seed))
-          )))
-
+          (swap! cfg-data$ assoc :csv-writer writer))) ; store handle
+      (run-sim this rng cfg-data$ seed))))
+      
