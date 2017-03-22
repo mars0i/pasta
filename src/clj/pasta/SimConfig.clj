@@ -103,6 +103,38 @@
       (.close writer)
       (swap! cfg-data$ :csv-writer nil))))
 
+(defn run-sim
+  [sim-cfg rng cfg-data$ seed]
+  (let [^Schedule schedule (.schedule sim-cfg)
+        report-every (double (:report-every @cfg-data$))
+        max-ticks (:max-ticks @cfg-data$)
+        ;; This runs the simulation:
+        stoppable (.scheduleRepeating schedule Schedule/EPOCH 0 ; epoch = starting at beginning, 0 means run this first during timestep
+                                      (reify Steppable 
+                                        (step [this sim-state]
+                                          (swap! cfg-data$ update :popenv (partial pe/next-popenv rng cfg-data$)))))]
+    ;; Stop simulation when condition satisfied
+    (.scheduleRepeating schedule Schedule/EPOCH 1 ; 1 = i.e. after main previous Steppable that runs the simulation
+                        (reify Steppable
+                          (step [this sim-state]
+                            (when (pos? max-ticks) ; run forever if max-ticks = 0
+                              (let [steps (.getSteps schedule)]
+                                (when (>= steps max-ticks) ; = s/b enough, but >= as failsafe
+                                  (.stop stoppable)
+                                  (stats/report-stats @cfg-data$ seed steps)
+                                  (when-let [writer (:csv-writer @cfg-data$)]
+                                    (.close writer))
+                                  (.kill sim-state))))))) ; end program after cleaning up Mason stuff
+    ;; maybe report stats periodically
+    (when (pos? report-every)
+      (.scheduleRepeating schedule report-every 1 ; first tick to report at; ordering within tick
+                          (reify Steppable
+                            (step [this sim-state]
+                              (let [steps (.getSteps schedule)]
+                                (when (<  steps max-ticks) ; don't report if this is the last tick
+                                  (stats/report-stats @cfg-data$ seed steps)))))
+                          report-every)))) ; repeat this often
+
 (defn -start
   "Function that's called to (re)start a new simulation run."
   [^SimConfig this]
@@ -110,17 +142,14 @@
   ;; If user passed commandline options, use them to set parameters, rather than defaults:
   (when @commandline$ (set-sim-config-data-from-commandline! this commandline$))
   ;; Construct core data structures of the simulation:
-  (let [^Schedule schedule (.schedule this)
-        ^SimConfigData cfg-data$ (.simConfigData this)
+  (let [^SimConfigData cfg-data$ (.simConfigData this)
         ^MersenneTwisterFast rng (.-random this)
         seed (.seed this)]
     (swap! cfg-data$ assoc :seed seed)
     (pe/setup-popenv-config! cfg-data$)
     (swap! cfg-data$ assoc :popenv (pe/make-popenv rng cfg-data$)) ; create new popenv
     ;; Run it:
-    (let [write-csv (:write-csv @cfg-data$)
-          report-every (double (:report-every @cfg-data$))
-          max-ticks (:max-ticks @cfg-data$)]
+    (let [write-csv (:write-csv @cfg-data$)]
       ;; TODO probably need to wrap this in a try/catch:
       (when write-csv
         (let [basename (or (:csv-basename @cfg-data$) (str "pasta" seed))
@@ -130,29 +159,5 @@
           (when-not add-to-file?
             (csv/write-csv writer [stats/csv-header])) ; wrap vector in vector--that's what write-csv wants
           (swap! cfg-data$ assoc :csv-writer writer))) ; store handle
-      ;; This runs the simulation:
-      (let [stoppable (.scheduleRepeating schedule Schedule/EPOCH 0 ; epoch = starting at beginning, 0 means run this first during timestep
-                                          (reify Steppable 
-                                            (step [this sim-state]
-                                              (swap! cfg-data$ update :popenv (partial pe/next-popenv rng cfg-data$)))))]
-        ;; Stop simulation when condition satisfied (TODO will add additional conditions later):
-        (.scheduleRepeating schedule Schedule/EPOCH 1 ; 1 = i.e. after main previous Steppable that runs the simulation
-                            (reify Steppable
-                              (step [this sim-state]
-                                (when (pos? max-ticks) ; run forever if max-ticks = 0
-                                  (let [steps (.getSteps schedule)]
-                                    (when (>= steps max-ticks) ; = s/b enough, but >= as failsafe
-                                      (.stop stoppable)
-                                      (stats/report-stats @cfg-data$ seed steps)
-                                      (when-let [writer (:csv-writer @cfg-data$)]
-                                        (.close writer))
-                                      (.kill sim-state))))))) ; end program after cleaning up Mason stuff
-        ;; maybe report stats periodically
-        (when (pos? report-every)
-          (.scheduleRepeating schedule report-every 1 ; first tick to report at; ordering within tick
-                              (reify Steppable
-                                (step [this sim-state]
-                                  (let [steps (.getSteps schedule)]
-                                    (when (<  steps max-ticks) ; don't report if this is the last tick
-                                      (stats/report-stats @cfg-data$ seed steps)))))
-                                report-every)))))) ; repeat this often
+      (run-sim this rng cfg-data$ seed))))
+      
