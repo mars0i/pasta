@@ -4,6 +4,7 @@
 
 (ns pasta.SimConfig
   (:require [clojure.tools.cli]
+            [clojure.data.csv :as csv]
             [clojure.java.io]
             [utils.defsimconfig :as defcfg]
             [pasta.snipe :as sn]
@@ -111,8 +112,9 @@
   ;; Construct core data structures of the simulation:
   (let [^Schedule schedule (.schedule this)
         ^SimConfigData cfg-data$ (.simConfigData this)
-        ^MersenneTwisterFast rng (.-random this)]
-    (swap! cfg-data$ assoc :seed (.seed this))
+        ^MersenneTwisterFast rng (.-random this)
+        seed (.seed this)]
+    (swap! cfg-data$ assoc :seed seed)
     (pe/setup-popenv-config! cfg-data$)
     (swap! cfg-data$ assoc :popenv (pe/make-popenv rng cfg-data$)) ; create new popenv
     ;; Run it:
@@ -121,12 +123,11 @@
           max-ticks (:max-ticks @cfg-data$)]
       ;; TODO probably need to wrap this in a try/catch:
       (when write-csv
-        (let [basename (or (:csv-basename @cfg-data$) (str "pasta" (.seed this)))
-              filename (str basename ".csv")]
-          (swap! cfg-data$ assoc :csv-writer (clojure.java.io/writer filename))
-          (.write (:csv-writer @cfg-data$) (str "Yow!" (.seed this)"\n")) ; DEBUG
-          ;(.close (:csv-writer @cfg-data$)) ; DEBUG
-          )) ; the file is open now
+        (let [basename (or (:csv-basename @cfg-data$) (str "pasta" seed))
+              filename (str basename ".csv")
+              writer (clojure.java.io/writer filename)] ; open file
+          (csv/write-csv writer [stats/csv-header]) ; wrap vector in vector--that's what write-csv wants
+          (swap! cfg-data$ assoc :csv-writer writer))) ; store handle
       ;; This runs the simulation:
       (let [stoppable (.scheduleRepeating schedule Schedule/EPOCH 0 ; epoch = starting at beginning, 0 means run this first during timestep
                                           (reify Steppable 
@@ -136,19 +137,20 @@
         (.scheduleRepeating schedule Schedule/EPOCH 1 ; 1 = i.e. after main previous Steppable that runs the simulation
                             (reify Steppable
                               (step [this sim-state]
-                                (when (and (pos? max-ticks) ; run forever if max-ticks = 0
-                                           (>= (.getSteps schedule) max-ticks)) ; = s/b enough, but >= as failsafe
-                                  (.stop stoppable)
-                                  (stats/report-stats @cfg-data$ sim-state)
-                                  (when-let [writer (:csv-writer @cfg-data$)]
-                                    (.close writer))
-                                  (.kill sim-state))))) ; end program after cleaning up Mason stuff
+                                (when (pos? max-ticks) ; run forever if max-ticks = 0
+                                  (let [steps (.getSteps schedule)]
+                                    (when (>= steps max-ticks) ; = s/b enough, but >= as failsafe
+                                      (.stop stoppable)
+                                      (stats/report-stats @cfg-data$ seed steps)
+                                      (when-let [writer (:csv-writer @cfg-data$)]
+                                        (.close writer))
+                                      (.kill sim-state))))))) ; end program after cleaning up Mason stuff
         ;; maybe report stats periodically
         (when (pos? report-every)
           (.scheduleRepeating schedule report-every 1 ; first tick to report at; ordering within tick
                               (reify Steppable
                                 (step [this sim-state]
-                                  (when (< (.getSteps schedule) max-ticks) ; don't report if this is the last tick
-                                    (stats/report-stats @cfg-data$ schedule)
-                                    (println))))
-                              report-every)))))) ; repeat this often
+                                  (let [steps (.getSteps schedule)]
+                                    (when (<  steps max-ticks) ; don't report if this is the last tick
+                                      (stats/report-stats @cfg-data$ seed steps)))))
+                                report-every)))))) ; repeat this often

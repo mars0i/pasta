@@ -197,7 +197,7 @@
      [num-snipes avg-energy avg-pref avg-age]))
      ;{:count num-snipes :energy avg-energy :pref avg-pref :age avg-age}
 
-(def csv-header ["step" "snipe_class" "subenv" "pref_sign" "count" "energy" "pref" "age"])
+(def csv-header ["run" "step" "snipe_class" "subenv" "pref_sign" "count" "energy" "pref" "age"])
 
 ;; leaf-seqs
 ;; Specter navigator operator that allows me to run snipe-stats on a classified snipes 
@@ -256,9 +256,9 @@
               stats)))
 
 (defn make-stats-at-step
-  [cfg-data cfg]
-  {:run (.seed cfg)
-   :step (.getSteps (.schedule cfg))
+  [cfg-data seed step]
+  {:run seed
+   :step step
    :stats (snipe-stats (classify-snipes cfg-data))})
 
 (defn square-stats-at-step-for-csv
@@ -306,50 +306,23 @@
 (defn write-stats-to-csv
   "Given a SimState cfg and a cfg-data, get current statistics and write to file in a format
   useful for reading into an R datagrame."
-  [cfg cfg-data]
+  [cfg-data seed step]
   (csv/write-csv (:csv-writer cfg-data)
                  (square-stats-at-step-for-csv
-                   (make-stats-at-step cfg-data cfg))))
+                   (make-stats-at-step cfg-data seed step))))
 
 
-;; TODO rewrite using new data collection functions
 (defn write-stats-to-console
   "Report summary statistics to standard output."
-  ([cfg cfg-data] 
-   (print "At step" (.getSteps (.schedule cfg)) "")
-   (report-stats cfg-data))
-  ([cfg-data]
-   (let [popenv (:popenv cfg-data)
-         pop-size (get-pop-size cfg-data)
-         west-snipes (.elements (:snipe-field (:west popenv)))
-         east-snipes (.elements (:snipe-field (:east popenv)))
-         snipes (concat west-snipes east-snipes)
-         west-counts (sort-map (sum-snipes west-snipes))
-         east-counts (sort-map (sum-snipes east-snipes))
-         counts (sort-map (merge-with + west-counts east-counts))
-         freqs (sort-map (snipe-freqs counts))
-         west-prefs (sort-map (avg-mush-pref west-snipes west-counts))
-         east-prefs (sort-map (avg-mush-pref east-snipes east-counts))
-         energies (sort-map (avg-energy snipes counts))
-         ages (sort-map (map-kv round-or-nil (avg-age snipes counts)))]
-         ;; dead-counts (into (sorted-map) (count-dead-snipe cfg-data)) FIXME
-         ;dead-ages (into (sorted-map) (map-kv round-or-nil (mean-ages-dead-snipe cfg-data dead-counts))) FIXME ; and ages are easier to read as integers
+  [cfg-data step] 
+  (pp/pprint (make-stats-at-step cfg-data 0 step)) ; 0 is dummy seed
+  (println))
 
-     ;; ~{...~} iterates over a sequence; maps treated as sequences become sequences of pairs; 
-     ;; so we embed another ~{...~} to process the pair.  also note "~^," emits a comma iff there is more coming.
-     (pp/cl-format true "counts ~{~{~a ~d~}~^, ~}~%" counts)
-     (pp/cl-format true "freqs ~{~{~a ~3$~}~^, ~}~%" freqs)
-     (pp/cl-format true "mean west-prefs ~{~{~a ~@{~:[-~;~:*~5$~]~}~}~^, ~}~%" west-prefs)       ;  ...
-     (pp/cl-format true "mean east-prefs ~{~{~a ~@{~:[-~;~:*~5$~]~}~}~^, ~}~%" east-prefs)       ;  ...
-     (pp/cl-format true "mean energies ~{~{~a ~@{~:[-~;~:*~$~]~}~}~^, ~}~%" energies) ; voodoo to print a number with ~$ if non-nil, or "-" otherwise. 
-     (pp/cl-format true "mean ages ~{~{~a ~@{~:[-~;~:*~d~]~}~}~^, ~}~%" ages)         ;  It's needed because I treat an average as nil if no snipes
-     ;(pp/cl-format true "dead counts ~{~{~a ~d~}~^, ~}~%" dead-counts) ; 
-     ;(pp/cl-format true "mean dead ages ~{~{~a ~@{~:[-~;~:*~d~]~}~}~^, ~}~%" dead-ages)
-     )))
-
-;; TODO add conditioning on :write-csv
 (defn report-stats
-  [cfg cfg-data] (write-stats-to-console cfg-data cfg))
+  [cfg-data seed step] 
+  (if (:write-csv cfg-data)
+    (write-stats-to-csv cfg-data seed step)
+    (write-stats-to-console cfg-data step)))
 
 (defn write-params-to-console
   "Print parameters in cfg-data to standard output."
