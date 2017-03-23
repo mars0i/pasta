@@ -124,6 +124,7 @@
                                   (stats/report-stats @cfg-data$ seed steps)
                                   (when-let [writer (:csv-writer @cfg-data$)]
                                     (.close writer))
+                                  (stats/report-params @cfg-data$)
                                   (.kill sim-state))))))) ; end program after cleaning up Mason stuff
     ;; maybe report stats periodically
     (when (pos? report-every)
