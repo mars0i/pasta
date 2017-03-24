@@ -43,3 +43,4 @@ rwp + as.layer(rwn) + as.layer(rwz)
 rep <- xyplot(count ~ step | run, data=dfr.ag[dfr.ag$subenv=="east" & dfr.ag$snipe_class=="r" & dfr.ag$pref_dir=="pos",], type=c("l"), col="green")
 ren <- xyplot(count ~ step | run, data=dfr.ag[dfr.ag$subenv=="east" & dfr.ag$snipe_class=="r" & dfr.ag$pref_dir=="neg",], type=c("l"), col="red")
 rez <- xyplot(count ~ step | run, data=dfr.ag[dfr.ag$subenv=="east" & dfr.ag$snipe_class=="r" & dfr.ag$pref_dir=="zero",], type=c("l"), col="blue")
+
