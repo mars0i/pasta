@@ -23,30 +23,32 @@
                  [org.jfree/jfreechart "1.0.17"]
                  [org.beanshell/bsh "2.0b4"]]
 
-   ;:plugins [[lein-localrepo "0.5.3"]
-   ;          [lein-expand-resource-paths "0.0.1"]] ; allows wildcards in resource-paths (https://github.com/dchelimsky/lein-expand-resource-paths)
- 
-   :jvm-opts ["-Xms2g"]
-   ;:resource-paths ["lib/*"]
-   :source-paths ["src/clj"]
-   ;:main pasta.UI
-   :aot [pasta.mush pasta.snipe pasta.popenv pasta.SimConfig pasta.UI pasta.core]
-   ;:aot [pasta.SimConfig pasta.UI]
-   :profiles {:nogui {:main pasta.SimConfig} ; execute this with 'lein with-profile nogui run'
-              :gui   {:main pasta.UI}      ; execute this with 'lein with-profile gui run'
-              :core  {:main pasta.core}
-              :uberjar {;:aot :all ; wrong order of compilation
-                        :prep-tasks [["compile" "pasta.UI"]
-				     ["compile" "utils.random" "utils.random-utils" "pasta.mush" "pasta.snipe"
-				     "pasta.popenv" "pasta.perception" "pasta.stats" "pasta.SimConfig"
-				     "pasta.core"]]
-                        ;:aot [utils.random utils.random-utils  ; spell out by hand so core isn't compiled too early
-                        ;      pasta.mush pasta.snipe pasta.popenv pasta.perception ; doesn't work
-                        ;      pasta.stats pasta.SimConfig pasta.UI pasta.core]
-                        :main pasta.core}}
-              
-   :target-path "target/%s"
- )
+  ;:plugins [[lein-localrepo "0.5.3"]
+  ;          [lein-expand-resource-paths "0.0.1"]] ; allows wildcards in resource-paths (https://github.com/dchelimsky/lein-expand-resource-paths)
+
+  ;:global-vars {*warn-on-reflection* true}
+
+  :jvm-opts ["-Xms2g"]
+  ;:resource-paths ["lib/*"]
+  :source-paths ["src/clj"]
+  ;:main pasta.UI
+  :aot [pasta.mush pasta.snipe pasta.popenv pasta.SimConfig pasta.UI pasta.core]
+  ;:aot [pasta.SimConfig pasta.UI]
+  :profiles {:nogui {:main pasta.SimConfig} ; execute this with 'lein with-profile nogui run'
+             :gui   {:main pasta.UI}      ; execute this with 'lein with-profile gui run'
+             :core  {:main pasta.core}
+             :uberjar {;:aot :all ; wrong order of compilation
+                       :prep-tasks [["compile" "pasta.UI"]
+                                    ["compile" "utils.random" "utils.random-utils" "pasta.mush" "pasta.snipe"
+                                     "pasta.popenv" "pasta.perception" "pasta.stats" "pasta.SimConfig"
+                                     "pasta.core"]]
+                       ;:aot [utils.random utils.random-utils  ; spell out by hand so core isn't compiled too early
+                       ;      pasta.mush pasta.snipe pasta.popenv pasta.perception ; doesn't work
+                       ;      pasta.stats pasta.SimConfig pasta.UI pasta.core]
+                       :main pasta.core}}
+
+  :target-path "target/%s"
+)
 
 
 ;; simple default version:
