@@ -339,7 +339,7 @@
         old-energy (:energy snipe)]
     (if (< old-energy birth-threshold)
       [0 snipe]
-      (let [num-births (+ 1 (quot (- old-energy birth-threshold) birth-cost)) ; one birth, plus as many allowed by energy that exceeds threshold
+      (let [num-births (+ 1 (quot (- old-energy birth-threshold) birth-cost)) ; one birth allowed by hitting threshold, plus additional allowed by energy exceeding threshold
             remaining-energy (- old-energy (* num-births birth-cost))]
         [num-births (assoc snipe :energy remaining-energy)]))))
 
