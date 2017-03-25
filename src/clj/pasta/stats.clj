@@ -15,6 +15,7 @@
 
 ;; FIXME There is a lot of obsolete code that needs to be removed.
 
+;; SAVE
 ;; from https://clojuredocs.org/clojure.core/reduce-kv#example-57d1e9dae4b0709b524f04eb
 ;; Or consider using Specter's (transform MAP-VALS ...)
 (defn map-kv
@@ -24,32 +25,31 @@
   (reduce-kv (fn [m k v] (assoc m k (f v)))
              (empty coll) coll))
 
+;; SAVE
 (defn sorted-group-by
   [f coll]
   (into (sorted-map) (group-by f coll)))
 
-(defn sort-map
-  [m]
-  (into (sorted-map) m))
+;(defn div-or-zero
+;  [d n]
+;  (if (zero? n)
+;    0
+;    (/ d n)))
 
-(defn div-or-zero
-  [d n]
-  (if (zero? n)
-    0
-    (/ d n)))
-
+;; SAVE
 (defn get-pop-size
   [cfg-data]
   (count (:snipe-map (:popenv cfg-data))))
 
-(defn prefix-map-keys
-  "Make a map that's like m but that has new keys in whihc string prefix is
-  prepended to the name of every key in map m."
-  [prefix m]
-  (zipmap (map #(keyword (str prefix "-" (name %)))
-               (keys m))
-          (vals m)))
+;(defn prefix-map-keys
+;  "Make a map that's like m but that has new keys in whihc string prefix is
+;  prepended to the name of every key in map m."
+;  [prefix m]
+;  (zipmap (map #(keyword (str prefix "-" (name %)))
+;               (keys m))
+;          (vals m)))
 
+;; SAVE
 (defn sum-snipes
   "Given a simple collection (not a map) of snipes, returns a map containing
   sums of values of snipes of different classes.  The sum is due to whatever 
@@ -76,13 +76,14 @@
           (map #(sum-snipes % f)
                (cons snipes more-snipes))))) ; cons is really cheap here
 
-(defn make-sum-fn
-  "Make a function passable to sum-snipes, using key k to extract a field
-  from a snipe s in order to add it to the value in the sum map."
-  [k]
-  (fn [v s]
-    (+ v (k s))))
+;(defn make-sum-fn
+;  "Make a function passable to sum-snipes, using key k to extract a field
+;  from a snipe s in order to add it to the value in the sum map."
+;  [k]
+;  (fn [v s]
+;    (+ v (k s))))
 
+;; SAVE
 (defn snipe-freqs
   "Given counts that result from sum-snipes, returns a map containing relative 
   frequencies of snipes of different classes, plus the total
@@ -95,56 +96,57 @@
       (map-kv (fn [n] (double (/ n total))) counts)
       (map-kv (fn [_] 0) counts))))
 
-(defn avg-snipes
-  "Computes the average of values in the result of (sum-snipe snipes f).
-  That is, divides each value in that result by the number of snipes
-  in that class.  If you use the two-argument version, make sure that
-  the counts argument comes from the same set of snipes."
-  ([snipes f] (avg-snipes snipes f (sum-snipes snipes)))
-  ([snipes f counts] (merge-with div-or-zero (sum-snipes snipes f) counts)))
+;(defn avg-snipes
+;  "Computes the average of values in the result of (sum-snipe snipes f).
+;  That is, divides each value in that result by the number of snipes
+;  in that class.  If you use the two-argument version, make sure that
+;  the counts argument comes from the same set of snipes."
+;  ([snipes f] (avg-snipes snipes f (sum-snipes snipes)))
+;  ([snipes f counts] (merge-with div-or-zero (sum-snipes snipes f) counts)))
 
-(defn count-dead-snipe
-  [cfg-data]
-  (let [{:keys [popenv]} cfg-data
-        {:keys [west east]} popenv
-        west-snipes (apply concat (:dead-snipes west))
-        east-snipes (apply concat (:dead-snipes east))]
-    (sum-snipes (concat west-snipes east-snipes))))
+;(defn count-dead-snipe
+;  [cfg-data]
+;  (let [{:keys [popenv]} cfg-data
+;        {:keys [west east]} popenv
+;        west-snipes (apply concat (:dead-snipes west))
+;        east-snipes (apply concat (:dead-snipes east))]
+;    (sum-snipes (concat west-snipes east-snipes))))
 
-(defn count-live-snipes
-  [cfg-data]
-  (let [{:keys [popenv]} cfg-data
-        {:keys [west east]} popenv
-        snipes (.elements (:snipe-field west))]
-    (.addAll snipes (.elements (:snipe-field east)))
-    (sum-snipes snipes)))
+;(defn count-live-snipes
+;  [cfg-data]
+;  (let [{:keys [popenv]} cfg-data
+;        {:keys [west east]} popenv
+;        snipes (.elements (:snipe-field west))]
+;    (.addAll snipes (.elements (:snipe-field east)))
+;    (sum-snipes snipes)))
 
-(defn avg-age
-  "Returns a map of mean ages for snipes, with keys as in count-snipes. The
-  counts argument should be the result of count-snipes for the same snipes."
-  [snipes counts]
-  (avg-snipes snipes (make-sum-fn :age) counts))
+;(defn avg-age
+;  "Returns a map of mean ages for snipes, with keys as in count-snipes. The
+;  counts argument should be the result of count-snipes for the same snipes."
+;  [snipes counts]
+;  (avg-snipes snipes (make-sum-fn :age) counts))
 
-(defn avg-energy
-  "Returns a map of mean ages for snipes, with keys as in count-snipes. The
-  counts argument should be the result of count-snipes for the same snipes."
-  [snipes counts]
-  (avg-snipes snipes (make-sum-fn :energy) counts))
+;(defn avg-energy
+;  "Returns a map of mean ages for snipes, with keys as in count-snipes. The
+;  counts argument should be the result of count-snipes for the same snipes."
+;  [snipes counts]
+;  (avg-snipes snipes (make-sum-fn :energy) counts))
 
-(defn avg-mush-pref
-  "Returns a map of mean ages for snipes, with keys as in count-snipes. The
-  counts argument should be the result of count-snipes for the same snipes."
-  [snipes counts]
-  (avg-snipes snipes (make-sum-fn :mush-pref) counts))
+;(defn avg-mush-pref
+;  "Returns a map of mean ages for snipes, with keys as in count-snipes. The
+;  counts argument should be the result of count-snipes for the same snipes."
+;  [snipes counts]
+;  (avg-snipes snipes (make-sum-fn :mush-pref) counts))
 
-(defn round-or-nil
-  "Rounds its argument unless the argument is falsey, in which case it's simply
-  passed through as is."
-  [x]
-  (if x
-    (math/round x)
-    x))
+;(defn round-or-nil
+;  "Rounds its argument unless the argument is falsey, in which case it's simply
+;  passed through as is."
+;  [x]
+;  (if x
+;    (math/round x)
+;    x))
 
+;; SAVE
 (defn classify-by-snipe-class
   [snipe]
   (cond (sn/k-snipe? snipe) :k
@@ -152,23 +154,17 @@
         (sn/s-snipe? snipe) :s
         :else nil))
 
+;; SAVE
 (defn classify-by-pref
   [snipe]
   (cond (pos? (:mush-pref snipe)) :pos
         (neg? (:mush-pref snipe)) :neg
         :else :zero))
 
+;; SAVE
 (def group-by-snipe-class (partial sorted-group-by classify-by-snipe-class))
 (def group-by-pref (partial sorted-group-by classify-by-pref))
 (def group-by-subenv (partial sorted-group-by :subenv))
-
-;(defn group-by-snipe-class [snipes] (into (sorted-map) (group-by classify-by-snipe-class snipes)))
-;(defn group-by-pref [snipes] (into (sorted-map) (group-by classify-by-pref snipes)))
-;(defn group-by-subenv [snipes] (into (sorted-map) (group-by classify-by-subenv snipes)))
-
-;(def group-by-snipe-class (partial group-by classify-by-snipe-class))
-;(def group-by-pref (partial group-by classify-by-pref))
-;(def group-by-subenv (partial group-by :subenv))
 
 (defn classify-snipes
   "Returns a hierarchical map of maps of maps of colls of snipes in categories."
@@ -349,8 +345,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; USED BY GUI INSPECTORS DEFINED IN pasta.simconfig
 
+;; SAVE
 (def freqs$ (atom {}))
 
+;; SAVE
 (defn get-freq
   "Given an integer tick representing a MASON step, and a key k
   for a snipes class (:k-snipe, :r-snipe, :r-snipe,
@@ -372,6 +370,7 @@
                     new-freqs))]
     (k freqs)))
 
+;; SAVE
 (defn maybe-get-freq
   "Kludge: Calls get-freq if and only if at timestep 1 or later.  Avoids
   irrelevant NPEs during initial setup."
