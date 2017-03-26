@@ -60,13 +60,13 @@
   positive values of mush-pref mean that in the past large mushrooms have often
   be nutritious, while negative values mean that small mushrooms have more
   often been nutritious, on average."
-  [rng snipe mush appearance]
+  [rng snipe mush scaled-appearance]
   (let [{:keys [nutrition]} mush
         {:keys [mush-pref cfg-data$]} snipe
         {:keys [mush-mid-size mush-size-scale]} @cfg-data$
         pref-inc (* pref-dt
                    nutrition
-                   appearance
+                   scaled-appearance
                    mush-size-scale)]
     (+ mush-pref pref-inc)))
 
