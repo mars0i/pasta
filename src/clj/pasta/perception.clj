@@ -61,13 +61,12 @@
   be nutritious, while negative values mean that small mushrooms have more
   often been nutritious, on average."
   [rng snipe mush appearance]
-  (let [appearance (mu/appearance mush) ; get (noisy) sensory stimulation from mushroom
-        {:keys [nutrition]} mush
+  (let [{:keys [nutrition]} mush
         {:keys [mush-pref cfg-data$]} snipe
         {:keys [mush-mid-size mush-size-scale]} @cfg-data$
         pref-inc (* pref-dt
                    nutrition
-                   (- appearance mush-mid-size)
+                   appearance
                    mush-size-scale)]
     (+ mush-pref pref-inc)))
 
