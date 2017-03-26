@@ -58,6 +58,9 @@ aggregate(cbind(count, energy, pref, age) ~ snipe_class * run * step, kvsr, agge
 # If so, Why?  
 # Lines 366ff in popenv.clj are where newborns' field is chosen.
 # Could there a different wrt mushrooms?
+####
+# NOW RUNNING KvsRswappedMushs with :east subst'd for :west on line 177 of popenv.clj
+####
 
 # r-snipes:
 kvsr.subenvs <- aggregate(count ~ snipe_class * run * step * subenv, kvsr, sum)
@@ -109,6 +112,27 @@ summary(sortwest$count - sorteast$count)
 
 # So if there's a worry, it's more with K vs R.
 
+# =========
+
+# I did 500 runs of K vs R (to see whether the effect goes away) 
+# with the mushroom nutritional values swapped between subenvs
+# (to see whether the effect switches direction).
+# This is called KvsRswappedMushs.
+
+# The effect did switch directions, but also seemed to go away:
+sum(sortwest$count - sorteast$count)
+[1] 80460
+> summary(sortwest$count - sorteast$count)
+    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+-80.0000  -6.0000   1.0000   0.8046   7.0000  81.0000 
+# Yes the sum is large, but that's because there are 500 rather than 
+# 50 runs.  That's equivalent to a sum of about 8K in 50 runs.
+# More importantly, the mean is close to zero, whereas it was -4.264
+# in the 50-run K vs R experiment.
+
+
+#############################################################
+
 # here's how I made RblueKredEastWestDiffs.pdf:
 ...
 > west <- kvsr.subenvs[kvsr.subenvs$snipe_class=="r" & kvsr.subenvs$subenv=="west",]
@@ -141,21 +165,20 @@ Warning messages:
 20302           r -72727835   40   west     4
 20402           r -72727835   50   west     3
 20502           r -72727835   60   west     2
-> xyplot(count ~ step | run, data=eastwest type=c("l"), col="blue", layout=c(10,5))
-Error: unexpected symbol in "xyplot(count ~ step | run, data=eastwest type"
-> xyplot(count ~ step | run, data=eastwest, type=c("l"), col="blue", layout=c(10,5))
-> r <- xyplot(count ~ step | run, data=eastwest, type=c("l"), col="blue", layout=c(10,5))
-> r.eastwest <- eastwest
-> xyplot(count ~ step | run, data=eastwest, type=c("l"), col="blue", layout=c(10,5))
-> west <- kvsr.subenvs[kvsr.subenvs$snipe_class=="k" & kvsr.subenvs$subenv=="west",]
-> east <- kvsr.subenvs[kvsr.subenvs$snipe_class=="k" & kvsr.subenvs$subenv=="east",]
-> sortwest <- west[with(west, order(run, snipe_class, step)),]
-> sorteast <- east[with(east, order(run, snipe_class, step)),]
-> 
-> k.eastwest <- eastwest
-> k.eastwest <- sortwest
-> k.eastwest$count <- sortwest$count - sorteast$count
-> head(k)
+
+r <- xyplot(count ~ step | run, data=eastwest, type=c("l"), col="blue", layout=c(10,5))
+r.eastwest <- eastwest
+xyplot(count ~ step | run, data=eastwest, type=c("l"), col="blue", layout=c(10,5))
+# these overwrite earlier defs:
+west <- kvsr.subenvs[kvsr.subenvs$snipe_class=="k" & kvsr.subenvs$subenv=="west",]
+east <- kvsr.subenvs[kvsr.subenvs$snipe_class=="k" & kvsr.subenvs$subenv=="east",]
+sortwest <- west[with(west, order(run, snipe_class, step)),]
+sorteast <- east[with(east, order(run, snipe_class, step)),]
+
+k.eastwest <- eastwest
+k.eastwest <- sortwest
+k.eastwest$count <- sortwest$count - sorteast$count
+
 Error in head(k) : object 'k' not found
 > head(k.eastwest)
       snipe_class       run step subenv count
@@ -168,4 +191,16 @@ Error in head(k) : object 'k' not found
 > k <- xyplot(count ~ step | run, data=k.eastwest, type=c("l"), col="red", layout=c(10,5))
 > r + as.layer(k)
 > 
+
+##############################################
+
+Testing whether the pop size is hitting the threshold of 800:
+
+for (run in levels(d$run)){
+	for (step in seq(10,2000, 10)){
+		if (sum(d[d$run==run & d$step==step,]$count) >= 799){
+			print(cat(run, " ", step, " "))
+                }
+         }
+}
 
