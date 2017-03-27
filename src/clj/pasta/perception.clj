@@ -14,12 +14,11 @@
          best-neighbor get-best-neighbor-pref s-snipe-pref random-eat-snipe-pref 
          always-eat-snipe-pref)
 
-;; Put these somewhere else? e.g. in cfg-data$ so they can be set by the user?
+;; Put this somewhere else? e.g. in cfg-data$ so can be set by the user?
 (def pref-dt 0.00001)
-(def pref-noise-sd (double 1/16))
 
-(defn pref-noise [rng]
-  (ran/next-gaussian rng 0 pref-noise-sd))
+(defn pref-noise [rng sd]
+  (ran/next-gaussian rng 0 sd))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; K-SNIPE PREFERENCES
@@ -38,9 +37,9 @@
   response to the boolean returned here.)"
   [rng snipe mush]
   (let [{:keys [mush-pref cfg-data$]} snipe
-        {:keys [mush-mid-size]} @cfg-data$
+        {:keys [mush-mid-size k-pref-noise-sd]} @cfg-data$
         scaled-appearance (- (mu/appearance mush) mush-mid-size)
-        eat? (pos? (* (+ mush-pref (pref-noise rng)) ; my effective mushroom preference is noisy. (even if starts at zero, I might eat.)
+        eat? (pos? (* (+ mush-pref (pref-noise rng k-pref-noise-sd)) ; my effective mushroom preference is noisy. (even if starts at zero, I might eat.)
                       scaled-appearance))]           ; eat if scaled appearance has same sign as mush-pref with noise
     [(if eat?
        (assoc snipe :mush-pref (calc-k-pref rng snipe mush scaled-appearance)) ; if we're eating, this affects future preferences
@@ -170,7 +169,9 @@
   [rng snipe mush]
   [snipe true])
 
-(defn random-eat-snipe-pref
- "Decides by a coin toss whether to eat."
-  [rng snipe mush]
-  [snipe (pos? (pref-noise rng))])
+; needs revision since pref-noise now takes an sd parameter
+; maybe don't use pref-noise
+;(defn random-eat-snipe-pref
+; "Decides by a coin toss whether to eat."
+;  [rng snipe mush]
+;  [snipe (pos? (pref-noise rng))])
