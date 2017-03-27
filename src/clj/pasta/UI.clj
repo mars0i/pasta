@@ -8,7 +8,7 @@
   (:import [pasta mush snipe SimConfig]
            [sim.engine Steppable Schedule Stoppable]
            [sim.field.grid ObjectGrid2D] ; normally doesn't belong in UI: a hack to use a field portrayal to display a background pattern
-           [sim.portrayal DrawInfo2D SimpleInspector]
+           [sim.portrayal DrawInfo2D SimpleInspector SimplePortrayal2D]
            [sim.portrayal.grid HexaObjectGridPortrayal2D]; FastHexaObjectGridPortrayal2D ObjectGridPortrayal2D
            [sim.portrayal.simple OvalPortrayal2D RectanglePortrayal2D CircledPortrayal2D ShapePortrayal2D OrientedPortrayal2D FacetedPortrayal2D] ; HexagonalPortrayal2D 
            [sim.display Console Display2D]
@@ -22,6 +22,13 @@
     :exposes-methods {start superStart, quit superQuit, init superInit, getInspector superGetInspector}
     :state getUIState
     :init init-instance-state))
+
+;; NOTE:
+;; OrientedPortrayal2D shape options:
+;; SHAPE_LINE, SHAPE_KITE, SHAPE_COMPASS
+;; not in javadoc:
+;; SHAPE_LINE_ARROW, SHAPE_ARROW, SHAPE_TRIANGLE, SHAPE_INVERTED_T
+;; However these are difficult to configure appropriately. Weird interactions between offset and scale.
 
 ;; display parameters:
 ;; white background:
@@ -194,13 +201,35 @@
                                    (set! (.-paint this) (k-snipe-color-fn effective-max-energy snipe)) ; superclass var
                                    (proxy-super draw snipe graphics (DrawInfo2D. info org-offset org-offset)))) ; see above re last arg
                                0 0.6 Color/red OrientedPortrayal2D/SHAPE_COMPASS))
-        s-snipe-portrayal (make-fnl-circled-portrayal Color/black
-                             (OrientedPortrayal2D.
-                               (proxy [RectanglePortrayal2D] [(* 0.915 snipe-size)] ; squares need to be bigger than circles
-                                 (draw [snipe graphics info] ; orverride method in super
-                                   (set! (.-paint this) (s-snipe-color-fn effective-max-energy snipe)) ; paint var is in superclass
-                                   (proxy-super draw snipe graphics (DrawInfo2D. info (* 1.5 org-offset) (* 1.5 org-offset))))) ; see above re last arg
-                               0 0.6 (Color. 255 0 255) OrientedPortrayal2D/SHAPE_LINE))
+        ;; This s-snipe is just an OrientedPortrayal2D on an (undrawn) SimplePortrayal2D (p. 226 of v19 manual):
+        s-snipe-portrayal (make-fnl-circled-portrayal Color/red
+                             (proxy [OrientedPortrayal2D] [(SimplePortrayal2D.) 0 0.425 Color/black OrientedPortrayal2D/SHAPE_KITE] ; color will be overridden
+                               (draw [snipe graphics info] ; override method in super
+                                 (set! (.-paint this) (s-snipe-color-fn effective-max-energy snipe)) ; superclass var
+                                 (proxy-super draw snipe graphics (DrawInfo2D. info org-offset org-offset))))) ; see above re last arg
+        ;; circle and compass version of s-snipe:
+        ;s-snipe-portrayal (make-fnl-circled-portrayal Color/black
+        ;                     (OrientedPortrayal2D.
+        ;                       (proxy [OvalPortrayal2D] [(* 1.1 snipe-size)]
+        ;                         (draw [snipe graphics info] ; override method in super
+        ;                           (set! (.-paint this) (s-snipe-color-fn effective-max-energy snipe)) ; superclass var
+        ;                           (proxy-super draw snipe graphics (DrawInfo2D. info org-offset org-offset)))) ; see above re last arg
+        ;                       0 0.6 (Color. 255 0 255) OrientedPortrayal2D/SHAPE_COMPASS))
+        ;s-snipe-portrayal (make-fnl-circled-portrayal Color/black
+        ;                     (OrientedPortrayal2D.
+        ;                       (proxy [OvalPortrayal2D] [(* 1.1 snipe-size)]
+        ;                         (draw [snipe graphics info] ; override method in super
+        ;                           (set! (.-paint this) (s-snipe-color-fn effective-max-energy snipe)) ; superclass var
+        ;                           (proxy-super draw snipe graphics (DrawInfo2D. info org-offset org-offset)))) ; see above re last arg
+        ;                       0 0.5 (Color. 255 0 255) OrientedPortrayal2D/SHAPE_KITE))
+        ;; square and line rep of s-snipes
+        ;s-snipe-portrayal (make-fnl-circled-portrayal Color/black
+        ;                      (OrientedPortrayal2D.
+        ;                        (proxy [RectanglePortrayal2D] [(* 0.915 snipe-size)] ; squares need to be bigger than circles
+        ;                          (draw [snipe graphics info] ; orverride method in super
+        ;                            (set! (.-paint this) (s-snipe-color-fn effective-max-energy snipe)) ; paint var is in superclass
+        ;                            (proxy-super draw snipe graphics (DrawInfo2D. info (* 1.5 org-offset) (* 1.5 org-offset))))) ; see above re last arg
+        ;                        0 0.6 (Color. 255 0 255) OrientedPortrayal2D/SHAPE_LINE))
         ;bg-field-portrayal (:bg-field-portrayal ui-config)
         west-snipe-field-portrayal (:west-snipe-field-portrayal ui-config)
         east-snipe-field-portrayal (:east-snipe-field-portrayal ui-config)
