@@ -53,7 +53,7 @@
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Oriented2D
-  (orientation2D [this] (pref-orientation -0.001 0.001 (:mush-pref this))) ; TODO FIX THESE HARCODED VALUES?
+  (orientation2D [this] (pref-orientation -0.0004 0.0004 (:mush-pref this))) ; TODO FIX THESE HARCODED VALUES?
   Object
   (toString [_] (str "<KSnipe #" id">")))
 
@@ -62,7 +62,7 @@
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Oriented2D
-  (orientation2D [this] (pref-orientation -0.001 0.001 (:mush-pref this))) ; TODO FIX THESE HARCODED VALUES?
+  (orientation2D [this] (pref-orientation -0.0004 0.0004 (:mush-pref this))) ; TODO FIX THESE HARCODED VALUES?
   Object
   (toString [_] (str "<SSnipe #" id">")))
 
