@@ -108,41 +108,41 @@ between environments has no functional meaning, but can be thought of
 as indicating a difference between mushroom species that snipes are
 unable to perceive.)
 
-## Installation
-
-This program is written in the [Clojure](https://clojure.org) language
-using [MASON](http://cs.gmu.edu/~eclab/projects/mason).  MASON is a
-Java library for agent-based modeling.
-
-To install, once you clone this repo:
-
-You need Leiningen (http://leiningen.org).  Then change to the root
-directory of the repo, and run 'lein deps'.  This will install the right
-version of Clojure, if necessary, along with a number of Clojure
-libraries and such that pasta needs.
-
-You'll also need to download the MASON jar file mason.19.jar (or a later
-version, probably), and MASON libraries.tar.gz or libraries.zip file.
-Move the MASON jar file into the lib directory under this project's
-directory. Unpack the contents of the libraries file into this project
-as well.   You may want to get the MASON-associated 3D libs, too, in
-order to get rid of a warning message during startup.  Place these
-jars in the same places as the others.
-
 ## Running
 
 Ways to run pasta:
 
-(1) Running `src/scripts/gui` will start the GUI version of pasta.
+(1) Download <a
+href="~/members.logical.net/marshall/pasta.jar">pasta.jar</a> to your
+computer.  If your computer is configured appropriately, you should be
+able to double-click or click on this file to run pasta.  
+If not, and you're comfortable with a terminal window (OSX terminal,
+Windows cmd.exe, any shell window in Linux), you can run pasta
+using this command:
 
-(2) Running `src/scripts/nogui` will start the command line version.  You
-may want to run it with `-?` as argument first to see the possible command
-line options.
+    java -jar pasta.jar
 
-(3) Running `src/scripts/repl` will start the Clojure REPL.  This is the
-same as running `lein repl`, but displays some helpful suggestions.
-e.g. it suggests that you can start the GUI using 
-some variation on the following Clojure commands:
+If you're not in the directory where you've put pasta.jar, you might
+have to add a path to the filename.  You can use command line options to
+run pasta in no-GUI mode.  See below.  
+
+(I haven't tested this on other anyone else's computer.  Let me know if
+it doesn't work.  Or if it does.  It probably won't work with a tablet
+or phone, though.)
+
+
+(2) With a full installation (see below) running `src/scripts/gui` or
+`src/scripts/pasta` will start the GUI version of pasta.
+
+(3) With a full installation (see below), running `src/scripts/nogui`,
+or running `src/scripts/pasta` with no-GUI command line options will start the
+command line version (unless `-g` is specified).  You may want to run it
+with `-?` as argument first to see the possible command line options.
+
+(4) With a full installation (see below) running `src/scripts/repl` will
+start the Clojure REPL.  This is the same as running `lein repl`, but
+displays some helpful suggestions.  e.g. it suggests that you can start
+the GUI using some variation on the following Clojure commands:
 
    (use 'pasta.UI) (def cfg (repl-gui))
 
@@ -168,6 +168,28 @@ lived:
 and by default the REPL will try to list the contents of atoms, so if
 you allow any snipe to print to the terminal, you'll set off an
 infinite loop that will result in a stack overflow.  Sorry about that!
+
+
+## Full installation
+
+This program is written in the [Clojure](https://clojure.org) language
+using [MASON](http://cs.gmu.edu/~eclab/projects/mason).  MASON is a
+Java library for agent-based modeling.
+
+To install, once you clone this repo:
+
+You need Leiningen (http://leiningen.org).  Then change to the root
+directory of the repo, and run 'lein deps'.  This will install the right
+version of Clojure, if necessary, along with a number of Clojure
+libraries and such that pasta needs.
+
+You'll also need to download the MASON jar file mason.19.jar (or a later
+version, probably), and MASON libraries.tar.gz or libraries.zip file.
+Move the MASON jar file into the lib directory under this project's
+directory. Unpack the contents of the libraries file into this project
+as well.   You may want to get the MASON-associated 3D libs, too, in
+order to get rid of a warning message during startup.  Place these
+jars in the same places as the others.
 
 
 ## License
