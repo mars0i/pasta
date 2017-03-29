@@ -115,10 +115,10 @@ Ways to run pasta:
 (1) Download <a
 href="~/members.logical.net/marshall/pasta.jar">pasta.jar</a> to your
 computer.  If your computer is configured appropriately, you should be
-able to double-click or click on this file to run pasta.  
-If not, and you're comfortable with a terminal window (OSX terminal,
-Windows cmd.exe, any shell window in Linux), you can run pasta
-using this command:
+able to double-click or click on this file to run pasta.  If not, and
+you're comfortable with a terminal window (OSX terminal, Windows
+cmd.exe, any shell window in Linux), you can run pasta using this
+command:
 
     java -jar pasta.jar
 
