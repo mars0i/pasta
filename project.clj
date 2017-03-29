@@ -1,4 +1,4 @@
-(defproject pasta "1.0.0"
+(defproject pasta "1.0"
   :description "Agent-based simulation with free energy minimization within agents."
   :url "https://github.com/mars0i/pasta"
   :license {:name "Gnu General Public License version 3.0"
