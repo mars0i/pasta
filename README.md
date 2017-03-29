@@ -113,7 +113,7 @@ unable to perceive.)
 Ways to run pasta:
 
 (1) Download <a
-href="~/members.logical.net/~marshall/pasta.jar">pasta.jar</a> to your
+href="http://members.logical.net/~marshall/pasta.jar">pasta.jar</a> to your
 computer.  If your computer is configured appropriately, you should be
 able to double-click or click on this file to run pasta.  If not, and
 you're comfortable with a terminal window (OSX terminal, Windows
