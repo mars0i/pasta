@@ -200,7 +200,7 @@
                                  (draw [snipe graphics info] ; override method in super
                                    (set! (.-paint this) (k-snipe-color-fn effective-max-energy snipe)) ; superclass var
                                    (proxy-super draw snipe graphics (DrawInfo2D. info org-offset org-offset)))) ; see above re last arg
-                               0 0.6 Color/red OrientedPortrayal2D/SHAPE_COMPASS))
+                               0 0.6 Color/red OrientedPortrayal2D/SHAPE_LINE))
         ;; This s-snipe is just an OrientedPortrayal2D on an (undrawn) SimplePortrayal2D (p. 226 of v19 manual):
         s-snipe-portrayal (make-fnl-circled-portrayal Color/red
                              (proxy [OrientedPortrayal2D] [(SimplePortrayal2D.) 0 0.425 Color/black OrientedPortrayal2D/SHAPE_KITE] ; color will be overridden
