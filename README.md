@@ -65,11 +65,12 @@ strategists are less likely to die, but produce fewer offspring.
 Roughly, an r strategy prioritizes quantity over quality, while a K
 strategy does the opposite.
 
-Snipes eat mushrooms.<a id="joke1ref" href="#joke1"><sup>2</sup></a> 
-There are two contiguous environments.  In the left side hand
+Snipes eat mushrooms.<a id="joke1ref" href="#joke1"><sup>2</sup></a>
+There are two environments.  In the {\em east\/} (usually left)
 environment, small mushrooms are nutritious (yellow) and large mushrooms
-are poisonous (gray-brown-green).  In the right side environment,
-large mushrooms are nutritious and small mushrooms are poisonous.
+are poisonous (gray-brown-green).  In the {\em west\/} (usually right)
+environment, large mushrooms are nutritious and small mushrooms are
+poisonous.
 
 Snipes gain energy from eating nutritious mushrooms, and lose energy
 from eating poisonous mushrooms.  Snipes that accumulate sufficient
