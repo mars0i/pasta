@@ -128,10 +128,6 @@ If you're not in the directory where you've put pasta.jar, you might
 have to add a path to the filename.  You can use command line options to
 run pasta in no-GUI mode.  See below.  
 
-(I haven't tested this on other anyone else's computer.  Let me know if
-it doesn't work.  Or if it does.  It probably won't work with a tablet
-or phone, though.)
-
 
 (2) With a full installation (see below) running `src/scripts/gui` or
 `src/scripts/pasta` will start the GUI version of pasta.
