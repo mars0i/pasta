@@ -90,24 +90,25 @@ mushrooms.  Those suited to the environment in which they live tend to
 survive and reproduce, and those unsuited to their environment
 generally die before reproduction.
 
-*s-snipes* (purple wing shapes) use a social learning, or cultural transmission strategy known
-as "success bias".  This is a form of "model bias" because it's a bias
-toward learning from "models" (teachers, influencers) who have certain
-properties. A newborn s-snipe (purple square) looks around at nearby
-snipes, and copies the current mushroom size preference of whichever
-snipe has the most energy.  If there are no nearby snipes, the s-snipe
-tries again on the next timestep.  Once it adopts a preference, the
-preference never changes.  (For more on cultural transmission biases
-see e.g. Richerson and Boyd's <em>Not by Genes Alone</em>, University
-of Chicago Press 2006.)
+*s-snipes* (purple wing shapes) use a social learning or cultural
+transmission strategy known as "success bias".  This is a form of
+"model bias" because it's a bias toward learning from "models"
+(teachers, influencers) who have certain properties. A newborn s-snipe
+examines nearby snipes and copies the current mushroom size preference
+of whichever nearby snipe has the most energy.  If there are no nearby
+snipes, the s-snipe tries again on the next timestep.  Once it adopts
+a preference, an s-snipe's preference never changes.  (For more on cultural
+transmission biases see e.g. Richerson and Boyd's <em>Not by Genes
+Alone</em>, University of Chicago Press 2006.)
 
 Snipes' energy levels are reflected in their brightness, with greater
 brightness indicating more energy.  Mushroom color indicates
-nutritiousness/poisonousness:  Darker colors indicate nutritiousness,
-while lighter colors indicate poisonousness.  (The color difference
-between environments has no functional meaning, but can be thought of
-as indicating a difference between mushroom species that snipes are
-unable to perceive.)
+nutritiousness/poisonousness:  Lighter colors indicate
+nutritiousness---\ie these mushrooms are energetically favorable to
+snipes---while darker colors indicate poisonousness---energetically
+unfavorability.  (The difference in shades between environments has no
+functional meaning, but can be thought of as indicating a difference
+between mushroom species.)
 
 ## Running
 
