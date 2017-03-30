@@ -112,6 +112,13 @@ between mushroom species.)
 
 ## Running
 
+Pasta has a number of parameters that can be configured between runs (or
+sometimes during runs) using sliders or text boxes on the "Model" tab in
+the GUI, or through command line options in the no-GUI version.  I
+haven't written much more documentation at this point, but would be
+happy to answer questions.  You can probably figure out a lot through
+experimentation, though.
+
 Ways to run pasta:
 
 (1) Download <a
