@@ -66,9 +66,9 @@ Roughly, an r strategy prioritizes quantity over quality, while a K
 strategy does the opposite.
 
 Snipes eat mushrooms.<a id="joke1ref" href="#joke1"><sup>2</sup></a>
-There are two environments.  In the {\em east\/} (usually left)
+There are two environments.  In the *east* (usually left)
 environment, small mushrooms are nutritious (yellow) and large mushrooms
-are poisonous (gray-brown-green).  In the {\em west\/} (usually right)
+are poisonous (gray-brown-green).  In the *west* (usually right)
 environment, large mushrooms are nutritious and small mushrooms are
 poisonous.
 
@@ -78,19 +78,19 @@ energy give birth, and lose energy as a result of the birth.  At
 birth, each newborn snipe is placed at a random location in a randomly
 chosen environment.
 
-k-snipes (red circles) initially eat mushrooms randomly, but learn to
-eat mushrooms whose size signal (which is normally distributed)
-indicates that they are probably nutritious.
+*k-snipes* (red circles with pointers) initially eat mushrooms
+randomly,  but learn to eat mushrooms whose size signal (which is
+normally distributed) indicates that they are probably nutritious.
 
-r-snipes (blue triangles) never learn.  They produce offspring that
+*r-snipes* (blue triangles) never learn.  They produce offspring that
 exhibit developmental differences: Roughly half of any snipe's
 offspring (upward-pointing triangles) always prefer large mushrooms;
 the others (downward-pointing triangles) always prefer small
 mushrooms.  Those suited to the environment in which they live tend to
 survive and reproduce, and those unsuited to their environment
-generally to die before reproduction.
+generally die before reproduction.
 
-s-snipes use a social learning, or cultural transmission strategy known
+*s-snipes* (purple wing shapes) use a social learning, or cultural transmission strategy known
 as "success bias".  This is a form of "model bias" because it's a bias
 toward learning from "models" (teachers, influencers) who have certain
 properties. A newborn s-snipe (purple square) looks around at nearby
