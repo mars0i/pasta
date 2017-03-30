@@ -81,6 +81,9 @@ chosen environment.
 *k-snipes* (red circles with pointers) initially eat mushrooms
 randomly,  but learn to eat mushrooms whose size signal (which is
 normally distributed) indicates that they are probably nutritious.
+The direction of a k-snipe's pointer--how far up or down its
+pointing--indicates the degree of the snipe's preference for large or
+small mushrooms.
 
 *r-snipes* (blue triangles) never learn.  They produce offspring that
 exhibit developmental differences: Roughly half of any snipe's
@@ -97,7 +100,12 @@ transmission strategy known as "success bias".  This is a form of
 examines nearby snipes and copies the current mushroom size preference
 of whichever nearby snipe has the most energy.  If there are no nearby
 snipes, the s-snipe tries again on the next timestep.  Once it adopts
-a preference, an s-snipe's preference never changes.  (For more on cultural
+a preference, an s-snipe's preference never changes.  
+The direction in which an s-snipe points--how far up or down it is
+tilted---indicates the degree of the snipe's preference for large or
+small mushrooms.
+
+(For more on cultural
 transmission biases see e.g. Richerson and Boyd's <em>Not by Genes
 Alone</em>, University of Chicago Press 2006.)
 
