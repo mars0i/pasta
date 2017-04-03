@@ -18,7 +18,7 @@ experiments implementing MASON's Students example in Clojure (see my
 majure repo).  This document reflected my focus at the time on producing
 code that was as fast as possible.  After the majure experiments, I
 applied what I'd learned in my intermittran repo.  The resulting code is
-not very idiomatic to Clojure, and unpleasant.  My current approach is
+not very idiomatic to Clojure, and unpleasant, imo.  My current approach is
 to worry more about trying to write (relatively) idiomatic Clojure
 rather than trying to eke out as much speed from MASON as possible, but
 the interopTips document provides the background for my approach in
