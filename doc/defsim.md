@@ -27,7 +27,7 @@ for this change.  (If you use `defsim`, and this bothers you, let me
 know and I'll fix it.)
 
 You also must typically precede the call to `defsim` with this:
-```
+```clojure
 (def commandline$ (atom nil)) ; Needed by defsim and other code below if we're defining commandline options
 ```
 I name variables that contain atoms with "$" as a suffix.
@@ -37,7 +37,7 @@ I couldn't figure out how to move this into the `defsim` definition.
 
 Example of the use of `defsim` in Sim.clj:
 
-```
+```clojure
 ;;              field name   initial-value  type   in ui? with range?  info for clojure's cli commandline option function
 (defsim/defsim [[num-k-snipes       25      long    [0 500]     ["-K" "Size of k-snipe subpopulation" :parse-fn #(Long. %)]]
                 [mush-prob           0.2    double  [0.0 1.0]   ["-M" "Average frequency of mushrooms." :parse-fn #(Double. %)]]
