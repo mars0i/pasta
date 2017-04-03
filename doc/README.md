@@ -1,10 +1,11 @@
 Code documentation
 ====
 
-This directory contains notes on pasta source code.
-Some files, such as perception.pdf, would be of interest
-to people who just want to experiment with pasta without
-looking at the source code.
+This directory contains notes on pasta source code.  Some files, such as
+perception.pdf, would be of interest to people who just want to
+experiment with pasta without looking at the source code.  See the
+README.md at the root of this repo for general notes about pasta, how to
+run it, etc.
 
 * perception.pdf: Notes on k-snipes' learning algorithm.
 
