@@ -19,12 +19,12 @@ pom.xml.asc
 .*.swp
 doc/classdocs.html
 doc/manual.pdf
-gui
-nogui
-repl
-pasta
+./gui
+./nogui
+./repl
+./pasta
 doc/BogaczTutorialOnFreeEnergyPerception.pdf
 doc/FeldmanFriston2010AttnUncertFreeEnergy.pdf
-phil.bib
+doc/phil.bib
 *.bst
 .DS_Store
