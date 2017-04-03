@@ -1,9 +1,12 @@
 Code documentation
 ====
 
-What's in this directory?
+This directory contains notes on pasta source code.
+Some files, such as perception.pdf, would be of interest
+to people who just want to experiment with pasta without
+looking at the source code.
 
-* perception2.pdf: Notes on k-snipes' learning algorithm.
+* perception.pdf: Notes on k-snipes' learning algorithm.
 
 * defsim.md: Documentation on the `defsim` macro in `utils.defsim`.
 This is used in Sim.clj and generates code whose effects are used
