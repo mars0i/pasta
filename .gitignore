@@ -19,10 +19,9 @@ pom.xml.asc
 .*.swp
 doc/classdocs.html
 doc/manual.pdf
-./gui
-./nogui
-./repl
-./pasta
+gui
+nogui
+repl
 doc/BogaczTutorialOnFreeEnergyPerception.pdf
 doc/FeldmanFriston2010AttnUncertFreeEnergy.pdf
 doc/phil.bib
