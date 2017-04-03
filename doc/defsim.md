@@ -69,7 +69,7 @@ to pass the output of `macroexand-1` to `pprint`.
 For example, the `defsim` example above expands to the following code.
 I've added comments that are not generated with the code.
 
-```
+```clojure
 (do
   ;; Switch from Sim namespace to data namespace that's created here.
   (clojure.core/ns pasta.data)
