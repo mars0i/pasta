@@ -1,7 +1,7 @@
 \documentclass[12pt]{article}
 
 \usepackage{natbib}
-\bibliographystyle{chicagourl}
+\bibliographystyle{myforthcoming}
 \usepackage[letterpaper,left=1.25in,right=1.25in,top=1.0in,bottom=1.0in]{geometry}
 \usepackage{xspace}
 %\usepackage{listings}
@@ -39,10 +39,13 @@
 
 \begin{document}
 
-{\large Notes on perception2 k-snipe learning algorithm in free-agent}\\
-Marshall Abrams\hfill\today\\
+{\large Notes on the k-snipe learning algorithm in pasta}\\
+Marshall Abrams\\
 
-In {\tt free-agent.perception2}, the function {\tt k-snipe-pref}
+These notes are old and might be inaccurate in minor details, but
+I believe they're largely correct.
+
+In {\tt pasta.perception}, the function {\tt k-snipe-pref}
 does this (from the docstring):
 \begin{quote}\vspace{-2ex}
     Decides whether snipe eats mush, and updates the snipe's mush-pref
@@ -103,7 +106,7 @@ sensory data's difference from the midpoint.
 This algorithm is very roughly like a very simplified version of part of
 the the algorithm that Feldman and Friston \citeyearpar[p.\
 9]{FeldmanFriston:AttentionUncertainty} use to model the Posner
-experimental setup\fn{
+experimental setup.\fn{
     F\&F's model was in fact my starting point in developing this simple
     method of learning mushroom preferences, even though what I ended up
     with is very different and much, much simpler.}
