@@ -3,9 +3,9 @@
 ;;; specified in the file LICENSE.
 
 (ns pasta.UI
-  (:require [pasta.SimConfig :as cfg]
+  (:require [pasta.Sim :as sim]
             [clojure.math.numeric-tower :as math])
-  (:import [pasta mush snipe SimConfig]
+  (:import [pasta mush snipe Sim]
            [sim.engine Steppable Schedule Stoppable]
            [sim.field.grid ObjectGrid2D] ; normally doesn't belong in UI: a hack to use a field portrayal to display a background pattern
            [sim.portrayal DrawInfo2D SimpleInspector SimplePortrayal2D]
@@ -18,7 +18,7 @@
     :name pasta.UI
     :extends sim.display.GUIState
     :main true
-    :exposes {state {:get getState}}  ; accessor for field in superclass that will contain my SimConfig after main creates instances of this class with it.
+    :exposes {state {:get getState}}  ; accessor for field in superclass that will contain my Sim after main creates instances of this class with it.
     :exposes-methods {start superStart, quit superQuit, init superInit, getInspector superGetInspector}
     :state getUIState
     :init init-instance-state))
@@ -40,7 +40,7 @@
 ;(defn snipe-shade-fn [max-energy snipe]   ; DEBUG VERSION
 ;  (let [shade (int (+ 64 (* 190 (/ (:energy snipe) max-energy))))]
 ;    (when (> shade 255)
-;      (println "SHADE:" shade max-energy (dissoc snipe :cfg-data$)))
+;      (println "SHADE:" shade max-energy (dissoc snipe :sim-data$)))
 ;    shade))
 (defn k-snipe-color-fn [max-energy snipe] (Color. (snipe-shade-fn max-energy snipe) 0 0))
 (defn r-snipe-color-fn [max-energy snipe] (Color. 0 0 (snipe-shade-fn max-energy snipe)))
@@ -92,10 +92,10 @@
 
 (defn -main
   [& args]
-  (let [sim-config (SimConfig. (System/currentTimeMillis))]  ; CREATE AN INSTANCE OF my SimConfig
-    ;(cfg/record-commandline-args! args) 
-    (when @cfg/commandline$ (cfg/set-sim-config-data-from-commandline! sim-config cfg/commandline$)) ; we can do this in -main because we have a SimConfig
-    (.setVisible (Console. (pasta.UI. sim-config)) true)))  ; THIS IS WHAT CONNECTS THE GUI TO my SimState subclass SimConfig
+  (let [sim (Sim. (System/currentTimeMillis))]  ; CREATE AN INSTANCE OF my Sim
+    ;(sim/record-commandline-args! args) 
+    (when @sim/commandline$ (sim/set-sim-data-from-commandline! sim sim/commandline$)) ; we can do this in -main because we have a Sim
+    (.setVisible (Console. (pasta.UI. sim)) true)))  ; THIS IS WHAT CONNECTS THE GUI TO my SimState subclass Sim
 
 (defn mein
   "Externally available wrapper for -main."
@@ -133,24 +133,24 @@
 ;; TODO abstract out some of the repetition below
 (defn setup-portrayals
   [this-ui]  ; instead of 'this': avoid confusion with e.g. proxy below
-  (let [sim-config (.getState this-ui)
+  (let [sim (.getState this-ui)
         ui-config (.getUIState this-ui)
-        cfg-data$ (.simConfigData sim-config)
-        rng (.random sim-config)
-        cfg-data @cfg-data$
-        popenv (:popenv cfg-data)
+        sim-data$ (.simData sim)
+        rng (.random sim)
+        sim-data @sim-data$
+        popenv (:popenv sim-data)
         west (:west popenv)
         east (:east popenv)
-        max-energy (:max-energy cfg-data)
-        birth-threshold (:birth-threshold cfg-data)
-        mush-pos-nutrition (:mush-pos-nutrition cfg-data)
-        mush-high-size (:mush-high-size cfg-data)
+        max-energy (:max-energy sim-data)
+        birth-threshold (:birth-threshold sim-data)
+        mush-pos-nutrition (:mush-pos-nutrition sim-data)
+        mush-high-size (:mush-high-size sim-data)
         effective-max-energy (min birth-threshold max-energy)
         ;effective-max-energy max-energy ; DEBUG VERSION
         west-display @(:west-display ui-config)
         east-display @(:east-display ui-config)
         superimposed-display @(:superimposed-display ui-config)
-        ;; These portrayals should be local to setup-portrayals because proxy needs to capture the correct 'this', and we need cfg-data:
+        ;; These portrayals should be local to setup-portrayals because proxy needs to capture the correct 'this', and we need sim-data:
         ;; Different mushroom portrayals for west and east environments:
         west-mush-portrayal (proxy [OvalPortrayal2D] []
                               (draw [mush graphics info]  ; override method in super
@@ -238,7 +238,7 @@
         shady-east-mush-field-portrayal (:shady-east-mush-field-portrayal ui-config)
         east-mush-field-portrayal (:east-mush-field-portrayal ui-config)]
     ;; connect fields to their portrayals
-    ;(.setField bg-field-portrayal (ObjectGrid2D. (:env-width cfg-data) (:env-height cfg-data)))
+    ;(.setField bg-field-portrayal (ObjectGrid2D. (:env-width sim-data) (:env-height sim-data)))
     (.setField west-mush-field-portrayal (:mush-field west))
     (.setField east-mush-field-portrayal (:mush-field east))
     (.setField shady-east-mush-field-portrayal (:mush-field east))
@@ -265,7 +265,7 @@
 (.scheduleRepeatingImmediatelyAfter this-ui
                                     (reify Steppable 
                                       (step [this sim-state]
-                                        (let [{:keys [west east]} (:popenv @cfg-data$)]
+                                        (let [{:keys [west east]} (:popenv @sim-data$)]
                                           (.setField west-snipe-field-portrayal (:snipe-field west))
                                           (.setField east-snipe-field-portrayal (:snipe-field east))
                                           (.setField west-mush-field-portrayal (:mush-field west))
@@ -319,12 +319,12 @@
 (defn -init
   [this controller] ; fyi controller is called c in Java version
   (.superInit this controller)
-  (let [sim-config (.getState this)
+  (let [sim (.getState this)
         ui-config (.getUIState this)
-        cfg-data @(.simConfigData sim-config) ; just for env dimensions
-        display-size (:env-display-size cfg-data)
-        width  (hex-scale-width  (int (* display-size (:env-width cfg-data))))
-        height (hex-scale-height (int (* display-size (:env-height cfg-data))))
+        sim-data @(.simData sim) ; just for env dimensions
+        display-size (:env-display-size sim-data)
+        width  (hex-scale-width  (int (* display-size (:env-width sim-data))))
+        height (hex-scale-height (int (* display-size (:env-height sim-data))))
         ;bg-field-portrayal (:bg-field-portrayal ui-config)
         west-mush-field-portrayal (:west-mush-field-portrayal ui-config)
         ;shady-west-mush-field-portrayal (:shady-west-mush-field-portrayal ui-config)
@@ -370,8 +370,8 @@
         east-display-frame (:east-display-frame ui-config)
         superimposed-display (:superimposed-display ui-config)
         superimposed-display-frame (:superimposed-display-frame ui-config)
-        sim-config (.getState this)
-        cfg-data$ (.simConfigData sim-config)]
+        sim (.getState this)
+        sim-data$ (.simData sim)]
     (when west-display-frame (.dispose west-display-frame))
     (when east-display-frame (.dispose east-display-frame))
     (when superimposed-display-frame (.dispose superimposed-display-frame))
@@ -381,33 +381,33 @@
     (reset! (:east-display-frame ui-config) nil)
     (reset! (:superimposed-display ui-config) nil)
     (reset! (:superimposed-display-frame ui-config) nil)
-    (when-let [writer (:csv-writer @cfg-data$)]
+    (when-let [writer (:csv-writer @sim-data$)]
       (.close writer))))
 
 ;; Try this:
-;; (let [snipes (.elements (:snipe-field (:popenv @cfg-data$))) N (count snipes) energies (map :energy snipes)] [N (/ (apply + energies) N)])
+;; (let [snipes (.elements (:snipe-field (:popenv @sim-data$))) N (count snipes) energies (map :energy snipes)] [N (/ (apply + energies) N)])
 (defn repl-gui
   "Convenience function to init and start GUI from the REPL.
-  Returns the new SimConfig object.  Usage e.g.:
+  Returns the new Sim object.  Usage e.g.:
   (use 'pasta.UI) 
-  (let [[cfg ui] (repl-gui)] (def cfg cfg) (def ui ui)) ; considered bad practice--but convenient in this case
-  (def data$ (.simConfigData cfg))"
+  (let [[sim ui] (repl-gui)] (def sim sim) (def ui ui)) ; considered bad practice--but convenient in this case
+  (def data$ (.simData sim))"
   []
-  (let [sim-config (SimConfig. (System/currentTimeMillis))
-        ui (pasta.UI. sim-config)]
+  (let [sim (Sim. (System/currentTimeMillis))
+        ui (pasta.UI. sim)]
     (.setVisible (Console. ui) true)
-    [sim-config ui]))
+    [sim ui]))
 
 (defmacro repl-gui-with-defs
   "Calls repl-gui to start the gui, then creates top-level definitions:
-  cfg as a pasta.SimConfig (i.e. a SimState), ui as a pasta.UI
-  (i.e. a GUIState) that references cfg, and data$ as an atom containing 
-  cfg's SimConfigData stru."
+  sim as a pasta.Sim (i.e. a SimState), ui as a pasta.UI
+  (i.e. a GUIState) that references sim, and data$ as an atom containing 
+  sim's SimData stru."
   []
-  (let [[cfg ui] (repl-gui)]
-    (def cfg cfg)
+  (let [[sim ui] (repl-gui)]
+    (def sim sim)
     (def ui ui))
-  (def data$ (.simConfigData cfg))
-  (println "cfg is defined as a SimConfig (i.e. a SimState)")
+  (def data$ (.simData sim))
+  (println "cfg is defined as a Sim (i.e. a SimState)")
   (println "ui is defined as a UI (i.e. a GUIState)")
-  (println "data$ is defined as an atom containing cfg's SimConfigData stru."))
+  (println "data$ is defined as an atom containing cfg's SimData stru."))

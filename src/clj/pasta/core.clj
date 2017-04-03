@@ -3,7 +3,7 @@
 ;; the file LICENSE.
 
 (ns pasta.core
-  (:require [pasta.SimConfig :as cfg]
+  (:require [pasta.Sim :as sim]
             [pasta.UI :as ui]
             [clojure.pprint]) ; for *print-right-margin*
   (:gen-class))
@@ -18,9 +18,9 @@
 
 (defn -main
   [& args]
-  (cfg/record-commandline-args! args) 
-  (if (and args (not (:use-gui (:options @cfg/commandline$)))) ; if commandline options, default to no-gui unless use-gui is true
-    (cfg/mein args)
+  (sim/record-commandline-args! args) 
+  (if (and args (not (:use-gui (:options @sim/commandline$)))) ; if commandline options, default to no-gui unless use-gui is true
+    (sim/mein args)
     (ui/mein args))) ; otherwise default to gui
 
-; (println (:use-gui (:options @cfg/commandline$)))
+; (println (:use-gui (:options @sim/commandline$)))
