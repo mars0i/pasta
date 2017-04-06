@@ -199,7 +199,7 @@ libraries and such that pasta needs.
 You'll also need to download the MASON jar file mason.19.jar (or a later
 version, probably), and MASON libraries.tar.gz or libraries.zip file.
 Move the MASON jar file into the lib directory under this project's
-directory. Unpack the contents of the libraries file into this project
+directory. Unpack the contents of the libraries file into this directory
 as well.   You may want to get the MASON-associated 3D libs, too, in
 order to get rid of a warning message during startup.  Place these
 jars in the same places as the others.
