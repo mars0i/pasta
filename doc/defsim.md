@@ -1,7 +1,7 @@
 Use of pasta.defsim/defsim in pasta.Sim
 ====
 
-### Overview
+### Rationale
 
 `defsim/defsim` is a macro with two goals:
 
@@ -24,14 +24,11 @@ Clojure will do what's necessary, but it doesn't go out of its way to
 make it convenient.  As a result, for each variable that you want to
 be configurable via the GUI, you need to provide:
 
-    1. Two to three bean-ish accessor functions.
-    2. Two to three corresponding signatures, in another part of
-    your code.
-    3. An entry in a hash map, defined somewhere else.
-    4. A value for that entry in an intializer function, defined
-    somewhere else again.
-    5. Optionally, a command line option that will allow setting
-    the variable from the command line.
+1. Two to three bean-ish accessor functions.
+2. Two to three corresponding signatures, in another part of your code.
+3. An entry in a hash map, defined somewhere else.
+4. A value for that entry in an intializer function, defined somewhere else again.
+5. Optionally, a commandline option that will allow setting the variable from the command line.
 
 So when you add, delete, or change the definion of a configuration
 varialbe, all the above elements have to be kept coordinated.
@@ -41,22 +38,26 @@ info, and it does the rest.  This means that it does a lot of things in
 way that's usually hidden, and you just have to know part of what it's
 doing (see below), but the alternative is worse.
 
-### Miscellaneous tips
+### Using `defsim`
 
-Currently, `defsim` requires that the subclass of Mason's `SimState` be
-named `Sim`.  It wouldn't be hard to modify defsim.clj to allow it to
-discover the name of the `SimState` subclass, but I don't have a desire
-for this change.  (If you use `defsim`, and this bothers you, let me
+#### Things you must provide:
+
+`defsim` requires that the subclass of Mason's `SimState` be
+named `Sim`.  (It wouldn't be hard to modify defsim.clj to allow it to
+discover the name of the `SimState` subclass, but I don't have a need
+for this change.  If you use `defsim`, nd this bothers you let me
 know and I'll fix it.)
 
 You also must typically precede the call to `defsim` with this:
-```clojure
-(def commandline$ (atom nil)) ; Needed by defsim and other code below if we're defining commandline options
-```
-I name variables that contain atoms with "$" as a suffix.
-I couldn't figure out how to move this into the `defsim` definition.
 
-`defsim`'s docstring provides usage information.
+```clojure
+(def commandline$ (atom nil))
+```
+
+I couldn't figure out how to move this into the `defsim` definition.
+(I name variables that contain atoms with "$" as a suffix.)
+
+#### The `defsim` call
 
 Example of the use of `defsim` in Sim.clj:
 
@@ -72,14 +73,49 @@ Example of the use of `defsim` in Sim.clj:
   :methods [[getPopSize [] long] ; additional options here. this one is for def below; it will get merged into the generated :methods component.
             [getKSnipeFreq [] double]])
 ```
-The comments describe the elements of the first argument.
 
-I show below what this expands to.
+The comments above the call describe the elements of the first argument.
+I show below what this expands to in another section.
 
-### How to use `defsim`
+Here is `defsim`'s docstring (lightly formatted):
+
+`defsim`  
+([fields & addl-gen-class-opts])  
+Macro  
+`defsim` generates Java-bean style and other MASON-style accessors; a gen-class
+expression in which their signatures are defined along with an instance
+variable containing a Clojure map for their corresponding values; an
+initializer function for the map; and a call to
+clojure.tools.cli/parse-opts to define corresponding commandline
+options.  `fields` is a sequence of 4- or 5-element sequences starting
+with names of fields in which configuration data will be stored and
+accessed, followed by initial values and a Java type identifiers for the
+field.  The fourth element is either false to indicate that the field
+should not be configurable from the UI, or truthy if it is.  In the
+latter case, it may be a two-element sequence containing default min and
+max values to be used for sliders in the UI.  (This range doesn't
+constraint fields' values in any other respect.) The fifth element, if
+present, specifies short commandline option lists for use by
+`cli-options`, except that the second, long option specifier should be
+left out; it will be generated from the parameter name.  The following
+`gen-class` options will automatically be provided in the expansion of
+`defsim`: `:state`, `:exposes-methods`, `:init`, `:main`, `:methods`.
+Additional options can be provided in `addl-gen-class-opts` by
+alternating `gen-class` option keywords with their intended values.  If
+`addl-gen-class-opts` includes `:exposes-methods` or `:methods`, the
+value(s) will be combined with automatically generated values for these
+`gen-class` options.  Note: defsim must be used only in a namespace
+named &lt;namespace prefix&gt;.Sim, where &lt;namespace prefix&gt; is the path
+before the last dot of the current namespace.  Sim must be aot-compiled
+in order for gen-class to work.
+
+See the expansion of the above code, below, for details about what
+`defsim` does.
+
+
+#### Accessing configuration data
 
 TODO
-
 (include discussion of using the defrecord from elsewhere.)
 
 
