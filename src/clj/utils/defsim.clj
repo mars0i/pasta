@@ -156,25 +156,30 @@
 ;; TODO add type annotations. (maybe iff they're symbols??)
 ;; Maybe some of gensym pound signs are overkill. Can't hurt?
 (defmacro defsim
-  "fields is a sequence of 3- or 4-element sequences starting with names of 
-  fields in which configuration data will be stored and accessed, followed
-  by initial values and a Java type identifiers for the field.  The fourth
-  element is either false to indicate that the field should not be configurable
-  from the UI, or truthy if it is.  In the latter case, it may be a two-element 
-  sequence containing default min and max values to be used for sliders in the
-  UI.  (This range doesn't constraint fields' values in any other respect.) 
-  The following gen-class options will automatically be provided: :state, 
-  :exposes-methods, :init, :main, :methods.  The fifth element, if present,
-  specifies short commandline option lists for use by cli-options, except that
-  the second, long option specifier should be left out; it will be generated
-  from the parameter name.  Additional options can be provided 
+  "defsim generates Java-bean style and other MASON-style accessors; a gen-class 
+  expression in which their signatures are defined along with an instance 
+  variable containing a Clojure map for their corresponding values; an 
+  initializer function for the map; and a call to clojure.tools.cli/parse-opts
+  to define corresponding commandline options.  fields is a sequence of 4- or 
+  5-element sequences starting with names of fields in which configuration 
+  data will be stored and accessed, followed by initial values and a Java 
+  type identifiers for the field.  The fourth element is either false to 
+  indicate that the field should not be configurable from the UI, or truthy
+  if it is.  In the latter case, it may be a two-element sequence containing 
+  default min and max values to be used for sliders in the UI.  (This range 
+  doesn't constraint fields' values in any other respect.) The fifth element,
+  if present, specifies short commandline option lists for use by parse-opts,
+  except that the second, long option specifier should be left out; it will be 
+  generated from the parameter name.  The following gen-class options will
+  automatically be provided in the macroexpansion of defsim: :state, 
+  :exposes-methods, :init, :main, :methods.  Additional options can be provided
   in addl-gen-class-opts by alternating gen-class option keywords with their
-  intended values.  If addl-gen-class-opts includes :exposes-methods or :methods,
-  the value(s) will be combined with automatically generated values for these
-  gen-class options.  The generated class will be named <namespace prefix>.Sim,
-  where <namespace prefix> is the path before the last dot of the current namespace.
-  Java-bean style and other MASON-style accessors will be defined.  
-  Note: Sim must be aot-compiled in order for gen-class to work."
+  intended values.  If addl-gen-class-opts includes :exposes-methods or 
+  :methods, the value(s) will be combined with automatically generated values
+  for these gen-class options.  Note: defsim must be used only in a namespace
+  named <namespace prefix>.Sim, where <namespace prefix> is the path before the
+  last dot of the current namespace.  Sim must be aot-compiled in order for 
+  gen-class to work."
   [fields & addl-gen-class-opts]
    (let [addl-opts-map (apply hash-map addl-gen-class-opts)
          field-syms# (map field-sym fields)
