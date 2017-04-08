@@ -26,9 +26,11 @@ be configurable via the GUI, you need to provide:
 
 1. Two to three bean-ish accessor functions.
 2. Two to three corresponding signatures, in another part of your code.
-3. An entry in a hash map, defined somewhere else.
-4. A value for that entry in an intializer function, defined somewhere else again.
-5. Optionally, a commandline option that will allow setting the variable from the command line.
+3. An entry in a defrecord, defined somewhere else.
+4. A value for that entry in an intializer function, defined somewhere
+else again.
+5. Optionally, a commandline option that will allow setting the
+variable from the command line.
 
 So when you add, delete, or change the definion of a configuration
 varialbe, all the above elements have to be kept coordinated.
@@ -77,6 +79,33 @@ Example of the use of `defsim` in Sim.clj:
 The comments above the call describe the elements of the first argument.
 I show below what this expands to in another section.
 
+For each element in that first argument--a vector of vectors--`defsim`
+generates code that performs some or all of the five functions listed in
+a previous section.  
+
+Along the way, `defsim` defines, in a separate namespace
+`<your
+prefix>.data`, a defrecord named `SimData`.  An instance of this
+defrecord will be put into the "state" variable of your `Sim` class
+instance (i.e. the class that inherits from Mason's `sim.engine.SimState`).
+This state variable, named `simData`, is the only instance variable that 
+Clojure's `gen-class` allows.  We wrap a `SimData` record in an atom, 
+and make that atom the value of `Sim`'s instance variable `simData`.
+
+The fields of the `SimData` defrecord are named by the first elements
+of the inner vectors in the first argument to `defsim`.
+
+Values of the fields in this `SimData` are initialized when your `Sim`
+class is created.  The initial values are the second elements of the inner
+vectors in `defsim`'s argument.
+
+The remaining elements in the inner vectors are used to define (a)
+Bean-style accessor functions that Mason will use to create GUI elements
+which will allow a user to change the values in the `SimData` defrecord
+(using `swap!` and `assoc` behind the scenes), and (b) command line options
+that allow setting these same values.  The docstring below says a bit more
+about this.
+
 Here is `defsim`'s docstring (lightly formatted):
 
 `defsim`  
@@ -115,9 +144,52 @@ See the expansion of the above code, below, for details about what
 
 #### Accessing configuration data
 
-TODO
-(include discussion of using the defrecord from elsewhere.)
+You can access the global configuration data in the `SimData` defrecord
+stored in the `simData` instance variable of your class `Sim` by getting
+`simData` from `Sim` and then defref'ing the atom inside `simData`.  For
+example, if `sim` contains your `Sim` instance:
 
+```clojure
+(let [sim-data$ (.simData sim)
+      sim-data @sim-data$
+      my-config-param-1 (:my-config-param-1 sim-data)
+      my-config-param-2 (:my-config-param-2 sim-data)]
+   (do-things-with my-config-param-1 my-config-param-2))
+```
+
+Or you can do it in one step:
+
+```clojure
+   (do-something-with (:my-config-param-3 @(.simData sim)))
+```
+
+For example, I do this in the `-start` function in Sim.clj. 
+
+To use this configuration data, your code obviously has to have had
+access to the `Sim` instance at some point.  Some examples:
+
+In the `-start` function in `Sim`, the `Sim` instance is passed as the
+sole argument, which would often be called `this`.
+
+If your `-start` function calls or schedules some central routines
+that run the simulation, you can pass in your `Sim` instance,
+the atom wrapping your `SimData`, or the `SimData` itself, so that
+your code can access the configuration data stored in it.
+
+In your GUI class--let's say it's named "UI"--which inherits from
+Mason's `sim.display.GUIState`, the `Sim` instance will usually be
+accessible using the `getState()` accessor that `UI` inherits from
+`GUIState`.  For example, your `setup-portrayals` function might start
+like this:
+
+```clojure
+(defn setup-portrayals
+  [this-ui]
+  (let [sim (.getState this-ui)
+        sim-data$ (.simData sim)
+           ...                  ]
+    ...))
+```
 
 ### What `defsim` expands to
 
