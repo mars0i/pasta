@@ -29,8 +29,6 @@
 (def orientation-min (- orientation-max))
 (def orientation-scale (- orientation-max orientation-min))
 
-(def three-oclock Math/PI)
-(def nine-oclock (* 2 Math/PI))
 
 ;; Notes on Orientation2D, etc.:
 ;; value   orientation
@@ -40,17 +38,23 @@
 ;;  -pi      9:00
 ;; 1.5*pi   12:00
 ;; -pi/2    12:00
-;; THIS IS *REALLY* SLOW
+(def three-oclock 0)
+(def nine-oclock Math/PI)
+(def half-pi (* 0.5 Math/PI))
+(def neg-half-pi (* -0.5 Math/PI))
+(def one-and-a-half-pi (* 1.5 Math/PI))
+
 (defn pref-orientation
   [minimum scale subenv value]
-  (let [two-pi (* 2 Math/PI)
-        [increment direction] (if (= subenv :west) [nine-oclock 1] [three-oclock -1])
-        normalized-value (- (/ (- value minimum) scale) ; scale value so it's in [-0.5 0.5]
+  (let [[zero minimum maximum direction] (if (= subenv :west)
+                                                [nine-oclock half-pi one-and-a-half-pi 1]
+                                                [three-oclock neg-half-pi half-pi -1])
+        normalized-value (- (/ (- value minimum) 
+                               scale) ; scale value so it's in [-0.5 0.5]
                             0.5)
-        orientation (+ (* direction normalized-value Math/PI)
-                       increment)]
-    (min (* 0.5 increment)
-         (max (* -0.5 increment) 
+        orientation (+ zero (* direction Math/PI normalized-value))]
+    (min maximum
+         (max minimum
               orientation)))) ; even given normalization some schemes might produce values outside the range
 
 ;; The two atom fields at the end are there solely for interactions with the UI.
