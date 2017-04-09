@@ -1,9 +1,9 @@
 # pasta
 
-Agent-based simulation with:
+Agent-based<a href="WhatsABMnote" id="whatsABMref"><sup>1</sup></a> simulation with:
 
 * A very simple model of individual learning by prediction error
-minimization<a href="#WhatsPEMnote" id="WhatsPEMref"><sup>1</sup></a>
+minimization<a href="#WhatsPEMnote" id="WhatsPEMref"><sup>2</sup></a>
 (PEM) in some agents, known as "k-snipes".  (I do mean *model*; what
 these agents do, internally, is much simpler than what's usually meant
 by PEM.)
@@ -14,13 +14,6 @@ environments.  These agents are known as "r-snipes".
 
 * Agents that engage in a simple form of social learning by copying
   from nearby agents ("s-snipes").
-
-(Note: "Agent-based" here refers to the loose class of <a href="https://en.wikipedia.org/wiki/Agent-based_model">simulations</a>
-in which outcomes of interest come from interactions between many
-semi-independent entities--*agents*--which often model behaviors or
-interactions between people, organisms, companies, etc.  "Agent-based"
-does *not* refer to various ways of dealing with concurrency, as for
-example with Clojure's <a href="https://clojure.org/reference/agents">agent</a> data structure.)
 
 <a href="http://members.logical.net/~marshall">Marshall Abrams</a>
 
@@ -72,7 +65,7 @@ strategists are less likely to die, but produce fewer offspring.
 Roughly, an r strategy prioritizes quantity over quality, while a K
 strategy does the opposite.
 
-Snipes eat mushrooms.<a id="joke1ref" href="#joke1"><sup>2</sup></a>
+Snipes eat mushrooms.<a id="joke1ref" href="#joke1"><sup>3</sup></a>
 There are two environments.  In the *east* (usually left)
 environment, small mushrooms are nutritious (yellow) and large mushrooms
 are poisonous (gray-brown-green).  In the *west* (usually right)
@@ -223,8 +216,15 @@ released under a different license.
 
 ##
 
-<a id="WhatsPEMnote" href="#WhatsPEMref"><sup>1</sup></a> Prediction energy minimization: AKA free-energy minimization, predictive
+<a id="whatsABMnote" href="#whatsABMref"><sup>1</sup></a> "Agent-based" here refers to the loose class of <a href="https://en.wikipedia.org/wiki/Agent-based_model">simulations</a>
+in which outcomes of interest come from interactions between many
+semi-independent entities--*agents*--which often model behaviors or
+interactions between people, organisms, companies, etc.  "Agent-based"
+does *not* refer to various ways of dealing with concurrency, as for
+example with Clojure's <a href="https://clojure.org/reference/agents">agent</a> data structure.
+
+<a id="WhatsPEMnote" href="#WhatsPEMref"><sup>2</sup></a> Prediction energy minimization: AKA free-energy minimization, predictive
 processing, predictive coding. cf. integral control, mean-field
 approximation, variational methods.
 
-<a id="joke1" href="#joke1ref"><sup>2</sup></a>Yes--this pasta has mushrooms in it.  Yum!
+<a id="joke1" href="#joke1ref"><sup>3</sup></a>Yes--this pasta has mushrooms in it.  Yum!
