@@ -1,6 +1,6 @@
 # pasta
 
-Agent-based<a href="#WhatsABMnote" id="WhatsABMref"><sup>1</sup></a> simulation with:
+Agent-based simulation<a href="#WhatsABMnote" id="WhatsABMref"><sup>1</sup></a> with:
 
 * A very simple model of individual learning by prediction error
 minimization<a href="#WhatsPEMnote" id="WhatsPEMref"><sup>2</sup></a>
