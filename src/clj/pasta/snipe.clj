@@ -25,13 +25,6 @@
 ;; display snipes of different types differently in the UI if they're represented
 ;; by different Java classes.
 
-(def orientation-max 0.0004)
-(def orientation-min (- orientation-max))
-(def orientation-scale (- orientation-max orientation-min))
-
-(def three-oclock Math/PI)
-(def nine-oclock (* 2 Math/PI))
-
 ;; Notes on Orientation2D, etc.:
 ;; value   orientation
 ;;   0       3:00
@@ -40,17 +33,15 @@
 ;;  -pi      9:00
 ;; 1.5*pi   12:00
 ;; -pi/2    12:00
-;; THIS IS *REALLY* SLOW
+;; FIXME THIS IS *REALLY* SLOW
 (defn pref-orientation
-  [minimum scale subenv value]
-  (let [two-pi (* 2 Math/PI)
-        [increment direction] (if (= subenv :west) [nine-oclock 1] [three-oclock -1])
-        normalized-value (- (/ (- value minimum) scale) ; scale value so it's in [-0.5 0.5]
+  [minimum maximum value]
+  (let [size (- maximum minimum) ; can I move this out so it's not recalc'ed every time?
+        normalized-value (- (/ (- value minimum) size) ; scale value so it's in [-0.5 0.5]
                             0.5)
-        orientation (+ (* direction normalized-value Math/PI)
-                       increment)]
-    (min (* 0.5 increment)
-         (max (* -0.5 increment) 
+        orientation (* -1 normalized-value Math/PI)]
+    (min (* 0.5 Math/PI)
+         (max (* -0.5 Math/PI) 
               orientation)))) ; even given normalization some schemes might produce values outside the range
 
 ;; The two atom fields at the end are there solely for interactions with the UI.
@@ -62,7 +53,7 @@
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Oriented2D
-  (orientation2D [this] (pref-orientation orientation-min orientation-scale subenv mush-pref))
+  (orientation2D [this] (pref-orientation -0.0004 0.0004 (:mush-pref this))) ; TODO FIX THESE HARCODED VALUES?
   Object
   (toString [_] (str "<KSnipe #" id">")))
 
@@ -71,7 +62,7 @@
   Propertied
   (properties [original-snipe] (make-properties id cfg-data$))
   Oriented2D
-  (orientation2D [this] (pref-orientation orientation-min orientation-scale subenv mush-pref))
+  (orientation2D [this] (pref-orientation -0.0004 0.0004 (:mush-pref this))) ; TODO FIX THESE HARCODED VALUES?
   Object
   (toString [_] (str "<SSnipe #" id">")))
 
