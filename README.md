@@ -15,6 +15,13 @@ environments.  These agents are known as "r-snipes".
 * Agents that engage in a simple form of social learning by copying
   from nearby agents ("s-snipes").
 
+(Note: "Agent-based" here refers to the loose class of <a href="https://en.wikipedia.org/wiki/Agent-based_model">simulations</a>
+in which outcomes of interest come from interactions between many
+semi-independent entities--*agents*--which often model behaviors or
+interactions between people, organisms, companies, etc.  "Agent-based"
+does *not* refer to various ways of dealing with concurrency, as for
+example with Clojure's <a href="https://clojure.org/reference/agents">agent</a> data structure.)
+
 <a href="http://members.logical.net/~marshall">Marshall Abrams</a>
 
 See info about LICENSE below.
