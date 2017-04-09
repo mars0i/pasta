@@ -1,6 +1,6 @@
 # pasta
 
-Agent-based<a href="WhatsABMnote" id="whatsABMref"><sup>1</sup></a> simulation with:
+Agent-based<a href="WhatsABMnote" id="WhatsABMref"><sup>1</sup></a> simulation with:
 
 * A very simple model of individual learning by prediction error
 minimization<a href="#WhatsPEMnote" id="WhatsPEMref"><sup>2</sup></a>
@@ -216,7 +216,7 @@ released under a different license.
 
 ##
 
-<a id="whatsABMnote" href="#whatsABMref"><sup>1</sup></a> "Agent-based" here refers to the loose class of <a href="https://en.wikipedia.org/wiki/Agent-based_model">simulations</a>
+<a id="WhatsABMnote" href="#WhatsABMref"><sup>1</sup></a> "Agent-based" here refers to the loose class of <a href="https://en.wikipedia.org/wiki/Agent-based_model">simulations</a>
 in which outcomes of interest come from interactions between many
 semi-independent entities--*agents*--which often model behaviors or
 interactions between people, organisms, companies, etc.  "Agent-based"
