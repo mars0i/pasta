@@ -7,7 +7,7 @@ experiment with pasta without looking at the source code.  See the
 README.md at the root of this repo for general notes about pasta, how to
 run it, etc.
 
-* perception.pdf: Notes on k-snipes' learning algorithm.
+* kSnipePerception.pdf: Notes on k-snipes' learning algorithm.
 
 * defsim.md: Documentation on the `defsim` macro in `utils.defsim`.
 This is used in Sim.clj and generates code whose effects are used
