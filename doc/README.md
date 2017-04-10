@@ -18,8 +18,8 @@ functional-programming style using MASON.
 
 * ClojureMASONinteropTips.md: General notes on Clojure-Java interop
 relevant to use of Clojure with MASON.  This document came from my
-experiments implementing MASON's Students example in Clojure (see my
-majure repo).  This document reflected my focus at the time on producing
+experiments implementing MASON's Students example in Clojure (see the
+<a href="https://github.com/mars0i/majure">majure</a> repo).  This document reflected my focus at the time on producing
 code that was as fast as possible.  After the majure experiments, I
 applied what I'd learned in my intermittran repo.  The resulting code is
 not very idiomatic to Clojure, and unpleasant, imo.  My current approach is
