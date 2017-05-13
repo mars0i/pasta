@@ -23,8 +23,8 @@ See info about LICENSE below.
 
 The name of this project comes from the r-snipes' strategy of
 producing lots of offspring, many of whom will be maladapted to their
-environment and die.  Like testing pasta by throwing it against
-the wall to see what sticks.  Sort of.
+environment and die.  Kind of like testing pasta by throwing it against
+the wall to see what sticks.
 
 k-snipes implement a certain kind of evolutionary  <a
 href="http://www.oxfordreference.com/view/10.1093/acref/9780199766444.001.0001/acref-9780199766444-e-3642?rskey=KrGgBD&result=1">K
