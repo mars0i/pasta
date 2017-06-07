@@ -21,7 +21,7 @@ to put that one Oriented2D interface into Sim.clj).
 ## Is it necessary to run the scheduler?
 
 Yes, it appears so.  Even if the model itself isn't controlled by the
-scheduler--if say, you're just `take`int from a lazy sequence of model
+scheduler--if say, you're just `take` from a lazy sequence of model
 states--it's the scheduler that makes the UI window repaint.  cf. page
 24 of the v.19 manual.  (You make this happen by calling
 Display2D.reset().)  
@@ -164,7 +164,7 @@ the snipe field portrayal and mushroom field portrayal on every tick.
 
 ## Is functional style slower?
 
-So far in free-agent, the speed difference between non-functional and
+So far in pasta, the speed difference between non-functional and
 functional versions are so small that I'm not sure there's even a
 difference.  If there is a difference, it's less than 1%.  I observed
 this at an early stage, before implementing birth, death, and eating,
@@ -182,7 +182,7 @@ given that it's so small now?)
 Student ABM from the MASON manual in the `majure` repo, there were big
 speed differences between defrecord and deftype because a Continuous2D
 field is a hashtable, and hashing is handled differently for these data
-structures.  In free-agent I use an ObjectGrid2D field, which is just an
+structures.  In pasta I use an ObjectGrid2D field, which is just an
 array for Objects, so access speed will be the same no matter what you
 stick in there.)
 
@@ -196,14 +196,14 @@ easy.  Dealing with with interactions between agents is trickier, and
 can be more difficult than what you'd normally write in non-functional
 style ABMs.
 
-In `free-agent.popenv`, some of the operations are awkward and a bit
+In `pasta.popenv`, some of the operations are awkward and a bit
 complicated because of the need to simultaneously update the snipe
 field, the mushroom field, and snipe's internal states.  This would be
 simpler with in-place modifications of data structures.  For
 illustrations, look at `move-snipes` or `snipes-eat` and the functions
 they call.  (The complications are greater than what I dealt with in
-popco2, where I simply had to reorganize messages from agents in order
-to deliver them to other agents.)
+popco2 [which didn't use MASON], where I simply had to reorganize
+messages from agents in order to deliver them to other agents.)
 
 ### inspectors
 
@@ -225,17 +225,17 @@ branch `non-fnl` and saw that snipe properties update properly there.
 
 This is potentially a big drawback of functional style for agent-based
 modeling--worse than crossover problems, in a sense.  Even though
-crossover issues are fundamental to an ABM but and it's not fundamental
-to an ABM that individual agents be watched, in practice watching
-individual states can be very useful.  You might "blame" (but not fault)
-MASON for the additional complexity because it's not designed for
-functional programming, but if you think about it, providing inspector
-functionality for a functional-style ABM is by its nature not really
-trivial:  You're trying  to watch a "thing" over time, that's thing
-isn't actually a single thing in functional style.  So inspection
-requires special handling that isn't needed if you just maintain a
-pointer to single concrete data structure, as you can easily do in a
-non-functional style system.
+crossover issues are fundamental to an ABM, and it's not really
+*fundamental* to an ABM that individual agents be watched, in practice
+watching individual states can be very useful.  You might "blame" (but
+not fault) MASON for the additional complexity because it's not
+designed for functional programming, but if you think about it,
+providing inspector functionality for a functional-style ABM is by its
+nature not really trivial:  You're trying  to watch a "thing" over
+time, that's thing isn't actually a single thing in functional style. 
+So inspection requires special handling that isn't needed if you just
+maintain a pointer to single concrete data structure, as you can
+easily do in a non-functional style system.
 
 On the other hand, Clojure makes functional updating very easy, and
 imperative updating verbose: You have to use `deftype` with special
