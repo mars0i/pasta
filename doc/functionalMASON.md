@@ -3,7 +3,7 @@ Notes toward functional-style MASON
 
 ## defrecord vs. deftype
 
-(cf. document about this in the doc dir for intermittran)
+(cf. ClojureMASONinteropTips.md)
 
 Note it's possible to use defrecord with protocols if needed.  This
 allows a defrecord to implement a MASON interface.  cf.  SIM.clj in
