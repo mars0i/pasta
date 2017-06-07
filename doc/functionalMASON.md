@@ -244,7 +244,7 @@ the `deftype` definition, or stick atoms inside the fields in a
 `defrecord`, and then either write accessor functions or use `@`,
 `swap!`, etc. constantly--but you'd better write the accessor functions
 and stick them in protocols too, because otherwise MASON won't know what
-to do with them anyway.  This is kind of only verbose, only partially
+to do with them anyway.  This kind of only verbose, only partially
 idiomatic, Java-esque programming is what I want to avoid.
 
 ### inspector workarounds
@@ -292,3 +292,20 @@ for me in the inspected map."  e.g.:
 (when (:inspected? new-snipe)
   (swap! inspected-snipes-map assoc (:id new-snipe) new-snipe))
 ```
+
+In the end, I used the MASON `Propertied` interface so that each
+tick's (usually) new snipe delegates to a Properties class instance in
+which there are methods that the inspector will use.  See
+`make-properties` and calls to it in snipes.clj.` That is,  each snipe
+has a `properties` field that's specified by Propertied, and this
+field contains an instance of a subclass of `Properties`.  The
+inspector will be tracking that snipe instance that it found when you
+first told it to follow the snipe.  This instance is no longer doing
+anything, but the methods in its `Properties` subclass will go and
+find the current instance of the "same" snipe in order to get the data
+that the inspector should see. This is all pretty time-consuming--the
+simulation visible slows when you watch a few snipes--but it only
+slows things down when you watch snipes, and you didn't really need
+speed then, anyway.  (It's only when you're running without the GUI
+that you really need top speed, I feel.  The GUI is already a bit too
+fast unless you slow it down.)
