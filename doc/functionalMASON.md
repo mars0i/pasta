@@ -297,7 +297,7 @@ In the end, I used the MASON `Propertied` interface so that each
 tick's (usually) new snipe delegates to a Properties class instance in
 which there are methods that the inspector will use.  See
 `make-properties` and calls to it in snipes.clj. That is,  each snipe
-has a `properties` field that's specified by Propertied, and this
+has a `properties` field that's specified by `Propertied`, and this
 field contains an instance of a subclass of `Properties`.  The
 inspector will be tracking that snipe instance that it found when you
 first told it to follow the snipe.  This instance is no longer doing
