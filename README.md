@@ -207,7 +207,7 @@ jars in the same places as the others.
 
 ## License
 
-This software is copyright 2016 by [Marshall
+This software is copyright 2016, 2017 by [Marshall
 Abrams](http://members.logical.net/~marshall/), and is distributed
 under the [Gnu General Public License version
 3.0](http://www.gnu.org/copyleft/gpl.html) as specified in the file
