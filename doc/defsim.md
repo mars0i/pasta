@@ -14,7 +14,7 @@ tested whether this accomplishes its goals, however; I haven't added
 enough type hints.  (I didn't need the extra speed for pasta
 simulation.)
 
-The reason for the first goal is that making Mason provides a
+The reason for the first goal is that Mason provides a
 convenient way to allow users to customize configuration variables in
 the GUI.  If you set up certain Java bean-style accessors for your
 configuation variables,  the configuration controls magically appear.
