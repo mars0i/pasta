@@ -1,0 +1,27 @@
+This is how I described the problem at the time
+(https://github.com/mars0i/pasta/issues/37):
+
+	There is one thing that's unrealistic about short worlds. When
+	pop size is low, snipes going up or down come back to the same
+	region, so that nutritious mushrooms in that region all get
+	eaten up. They're not soon replaced because, since pop size is
+	small, there aren't a lot of snipes eating elsewhere. I don't
+	know whether this is the cause of this issue, but it suggests
+	that very short or very narrow worlds should simply be avoided;
+	they are incapable of being treated realistically without a
+	revision of mushroom restoration.
+
+The additional point one needs to know is that the number of mushrooms
+is constant: When a mushroom is eaten, another mushroom appears in a
+random location.  That means that if there are a lot of snipes eating in
+one area, you end up losing mushrooms in that area, and get new
+mushrooms that are usually somewhere else.  When the worlds
+(environments) are neither narrow nor wide, this isn't a problem because
+snipes move around a lot.  When the world is skinny, though, snipes end
+up staying in the same region more than with a non-skinny world, because
+when they go off the edge of the environment, they come back on the
+other side opposite that point.  (I could change this, but there are
+both programming and modeling drawbacks.)
+
+
+The solution: Don't use skinny worlds.
