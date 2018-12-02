@@ -47,7 +47,7 @@ doing (see below), but the alternative is worse.
 `defsim` requires that the subclass of Mason's `SimState` be
 named `Sim`.  (It wouldn't be hard to modify defsim.clj to allow it to
 discover the name of the `SimState` subclass, but I don't have a need
-for this change.  If you use `defsim`, nd this bothers you let me
+for this change.  If you use `defsim`, and this bothers you, let me
 know and I'll fix it.)
 
 You also must typically precede the call to `defsim` with this:
