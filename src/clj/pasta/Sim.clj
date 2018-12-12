@@ -14,7 +14,7 @@
            [sim.util Interval]
            [ec.util MersenneTwisterFast]
            [java.lang String]
-           [pasta.popenv.PopEnv]))
+           [pasta.popenv PopEnv]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Generate Sim class as subclass of SimState using genclass, with an init 
