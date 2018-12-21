@@ -67,8 +67,8 @@ strategy does the opposite.
 
 Snipes eat mushrooms.<a id="joke1ref" href="#joke1"><sup>3</sup></a>
 There are two environments.  In the *east* (usually left)
-environment, small mushrooms are nutritious (yellow) and large mushrooms
-are poisonous (gray-brown-green).  In the *west* (usually right)
+environment, small mushrooms are nutritious (gray-grown-green) and large mushrooms
+are poisonous (greenish yellow).  In the *west* (usually right)
 environment, large mushrooms are nutritious and small mushrooms are
 poisonous.
 
@@ -112,7 +112,7 @@ Alone</em>, University of Chicago Press 2006.)
 Snipes' energy levels are reflected in their brightness, with greater
 brightness indicating more energy.  Mushroom color indicates
 nutritiousness/poisonousness:  Lighter colors indicate
-nutritiousness---\ie these mushrooms are energetically favorable to
+nutritiousness--i.e. these mushrooms are energetically favorable to
 snipes---while darker colors indicate poisonousness---energetically
 unfavorability.  (The difference in shades between environments has no
 functional meaning, but can be thought of as indicating a difference
