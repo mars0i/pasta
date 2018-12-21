@@ -12,8 +12,9 @@ Marshall Abrams<br/>
 </h3>
 members.logical.net/~marshall
 </table>
-Evolutionary competition between different strategies for dealing with
-variable environments:
+
+<p>Evolutionary competition between different strategies for dealing with
+variable environments:</p>
 
 <p><b>k-snipes:</b> Agents that incorporate a very simple model of
 individual learning by prediction error minimization (PEM) in some
@@ -87,7 +88,7 @@ but can be thought of as indicating a difference between mushroom
 species.) </p>
 
 <p>If you double-click on a snipe while the run is paused,
-it will become circled, and you want watch it's internal
+it will become circled, and you want watch its internal
 states change.</p>
 
 <p>It's possible to display both environments overlapping
@@ -96,19 +97,72 @@ on the Displays tab.  Then you can think of snipes that only
 eat mushrooms of a given color as having a random developmental
 restriction to eating those mushrooms.</p>
 
-<h3>Variables</h3>
+<h3>Parameters:</h3>
 
-At the moment, there's no proper documentation of what the sliders
-and other settable elements in the Model tab do.  You'll be able to
-guess what some of these elements do, and if you run pasta from the
-command line, you can run it (for example) like this: <em>java -jar
-pasta.jar --help</em>.  That will provide further clues as to the
-meanings of the options in the Model tab, and it will show you how to
-set these parameters, along with others, from the command line.
+The following parameters for model runs can be set in the Model tab:
 
+<table style="width:100%">
+<tr><td valign=top>NumKSnipes:</em></td> <td>Size of k-snipe subpopulation</td></tr>
+<tr><td valign=top>NumRSnipes:</em></td> <td>Size of r-snipe subpopulation</td></tr>
+<tr><td valign=top>NumSSnipes:</em></td> <td>Size of s-snipe subpopulation</td></tr>
+<tr><td valign=top>MushProb:</em></td> <td>Average frequency of mushrooms.</td></tr>
+<tr><td valign=top>MushLowSize:</em></td> <td>Snipe-perceptible "size" of small mushrooms (mean of light distribution)</td></tr>
+<tr><td valign=top>MushHighSize:</em></td> <td>Snipe-perceptible "size" of large mushrooms (mean of light distribution)</td></tr>
+<tr><td valign=top>MushSd:</em></td> <td>Standard deviation of mushroom light distribution</td></tr>
+<tr><td valign=top>MushPosNutrition:</em></td> <td>Energy from eating a nutritious mushroom</td></tr>
+<tr><td valign=top>MushNegNutrition:</em></td> <td>Energy from eating a poisonous mushroom</td></tr>
+<tr><td valign=top>InitialEnergy:</em></td> <td>Initial energy for each snipe</td></tr>
+<tr><td valign=top>BirthThreshold:</em></td> <td>Parent energy level at which birth takes place</td></tr>
+<tr><td valign=top>KPrefNoiseSd:</em></td> <td>Standard deviation of internal noise in k-snipe preference determination.</td></tr>
+<tr><td valign=top>BirthCost:</em></td> <td>Energetic cost of giving birth to one offspring</td></tr>
+<tr><td valign=top>MaxEnergy:</em></td> <td>Max energy that a snipe can have.</td></tr>
+<tr><td valign=top>CarryingProportion:</em></td> <td valign=top>Snipes are randomly culled when number exceed this times # of cells.</td></tr>
+<tr><td valign=top>NeighborRadius:</em></td> <td>s-snipe neighbors (for copying) are no more than this distance away.</td></tr>
+<tr><td valign=top>ReportEvery:</em></td> <td>Report basic stats in shell every this many ticks after the first one (0 = never).</td></tr>
+<tr><td valign=top>MaxTicks:</em></td> <td>Stop model run after this number of timesteps, or never if 0.</td></tr>
+<tr><td valign=top>EnvWidth:</em></td> <td>Width of env.  Must be an even number.</td></tr>
+<tr><td valign=top>EnvHeight:</em></td> <td>Height of env. Must be an even number.</td></tr>
+<tr><td valign=top>EnvDisplaySize:</em></td> <td>How large to display the env in GUI by default.</td></tr>
+<tr><td valign=top>ExtremePref:</em></td> <td>Absolute value of r-snipe preferences.</td></tr>
+</table>
 
-<p>There's additional information at
+<p>Relative frequencies of the three snipe varieties are reported in the
+Model tab, with KSnipeFreq for the frequency of k-snipes, RSnipeFreq for
+the frequency of r-snipes, and SSnipeFreq for the frequency of s-snipes.
+The population size, including both environments, is reported in
+PopSize.  If you click on the little magnifying glass next to these
+elements, there are additional options that MASON provides for
+observing their values.</p>
+
+<p>You can also run pasta from a command line (see online docs or 
+README.md in the full distribution).  In that case, running it with
+"--help" will show options for setting these variables before the
+simulation starts.  There are also options to allow you to run pasta
+without the GUI or to send runtime data to a file.</p>
+
+<p>There is additional information at
 https://github.com/mars0i/pasta.</p>
+
+<h3>Things to try:</h3>
+
+Set the number of s-snipes (NumSSnipes) or the number of r-snipes
+(NumRSnipes) to zero, so that there is only competition between k-snipes
+and one of the other varieties.  Notice that with the default
+parameters, k-snipes sometimes increase in frequency early on, but in
+the end the r-snipes or s-snipes always increase in frequency at the
+expense of k-snipes.
+
+<p>Experiment with parameters to see if you can cause k-snipes win the
+evolutionary race.  For example, before the start of a k-snipe vs.
+r-snipe run, reduce MushNegNutrition.  Does this affects k-snipes'
+relative success?  Why?</p>
+
+<p>Pause a run, then double-click on a snipe to monitor its internal state
+and watch it move (it will become circled).  You can use the Detach
+button to monitor multiple snipes.  Double-click on the little
+magnifying glass next to energy, for example, and choose chart.  This
+will open a plot of that snipe's energy level over time.  (You can do the
+same thing with the snipe frequency variables in the Model tab.)</p>
 
 </body>
 </html>
