@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+</head>
+<body>
+<table border=0 cellspacing=0 cellpadding=6>
+<tr><td valign=top>
+<img src="icon.png">
+<td valign=top>
+<h3>Pasta<br/>
+Marshall Abrams<br/>
+</h3>
+members.logical.net/~marshall
+</table>
+Evolutionary competition between different strategies for dealing with
+variable environments:
+
+<p><b>k-snipes:</b> Agents that incorporate a very simple model of
+individual learning by prediction error minimization (PEM) in some
+agents.  These agents implement one kind of "K-strategy" which, roughly,
+prioritizes survival over reproduction.  (I do mean <em>model</em>; what
+these agents do, internally, is much, much simpler than what's usually
+meant by PEM.)</p>
+
+<p><b>r-snipes:</b> Agents that don't learn, but produce different types of offspring
+that are well suited or poorly suited for survival in different
+environments.  These agents implement
+one kind of "r-strategy", which roughly prioritize reproduction over
+survival.</p>
+
+<p><b>s-snipes:</b> Agents that engage in a simple form of social
+learning by copying from nearby agents ("s-snipes"); this implements
+another kind of r-strategy.</p>
+
+<p>The point is to compare evolutionary strategies and see which is
+selected for under specific parameter combinations.</p>
+
+<h3>How it works:</h3>
+
+Snipes eat mushrooms.  There are two environments.  In the
+<em>east</em> (usually left) environment, small mushrooms are
+nutritious (gray-brown-green) and large mushrooms are poisonous
+(greenish yellow).  In the <em>west</em> (usually right) environment,
+large mushrooms are nutritious (dark gray) and small mushrooms are
+poisonous (light gray).
+
+<p>Snipes move randomly within an environment, gain energy from eating
+nutritious mushrooms, and lose energy from eating poisonous mushrooms.
+Snipes that accumulate sufficient energy give birth, and lose energy as
+a result of the birth.  At birth, each newborn snipe is placed at a
+random location in a randomly chosen environment (as if parents
+temporarily migrate to a new location to give birth).</p>
+
+<p><b>k-snipes</b> (red circles with pointers) initially eat
+mushrooms randomly,  but learn to eat mushrooms whose size signal
+(which is normally distributed) indicates that they are probably
+nutritious. The direction of a k-snipe's pointer--how far up or down
+its pointing--indicates the degree of the snipe's preference for large
+or small mushrooms. </p>
+
+<p><b>r-snipes</b> (blue triangles) never learn.  They produce
+offspring that exhibit developmental differences: Roughly half of any
+snipe's offspring (upward-pointing triangles) always prefer large
+mushrooms; the others (downward-pointing triangles) always prefer
+small mushrooms.  Those suited to the environment in which they live
+tend to survive and reproduce, and those unsuited to their environment
+generally die before reproduction. </p>
+
+<p><b>s-snipes</b> (purple wing shapes) use a social learning or
+cultural transmission strategy known as "success bias".  A newborn
+s-snipe examines nearby (within <em>NeighborRadius</em>) snipes and
+copies the current mushroom size preference of whichever nearby snipe
+has the most energy.  If there are no nearby snipes, the s-snipe tries
+again on the next timestep.  Once it adopts a preference, an s-snipe's
+preference never changes.  The direction in which an s-snipe points--how
+far up or down it is tilted--indicates the degree of the snipe's
+preference for large or small mushrooms.</p>
+
+<p>Snipes' energy levels are reflected in their brightness, with
+greater brightness indicating more energy.  (This effect is rather
+subtle.)  Mushroom color indicates nutritiousness/poisonousness: 
+Lighter colors indicate nutritiousness--i.e. these mushrooms are
+energetically favorable to snipes--while darker colors indicate
+poisonousness--energetically unfavorability.  (The difference in hues
+between mushrooms in different environments has no functional meaning,
+but can be thought of as indicating a difference between mushroom
+species.) </p>
+
+<p>If you double-click on a snipe while the run is paused,
+it will become circled, and you want watch it's internal
+states change.</p>
+
+<p>It's possible to display both environments overlapping
+in the same window, using the "overlapping subenvs" item
+on the Displays tab.  Then you can think of snipes that only
+eat mushrooms of a given color as having a random developmental
+restriction to eating those mushrooms.</p>
+
+<p>There's additional information at
+https://github.com/mars0i/pasta>.</p>
+
+</body>
+</html>
