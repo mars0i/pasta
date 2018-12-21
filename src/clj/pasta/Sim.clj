@@ -43,7 +43,7 @@
                 [birth-cost          5.0    double  [0.0 10.0]  ["-o" "Energetic cost of giving birth to one offspring" :parse-fn #(Double. %)]]
                 [max-energy         30.0    double  [1.0 100.0] ["-m" "Max energy that a snipe can have." :parse-fn #(Double. %)]]
                 [carrying-proportion 0.25   double  [0.1 0.9]   ["-c" "Snipes are randomly culled when number exceed this times # of cells." :parse-fn #(Double. %)]]
-                [neighbor-radius     5      long    [1 10]      ["-r" "s-snipe neighbors are no more than this distance away." :parse-fn #(Long. %)]]
+                [neighbor-radius     5      long    [1 10]      ["-r" "s-snipe neighbors (for copying) are no more than this distance away." :parse-fn #(Long. %)]]
                 [report-every        0      long    true        ["-i" "Report basic stats every i ticks after the first one (0 = never)." :parse-fn #(Long. %)]]
                 [max-ticks           0      long    true        ["-t" "Stop after this number of timesteps have run, or never if 0." :parse-fn #(Long. %)]]
                 [env-width          40      long    [10 250]    ["-W" "Width of env.  Must be an even number." :parse-fn #(Long. %)]] ; Haven't figured out how to change 
