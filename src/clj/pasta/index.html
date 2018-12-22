@@ -19,9 +19,9 @@ variable environments:</p>
 <p><b>k-snipes:</b> Agents that incorporate a very simple model of
 individual learning by prediction error minimization (PEM) in some
 agents.  These agents implement one kind of "K-strategy" which, roughly,
-prioritizes survival over reproduction.  (I do mean <em>model</em>; what
-these agents do, internally, is much, much simpler than what's usually
-meant by PEM.)</p>
+prioritizes survival over reproduction.  (I do mean it's a
+<em>model</em> of PEM; what these agents do, internally, is much, much
+simpler than what's usually meant by PEM.)</p>
 
 <p><b>r-snipes:</b> Agents that don't learn, but produce different types of offspring
 that are well suited or poorly suited for survival in different
@@ -30,33 +30,33 @@ one kind of "r-strategy", which roughly prioritize reproduction over
 survival.</p>
 
 <p><b>s-snipes:</b> Agents that engage in a simple form of social
-learning by copying from nearby agents ("s-snipes"); this implements
-another kind of r-strategy.</p>
+learning by copying from nearby agents ("s-snipes").</p>
 
 <p>The point is to compare evolutionary strategies and see which is
-selected for under specific parameter combinations.</p>
+selected for under different parameter combinations.</p>
 
 <h3>How it works:</h3>
 
-Snipes eat mushrooms.  There are two environments.  In the
-<em>east</em> (usually left) environment, small mushrooms are
-nutritious (gray-brown-green) and large mushrooms are poisonous
-(greenish yellow).  In the <em>west</em> (usually right) environment,
-large mushrooms are nutritious (dark gray) and small mushrooms are
-poisonous (light gray).
+<b>The two environments:</b> Snipes eat mushrooms.  There are two
+environments.  In the <em>east</em> (usually left) environment, small
+mushrooms are nutritious (gray-brown-green) and large mushrooms are
+poisonous (greenish yellow).  In the <em>west</em> (usually right)
+environment, large mushrooms are nutritious (dark gray) and small
+mushrooms are poisonous (light gray).
 
-<p>Snipes move randomly within an environment, gain energy from eating
-nutritious mushrooms, and lose energy from eating poisonous mushrooms.
-Snipes that accumulate sufficient energy give birth, and lose energy as
-a result of the birth.  At birth, each newborn snipe is placed at a
-random location in a randomly chosen environment (as if parents
-temporarily migrate to a new location to give birth).</p>
+<p><b>Basic snipe behavior:</b> Snipes move randomly within an
+environment, gain energy from eating nutritious mushrooms, and lose
+energy from eating poisonous mushrooms.  Snipes that accumulate
+sufficient energy give birth, and lose energy as a result of the birth.
+At birth, each newborn snipe is placed at a random location in a
+randomly chosen environment (as if parents temporarily migrated to a new
+location to give birth).</p>
 
 <p><b>k-snipes</b> (red circles with pointers) initially eat
 mushrooms randomly,  but learn to eat mushrooms whose size signal
 (which is normally distributed) indicates that they are probably
 nutritious. The direction of a k-snipe's pointer--how far up or down
-its pointing--indicates the degree of the snipe's preference for large
+it is pointing--indicates the degree of the snipe's preference for large
 or small mushrooms. </p>
 
 <p><b>r-snipes</b> (blue triangles) never learn.  They produce
@@ -68,80 +68,88 @@ tend to survive and reproduce, and those unsuited to their environment
 generally die before reproduction. </p>
 
 <p><b>s-snipes</b> (purple wing shapes) use a social learning or
-cultural transmission strategy known as "success bias".  A newborn
-s-snipe examines nearby (within <em>NeighborRadius</em>) snipes and
-copies the current mushroom size preference of whichever nearby snipe
-has the most energy.  If there are no nearby snipes, the s-snipe tries
-again on the next timestep.  Once it adopts a preference, an s-snipe's
+cultural transmission strategy known as success bias.  A newborn s-snipe
+examines nearby snipes and copies the current mushroom size preference
+of whatever nearby snipe has the most energy.  If there are no snipes
+that are sufficiently near (see the parameter list below), the s-snipe tries
+again on the next timestep.  Once an s-snipe adopts a preference, the
 preference never changes.  The direction in which an s-snipe points--how
 far up or down it is tilted--indicates the degree of the snipe's
 preference for large or small mushrooms.</p>
 
-<p>Snipes' energy levels are reflected in their brightness, with
-greater brightness indicating more energy.  (This effect is rather
-subtle.)  Mushroom color indicates nutritiousness/poisonousness: 
-Lighter colors indicate nutritiousness--i.e. these mushrooms are
-energetically favorable to snipes--while darker colors indicate
-poisonousness--energetically unfavorability.  (The difference in hues
-between mushrooms in different environments has no functional meaning,
-but can be thought of as indicating a difference between mushroom
-species.) </p>
+<p><b>Colors:</b> Snipes' energy levels are reflected in their
+brightness, with greater brightness indicating more energy.  (This
+effect can be subtle.)  The two mushroom colors in each environment
+indicate nutritiousness/poisonousness: Lighter colors indicate
+nutritiousness--i.e. these mushrooms are energetically favorable to
+snipes--while darker colors indicate poisonousness--energetically
+unfavorability.  (The fact that the East and West mushrooms have
+different hues no functional meaning; it could considered a difference
+between mushroom species.) </p>
 
-<p>If you pause a run, you can double-click on a snipe to monitor its
-internal state and watch it move.  It will be circled so that you can
-keep track of it.  You can use the Detach button to monitor multiple
-snipes at the same time.  Then if you double-click on the little
-magnifying glass next to energy, for example, and choose chart, you'll
-open a plot of that snipe's energy level over time.</p>
+<p><b>Monitoring individual snipes:</b> If you pause a run, you can
+double-click on a snipe to monitor its internal state and watch it move.
+It will be circled so that you can keep track of it.  You can use the
+Detach button to monitor multiple snipes at the same time.  Then if you
+double-click on the little magnifying glass next to energy, for example,
+and choose chart, you'll open a plot of that snipe's energy level over
+time.</p>
 
-<p>It's possible to display both environments overlapping
-in the same window, using the "overlapping subenvs" item
-on the Displays tab.  Then you can think of snipes that only
-eat mushrooms of a given color as having a random developmental
+<p><b>Overlapping environment display:</b> It's possible to display both
+environments overlapping in the same window, using the "overlapping
+subenvs" item on the Displays tab.  Then you can think of snipes that
+only eat mushrooms of a given color as having a random developmental
 restriction to eating those mushrooms.</p>
+
+<p><b>Command line:</b> You can also run pasta from a command line (see online docs or 
+README.md in the full distribution).  In that case, running it with
+"--help" will show options for running pasta.</p>
 
 <h3>Parameters:</h3>
 
 The following parameters for model runs can be set in the Model tab:
 
 <table style="width:100%">
-<tr><td valign=top>NumKSnipes:</em></td> <td>Size of k-snipe subpopulation</td></tr>
-<tr><td valign=top>NumRSnipes:</em></td> <td>Size of r-snipe subpopulation</td></tr>
-<tr><td valign=top>NumSSnipes:</em></td> <td>Size of s-snipe subpopulation</td></tr>
-<tr><td valign=top>MushProb:</em></td> <td>Average frequency of mushrooms.</td></tr>
-<tr><td valign=top>MushLowSize:</em></td> <td>Snipe-perceptible "size" of small mushrooms (mean of light distribution)</td></tr>
-<tr><td valign=top>MushHighSize:</em></td> <td>Snipe-perceptible "size" of large mushrooms (mean of light distribution)</td></tr>
-<tr><td valign=top>MushSd:</em></td> <td>Standard deviation of mushroom light distribution</td></tr>
-<tr><td valign=top>MushPosNutrition:</em></td> <td>Energy from eating a nutritious mushroom</td></tr>
-<tr><td valign=top>MushNegNutrition:</em></td> <td>Energy from eating a poisonous mushroom</td></tr>
-<tr><td valign=top>InitialEnergy:</em></td> <td>Initial energy for each snipe</td></tr>
-<tr><td valign=top>BirthThreshold:</em></td> <td>Parent energy level at which birth takes place</td></tr>
-<tr><td valign=top>KPrefNoiseSd:</em></td> <td>Standard deviation of internal noise in k-snipe preference determination.</td></tr>
-<tr><td valign=top>BirthCost:</em></td> <td>Energetic cost of giving birth to one offspring</td></tr>
-<tr><td valign=top>MaxEnergy:</em></td> <td>Max energy that a snipe can have.</td></tr>
-<tr><td valign=top>CarryingProportion:</em></td> <td valign=top>Snipes are randomly culled when number exceed this times # of cells.</td></tr>
-<tr><td valign=top>NeighborRadius:</em></td> <td>s-snipe neighbors (for copying) are no more than this distance away.</td></tr>
-<tr><td valign=top>ReportEvery:</em></td> <td>Report basic stats in shell every this many ticks after the first one (0 = never).</td></tr>
-<tr><td valign=top>MaxTicks:</em></td> <td>Stop model run after this number of timesteps, or never if 0.</td></tr>
-<tr><td valign=top>EnvWidth:</em></td> <td>Width of env.  Must be an even number.</td></tr>
-<tr><td valign=top>EnvHeight:</em></td> <td>Height of env. Must be an even number.</td></tr>
-<tr><td valign=top>EnvDisplaySize:</em></td> <td>How large to display the env in GUI by default.</td></tr>
-<tr><td valign=top>ExtremePref:</em></td> <td>Absolute value of r-snipe preferences.</td></tr>
+<tr><td valign=top>NumKSnipes:</td> <td>Size of k-snipe subpopulation</td></tr>
+<tr><td valign=top>NumRSnipes:</td> <td>Size of r-snipe subpopulation</td></tr>
+<tr><td valign=top>NumSSnipes:</td> <td>Size of s-snipe subpopulation</td></tr>
+<tr><td valign=top>MushProb:</td> <td>Average frequency of mushrooms.</td></tr>
+<tr><td valign=top>MushLowSize:</td> <td>Snipe-perceptible "size" of small mushrooms (mean of light distribution)</td></tr>
+<tr><td valign=top>MushHighSize:</td> <td>Snipe-perceptible "size" of large mushrooms (mean of light distribution)</td></tr>
+<tr><td valign=top>MushSd:</td> <td>Standard deviation of mushroom light distribution</td></tr>
+<tr><td valign=top>MushPosNutrition:</td> <td>Energy from eating a nutritious mushroom</td></tr>
+<tr><td valign=top>MushNegNutrition:</td> <td>Energy from eating a poisonous mushroom</td></tr>
+<tr><td valign=top>InitialEnergy:</td> <td>Initial energy for each snipe</td></tr>
+<tr><td valign=top>BirthThreshold:</td> <td>Parent energy level at which birth takes place</td></tr>
+<tr><td valign=top>KPrefNoiseSd:</td> <td>Standard deviation of internal noise in k-snipe preference determination.</td></tr>
+<tr><td valign=top>BirthCost:</td> <td>Energetic cost of giving birth to one offspring</td></tr>
+<tr><td valign=top>MaxEnergy:</td> <td>Max energy that a snipe can have.</td></tr>
+<tr><td valign=top>CarryingProportion:</td> <td valign=top>Snipes are randomly culled when number exceed this times # of cells.</td></tr>
+<tr><td valign=top>NeighborRadius:</td> <td>s-snipe neighbors (for copying) are no more than this distance away.</td></tr>
+<tr><td valign=top>ReportEvery:</td> <td>Report basic stats in shell every this many ticks after the first one (0 = never).</td></tr>
+<tr><td valign=top>MaxTicks:</td> <td>Stop model run after this number of timesteps, or never if 0.</td></tr>
+<tr><td valign=top>EnvWidth:</td> <td>Width of env.  Must be an even number.</td></tr>
+<tr><td valign=top>EnvHeight:</td> <td>Height of env. Must be an even number.</td></tr>
+<tr><td valign=top>EnvDisplaySize:</td> <td>How large to display the env in GUI by default.</td></tr>
+<tr><td valign=top>ExtremePref:</td> <td>Absolute value of r-snipe preferences.</td></tr>
 </table>
 
-<p>Relative frequencies of the three snipe varieties are reported in the
-Model tab, with KSnipeFreq for the frequency of k-snipes, RSnipeFreq for
-the frequency of r-snipes, and SSnipeFreq for the frequency of s-snipes.
-The population size, including both environments, is reported in
-PopSize.  If you click on the little magnifying glass next to these
+<p>Some data is reported in other variables in the Model tab:
+<table style="width:100%">
+<tr><td valign=top>PopsSize</td> <td>Number of snipes in the population (in both environments).</td></tr>
+<tr><td valign=top>KSnipeFreq</td> <td>Relative frequency of k-snipes.</td></tr>
+<tr><td valign=top>RSnipeFreq</td> <td>Relative frequency of r-snipes.</td></tr>
+<tr><td valign=top>SSnipeFreq</td> <td>Relative frequency of s-snipes.</td></tr>
+</table>
+
+<p>If you click on the little magnifying glass next to these
 elements, there are additional options that MASON provides for
 observing their values.</p>
 
-<p>You can also run pasta from a command line (see online docs or 
-README.md in the full distribution).  In that case, running it with
-"--help" will show options for setting these variables before the
-simulation starts.  There are also options to allow you to run pasta
-without the GUI or to send runtime data to a file.</p>
+<p>If you run pasta from the command line, (see online docs or "--help"
+will show options for setting the parameters listed above, as well as a
+few other options concerning whether to display the GUI concerning
+writing data to a file.</p>
 
 <p>There is additional information at
 https://github.com/mars0i/pasta.</p>
