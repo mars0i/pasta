@@ -7,14 +7,22 @@
 <tr><td valign=top>
 <img src="icon.png">
 <td valign=top>
-<h3>Pasta<br/>
+<h2>Pasta<br/>
 Marshall Abrams<br/>
-</h3>
+</h2>
 members.logical.net/~marshall
 </table>
 
-<p>Evolutionary competition between different strategies for dealing with
-variable environments:</p>
+Sections:<br/>
+<a href="#overview">Overview</a>,
+<a href="#parameters">Parameters</a>,
+<a href="#howitworks">How it works</a>,
+<a href="#thingstotry">Things to try</a>
+
+<h2>Overview:</h2>
+
+This is a model evolutionary competition between different strategies
+for dealing with variable environments:
 
 <p><b>k-snipes:</b> Agents that incorporate a very simple model of
 individual learning by prediction error minimization (PEM) in some
@@ -33,11 +41,12 @@ survival.</p>
 learning by copying from nearby agents ("s-snipes").</p>
 
 <p>The point is to compare evolutionary strategies and see which is
-selected for under different parameter combinations.</p>
+selected for under different <a href="#parameters">parameter</a>
+combinations.</p>
 
-<h3>How it works:</h3>
+<a name="howitworks"></a><h2>How it works:</h2>
 
-<b>The two environments:</b> Snipes eat mushrooms.  There are two
+<b>The two environments:</b> Snipes eat mushrooms in one of two
 environments.  In the <em>east</em> (usually left) environment, small
 mushrooms are nutritious (gray-brown-green) and large mushrooms are
 poisonous (greenish yellow).  In the <em>west</em> (usually right)
@@ -101,11 +110,11 @@ subenvs" item on the Displays tab.  Then you can think of snipes that
 only eat mushrooms of a given color as having a random developmental
 restriction to eating those mushrooms.</p>
 
-<p><b>Command line:</b> You can also run pasta from a command line (see online docs or 
-README.md in the full distribution).  In that case, running it with
-"--help" will show options for running pasta.</p>
+<p><b>Command line:</b> You can also run pasta from a command line (see
+online docs or README.md in the full distribution).  In that case,
+running it with "--help" will show options for running pasta.</p>
 
-<h3>Parameters:</h3>
+<a name="parameters"></a><h2>Parameters:</h2>
 
 The following parameters for model runs can be set in the Model tab:
 
@@ -134,7 +143,7 @@ The following parameters for model runs can be set in the Model tab:
 <tr><td valign=top>ExtremePref:</td> <td>Absolute value of r-snipe preferences.</td></tr>
 </table>
 
-<p>Some data is reported in other variables in the Model tab:
+<p>Some data is reported in other variables displayed in the Model tab:
 <table style="width:100%">
 <tr><td valign=top>PopsSize</td> <td>Number of snipes in the population (in both environments).</td></tr>
 <tr><td valign=top>KSnipeFreq</td> <td>Relative frequency of k-snipes.</td></tr>
@@ -154,7 +163,7 @@ writing data to a file.</p>
 <p>There is additional information at
 https://github.com/mars0i/pasta.</p>
 
-<h3>Things to try:</h3>
+<a name="thingstotry"></a><h2>Things to try:</h2>
 
 Set the number of s-snipes (NumSSnipes) or the number of r-snipes
 (NumRSnipes) to zero, so that there is only competition between k-snipes
