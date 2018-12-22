@@ -98,7 +98,7 @@ difference between mushroom species.) </p>
 <p><b>Monitoring individual snipes:</b> If you pause a run, you can
 double-click on a snipe to monitor its internal state and watch it move.
 It will be circled so that you can keep track of it.  You can use the
-Detach button to monitor multiple snipes at the same time.  Then if you
+Detach button to monitor multiple snipes at the same time.  If you
 double-click on the little magnifying glass next to energy, for example,
 and choose chart, you'll open a plot of that snipe's energy level over
 time.</p>
@@ -118,9 +118,9 @@ running it with "--help" will show options for running pasta.</p>
 The following parameters for model runs can be set in the Model tab:
 
 <table style="width:100%">
-<tr><td valign=top>NumKSnipes:</td> <td>Size of k-snipe subpopulation</td></tr>
-<tr><td valign=top>NumRSnipes:</td> <td>Size of r-snipe subpopulation</td></tr>
-<tr><td valign=top>NumSSnipes:</td> <td>Size of s-snipe subpopulation</td></tr>
+<tr><td valign=top>NumKSnipes:</td> <td>Initial number of k-snipes.</td></tr>
+<tr><td valign=top>NumRSnipes:</td> <td>Initial number of r-snipes.</td></tr>
+<tr><td valign=top>NumSSnipes:</td> <td>Initial number of s-snipes.</td></tr>
 <tr><td valign=top>MushProb:</td> <td>Average frequency of mushrooms.</td></tr>
 <tr><td valign=top>MushLowSize:</td> <td>Snipe-perceptible "size" of small mushrooms (mean of light distribution)</td></tr>
 <tr><td valign=top>MushHighSize:</td> <td>Snipe-perceptible "size" of large mushrooms (mean of light distribution)</td></tr>
@@ -136,9 +136,9 @@ The following parameters for model runs can be set in the Model tab:
 <tr><td valign=top>NeighborRadius:</td> <td>s-snipe neighbors (for copying) are no more than this distance away.</td></tr>
 <tr><td valign=top>ReportEvery:</td> <td>Report basic stats in shell every this many ticks after the first one (0 = never).</td></tr>
 <tr><td valign=top>MaxTicks:</td> <td>Stop model run after this number of timesteps, or never if 0.</td></tr>
-<tr><td valign=top>EnvWidth:</td> <td>Width of env.  Must be an even number.</td></tr>
-<tr><td valign=top>EnvHeight:</td> <td>Height of env. Must be an even number.</td></tr>
-<tr><td valign=top>EnvDisplaySize:</td> <td>How large to display the env in GUI by default.</td></tr>
+<tr><td valign=top>EnvWidth:</td> <td>Width of environments.  Must be an even number.</td></tr>
+<tr><td valign=top>EnvHeight:</td> <td>Height of environments. Must be an even number.</td></tr>
+<tr><td valign=top>EnvDisplaySize:</td> <td>How large to display environments in GUI by default.</td></tr>
 <tr><td valign=top>ExtremePref:</td> <td>Absolute value of r-snipe preferences.</td></tr>
 </table>
 
