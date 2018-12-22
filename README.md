@@ -78,12 +78,13 @@ energy give birth, and lose energy as a result of the birth.  At
 birth, each newborn snipe is placed at a random location in a randomly
 chosen environment.
 
-*k-snipes* (red circles with pointers) initially eat mushrooms
-randomly,  but learn to eat mushrooms whose size signal (which is
-normally distributed) indicates that they are probably nutritious.
-The direction of a k-snipe's pointer--how far up or down its
-pointing--indicates the degree of the snipe's preference for large or
-small mushrooms.
+*k-snipes* (red circles with pointers) initially eat mushrooms randomly,
+but learn to eat mushrooms whose size signal (which is normally
+distributed) indicates that they are probably nutritious.  The direction
+of a k-snipe's pointer--how far up or down its pointing--indicates the
+degree of the snipe's preference for large or small mushrooms.  For more
+details, see <a
+href="https://github.com/mars0i/pasta/blob/master/doc/kSnipePerception.pdf">https://github.com/mars0i/pasta/blob/master/doc/kSnipePerception.pdf</a>.</p>
 
 *r-snipes* (blue triangles) never learn.  They produce offspring that
 exhibit developmental differences: Roughly half of any snipe's
