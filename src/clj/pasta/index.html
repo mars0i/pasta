@@ -10,7 +10,9 @@
 <h2>Pasta<br/>
 Marshall Abrams<br/>
 </h2>
-members.logical.net/~marshall
+http://members.logical.net/~marshall<br/>
+https://github.com/mars0i/pasta<br/>
+mabrams@uab.edu, marshall@logical.net
 </table>
 
 Sections:<br/>
@@ -21,8 +23,9 @@ Sections:<br/>
 
 <h2>Overview:</h2>
 
-This is a model evolutionary competition between different strategies
-for dealing with variable environments:
+This is a model of evolutionary competition between different strategies
+for dealing with variable environments.  There are three kinds of agents
+(models of organisms) that can be deployed:
 
 <p><b>k-snipes:</b> Agents that incorporate a very simple model of
 individual learning by prediction error minimization (PEM) in some
@@ -45,29 +48,34 @@ selected for under different parameter combinations.</p>
 
 <a name="howitworks"></a><h2>How it works:</h2>
 
-<b>The two environments:</b> Snipes eat mushrooms in one of two
+(I won't document features of the GUI that I think are
+easy to figure out with a bit of guessing plus trial and error.
+Let me know if I'm wrong!)
+
+<p><b>The two environments:</b> Snipes eat mushrooms in one of two
 environments.  In the <em>east</em> (usually left) environment, small
 mushrooms are nutritious (gray-brown-green) and large mushrooms are
 poisonous (greenish yellow).  In the <em>west</em> (usually right)
 environment, large mushrooms are nutritious (dark gray) and small
-mushrooms are poisonous (light gray).
+mushrooms are poisonous (light gray).</p>
 
 <p><b>Basic snipe behavior:</b> Snipes move randomly within an
 environment, gain energy from eating nutritious mushrooms, and lose
 energy from eating poisonous mushrooms.  Snipes that accumulate
-sufficient energy give birth, and lose energy as a result of the birth.
-At birth, each newborn snipe is placed at a random location in a
-randomly chosen environment (as if parents temporarily migrated to a new
-location to give birth).</p>
+sufficient energy give birth to a single offspring, losing energy as a
+result of the birth. (one snipe can have multiple offspring if it
+repeatedly acquires enough energy to do so.) At birth, each newborn
+snipe is placed at a random location in a randomly chosen environment
+(as if parents had temporarily migrated to a new location to give
+birth).</p>
 
-<p><b>k-snipes</b> (red circles with pointers) initially eat
-mushrooms randomly,  but learn to eat mushrooms whose size signal
-(which is normally distributed) indicates that they are probably
-nutritious. The direction of a k-snipe's pointer--how far up or down
-it is pointing--indicates the degree of the snipe's preference for large
-or small mushrooms. 
-For more details, see
-https://github.com/mars0i/pasta/blob/master/doc/kSnipePerception.pdf.</p>
+<p><b>k-snipes</b> (red circles with pointers) initially eat mushrooms
+randomly,  but learn to eat mushrooms whose size signal (which is
+normally distributed) indicates that they are probably nutritious. The
+direction of a k-snipe's pointer&mdash;how far up or down it is
+pointing&mdash;indicates the degree of the snipe's preference for large or
+small mushrooms.  For details, see doc/kSnipePerception.pdf at
+https://github.com/mars0i/pasta.</p>
 
 <p><b>r-snipes</b> (blue triangles) never learn.  They produce
 offspring that exhibit developmental differences: Roughly half of any
@@ -83,19 +91,19 @@ examines nearby snipes and copies the current mushroom size preference
 of whatever nearby snipe has the most energy.  If there are no snipes
 that are sufficiently near (see the parameter list below), the s-snipe tries
 again on the next timestep.  Once an s-snipe adopts a preference, the
-preference never changes.  The direction in which an s-snipe points--how
-far up or down it is tilted--indicates the degree of the snipe's
+preference never changes.  The direction in which an s-snipe points&mdash;how
+far up or down it is tilted&mdash;indicates the degree of the snipe's
 preference for large or small mushrooms.</p>
 
 <p><b>Colors:</b> Snipes' energy levels are reflected in their
 brightness, with greater brightness indicating more energy.  (This
 effect can be subtle.)  The two mushroom colors in each environment
-indicate nutritiousness/poisonousness: Lighter colors indicate
-nutritiousness--i.e. these mushrooms are energetically favorable to
-snipes--while darker colors indicate poisonousness--energetically
+indicate nutritiousness/poisonousness: Darker colors indicate
+nutritiousness&mdash;i.e. these mushrooms are energetically favorable to
+snipes&mdash;while lighter colors indicate poisonousness&mdash;energetically
 unfavorability.  (The fact that the East and West mushrooms have
-different hues no functional meaning; it could be considered a
-difference between mushroom species.) </p>
+different hues no functional meaning; this could be considered a
+difference between mushroom species, for example.) </p>
 
 <p><b>Monitoring individual snipes:</b> If you pause a run, you can
 double-click on a snipe to monitor its internal state and watch it move.
@@ -112,7 +120,7 @@ only eat mushrooms of a given color as having a random developmental
 restriction to eating those mushrooms.</p>
 
 <p><b>Command line:</b> You can also run pasta from a command line (see
-online docs or README.md in the full distribution).  In that case,
+online documents or README.md in the full distribution).  In that case,
 running it with "--help" will show options for running pasta.</p>
 
 <a name="parameters"></a><h2>Parameters:</h2>
@@ -136,7 +144,7 @@ The following parameters for model runs can be set in the Model tab:
 <tr><td valign=top>MaxEnergy:</td> <td>Max energy that a snipe can have.</td></tr>
 <tr><td valign=top>CarryingProportion:</td> <td valign=top>Snipes are randomly culled when number exceed this times # of cells.</td></tr>
 <tr><td valign=top>NeighborRadius:</td> <td>s-snipe neighbors (for copying) are no more than this distance away.</td></tr>
-<tr><td valign=top>ReportEvery:</td> <td>Report basic stats in shell every this many ticks after the first one (0 = never).</td></tr>
+<tr><td valign=top>ReportEvery:</td> <td>Report basic statistics in shell every this many ticks after the first one (0 = never).</td></tr>
 <tr><td valign=top>MaxTicks:</td> <td>Stop model run after this number of timesteps, or never if 0.</td></tr>
 <tr><td valign=top>EnvWidth:</td> <td>Width of environments.  Must be an even number.</td></tr>
 <tr><td valign=top>EnvHeight:</td> <td>Height of environments. Must be an even number.</td></tr>
@@ -156,7 +164,7 @@ The following parameters for model runs can be set in the Model tab:
 elements, there are additional options that MASON provides for
 observing their values.</p>
 
-<p>If you run pasta from the command line, (see online docs or "--help"
+<p>If you run pasta from the command line, (see online documents or "--help"
 will show options for setting the parameters listed above, as well as a
 few other options concerning whether to display the GUI concerning
 writing data to a file.</p>
