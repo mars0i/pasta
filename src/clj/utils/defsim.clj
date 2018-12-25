@@ -149,7 +149,7 @@
           (when (:help ~'options)
             (println "Command line options (defaults in parentheses):")
             (println (usage-fmt# ~'cli-options))
-            (println "MASON options can also be used:")
+            (println "MASON options can also be used after these options:")
             (println "-help (note single dash): Print help message for MASON.")
             (System/exit 0)))))))
 
