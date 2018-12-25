@@ -30,6 +30,3 @@ trying to write (relatively) idiomatic Clojure rather than trying to
 eke out as much speed from MASON as possible, but the interopTips
 document provides the background for my approach in pasta, including
 the `defsim` macro.
-
-* notes/ contains miscellaneous notes, very possibly out of date or
-  irrelevant.
