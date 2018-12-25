@@ -65,8 +65,7 @@ For other ways to run pasta, see "Full installation" below.
 <a name="howitworks"></a><h2>How it works:</h2>
 
 (I won't document features of the GUI that I think are
-easy to figure out with a bit of guessing plus trial and error.
-Let me know if I'm wrong!)
+easy to figure out with a bit of guessing plus trial and error.)
 
 <p><b>The two environments:</b> Snipes eat mushrooms.<a id="mushjokeref" href="#mushjoke"><sup>3</sup></a>
 in one of two environments.  In the
