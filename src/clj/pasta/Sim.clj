@@ -44,13 +44,13 @@
                 [max-energy         30.0    double  [1.0 100.0] ["-m" "Max energy that a snipe can have." :parse-fn #(Double. %)]]
                 [carrying-proportion 0.25   double  [0.1 0.9]   ["-c" "Snipes are randomly culled when number exceed this times # of cells." :parse-fn #(Double. %)]]
                 [neighbor-radius     5      long    [1 10]      ["-r" "s-snipe neighbors (for copying) are no more than this distance away." :parse-fn #(Long. %)]]
-                [report-every        0      long    true        ["-i" "Report basic stats every i ticks after the first one (0 = never)." :parse-fn #(Long. %)]]
                 [max-ticks           0      long    true        ["-t" "Stop after this number of timesteps have run, or never if 0." :parse-fn #(Long. %)]]
                 [env-width          40      long    [10 250]    ["-W" "Width of env.  Must be an even number." :parse-fn #(Long. %)]] ; Haven't figured out how to change 
                 [env-height         40      long    [10 250]    ["-H" "Height of env. Must be an even number." :parse-fn #(Long. %)]] ;  within app without distortion
                 [env-display-size   12.0    double  false       ["-D" "How large to display the env in gui by default." :parse-fn #(Double. %)]]
                 [use-gui           false    boolean false       ["-g" "If -g, use GUI; otherwise use GUI if and only if +g or there are no commandline options." :parse-fn #(Boolean. %)]]
                 [extreme-pref        1.0    double  true        ["-x" "Absolute value of r-snipe preferences." :parse-fn #(Double. %)]]
+                [report-every        0      long    true        ["-i" "Report basic stats every i ticks after the first one (0 = never)." :parse-fn #(Long. %)]]
                 [write-csv         false    boolean false       ["-w" "Write data to file instead of printing it to console." :parse-fn #(Boolean. %)]]
                 [csv-basename       nil java.lang.String false  ["-f" "Base name of files to append data to.  Otherwise new filenames generated from seed." :parse-fn #(String. %)]]
                 [csv-writer         nil java.io.BufferedWriter false]
@@ -131,7 +131,7 @@
                           (reify Steppable
                             (step [this sim-state]
                               (let [steps (.getSteps schedule)]
-                                (when (<  steps max-ticks) ; don't report if this is the last tick
+                                (when (or (zero? max-ticks) (< steps max-ticks)) ; don't report if this is the last tick
                                   (stats/report-stats @sim-data$ seed steps)))))
                           report-every)))) ; repeat this often
 
