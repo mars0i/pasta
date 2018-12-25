@@ -246,13 +246,13 @@ Java library for agent-based modeling.
 
 ### Installation:
 
-Clone this git repo.  (If you're not sure how to do this, you
-should be able to find beginner info about git and github on the web
-or in books written about them.)
+First clone this git repo.  (If you're not sure how to do this, you
+should be able to find beginner info about git and github on the web or
+in books written about them.)
 
-You need Leiningen (http://leiningen.org).  Then change to the root
-directory of the repo, and run 'lein deps'.  This will install the right
-version of Clojure, if necessary, along with a number of Clojure
+You need install Leiningen (http://leiningen.org).  Then change to the
+root directory of the repo, and run 'lein deps'.  This will install the
+right version of Clojure, if necessary, along with a number of Clojure
 libraries and such that pasta needs.
 
 You'll also need to download the MASON jar file mason.19.jar (or a later
