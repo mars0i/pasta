@@ -50,7 +50,7 @@
                 [env-display-size   12.0    double  false       ["-D" "How large to display the env in gui by default." :parse-fn #(Double. %)]]
                 [use-gui           false    boolean false       ["-g" "If -g, use GUI; otherwise use GUI if and only if +g or there are no commandline options." :parse-fn #(Boolean. %)]]
                 [extreme-pref        1.0    double  true        ["-x" "Absolute value of r-snipe preferences." :parse-fn #(Double. %)]]
-                [report-every        0      long    true        ["-i" "Report basic stats every i ticks after the first one (0 = never)." :parse-fn #(Long. %)]]
+                [report-every        0      long    true        ["-i" "Report basic stats every i ticks after the first one (0 = never); format depends on -w." :parse-fn #(Long. %)]]
                 [write-csv         false    boolean false       ["-w" "Write data to file instead of printing it to console." :parse-fn #(Boolean. %)]]
                 [csv-basename       nil java.lang.String false  ["-f" "Base name of files to append data to.  Otherwise new filenames generated from seed." :parse-fn #(String. %)]]
                 [csv-writer         nil java.io.BufferedWriter false]
