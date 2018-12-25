@@ -23,9 +23,10 @@ There are three kinds of agents (models of organisms) that can be
 deployed:
 
 <p><b>k-snipes:</b> Agents that incorporate a very simple model of
-individual learning by prediction error minimization (PEM) in some
-agents.  These agents implement one kind of "K-strategy" which, roughly,
-prioritizes survival over reproduction.  (I do mean it's a
+individual learning by prediction error minimization<a
+href="#WhatsPEMnote" id="WhatsPEMref"><sup>2</sup></a> (PEM) in some
+agents.  These agents implement one kind of "K-strategy" which,
+roughly, prioritizes survival over reproduction.  (I do mean it's a
 <em>model</em> of PEM; what these agents do, internally, is much, much
 simpler than what's usually meant by PEM.)</p>
 
@@ -61,26 +62,19 @@ run pasta in no-GUI mode by executing the line above and adding `--help`.
 For other ways to run pasta, see "Full installation" below.
 
 
-
-
-
-
-
-
-
-
 <a name="howitworks"></a><h2>How it works:</h2>
 
 (I won't document features of the GUI that I think are
 easy to figure out with a bit of guessing plus trial and error.
 Let me know if I'm wrong!)
 
-<p><b>The two environments:</b> Snipes eat mushrooms in one of two
-environments.  In the <em>east</em> (usually left) environment, small
-mushrooms are nutritious (gray-brown-green) and large mushrooms are
-poisonous (greenish yellow).  In the <em>west</em> (usually right)
-environment, large mushrooms are nutritious (dark gray) and small
-mushrooms are poisonous (light gray).</p>
+<p><b>The two environments:</b> Snipes eat mushrooms.<a id="mushjokeref" href="#mushjoke"><sup>3</sup></a>
+in one of two environments.  In the
+<em>east</em> (usually left) environment, small mushrooms are
+nutritious (gray-brown-green) and large mushrooms are poisonous
+(greenish yellow).  In the <em>west</em> (usually right) environment,
+large mushrooms are nutritious (dark gray) and small mushrooms are
+poisonous (light gray).</p>
 
 <p><b>Basic snipe behavior:</b> Snipes move randomly within an
 environment, gain energy from eating nutritious mushrooms, and lose
@@ -250,7 +244,11 @@ This program is written in the [Clojure](https://clojure.org) language
 using [MASON](http://cs.gmu.edu/~eclab/projects/mason).  MASON is a
 Java library for agent-based modeling.
 
-To install, once you clone this repo:
+### Installation:
+
+Clone this git repo.  (If you're not sure how to do this, you
+should be able to find beginner info about git and github on the web
+or in books written about them.)
 
 You need Leiningen (http://leiningen.org).  Then change to the root
 directory of the repo, and run 'lein deps'.  This will install the right
@@ -265,7 +263,9 @@ as well.   You may want to get the MASON-associated 3D libs, too, in
 order to get rid of a warning message during startup.  Place these
 jars in the same places as the others.
 
-Ways to run pasta using the full installation:
+### Ways to run pasta using the full installation:
+
+There is another way to run it described above in "How to run it".
 
 These instructions were tested on MacOS, and they should work on any
 full-fledged unix system such as Linux, MacOS, etc.  The same
@@ -313,7 +313,7 @@ infinite loop that will result in a stack overflow.  Sorry about that!
 
 <a name="license"></a><h2>License:</h2>
 
-This software is copyright 2016, 2017 by [Marshall
+This software is copyright 2016, 2017, 2018, 2019 by [Marshall
 Abrams](http://members.logical.net/~marshall/), and is distributed
 under the [Gnu General Public License version
 3.0](http://www.gnu.org/copyleft/gpl.html) as specified in the file
@@ -333,4 +333,4 @@ example with Clojure's <a href="https://clojure.org/reference/agents">agent</a> 
 processing, predictive coding. cf. integral control, mean-field
 approximation, variational methods.
 
-<a id="joke1" href="#joke1ref"><sup>3</sup></a>Yes--this pasta has mushrooms in it.  Yum!
+<a id="mushjoke" href="#mushjokeref"><sup>3</sup></a>Yes--this pasta has mushrooms in it.  Yum!
