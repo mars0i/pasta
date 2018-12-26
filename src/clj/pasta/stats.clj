@@ -247,9 +247,9 @@
   "Write parameters to a csv file.  Note that if there's a csv basename,
   it will simply overwrite a file with the same name."
   ([cfg-data] (write-params-to-file cfg-data 
-                                    (str "params_" (or (:csv-basename cfg-data) 
-                                                       (:seed cfg-data))
-                                         ".csv")))
+                                    (str (or (:csv-basename cfg-data) 
+					     (:seed cfg-data))
+					 "_params.csv")))
   ([cfg-data f] (m2c/spit-map f cfg-data)))
 
 (defn report-params
