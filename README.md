@@ -199,22 +199,25 @@ also write a separate file containing the parameters for this run.  If
 you add `-f <name>` or `--csv-basename <name>` as well, pasta will use
 `<name>` as the beginning of the filenames.
 
-If the data is written to the file, the resulting csv file (which can
-be pulled into Excel, for example) will consist of rows of data
-separated by commas, with a header row.  The columns contain the run
-id (which is also the random seed), so that you can append multiple
-runs to the same file; the time step at which the data was collected;
-the snipe class&mdash;i.e. whether it is a k-snipe, r-snipe, or
-s-snipe; the sub-environment (east or west) of the snipes that are
-summarized; whether the snipes summarized have a negative, positive,
-or neutral size preference for mushrooms; the number of mushrooms in
-the condition specified by the previous columns; their average energy;
-average mushroom preference value; and average age.  (Note: A snipe's
-mushroom preference value is a real number that is zero to indicate
-that the snipe has no preference for large vs. small mushrooms,
-positive to indicate the degree of preference for large mushrooms, and
-negative to indicate the degree of preference for small mushrooms. See
-<a href="doc/kSnipePerception.pdf">doc/kSnipePerception.pdf</a> for
+If the data is written to the file, the resulting csv file (which can be
+pulled into Excel, for example) will consist of rows of data separated
+by commas, with a header row.  The columns contain the run id (which is
+also the random seed), so that you can append multiple runs to the same
+file; the time step at which the data was collected; the snipe
+class&mdash;i.e. whether it is a k-snipe, r-snipe, or s-snipe; the
+sub-environment (east or west) of the snipes that are summarized;
+whether the snipes summarized have a negative, positive, or neutral size
+preference for mushrooms; the number of mushrooms in the condition
+specified by the previous columns; their average energy; average
+mushroom preference value; and average age.  If you use the same
+basename as an existing data file, the data will be appended to the
+file, but the parameters file will be overwritten, on the assumption
+that you are using the same parameters again.  (Note: A snipe's mushroom
+preference value is a real number that is zero to indicate that the
+snipe has no preference for large vs. small mushrooms, positive to
+indicate the degree of preference for large mushrooms, and negative to
+indicate the degree of preference for small mushrooms. See <a
+href="doc/kSnipePerception.pdf">doc/kSnipePerception.pdf</a> for
 details.)
 
 If the data isn't written to a file, it will be sent to standard output.
