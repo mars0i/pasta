@@ -152,17 +152,17 @@
 ;; See oldcode.clj or commits af85d66 and 340c313 for alternative defs, and 
 ;; doc/notes/squarestatstimes.txt for speed comparison.  This version and a similar one
 ;; were about twice as fast as two others on representative stats data trees.
-(defn square-stats
+(defn leaves-to-row
   "Given an embedded map structure with sequences of per-category snipe summary
   statistics at the leaves, returns a collection of sequences with string versions
   of the map keys, representing category names, followed by the summary statistics.
   (This prepares the data for writing to a CSV file that can be easily read into
   an R dataframe for use by Lattice graphics.)"
-  ([stats] (square-stats [] stats))
+  ([stats] (leaves-to-row [] stats))
   ([prev stats]                ; prev contains keys previously accumulated in one inner sequence
    (reduce-kv (fn [result k v] ; result accumulates the sequence of sequences
                 (if (map? v)
-                  (into result (square-stats (conj prev (name k)) v)) ; if it's a map, recurse into val, adding key to prev
+                  (into result (leaves-to-row (conj prev (name k)) v)) ; if it's a map, recurse into val, adding key to prev
                   (conj result (concat (conj prev (name k)) v)))) ; otherwise add the most recent key and then add the inner data seq to result
               []    ; outer sequence starts empty
               stats)))
@@ -173,12 +173,12 @@
    :step step
    :stats (snipe-stats (classify-snipes cfg-data))})
 
-(defn square-stats-at-step-for-csv
+(defn leaves-to-row-at-step-for-csv
   [stats-at-step]
   (let [run (:run stats-at-step)
         step (:step stats-at-step)
-        squared-stats (square-stats (:stats stats-at-step))]
-    (map #(into [run step] %) squared-stats)))
+        stats-row (leaves-to-row (:stats stats-at-step))]
+    (map #(into [run step] %) stats-row)))
 
 ;; Illustration of usage for old version:
 ;;
@@ -220,7 +220,7 @@
   useful for reading into an R datagrame."
   [cfg-data seed step]
   (csv/write-csv (:csv-writer cfg-data)
-                 (square-stats-at-step-for-csv
+                 (leaves-to-row-at-step-for-csv
                    (make-stats-at-step cfg-data seed step))))
 
 

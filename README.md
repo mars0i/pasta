@@ -187,7 +187,9 @@ observing their values.</p>
 <p>If you run pasta from the command line `-?` or `--help` will show
 options for setting the parameters listed above, as well as a few other
 options concerning whether to display the GUI concerning writing summary
-data to a file.</p>
+data to a file.  It's also useful to run pasta with `-help` (one dash)
+to see additional command line options provided by the MASON library
+that pasta uses.</p>
 
 Here is more information about making pasta generate data:
 
