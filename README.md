@@ -89,9 +89,9 @@ birth).</p>
 randomly,  but learn to eat mushrooms whose size signal (which is
 normally distributed) indicates that they are probably nutritious. The
 direction of a k-snipe's pointer&mdash;how far up or down it is
-pointing&mdash;indicates the degree of the snipe's preference for large or
-small mushrooms.  For details, see doc/kSnipePerception.pdf at
-https://github.com/mars0i/pasta.</p>
+pointing&mdash;indicates the degree of the snipe's preference for large
+or small mushrooms.  For details, see <a
+href="doc/kSnipePerception.pdf">doc/kSnipePerception.pdf</a>.
 
 <p><b>r-snipes</b> (blue triangles) never learn.  They produce
 offspring that exhibit developmental differences: Roughly half of any
@@ -106,7 +106,7 @@ cultural transmission strategy known as success bias.  A newborn s-snipe
 examines nearby snipes and copies the current mushroom size preference
 of whatever nearby snipe has the most energy.  If there are no snipes
 that are sufficiently near (see the parameter list below), the s-snipe tries
-again on the next timestep.  Once an s-snipe adopts a preference, the
+again on the next time step.  Once an s-snipe adopts a preference, the
 preference never changes.  The direction in which an s-snipe points&mdash;how
 far up or down it is tilted&mdash;indicates the degree of the snipe's
 preference for large or small mushrooms.</p>
@@ -167,7 +167,7 @@ The following parameters for model runs can be set in the Model tab:
 <tr><td valign=top>EnvWidth:</td> <td>Width of environments.  Must be an even number.</td></tr>
 <tr><td valign=top>EnvHeight:</td> <td>Height of environments. Must be an even number.</td></tr>
 <tr><td valign=top>EnvDisplaySize:</td> <td>How large to display environments in GUI by default.</td></tr>
-<tr><td valign=top>ExtremePref:</td> <td>Absolute value of r-snipe preferences.</td></tr>
+<tr><td valign=top>ExtremePref:</td> <td>Absolute value of r-snipe preferences and max for k- and s-snipes.</td></tr>
 </table>
 
 <p>Some data is reported in other variables displayed in the Model tab:
@@ -199,17 +199,23 @@ also write a separate file containing the parameters for this run.  If
 you add `-f <name>` or `--csv-basename <name>` as well, pasta will use
 `<name>` as the beginning of the filenames.
 
-If the data is written to the file, the resulting csv file (which can be
-pulled into Excel, for example) will consist of rows of data separated
-by commas, with a header row.  The columns contain the run id (which is
-also the random seed), so that you can append multiple runs to the same
-file; the time step at which the data was collected; the snipe
-class&mdash;i.e. whether it is a k-snipe, r-snipe, or s-snipe; the
-sub-environment (east or west) of the snipes that are summarized;
-whether the snipes summarized have a negative, positive, or neutral size
-preference for mushrooms [FIXME]; the number of mushrooms in the
-condition specified by the previous columns; their average energy;
-average mushroom preference value [FIXME]; and average age.
+If the data is written to the file, the resulting csv file (which can
+be pulled into Excel, for example) will consist of rows of data
+separated by commas, with a header row.  The columns contain the run
+id (which is also the random seed), so that you can append multiple
+runs to the same file; the time step at which the data was collected;
+the snipe class&mdash;i.e. whether it is a k-snipe, r-snipe, or
+s-snipe; the sub-environment (east or west) of the snipes that are
+summarized; whether the snipes summarized have a negative, positive,
+or neutral size preference for mushrooms; the number of mushrooms in
+the condition specified by the previous columns; their average energy;
+average mushroom preference value; and average age.  (Note: A snipe's
+mushroom preference value is a real number that is zero to indicate
+that the snipe has no preference for large vs. small mushrooms,
+positive to indicate the degree of preference for large mushrooms, and
+negative to indicate the degree of preference for small mushrooms. See
+<a href="doc/kSnipePerception.pdf">doc/kSnipePerception.pdf</a> for
+details.)
 
 If the data isn't written to a file, it will be sent to standard output.
 The format is different though, and though it's not particularly
@@ -224,7 +230,7 @@ the `tail` command is useful for this purpose.
 (If you want more fine-grained data, you could modify the source code for
 pasta&mdash;I would be happy to help you if I have time&mdash;but I would suggest
 simply using the recorded seed to run the same simulation in the GUI.
-You can use the GUI to inspect individual snipes that way, as indicateda
+You can use the GUI to inspect individual snipes that way, as indicated
 above.)
 
 
@@ -361,15 +367,20 @@ released under a different license.
 
 ## footnotes:
 
-<a id="WhatsABMnote" href="#WhatsABMref"><sup>1</sup></a> "Agent-based" here refers to the loose class of <a href="https://en.wikipedia.org/wiki/Agent-based_model">simulations</a>
+<a id="WhatsABMnote" href="#WhatsABMref"><sup>1</sup></a>
+"Agent-based" here refers to the loose class of <a
+href="https://en.wikipedia.org/wiki/Agent-based_model">simulations</a>
 in which outcomes of interest come from interactions between many
-semi-independent entities&mdash;*agents*&mdash;which often model behaviors or
-interactions between people, organisms, companies, etc.  "Agent-based"
-does *not* refer to various ways of dealing with concurrency, as for
-example with Clojure's <a href="https://clojure.org/reference/agents">agent</a> data structure.
+semi-independent entities&mdash;*agents*&mdash;which often model
+behaviors or interactions between people, organisms, companies, etc. 
+"Agent-based" does *not* refer to various ways of dealing with
+concurrency, as for example with Clojure's <a
+href="https://clojure.org/reference/agents">agent</a> data structure.
 
-<a id="WhatsPEMnote" href="#WhatsPEMref"><sup>2</sup></a> Prediction energy minimization: AKA free-energy minimization, predictive
+<a id="WhatsPEMnote" href="#WhatsPEMref"><sup>2</sup></a> Prediction
+energy minimization: AKA free-energy minimization, predictive
 processing, predictive coding. cf. integral control, mean-field
 approximation, variational methods.
 
-<a id="mushjoke" href="#mushjokeref"><sup>3</sup></a>Yes&mdash;this pasta has mushrooms in it.  Yum!
+<a id="mushjoke" href="#mushjokeref"><sup>3</sup></a>Yes&mdash;this
+pasta has mushrooms in it.  Yum!
