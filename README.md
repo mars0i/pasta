@@ -7,7 +7,7 @@ Sections:
 <a href="#overview">Overview</a>,
 <a href="#howtorun">How to run it</a>,
 <a href="#howitworks">How it works</a>,
-<a href="#parameters">Parameters</a>,
+<a href="#parameters">Parameters &amp; command line options</a>,
 <a href="#thingstotry">Things to try</a>,
 <a href="#moreinfo">More info</a>,
 <a href="#fullinstall">Full installation</a>,
@@ -67,13 +67,13 @@ For other ways to run pasta, see "Full installation" below.
 (I won't document features of the GUI that I think are
 easy to figure out with a bit of guessing plus trial and error.)
 
-<p><b>The two environments:</b> Snipes eat mushrooms.<a id="mushjokeref" href="#mushjoke"><sup>3</sup></a>
-in one of two environments.  In the
-<em>east</em> (usually left) environment, small mushrooms are
-nutritious (gray-brown-green) and large mushrooms are poisonous
-(greenish yellow).  In the <em>west</em> (usually right) environment,
-large mushrooms are nutritious (dark gray) and small mushrooms are
-poisonous (light gray).</p>
+<p><b>The two environments:</b> Snipes eat mushrooms.<a
+id="mushjokeref" href="#mushjoke"><sup>3</sup></a> in one of two
+environments.  In the <em>east</em> (usually left) environment, small
+mushrooms are nutritious (gray-brown-green) and large mushrooms are
+poisonous (greenish yellow).  In the <em>west</em> (usually right)
+environment, large mushrooms are nutritious (dark gray) and small
+mushrooms are poisonous (light gray).</p>
 
 <p><b>Basic snipe behavior:</b> Snipes move randomly within an
 environment, gain energy from eating nutritious mushrooms, and lose
@@ -139,7 +139,9 @@ restriction to eating those mushrooms.</p>
 online documents or README.md in the full distribution).  In that case,
 running it with "--help" will show options for running pasta.</p>
 
-<a name="parameters"></a><h2>Parameters:</h2>
+<a name="parameters"></a><h2>Parameters &amp; command line options:</h2>
+
+### Parameters in the GUI:
 
 The following parameters for model runs can be set in the Model tab:
 
@@ -180,13 +182,51 @@ The following parameters for model runs can be set in the Model tab:
 elements, there are additional options that MASON provides for
 observing their values.</p>
 
-<p>If you run pasta from the command line, (see online documents or "--help"
-will show options for setting the parameters listed above, as well as a
-few other options concerning whether to display the GUI concerning
-writing summary data to a file.</p>
+### Command line options:
 
-<p>There is additional information at
-https://github.com/mars0i/pasta/README.md.</p>
+<p>If you run pasta from the command line `-?` or `--help` will show
+options for setting the parameters listed above, as well as a few other
+options concerning whether to display the GUI concerning writing summary
+data to a file.</p>
+
+Here is more information about making pasta generate data:
+
+If you add `-i <integer>` or `--report-every <integer>` to the command
+line, pasta will output summary statistics on different classes of
+snipes every `<integer>` timesteps.  If you also add `-w` or
+`--write-csv`, pasta will write these statistics to a file.  It will
+also write a separate file containing the parameters for this run.  If
+you add `-f <name>` or `--csv-basename <name>` as well, pasta will use
+`<name>` as the beginning of the filenames.
+
+If the data is written to the file, the resulting csv file (which can be
+pulled into Excel, for example) will consist of rows of data separated
+by commas, with a header row.  The columns contain the run id (which is
+also the random seed), so that you can append multiple runs to the same
+file; the time step at which the data was collected; the snipe
+class&mdash;i.e. whether it is a k-snipe, r-snipe, or s-snipe; the
+sub-environment (east or west) of the snipes that are summarized;
+whether the snipes summarized have a negative, positive, or neutral size
+preference for mushrooms [FIXME]; the number of mushrooms in the
+condition specified by the previous columns; their average energy;
+average mushroom preference value [FIXME]; and average age.
+
+If the data isn't written to a file, it will be sent to standard output.
+The format is different though, and though it's not particularly
+user-friendly, if you stare at it for a minute you'll probably figure
+out what's what.  Once you do, the format will be easier to parse
+visually than it would be in the comma-separated format.  This format
+was very easy for me to generate, and I prefer it to the csv format for
+a quick look.  If you prefer the csv but want to see data immediately,
+write it to a file and then keep looking at that file; on Unix systems,
+the `tail` command is useful for this purpose.
+
+(If you want more fine-grained data, you could modify the source code for
+pasta&mdash;I would be happy to help you if I have time&mdash;but I would suggest
+simply using the recorded seed to run the same simulation in the GUI.
+You can use the GUI to inspect individual snipes that way, as indicateda
+above.)
+
 
 <a name="thingstotry"></a><h2>Things to try:</h2>
 
@@ -323,7 +363,7 @@ released under a different license.
 
 <a id="WhatsABMnote" href="#WhatsABMref"><sup>1</sup></a> "Agent-based" here refers to the loose class of <a href="https://en.wikipedia.org/wiki/Agent-based_model">simulations</a>
 in which outcomes of interest come from interactions between many
-semi-independent entities--*agents*--which often model behaviors or
+semi-independent entities&mdash;*agents*&mdash;which often model behaviors or
 interactions between people, organisms, companies, etc.  "Agent-based"
 does *not* refer to various ways of dealing with concurrency, as for
 example with Clojure's <a href="https://clojure.org/reference/agents">agent</a> data structure.
@@ -332,4 +372,4 @@ example with Clojure's <a href="https://clojure.org/reference/agents">agent</a> 
 processing, predictive coding. cf. integral control, mean-field
 approximation, variational methods.
 
-<a id="mushjoke" href="#mushjokeref"><sup>3</sup></a>Yes--this pasta has mushrooms in it.  Yum!
+<a id="mushjoke" href="#mushjokeref"><sup>3</sup></a>Yes&mdash;this pasta has mushrooms in it.  Yum!
