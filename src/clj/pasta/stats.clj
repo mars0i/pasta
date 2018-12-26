@@ -180,7 +180,7 @@
         stats-row (leaves-to-row (:stats stats-at-step))]
     (map #(into [run step] %) stats-row)))
 
-;; Illustration of usage for old version:
+;; Illustration of usage for old version: 
 ;;
 ;;    user=> (def s804 (square-stats-at-step-for-csv (make-stats-at-step @data$ (.schedule cfg))))
 ;;    #'user/s804
