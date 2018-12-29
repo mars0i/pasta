@@ -102,6 +102,14 @@
       (.close writer)
       (swap! sim-data$ :csv-writer nil))))
 
+(defn cleanup
+  [stoppable sim-data$ seed steps]
+  (.stop stoppable)
+  (stats/report-stats @sim-data$ seed steps)
+  (when-let [writer (:csv-writer @sim-data$)]
+    (.close writer))
+  (stats/report-params @sim-data$))
+
 (defn run-sim
   [sim-sim rng sim-data$ seed]
   (let [^Schedule schedule (.schedule sim-sim)
@@ -119,11 +127,7 @@
                             (when (pos? max-ticks) ; run forever if max-ticks = 0
                               (let [steps (.getSteps schedule)]
                                 (when (>= steps max-ticks) ; = s/b enough, but >= as failsafe
-                                  (.stop stoppable)
-                                  (stats/report-stats @sim-data$ seed steps)
-                                  (when-let [writer (:csv-writer @sim-data$)]
-                                    (.close writer))
-                                  (stats/report-params @sim-data$)
+                                  (cleanup stoppable sim-data$ seed steps)
                                   (.kill sim-state))))))) ; end program after cleaning up Mason stuff
     ;; maybe report stats periodically
     (when (pos? report-every)
