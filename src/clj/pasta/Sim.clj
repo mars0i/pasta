@@ -132,7 +132,7 @@
                                       (reify Steppable 
                                         (step [this sim-state]
                                           (swap! sim-data$ update :popenv (partial pe/next-popenv rng sim-data$)))))]
-    (swap! sim-data$ :stoppable stoppable) ; make it available to finish()
+    (swap! sim-data$ assoc :stoppable stoppable) ; make it available to finish()
     ;; Stop simulation when condition satisfied
     (.scheduleRepeating schedule Schedule/EPOCH 1 ; 1 = i.e. after main previous Steppable that runs the simulation
                         (reify Steppable
