@@ -113,6 +113,13 @@
 
 (defn -finish
   [^Sim this]
+  (let [^Schedule schedule (.schedule this)
+	steps (.getSteps schedule)
+        ^SimData sim-data$ (.simData this)
+        sim-data @sim-data$
+        stoppable (:stoppable sim-data)
+        seed (:seed sim-data)]
+    (cleanup stoppable sim-data$ seed steps))
   (.superFinish this))
 
 (defn run-sim
@@ -125,6 +132,7 @@
                                       (reify Steppable 
                                         (step [this sim-state]
                                           (swap! sim-data$ update :popenv (partial pe/next-popenv rng sim-data$)))))]
+    (swap! sim-data$ :stoppable stoppable) ; make it available to finish()
     ;; Stop simulation when condition satisfied
     (.scheduleRepeating schedule Schedule/EPOCH 1 ; 1 = i.e. after main previous Steppable that runs the simulation
                         (reify Steppable
@@ -132,8 +140,10 @@
                             (when (pos? max-ticks) ; run forever if max-ticks = 0
                               (let [steps (.getSteps schedule)]
                                 (when (>= steps max-ticks) ; = s/b enough, but >= as failsafe
-                                  (cleanup stoppable sim-data$ seed steps)
-                                  (.kill sim-state))))))) ; end program after cleaning up Mason stuff
+				  (-finish) ;; NEW 1/1/2019
+                                  ;(cleanup stoppable sim-data$ seed steps) ;; old working version
+                                  ;(.kill sim-state) ;; old working version
+				  )))))) ; end program after cleaning up Mason stuff
     ;; maybe report stats periodically
     (when (pos? report-every)
       (.scheduleRepeating schedule report-every 1 ; first tick to report at; ordering within tick
