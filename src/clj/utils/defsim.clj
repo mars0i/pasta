@@ -208,7 +208,7 @@
          gen-class-opts# {:name qualified-sim-class#
                          :extends 'sim.engine.SimState
                          :state data-field-sym
-                         :exposes-methods (into '{start superStart} (:exploses-methods addl-opts-map))
+                         :exposes-methods (into '{start superStart} (:exposes-methods addl-opts-map))
                          :init init-genclass-sym
                          :main true
                          :methods (vec (concat (make-accessor-sigs get-syms# set-syms# ui-field-types#)
