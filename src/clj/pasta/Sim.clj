@@ -57,6 +57,7 @@
                 [max-pop-size        0      long    false]
                 [seed               nil     long    false] ; convenience field to store Sim's seed
                 [popenv             nil  pasta.popenv.PopEnv false]]
+  :exposes-methods {finish superFinish} ; name for function to call finish() in the superclass
   :methods [[getPopSize [] long] ; additional options here. this one is for def below; it will get merged into the generated :methods component.
             [getKSnipeFreq [] double]
             [getRSnipeFreq [] double]
@@ -109,6 +110,10 @@
   (when-let [writer (:csv-writer @sim-data$)]
     (.close writer))
   (stats/report-params @sim-data$))
+
+(defn -finish
+  [^Sim this]
+  (.superFinish this))
 
 (defn run-sim
   [sim-sim rng sim-data$ seed]
