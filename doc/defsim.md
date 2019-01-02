@@ -285,8 +285,8 @@ I generated this at the repl by lightly editing the output of:
 2. Running 
 
 ```
-(use 'pasta.defsim)
-(clojure.pprint (macroexpand-1 '<paste defsim code from above>))
+(use 'utils.defsim)
+(clojure.pprint/pprint (macroexpand-1 '<paste defsim code from above>))
 ```
 
 ```
