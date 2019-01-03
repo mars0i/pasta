@@ -50,7 +50,7 @@
                 [env-display-size   12.0    double  false       ["-D" "How large to display the env in gui by default." :parse-fn #(Double. %)]]
                 [use-gui           false    boolean false       ["-g" "If -g, use GUI; otherwise use GUI if and only if +g or there are no commandline options." :parse-fn #(Boolean. %)]]
                 [extreme-pref        1.0    double  true        ["-x" "Absolute value of r-snipe preferences." :parse-fn #(Double. %)]]
-                [report-every        0      long    true        ["-i" "Report basic stats every i ticks after the first one (0 = never); format depends on -w." :parse-fn #(Long. %)]]
+                [report-every        0      double  true        ["-i" "Report basic stats every i ticks after the first one (0 = never); format depends on -w." :parse-fn #(Double. %)]]
                 [write-csv         false    boolean false       ["-w" "Write data to file instead of printing it to console." :parse-fn #(Boolean. %)]]
                 [csv-basename       nil java.lang.String false  ["-f" "Base name of files to append data to.  Otherwise new filenames generated from seed." :parse-fn #(String. %)]]
                 [csv-writer         nil java.io.BufferedWriter false]
@@ -104,28 +104,34 @@
       (swap! sim-data$ :csv-writer nil))))
 
 (defn cleanup
-  [stoppable sim-data$ seed steps]
-  (.stop stoppable)
-  (stats/report-stats @sim-data$ seed steps)
-  (when-let [writer (:csv-writer @sim-data$)]
-    (.close writer))
-  (stats/report-params @sim-data$))
-
-(defn -finish
   [^Sim this]
-  (let [^Schedule schedule (.schedule this)
-	steps (.getSteps schedule)
-        ^SimData sim-data$ (.simData this)
+  (let [^SimData sim-data$ (.simData this)
         sim-data @sim-data$
         stoppable (:stoppable sim-data)
-        seed (:seed sim-data)]
-    (cleanup stoppable sim-data$ seed steps))
-  (.superFinish this))
+        seed (:seed sim-data)
+        report-every (:report-every sim-data)
+        ^Schedule schedule (.schedule this)
+	steps (.getSteps schedule)]
+    (.stop stoppable)
+    (when (pos? report-every)
+      (stats/report-stats sim-data seed steps))
+    (when-let [writer (:csv-writer sim-data)]
+      (.close writer))
+    (stats/report-params sim-data)))
+
+;; TODO It looks like (a) this should not call the super, (b) call the super directly rather than this, and super will call down to this.
+;; Else you get this finish called twice.
+(defn -finish
+  [^Sim this]
+  (println "finish") ; DEBUG
+  (cleanup this)
+  ;(.superFinish this)
+  )
 
 (defn run-sim
   [sim-sim rng sim-data$ seed]
   (let [^Schedule schedule (.schedule sim-sim)
-        report-every (double (:report-every @sim-data$))
+        report-every (:report-every @sim-data$)
         max-ticks (:max-ticks @sim-data$)
         ;; This runs the simulation:
         stoppable (.scheduleRepeating schedule Schedule/EPOCH 0 ; epoch = starting at beginning, 0 means run this first during timestep
@@ -133,6 +139,7 @@
                                         (step [this sim-state]
                                           (swap! sim-data$ update :popenv (partial pe/next-popenv rng sim-data$)))))]
     (swap! sim-data$ assoc :stoppable stoppable) ; make it available to finish()
+    ;; TODO If finish() behaves properly, this shouldn't be necessary, and --max-ticks can be replaced by MASON options:
     ;; Stop simulation when condition satisfied
     (.scheduleRepeating schedule Schedule/EPOCH 1 ; 1 = i.e. after main previous Steppable that runs the simulation
                         (reify Steppable
@@ -140,7 +147,8 @@
                             (when (pos? max-ticks) ; run forever if max-ticks = 0
                               (let [steps (.getSteps schedule)]
                                 (when (>= steps max-ticks) ; = s/b enough, but >= as failsafe
-				  (-finish) ;; NEW 1/1/2019
+                                  (.superFinish sim-sim) 
+				  ;(-finish sim-sim) ;; NEW 1/1/2019
                                   ;(cleanup stoppable sim-data$ seed steps) ;; old working version
                                   ;(.kill sim-state) ;; old working version
 				  )))))) ; end program after cleaning up Mason stuff
