@@ -121,6 +121,7 @@
 
 ;; TODO It looks like (a) this should not call the super, (b) call the super directly rather than this, and super will call down to this.
 ;; Else you get this finish called twice.
+;; (I think that line 662 of SimState.java might be where this happens.)
 (defn -finish
   [^Sim this]
   (println "finish") ; DEBUG
