@@ -114,10 +114,10 @@
 	steps (.getSteps schedule)]
     (.stop stoppable)
     (when (pos? report-every)
-      (stats/report-stats sim-data seed steps))
+      (stats/report-stats sim-data seed steps)
+      (stats/report-params sim-data)) ; if we're not using report-every to report stats, don't report params; else this will fire from the GUI.
     (when-let [writer (:csv-writer sim-data)]
-      (.close writer))
-    (stats/report-params sim-data)))
+      (.close writer))))
 
 ;; This should not call the corresponding function in the superclass; that
 ;; function will call this one.  So if you want to call this function
