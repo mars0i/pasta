@@ -189,7 +189,10 @@ options for setting the parameters listed above, as well as a few other
 options concerning whether to display the GUI concerning writing summary
 data to a file.  It's also useful to run pasta with `-help` (one dash)
 to see additional command line options provided by the MASON library
-that pasta uses.</p>
+that pasta uses.   One particularly useful MASON options is `-for
+<integer>`, which specifies the number of time steps to run.  Without
+`-for` (or `-until`), pasta will run forever, unless you suspend it or
+kill it.</p>
 
 Here is more information about making pasta generate data:
 
@@ -198,8 +201,12 @@ line, pasta will output summary statistics on different classes of
 snipes every `<integer>` timesteps.  If you also add `-w` or
 `--write-csv`, pasta will write these statistics to a file.  It will
 also write a separate file containing the parameters for this run.  If
-you add `-f <name>` or `--csv-basename <name>` as well, pasta will use
-`<name>` as the beginning of the filenames.
+you add `-F <name>` or `--csv-basename <name>` as well, pasta will use
+`<name>` as the beginning of the filenames.  Stats are also written on
+the last timestep, whether it's a multiple of the value for `-i` or
+`--report-every`, as long as that value is greater than zero.  This
+means that if you only want stats on the last time step, simply give
+`-i` or `--report-every` a value greater than the one given to `-for`.
 
 If the data is written to the file, the resulting csv file (which can be
 pulled into Excel, for example) will consist of rows of data separated
