@@ -248,7 +248,7 @@
   it will simply overwrite a file with the same name."
   ([cfg-data] (write-params-to-file cfg-data 
                                     (str (or (:csv-basename cfg-data) 
-					     (:seed cfg-data))
+					     (str "pasta" (:seed cfg-data)))
 					 "_params.csv")))
   ([cfg-data f] (m2c/spit-map f cfg-data)))
 
