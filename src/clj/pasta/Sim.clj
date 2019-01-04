@@ -25,6 +25,7 @@
 
 (def commandline$ (atom nil)) ; Needed by defsim and other code below if we're defining commandline options
 
+;; Note: There is no option below for max number of steps.  Use MASON's -for instead.
 ;;                 field name      initial-value type  in ui? with range?
 (defsim/defsim [[num-k-snipes       25      long    [0 500]     ["-K" "Size of k-snipe subpopulation" :parse-fn #(Long. %)]]
                 [num-r-snipes       25      long    [0 500]     ["-R" "Size of r-snipe subpopulation" :parse-fn #(Long. %)]]
@@ -44,7 +45,6 @@
                 [max-energy         30.0    double  [1.0 100.0] ["-m" "Max energy that a snipe can have." :parse-fn #(Double. %)]]
                 [carrying-proportion 0.25   double  [0.1 0.9]   ["-c" "Snipes are randomly culled when number exceed this times # of cells." :parse-fn #(Double. %)]]
                 [neighbor-radius     5      long    [1 10]      ["-r" "s-snipe neighbors (for copying) are no more than this distance away." :parse-fn #(Long. %)]]
-                [max-ticks           0      long    true        ["-t" "Stop after this number of timesteps have run, or never if 0." :parse-fn #(Long. %)]]
                 [env-width          40      long    [10 250]    ["-W" "Width of env.  Must be an even number." :parse-fn #(Long. %)]] ; Haven't figured out how to change 
                 [env-height         40      long    [10 250]    ["-H" "Height of env. Must be an even number." :parse-fn #(Long. %)]] ;  within app without distortion
                 [env-display-size   12.0    double  false       ["-D" "How large to display the env in gui by default." :parse-fn #(Double. %)]]
@@ -52,7 +52,7 @@
                 [extreme-pref        1.0    double  true        ["-x" "Absolute value of r-snipe preferences." :parse-fn #(Double. %)]]
                 [report-every        0      double  true        ["-i" "Report basic stats every i ticks after the first one (0 = never); format depends on -w." :parse-fn #(Double. %)]]
                 [write-csv         false    boolean false       ["-w" "Write data to file instead of printing it to console." :parse-fn #(Boolean. %)]]
-                [csv-basename       nil java.lang.String false  ["-f" "Base name of files to append data to.  Otherwise new filenames generated from seed." :parse-fn #(String. %)]]
+                [csv-basename       nil java.lang.String false  ["-F" "Base name of files to append data to.  Otherwise new filenames generated from seed." :parse-fn #(String. %)]]
                 [csv-writer         nil java.io.BufferedWriter false]
                 [max-pop-size        0      long    false]
                 [seed               nil     long    false] ; convenience field to store Sim's seed
@@ -119,16 +119,20 @@
       (.close writer))
     (stats/report-params sim-data)))
 
-;; TODO It looks like (a) this should not call the super, (b) call the super directly rather than this, and super will call down to this.
-;; Else you get this finish called twice.
+;; This should not call the corresponding function in the superclass; that
+;; function will call this one.  So if you want to call this function
+;; explicitly, you may want to do so by calling superFinish, which 
+;; should be defined in the defsim statement above using :exposes-methods.
+;; However, if you always use MASON capabilities to end simulations (e.g.
+;; using -for or -until on the command line), you don't need to call
+;; superFinish, and this function here will automatically get called.
 ;; (I think that line 662 of SimState.java might be where this happens.)
 (defn -finish
   [^Sim this]
-  (println "finish") ; DEBUG
-  (cleanup this)
-  ;(.superFinish this)
-  )
+  (cleanup this))
 
+;; Note finish is never called here.  Stopping a simulation in any
+;; normal MASON way will result in finish() above being called.
 (defn run-sim
   [sim-sim rng sim-data$ seed]
   (let [^Schedule schedule (.schedule sim-sim)
@@ -140,27 +144,16 @@
                                         (step [this sim-state]
                                           (swap! sim-data$ update :popenv (partial pe/next-popenv rng sim-data$)))))]
     (swap! sim-data$ assoc :stoppable stoppable) ; make it available to finish()
-    ;; TODO If finish() behaves properly, this shouldn't be necessary, and --max-ticks can be replaced by MASON options:
-    ;; Stop simulation when condition satisfied
-    (.scheduleRepeating schedule Schedule/EPOCH 1 ; 1 = i.e. after main previous Steppable that runs the simulation
-                        (reify Steppable
-                          (step [this sim-state]
-                            (when (pos? max-ticks) ; run forever if max-ticks = 0
-                              (let [steps (.getSteps schedule)]
-                                (when (>= steps max-ticks) ; = s/b enough, but >= as failsafe
-                                  (.superFinish sim-sim) 
-				  ;(-finish sim-sim) ;; NEW 1/1/2019
-                                  ;(cleanup stoppable sim-data$ seed steps) ;; old working version
-                                  ;(.kill sim-state) ;; old working version
-				  )))))) ; end program after cleaning up Mason stuff
     ;; maybe report stats periodically
     (when (pos? report-every)
       (.scheduleRepeating schedule report-every 1 ; first tick to report at; ordering within tick
                           (reify Steppable
                             (step [this sim-state]
                               (let [steps (.getSteps schedule)]
-                                (when (or (zero? max-ticks) (< steps max-ticks)) ; don't report if this is the last tick
-                                  (stats/report-stats @sim-data$ seed steps)))))
+                                ;(when (or (zero? max-ticks) (< steps max-ticks)) ; don't report if this is the last tick
+                                  (stats/report-stats @sim-data$ seed steps)
+				  ;)
+				  )))
                           report-every)))) ; repeat this often
 
 (defn -start
