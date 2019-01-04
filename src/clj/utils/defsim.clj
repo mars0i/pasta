@@ -96,11 +96,11 @@
                get-syms set-syms classes))
 
 (defn get-ui-fields
-  [fields]
   "Given a fields argument to defsimconfig, return a sequence containing 
   only those field specifications suitable for modification in the UI.
   These are those have a truthy fourth element"
-    (filter field-ui? fields)) ; i.e. 
+  [fields]
+  (filter field-ui? fields)) ; i.e. 
 
 (defn get-range-fields
   "Given a fields argument to defsimconfig, return a sequence containing 
@@ -150,6 +150,7 @@
             (println "Command line options (defaults in parentheses):")
             (println (usage-fmt# ~'cli-options))
             (println "MASON options can also be used after these options:")
+	    (println "For example, you can use -for to stop after a specific number of steps.")
             (println "-help (note single dash): Print help message for MASON.")
             (System/exit 0)))))))
 
