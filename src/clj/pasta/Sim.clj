@@ -26,7 +26,7 @@
 (def commandline$ (atom nil)) ; Needed by defsim and other code below if we're defining commandline options
 
 ;; Note: There is no option below for max number of steps.  Use MASON's -for instead.
-;;                 field name      initial-value type  in ui? with range?
+;;              field name    initial-value type   in ui? with range?
 (defsim/defsim [[num-k-snipes       25      long    [0 500]     ["-K" "Size of k-snipe subpopulation" :parse-fn #(Long. %)]]
                 [num-r-snipes       25      long    [0 500]     ["-R" "Size of r-snipe subpopulation" :parse-fn #(Long. %)]]
                 [num-s-snipes       25      long    [0 500]     ["-S" "Size of s-snipe subpopulation" :parse-fn #(Long. %)]]
