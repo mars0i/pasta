@@ -95,6 +95,7 @@
   [args]
   (apply -main args)) ; have to use apply since already in a seq
 
+;; Is this ever called??
 (defn -stop
   [^Sim this]
   (let [^SimData sim-data$ (.simData this)
@@ -171,13 +172,12 @@
     (swap! sim-data$ assoc :popenv (pe/make-popenv rng sim-data$)) ; create new popenv
     ;; Run it:
     (let [write-csv (:write-csv @sim-data$)]
-      ;; TODO probably need to wrap this in a try/catch:
       (when write-csv
         (let [basename (or (:csv-basename @sim-data$) (str "pasta" seed))
               filename (str basename ".csv")
               add-to-file? (.exists (clojure.java.io/file filename)) ; should we create new file, or add to an older one?
               writer (clojure.java.io/writer filename :append add-to-file?)]
-          (when-not add-to-file?
+          (when-not add-to-file?  ; if not adding to existing file, write the initial header
             (csv/write-csv writer [stats/csv-header])) ; wrap vector in vector--that's what write-csv wants
           (swap! sim-data$ assoc :csv-writer writer))) ; store handle
       (run-sim this rng sim-data$ seed))))
