@@ -160,9 +160,10 @@
 (defn -start
   "Function that's called to (re)start a new simulation run."
   [^Sim this]
-  (.superStart this)
   ;; If user passed commandline options, use them to set parameters, rather than defaults:
-  (when @commandline$ (set-sim-data-from-commandline! this commandline$))
+  (.superStart this)
+  (when @commandline$
+    (set-sim-data-from-commandline! this commandline$))
   ;; Construct core data structures of the simulation:
   (let [^SimData sim-data$ (.simData this)
         ^MersenneTwisterFast rng (.-random this)
