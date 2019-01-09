@@ -56,6 +56,7 @@
                 [csv-writer         nil java.io.BufferedWriter false]
                 [max-pop-size        0      long    false]
                 [seed               nil     long    false] ; convenience field to store Sim's seed
+		[in-gui           false     boolean false] ; convenience field to store Boolean re whether in GUI
                 [popenv             nil  pasta.popenv.PopEnv false]]
   :exposes-methods {finish superFinish} ; name for function to call finish() in the superclass
   :methods [[getPopSize [] long] ; additional options here. this one is for def below; it will get merged into the generated :methods component.
@@ -79,8 +80,7 @@
   (let [options (:options @cmdline)
         sim-data (.simData sim)]
     (run! #(apply swap! sim-data assoc %) ; arg is a MapEntry, which is sequential? so will function like a list or vector
-          options))
-  (reset! cmdline nil)) ; clear it so user can set params in the gui
+          options)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -162,12 +162,12 @@
   [^Sim this]
   ;; If user passed commandline options, use them to set parameters, rather than defaults:
   (.superStart this)
-  (when @commandline$
-    (set-sim-data-from-commandline! this commandline$))
   ;; Construct core data structures of the simulation:
   (let [^SimData sim-data$ (.simData this)
         ^MersenneTwisterFast rng (.-random this)
         seed (.seed this)]
+    (when (and @commandline$ (not (:in-gui @sim-data$))) ; see issue #56 in github for the logic here
+      (set-sim-data-from-commandline! this commandline$))
     (swap! sim-data$ assoc :seed seed)
     (pe/setup-popenv-config! sim-data$)
     (swap! sim-data$ assoc :popenv (pe/make-popenv rng sim-data$)) ; create new popenv

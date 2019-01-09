@@ -95,6 +95,7 @@
   (let [sim (Sim. (System/currentTimeMillis))]  ; CREATE AN INSTANCE OF my Sim
     ;(sim/record-commandline-args! args) 
     (when @sim/commandline$ (sim/set-sim-data-from-commandline! sim sim/commandline$)) ; we can do this in -main because we have a Sim
+    (swap! (.simData sim) assoc :in-gui true) ; allow functions in Sim to check whether GUI is running
     (.setVisible (Console. (pasta.UI. sim)) true)))  ; THIS IS WHAT CONNECTS THE GUI TO my SimState subclass Sim
 
 (defn mein
