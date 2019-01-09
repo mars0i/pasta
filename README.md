@@ -256,7 +256,7 @@ the end the r-snipes or s-snipes always increase in frequency at the
 expense of k-snipes.  Why?  (Consider monitoring the energy levels of
 a few snipes over time.)
 
-<p>Experiment with parameters to see if you can cause k-snipes win the
+<p>Experiment with parameters to see if you can cause k-snipes to win the
 evolutionary race.  For example, before the start of a k-snipe vs.
 r-snipe run, reduce MushNegNutrition.  Does this affects k-snipes'
 relative success?  Why?</p>
