@@ -76,14 +76,16 @@ environment, large mushrooms are nutritious (dark gray) and small
 mushrooms are poisonous (light gray).</p>
 
 <p><b>Basic snipe behavior:</b> Snipes move randomly within an
-environment, gain energy from eating nutritious mushrooms, and lose
-energy from eating poisonous mushrooms.  Snipes that accumulate
-sufficient energy give birth to a single offspring, losing energy as a
-result of the birth. (one snipe can have multiple offspring if it
-repeatedly acquires enough energy to do so.) At birth, each newborn
-snipe is placed at a random location in a randomly chosen environment
-(as if parents had temporarily migrated to a new location to give
-birth).</p>
+environment.  Note that the orientation of snipes' icons does not
+indicate direction of movement (see below).  Snipes gain energy
+from eating nutritious mushrooms, and lose energy from eating
+poisonous mushrooms or giving birth.  Movement and internal processes
+have no cost.  Snipes that accumulate sufficient energy will give birth to
+a single offspring, losing energy as a result. A snipe
+can have multiple offspring only by repeatedly acquiring enough energy to
+give birth.  At birth, each newborn snipe is placed at a random location in
+a randomly chosen environment, as if parents had temporarily migrated
+to a new location to give birth.</p>
 
 <p><b>k-snipes</b> (red circles with pointers) initially eat mushrooms
 randomly,  but learn to eat mushrooms whose size signal (which is
@@ -116,10 +118,10 @@ brightness, with greater brightness indicating more energy.  (This
 effect can be subtle.)  The two mushroom colors in each environment
 indicate nutritiousness/poisonousness: Darker colors indicate
 nutritiousness&mdash;i.e. these mushrooms are energetically favorable to
-snipes&mdash;while lighter colors indicate poisonousness&mdash;energetically
+snipes&mdash;while lighter colors indicate poisonousness&mdash;energetic
 unfavorability.  (The fact that the East and West mushrooms have
-different hues no functional meaning; this could be considered a
-difference between mushroom species, for example.) </p>
+different hues has no functional meaning; it could be considered a
+difference between local mushroom species.) </p>
 
 <p><b>Monitoring individual snipes:</b> If you pause a run, you can
 double-click on a snipe to monitor its internal state and watch it move.
