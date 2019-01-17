@@ -226,9 +226,9 @@
   [snipe-field x y snipe]
   (.set snipe-field x y (assoc snipe :x x :y y)))
 
-;; reusable bags for choose-next-loc
-(def x-coord-bag (IntBag. 6))
-(def y-coord-bag (IntBag. 6))
+;; Formerly I made top-level reusable IntBags for choose-next-loc.
+;; I think this is the source of an ArrayIndexOutOfBoundsException
+;; when I the MASON -parallel option.  So now the IntBags are local.
 
 (defn choose-next-loc
   "Return a pair of field coordinates randomly selected from the empty 
@@ -236,7 +236,9 @@
   location if all neighboring locations are filled."
   [rng snipe-field snipe]
   (let [curr-x (:x snipe)
-        curr-y (:y snipe)]
+        curr-y (:y snipe)
+	x-coord-bag (IntBag. 6)
+	y-coord-bag (IntBag. 6)]
     (.getHexagonalLocations snipe-field              ; inserts coords of neighbors into x-pos and y-pos args
                             curr-x curr-y
                             1 Grid2D/TOROIDAL false  ; immediate neighbors, toroidally, don't include me
