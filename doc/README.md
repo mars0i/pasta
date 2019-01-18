@@ -32,10 +32,10 @@ document provides the background for my approach in pasta, including
 the `defsim` macro.
 
 * Notes on variable naming: Variables that contain atoms have "$" at
-the end of their names. This is nonstandard; the norm is to give atom
-variables normal names. Sometimes it's convenient to have both a
-variable containing and atom and one containing a dereferenced version
-of the same data.  A naming convention makes it clear which is which.
-Using a suffix that is not "@" (an obvious choice) seems easiest to
-read.  I sometimes use CamelCase to name things that have a Java-ey
-role with MASON, but mostly use Clojure-standard kebab-case.
+the end of their names. This is nonstandard; the norm in Clojure is to
+give atom variables normal names. Sometimes it's convenient to have
+both a variable containing and atom and one containing a dereferenced
+version of the same data.  A naming convention makes it clear which is
+which. Using a suffix that is not "@" (an obvious choice) seems
+easiest to read.  I sometimes use CamelCase to name things that have a
+Java-ey role with MASON, but mostly use Clojure-standard kebab-case.
