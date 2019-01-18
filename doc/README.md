@@ -37,5 +37,5 @@ variables normal names. Sometimes it's convenient to have both a
 variable containing and atom and one containing a dereferenced version
 of the same data.  A naming convention makes it clear which is which.
 Using a suffix that is not "@" (an obvious choice) seems easiest to
-read.  I sometimes use camel case to name things that have a Java-ey
-role with MASON, but mostly use Clojure-standard kebab case.
+read.  I sometimes use CamelCase to name things that have a Java-ey
+role with MASON, but mostly use Clojure-standard kebab-case.
