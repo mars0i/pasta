@@ -212,7 +212,8 @@ means that if you only want stats on the last time step, simply give
 
 If the data is written to the file, the resulting csv file (which can be
 pulled into Excel, for example) will consist of rows of data separated
-by commas, with a header row.  The columns contain the run id (which is
+by commas.  (There will be a header row in a separate file with
+"header" in its name.)  The columns contain the run id (which is
 also the random seed), so that you can append multiple runs to the same
 file; the time step at which the data was collected; the snipe
 class&mdash;i.e. whether it is a k-snipe, r-snipe, or s-snipe; the

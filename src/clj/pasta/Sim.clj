@@ -151,11 +151,8 @@
                           (reify Steppable
                             (step [this sim-state]
                               (let [steps (.getSteps schedule)]
-                                ;(when (or (zero? max-ticks) (< steps max-ticks)) ; don't report if this is the last tick
-                                  (stats/report-stats @sim-data$ seed steps)
-				  ;)
-				  )))
-                          report-every)))) ; repeat this often
+                                  (stats/report-stats @sim-data$ seed steps))))
+                          report-every))))
 
 (defn -start
   "Function that's called to (re)start a new simulation run."
@@ -175,10 +172,12 @@
     (let [write-csv (:write-csv @sim-data$)]
       (when write-csv
         (let [basename (or (:csv-basename @sim-data$) (str "pasta" seed))
-              filename (str basename ".csv")
-              add-to-file? (.exists (clojure.java.io/file filename)) ; should we create new file, or add to an older one?
-              writer (clojure.java.io/writer filename :append add-to-file?)]
-          (when-not add-to-file?  ; if not adding to existing file, write the initial header
-            (csv/write-csv writer [stats/csv-header])) ; wrap vector in vector--that's what write-csv wants
-          (swap! sim-data$ assoc :csv-writer writer))) ; store handle
-      (run-sim this rng sim-data$ seed))))
+              data-filename (str basename ".csv")
+	      header-filename (str basename "_header.csv")
+              add-to-file? (.exists (clojure.java.io/file data-filename)) ; should we create new file, or add to an older one?
+              writer (clojure.java.io/writer data-filename :append add-to-file?)]
+          (swap! sim-data$ assoc :csv-writer writer) ; store handle
+          (when-not add-to-file?  ; if not adding to existing file, write a spearate header file
+	    (with-open [header-writer (clojure.java.io/writer header-filename :append false)]
+	      (csv/write-csv header-writer [stats/csv-header]))))))
+    (run-sim this rng sim-data$ seed)))
