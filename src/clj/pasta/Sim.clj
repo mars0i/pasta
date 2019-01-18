@@ -115,8 +115,7 @@
 	steps (.getSteps schedule)]
     (.stop stoppable)
     (when (pos? report-every)
-      (stats/report-stats sim-data seed steps)
-      (stats/report-params sim-data)) ; if we're not using report-every to report stats, don't report params; else this will fire from the GUI.
+      (stats/report-stats sim-data seed steps))
     (when-let [writer (:csv-writer sim-data)]
       (.close writer))))
 
@@ -169,15 +168,16 @@
     (pe/setup-popenv-config! sim-data$)
     (swap! sim-data$ assoc :popenv (pe/make-popenv rng sim-data$)) ; create new popenv
     ;; Run it:
-    (let [write-csv (:write-csv @sim-data$)]
-      (when write-csv
-        (let [basename (or (:csv-basename @sim-data$) (str "pasta" seed))
-              data-filename (str basename ".csv")
-	      header-filename (str basename "_header.csv")
-              add-to-file? (.exists (clojure.java.io/file data-filename)) ; should we create new file, or add to an older one?
-              writer (clojure.java.io/writer data-filename :append add-to-file?)]
-          (swap! sim-data$ assoc :csv-writer writer) ; store handle
-          (when-not add-to-file?  ; if not adding to existing file, write a spearate header file
-	    (with-open [header-writer (clojure.java.io/writer header-filename :append false)]
-	      (csv/write-csv header-writer [stats/csv-header]))))))
-    (run-sim this rng sim-data$ seed)))
+    (when-let [write-csv (:write-csv @sim-data$)]
+      (let [basename (or (:csv-basename @sim-data$) (str "pasta" seed))
+            data-filename (str basename ".csv")
+            header-filename (str basename "_header.csv")
+            add-to-file? (.exists (clojure.java.io/file data-filename)) ; should we create new file, or add to an older one?
+            writer (clojure.java.io/writer data-filename :append add-to-file?)]
+        (swap! sim-data$ assoc :csv-writer writer) ; store handle
+        (when-not add-to-file?  ; if not adding to existing file, write a spearate header file
+          (with-open [header-writer (clojure.java.io/writer header-filename :append false)]
+            (csv/write-csv header-writer [stats/csv-header])))))
+    (run-sim this rng sim-data$ seed)
+    (when (pos? (:report-every @sim-data$)) ; writes either to console or file
+      (stats/report-params @sim-data$))))     ; if to console, clearer if last; if to file, doesn't matter when
