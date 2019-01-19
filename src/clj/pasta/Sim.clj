@@ -116,7 +116,9 @@
 	steps (.getSteps schedule)]
     (.stop stoppable)
     (when (pos? report-every)
-      (stats/report-stats sim-data seed steps))
+      (stats/report-stats sim-data seed steps)
+      (when (not (:write-csv sim-data))
+        (stats/write-params-to-console sim-data)))
     (when-let [writer (:csv-writer sim-data)]
       (.close writer))))
 
