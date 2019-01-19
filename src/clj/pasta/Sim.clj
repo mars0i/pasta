@@ -130,7 +130,6 @@
 ;; (I think that line 662 of SimState.java might be where this happens.)
 (defn -finish
   [^Sim this]
-  (println "finish job: " (.job this))
   (cleanup this))
 
 ;; Note finish is never called here.  Stopping a simulation in any
@@ -162,7 +161,6 @@
   [^Sim this]
   ;; If user passed commandline options, use them to set parameters, rather than defaults:
   (.superStart this)
-  (println "start job: " (.job this))
   ;; Construct core data structures of the simulation:
   (let [^SimData sim-data$ (.simData this)
         ^MersenneTwisterFast rng (.-random this)
@@ -181,8 +179,8 @@
             writer (clojure.java.io/writer data-filename :append add-to-file?)]
         (swap! sim-data$ assoc :csv-writer writer) ; store handle
 	(when @first-run$  ; write parameters during the first run of the first parallel thread.  No need to keep doing it over and over.
-	  (reset! first-run$ false)
+	  (reset! first-run$ false) ; Note this means that if every run's basename is different (no -F), the param file will have the name of the first one.
 	  (stats/write-params-to-file @sim-data$))
         (when-not add-to-file?  ; if not adding to existing file, write a separate header file
-	  (m2c/spit-csv [stats/csv-header]))))
+	  (m2c/spit-csv header-filename [stats/csv-header]))))
     (run-sim this rng sim-data$ seed)))
