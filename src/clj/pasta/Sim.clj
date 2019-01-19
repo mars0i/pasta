@@ -186,6 +186,6 @@
 	    (reset! first-run-shared-basename$ false)
 	    (stats/write-params-to-file @sim-data$))
 	  (stats/write-params-to-file @sim-data$)) ; if no shared basename, every run gets its own params file
-        (when-not add-to-file?  ; if not adding to existing file, write a separate header file
+        (when-not add-to-file?  ; if not adding to existing file, write a separate header file (whether old file is from prev run or earlier process)
 	  (m2c/spit-csv header-filename [stats/csv-header]))))
     (run-sim this rng sim-data$ seed)))
