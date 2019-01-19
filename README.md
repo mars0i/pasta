@@ -212,24 +212,24 @@ means that if you only want stats on the last time step, simply give
 
 If the data is written to the file, the resulting csv file (which can be
 pulled into Excel, for example) will consist of rows of data separated
-by commas.  (There will be a header row in a separate file with
-"header" in its name.)  The columns contain the run id (which is
-also the random seed), so that you can append multiple runs to the same
-file; the time step at which the data was collected; the snipe
-class&mdash;i.e. whether it is a k-snipe, r-snipe, or s-snipe; the
-sub-environment (east or west) of the snipes that are summarized;
-whether the snipes summarized have a negative, positive, or neutral size
-preference for mushrooms; the number of mushrooms in the condition
-specified by the previous columns; their average energy; average
-mushroom preference value; and average age.  If you use the same
-basename as an existing data file, the data will be appended to the
-file, but the parameters file will be overwritten, on the assumption
-that you are using the same parameters again.  (Note: A snipe's mushroom
-preference value is a real number that is zero to indicate that the
-snipe has no preference for large vs. small mushrooms, positive to
-indicate the degree of preference for large mushrooms, and negative to
-indicate the degree of preference for small mushrooms. See <a
-href="doc/kSnipePerception.pdf">doc/kSnipePerception.pdf</a> for
+by commas.  (There will be a header row in a separate file with "header"
+in its name.)  The columns one for the run id (which is also the random
+seed), so that you can append multiple runs to the same file; the time
+step at which the data was collected; the snipe class&mdash;i.e. whether
+it is a k-snipe, r-snipe, or s-snipe; the sub-environment (east or west)
+of the snipes that are summarized; whether the snipes summarized have a
+negative, positive, or neutral size preference for mushrooms; the number
+of mushrooms in the condition specified by the previous columns; their
+average energy; average mushroom preference value; and average age.  If
+you use the same basename as an existing data file, or if you specify a
+basename with multiple runs using MASON's `-repeat`, the data will be
+appended to the file, and a single parameters file will be written;
+otherwise, every run's data will have unique filenames.  (Note: A
+snipe's mushroom preference value is a real number that is zero to
+indicate that the snipe has no preference for large vs. small mushrooms,
+positive to indicate the degree of preference for large mushrooms, and
+negative to indicate the degree of preference for small mushrooms. See
+<a href="doc/kSnipePerception.pdf">doc/kSnipePerception.pdf</a> for
 details.)
 
 If the data isn't written to a file, it will be sent to standard output.
