@@ -252,11 +252,11 @@
 					 "_params.csv")))
   ([cfg-data f] (m2c/spit-map f cfg-data)))
 
-(defn report-params
-  [cfg-data]
-  (if (:write-csv cfg-data)
-    (write-params-to-file cfg-data)
-    (write-params-to-console cfg-data)))
+;(defn report-params
+;  [cfg-data]
+;  (if (:write-csv cfg-data)
+;    (write-params-to-file cfg-data)
+;    (write-params-to-console cfg-data)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; USED BY GUI INSPECTORS DEFINED IN pasta.simconfig

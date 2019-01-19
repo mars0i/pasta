@@ -7,6 +7,7 @@
             [clojure.data.csv :as csv]
             [clojure.java.io]
             [utils.defsim :as defsim]
+            [utils.map2csv :as m2c]
             [pasta.snipe :as sn]
             [pasta.popenv :as pe]
             [pasta.stats :as stats])
@@ -129,6 +130,7 @@
 ;; (I think that line 662 of SimState.java might be where this happens.)
 (defn -finish
   [^Sim this]
+  (println "finish job: " (.job this))
   (cleanup this))
 
 ;; Note finish is never called here.  Stopping a simulation in any
@@ -153,11 +155,14 @@
                                   (stats/report-stats @sim-data$ seed steps))))
                           report-every))))
 
+(def first-run$ (atom true))
+
 (defn -start
   "Function that's called to (re)start a new simulation run."
   [^Sim this]
   ;; If user passed commandline options, use them to set parameters, rather than defaults:
   (.superStart this)
+  (println "start job: " (.job this))
   ;; Construct core data structures of the simulation:
   (let [^SimData sim-data$ (.simData this)
         ^MersenneTwisterFast rng (.-random this)
@@ -175,9 +180,9 @@
             add-to-file? (.exists (clojure.java.io/file data-filename)) ; should we create new file, or add to an older one?
             writer (clojure.java.io/writer data-filename :append add-to-file?)]
         (swap! sim-data$ assoc :csv-writer writer) ; store handle
-        (when-not add-to-file?  ; if not adding to existing file, write a spearate header file
-          (with-open [header-writer (clojure.java.io/writer header-filename :append false)]
-            (csv/write-csv header-writer [stats/csv-header])))))
-    (run-sim this rng sim-data$ seed)
-    (when (pos? (:report-every @sim-data$)) ; writes either to console or file
-      (stats/report-params @sim-data$))))     ; if to console, clearer if last; if to file, doesn't matter when
+	(when @first-run$  ; write parameters during the first run of the first parallel thread.  No need to keep doing it over and over.
+	  (reset! first-run$ false)
+	  (stats/write-params-to-file @sim-data$))
+        (when-not add-to-file?  ; if not adding to existing file, write a separate header file
+	  (m2c/spit-csv [stats/csv-header]))))
+    (run-sim this rng sim-data$ seed)))
