@@ -156,7 +156,7 @@
                                   (stats/report-stats @sim-data$ seed steps))))
                           report-every))))
 
-(def first-run$ (atom true))
+(def first-run-shared-basename$ (atom true)) ; when different runs share a basename, some things happen once
 
 (defn -start
   "Function that's called to (re)start a new simulation run."
@@ -174,15 +174,18 @@
     (swap! sim-data$ assoc :popenv (pe/make-popenv rng sim-data$)) ; create new popenv
     ;; Run it:
     (when-let [write-csv (:write-csv @sim-data$)]
-      (let [basename (or (:csv-basename @sim-data$) (str "pasta" seed))
+      (let [initial-basename (:csv-basename @sim-data$) ; might be nil
+            basename (or initial-basename (str "pasta" seed))
             data-filename (str basename ".csv")
             header-filename (str basename "_header.csv")
             add-to-file? (.exists (clojure.java.io/file data-filename)) ; should we create new file, or add to an older one?
             writer (clojure.java.io/writer data-filename :append add-to-file?)]
         (swap! sim-data$ assoc :csv-writer writer) ; store handle
-	(when @first-run$  ; write parameters during the first run of the first parallel thread.  No need to keep doing it over and over.
-	  (reset! first-run$ false) ; Note this means that if every run's basename is different (no -F), the param file will have the name of the first one.
-	  (stats/write-params-to-file @sim-data$))
+	(if initial-basename                 ; if we do have a shared basename
+	  (when @first-run-shared-basename$  ; write parameters only during the first run when there is a shared basename
+	    (reset! first-run-shared-basename$ false)
+	    (stats/write-params-to-file @sim-data$))
+	  (stats/write-params-to-file @sim-data$)) ; if no shared basename, every run gets its own params file
         (when-not add-to-file?  ; if not adding to existing file, write a separate header file
 	  (m2c/spit-csv header-filename [stats/csv-header]))))
     (run-sim this rng sim-data$ seed)))
