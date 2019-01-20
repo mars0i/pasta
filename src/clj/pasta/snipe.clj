@@ -223,9 +223,8 @@
 (defn next-id
   "Returns a unique integer for use as an id."
   [cfg-data$] 
-  (println (:curr-snipe-id @cfg-data$))
   (:curr-snipe-id 
-    (swap! cfg-data$ update-in [:curr-snipe-id] inc)))
+    (swap! cfg-data$ update :curr-snipe-id inc)))
 
 ;; Alt version that I thought would be better, but it's not:
 ;; Simple, non-gensym version means that max id tracks total number 
