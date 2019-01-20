@@ -225,6 +225,19 @@
   [] 
   (swap! num-snipes$ inc))
 
+;; Alt version that I thought would be better, but it's not:
+;; Simple, non-gensym version means that max id tracks total number 
+;; of snipes that have lived.  Using a closure is an efficient way
+;; to make the id thread-local.  Storing it in the Sim instance data
+;; seems like a bit much.  FIXME NO it's not thread-local.  The function
+;; is global, so all parallel sessions will increment the same atom,
+;; just as when I made the atom global.  Note this is not a serious problem
+;; but it does mean that snipe id's don't reflect numbers of snipes in
+;; a single run.
+;(def ^{:doc "Returns the next integer for use as a snipe id."} next-id
+;  (let [prev-id$ (atom 0)]
+;    (fn [] (swap! prev-id$ inc))))
+
 ;; Does gensym avoid bottleneck??
 ;(defn next-id 
 ;  "Returns a unique integer for use as an id."
