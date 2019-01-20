@@ -217,14 +217,11 @@
 (defn r-snipe? [s] (instance? pasta.snipe.RSnipe s))
 (defn s-snipe? [s] (instance? pasta.snipe.SSnipe s))
 
-;; Switching to simple, non-gensym version so that this also tracks
-;; total number of snipes that have lived.  NO ACTUALLY it DOESN'T.
-;; Well it does, but it means "have lived in all of the runs so far".
-(def num-snipes$ (atom 0))
-(defn next-id
+;; Bottleneck with threads?
+(defn next-id 
   "Returns a unique integer for use as an id."
   [] 
-  (swap! num-snipes$ inc))
+  (Long. (str (gensym ""))))
 
 ;; Alt version that I thought would be better, but it's not:
 ;; Simple, non-gensym version means that max id tracks total number 
