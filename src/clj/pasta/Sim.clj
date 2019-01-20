@@ -58,6 +58,7 @@
                 [max-pop-size        0      long    false]
                 [seed               nil     long    false] ; convenience field to store Sim's seed
 		[in-gui           false     boolean false] ; convenience field to store Boolean re whether in GUI
+		[curr-snipe-id       0      long    false] ; used to generate snipe ideas local to this thread's run
                 [popenv             nil  pasta.popenv.PopEnv false]]
   :exposes-methods {finish superFinish} ; name for function to call finish() in the superclass
   :methods [[getPopSize [] long] ; additional options here. this one is for def below; it will get merged into the generated :methods component.

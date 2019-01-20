@@ -84,7 +84,7 @@
 
 (defn make-k-snipe 
   [cfg-data$ energy subenv x y]
-  (KSnipe. (next-id)
+  (KSnipe. (next-id cfg-data$)
            perc/k-snipe-pref ; perceive: function for responding to mushrooms
            0.0               ; mush-pref begins with indifference
            energy            ; initial energy level
@@ -98,12 +98,12 @@
   [rng cfg-data$ energy subenv x y]
   (let [extreme-pref (:extreme-pref @cfg-data$)]
     (if (< (ran/next-double rng) 0.5)
-      (RSnipe. (next-id) perc/r-snipe-pref (- extreme-pref) energy subenv x y 0 (atom false) cfg-data$)
-      (RSnipe. (next-id) perc/r-snipe-pref extreme-pref     energy subenv x y 0 (atom false) cfg-data$))))
+      (RSnipe. (next-id cfg-data$) perc/r-snipe-pref (- extreme-pref) energy subenv x y 0 (atom false) cfg-data$)
+      (RSnipe. (next-id cfg-data$) perc/r-snipe-pref extreme-pref     energy subenv x y 0 (atom false) cfg-data$))))
 
 (defn make-s-snipe 
   [rng cfg-data$ energy subenv x y]
-  (SSnipe. (next-id)
+  (SSnipe. (next-id cfg-data$)
            perc/s-snipe-pref ; use simple r-snipe method but a different starting strategy
            0.0               ; will be set soon by s-snipe-pref
            energy
@@ -219,11 +219,13 @@
 
 ;; Switching to simple, non-gensym version so that this also tracks
 ;; total number of snipes that have lived.
-(def num-snipes$ (atom 0))
+;(def num-snipes$ (atom 0))
 (defn next-id
   "Returns a unique integer for use as an id."
-  [] 
-  (swap! num-snipes$ inc))
+  [cfg-data$] 
+  (println (:curr-snipe-id @cfg-data$))
+  (:curr-snipe-id 
+    (swap! cfg-data$ update-in [:curr-snipe-id] inc)))
 
 ;; Alt version that I thought would be better, but it's not:
 ;; Simple, non-gensym version means that max id tracks total number 
