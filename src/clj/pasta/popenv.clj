@@ -32,7 +32,7 @@
                    mush-field    ; ObjectGrid2D
                    dead-snipes]) ; keep a record of dead snipes for later stats
 
-(defrecord PopEnv [west east snipe-map]) ; two SubEnvs, and map from ids to snipes
+(defrecord PopEnv [west east snipe-map curr-snipe-id$]) ; two SubEnvs, and map from ids to snipes
 
 (defn setup-popenv-config!
   [cfg-data$]
@@ -43,16 +43,16 @@
 
 (defn make-subenv
   "Returns new SubEnv with mushs and snipes.  subenv-key is :west or :east."
-  [rng cfg-data$ subenv-key]
+  [rng cfg-data$ subenv-key curr-snipe-id$]
   (let [{:keys [env-width env-height]} @cfg-data$
         snipe-field (ObjectGrid2D. env-width env-height)
         mush-field  (ObjectGrid2D. env-width env-height)]
     (.clear mush-field)
     (add-mushs! rng @cfg-data$ mush-field subenv-key)
     (.clear snipe-field)
-    (add-k-snipes! rng cfg-data$ snipe-field subenv-key)
-    (add-r-snipes! rng cfg-data$ snipe-field subenv-key)
-    (add-s-snipes! rng cfg-data$ snipe-field subenv-key)
+    (add-k-snipes! rng cfg-data$ snipe-field subenv-key curr-snipe-id$)
+    (add-r-snipes! rng cfg-data$ snipe-field subenv-key curr-snipe-id$)
+    (add-s-snipes! rng cfg-data$ snipe-field subenv-key curr-snipe-id$)
     (SubEnv. snipe-field mush-field [])))
 
 (defn make-snipe-map
@@ -64,12 +64,18 @@
 
 (defn make-popenv
   [rng cfg-data$]
-  (let [west (make-subenv rng cfg-data$ :west)
-        east (make-subenv rng cfg-data$ :east)]
+  (let [curr-snipe-id$ (atom 0)
+        west (make-subenv rng cfg-data$ :west curr-snipe-id$)
+        east (make-subenv rng cfg-data$ :east curr-snipe-id$)]
     (PopEnv. west 
              east
              (make-snipe-map (:snipe-field west)
-                             (:snipe-field east)))))
+                             (:snipe-field east))
+             curr-snipe-id$)))
+
+(defn next-snipe-id
+  [curr-snipe-id$]
+  (swap! curr-snipe-id$ inc))
 
 (defn eat
   [rng cfg-data subenv]
@@ -93,16 +99,17 @@
 (defn next-popenv
   "Given an rng, a simConfigData atom, and a SubEnv, return a new SubEnv."
   [popenv rng cfg-data$]
-  (let [{:keys [west east]} popenv
+  (let [{:keys [west east curr-snipe-id$]} popenv
         west' (eat rng @cfg-data$ west) ; better to eat before reproduction--makes sense
         east' (eat rng @cfg-data$ east) ; and avoids complexity with max energy
         [west-snipe-field' east-snipe-field'] (snipes-reproduce rng cfg-data$ ; uses both fields: newborns could go anywhere
                                                                 (:snipe-field west')
-                                                                (:snipe-field east'))
+                                                                (:snipe-field east')
+								curr-snipe-id$)
         west' (die-move rng @cfg-data$ (assoc west' :snipe-field west-snipe-field'))
         east' (die-move rng @cfg-data$ (assoc east' :snipe-field east-snipe-field'))
         snipe-map' (make-snipe-map (:snipe-field west') (:snipe-field east'))]
-    (PopEnv. west' east' snipe-map')))
+    (PopEnv. west' east' snipe-map' curr-snipe-id$)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; CREATE AND PLACE ORGANISMS
@@ -127,25 +134,25 @@
         (recur)))))
 
 (defn add-k-snipes!
-  [rng cfg-data$ field subenv-key]
+  [rng cfg-data$ field subenv-key curr-snipe-id$]
   (let [{:keys [env-width env-height num-k-snipes]} @cfg-data$]
     (dotimes [_ num-k-snipes] ; don't use lazy method--it may never be executed
       (add-organism-to-rand-loc! rng @cfg-data$ field env-width env-height 
-                                 (organism-setter (partial sn/make-rand-k-snipe rng cfg-data$ subenv-key))))))
+                                 (organism-setter (partial sn/make-rand-k-snipe rng cfg-data$ subenv-key (next-snipe-id curr-snipe-id$)))))))
 
 (defn add-r-snipes!
-  [rng cfg-data$ field subenv-key]
+  [rng cfg-data$ field subenv-key curr-snipe-id$]
   (let [{:keys [env-width env-height num-r-snipes]} @cfg-data$]
     (dotimes [_ num-r-snipes]
       (add-organism-to-rand-loc! rng @cfg-data$ field env-width env-height 
-                                 (organism-setter (partial sn/make-rand-r-snipe rng cfg-data$ subenv-key))))))
+                                 (organism-setter (partial sn/make-rand-r-snipe rng cfg-data$ subenv-key (next-snipe-id curr-snipe-id$)))))))
 
 (defn add-s-snipes!
-  [rng cfg-data$ field subenv-key]
+  [rng cfg-data$ field subenv-key curr-snipe-id$]
   (let [{:keys [env-width env-height num-s-snipes]} @cfg-data$]
     (dotimes [_ num-s-snipes]
       (add-organism-to-rand-loc! rng @cfg-data$ field env-width env-height 
-                                 (organism-setter (partial sn/make-rand-s-snipe rng cfg-data$ subenv-key))))))
+                                 (organism-setter (partial sn/make-rand-s-snipe rng cfg-data$ subenv-key (next-snipe-id curr-snipe-id$)))))))
 
 ;; Do I really need so many mushrooms?  They don't change.  Couldn't I just define four mushrooms,
 ;; and reuse them?  (If so, be careful about their deaths.)
@@ -344,7 +351,7 @@
         [num-births (assoc snipe :energy remaining-energy)]))))
 
 (defn snipes-reproduce
-  [rng cfg-data$ west-snipe-field east-snipe-field]
+  [rng cfg-data$ west-snipe-field east-snipe-field curr-snipe-id$]
   (let [{:keys [env-width env-height birth-threshold birth-cost]} @cfg-data$
         suff-energy (fn [snipe] (>= (:energy snipe) birth-threshold))
         west-snipe-field' (ObjectGrid2D. west-snipe-field) ; new field that's a copy of old one
@@ -367,9 +374,12 @@
                                                  [west-snipe-field' :west]  ; assigned to a subenv
                                                  [east-snipe-field' :east])]
             (add-organism-to-rand-loc! rng @cfg-data$ child-snipe-field env-width env-height ; add newborn of same type as parent
-                                       (organism-setter (cond (sn/k-snipe? snipe') (partial sn/make-newborn-k-snipe cfg-data$ subenv-key)
-                                                              (sn/r-snipe? snipe') (partial sn/make-newborn-r-snipe rng cfg-data$ subenv-key)
-                                                              :else                (partial sn/make-newborn-s-snipe rng cfg-data$ subenv-key))))))))
+                                       (organism-setter (cond (sn/k-snipe? snipe') (partial sn/make-newborn-k-snipe cfg-data$ subenv-key 
+				                                                            (next-snipe-id curr-snipe-id$))
+                                                              (sn/r-snipe? snipe') (partial sn/make-newborn-r-snipe rng cfg-data$ subenv-key
+				                                                            (next-snipe-id curr-snipe-id$))
+                                                              :else                (partial sn/make-newborn-s-snipe rng cfg-data$ subenv-key
+				                                                            (next-snipe-id curr-snipe-id$)))))))))
     [west-snipe-field' east-snipe-field']))
 
  ; newborn should be like parent
