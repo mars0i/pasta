@@ -223,6 +223,29 @@
   [] 
   (Long. (str (gensym ""))))
 
+; ;; OK THIS IS A BAD IDEA.  First, the initial def and .set runs in a different
+; ;; thread than the next-id calls.  That is fixed with the when-not that
+; ;; I added.  BUT THERE ARE NEW THREADS CREATED WHILE A RUN IS RUNNING,
+; ;; at least somes when you pause and restart the simulation.  So this 
+; ;; causes the numbering to restart with 1 over and over again within a
+; ;; run.
+; ;; 
+; ;; See https://stackoverflow.com/a/21608858/1455243
+; ;; Or use amalloy's wrapper:
+; ;; https://stackoverflow.com/a/7391714/1455243
+; ;; https://github.com/flatland/useful/blob/5de8a2ff32d351dcc931d0d10cdd4d67797bdc42/src/flatland/useful/utils.clj#L201
+; (def thread-prev-id$ (ThreadLocal.))
+; (.set thread-prev-id$ (atom 0))
+; (defn next-id 
+;   "Returns a unique thread-local integer for use as an id.  (Ids are 
+;   not reset at the beginning of subsequent runs in the same Java thread
+;   but if the application is started using MASON's -parallel flag, there
+;   will be a different sequence of ids in each thread.)"
+;   [] 
+;   (when-not (.get thread-prev-id$) 
+;     (.set thread-prev-id$ (atom 0)))
+;   (swap! (.get thread-prev-id$) inc))
+
 ;; Alt version that I thought would be better, but it's not:
 ;; Simple, non-gensym version means that max id tracks total number 
 ;; of snipes that have lived.  Using a closure is an efficient way
