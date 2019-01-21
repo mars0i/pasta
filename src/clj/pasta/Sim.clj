@@ -146,6 +146,7 @@
         stoppable (.scheduleRepeating schedule Schedule/EPOCH 0 ; epoch = starting at beginning, 0 means run this first during timestep
                                       (reify Steppable 
                                         (step [this sim-state]
+					  (println "steppin'") ; DEBUG
                                           (swap! sim-data$ update :popenv (partial pe/next-popenv rng sim-data$)))))]
     (swap! sim-data$ assoc :stoppable stoppable) ; make it available to finish()
     ;; maybe report stats periodically
