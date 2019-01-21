@@ -91,10 +91,8 @@
              (conj dead-snipes (concat newly-died newly-culled))))) ; each timestep adds a separate collection of dead snipes
 
 (defn next-popenv
-  "Given an rng, a simConfigData atom, and a SubEnv, return
-  a new SubEnv.  (popenv is last for convenience with iterate.
-  You can use (partial next-popenv ...) with swap!.)"
-  [rng cfg-data$ popenv]
+  "Given an rng, a simConfigData atom, and a SubEnv, return a new SubEnv."
+  [popenv rng cfg-data$]
   (println "next-popenv") ; DEBUG
   (let [{:keys [west east]} popenv
         west' (eat rng @cfg-data$ west) ; better to eat before reproduction--makes sense

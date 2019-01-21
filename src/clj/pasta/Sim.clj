@@ -147,7 +147,7 @@
                                       (reify Steppable 
                                         (step [this sim-state]
 					  (println "steppin'") ; DEBUG
-                                          (swap! sim-data$ update :popenv (partial pe/next-popenv rng sim-data$)))))]
+                                          (swap! sim-data$ update :popenv pe/next-popenv rng sim-data$))))]
     (swap! sim-data$ assoc :stoppable stoppable) ; make it available to finish()
     ;; maybe report stats periodically
     (when (pos? report-every)
