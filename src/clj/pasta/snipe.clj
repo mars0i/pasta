@@ -223,7 +223,9 @@
 (defn next-id
   "Returns a unique integer for use as an id."
   [cfg-data$] 
+  (println "before: " (:curr-snipe-id @cfg-data$)) ; DEBUG
   (swap! cfg-data$ update :curr-snipe-id inc)
+  (println "after: " (:curr-snipe-id @cfg-data$)) ; DEBUG
   (:curr-snipe-id @cfg-data$))
 
 ;; Alt version that I thought would be better, but it's not:
