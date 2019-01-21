@@ -115,18 +115,26 @@
 
 (defn make-newborn-k-snipe 
   [cfg-data$ subenv x y]
+  ;(println "make-newborn-k-snipe" subenv x y) ; DEBUG
   (let [{:keys [initial-energy]} @cfg-data$]
     (make-k-snipe cfg-data$ initial-energy subenv x y)))
 
 (defn make-newborn-r-snipe
   [rng cfg-data$ subenv x y]
+  ;(println "make-newborn-r-snipe" subenv x y) ; DEBUG
   (let [{:keys [initial-energy]} @cfg-data$]
     (make-r-snipe rng cfg-data$ initial-energy subenv x y)))
 
 (defn make-newborn-s-snipe 
   [rng cfg-data$ subenv x y]
+  ;(println "make-newborn-s-snipe" subenv x y) ; DEBUG
   (let [{:keys [initial-energy]} @cfg-data$]
     (make-s-snipe rng cfg-data$ initial-energy subenv x y)))
+
+(defn make-rand-k-snipe 
+  "Create k-snipe with random energy (from rand-energy)."
+  [rng cfg-data$ subenv x y]
+  (make-k-snipe cfg-data$ (rand-energy rng @cfg-data$) subenv x y))
 
 (defn make-rand-k-snipe 
   "Create k-snipe with random energy (from rand-energy)."
@@ -223,9 +231,9 @@
 (defn next-id
   "Returns a unique integer for use as an id."
   [cfg-data$] 
-  (println "before: " (:curr-snipe-id @cfg-data$)) ; DEBUG
+  ;(println "before: " (:curr-snipe-id @cfg-data$)) ; DEBUG
   (swap! cfg-data$ update :curr-snipe-id inc)
-  (println "after: " (:curr-snipe-id @cfg-data$)) ; DEBUG
+  ;(println "after: " (:curr-snipe-id @cfg-data$)) ; DEBUG
   (:curr-snipe-id @cfg-data$))
 
 ;; Alt version that I thought would be better, but it's not:

@@ -93,8 +93,9 @@
 (defn next-popenv
   "Given an rng, a simConfigData atom, and a SubEnv, return
   a new SubEnv.  (popenv is last for convenience with iterate.
-  You can use partial use next-popenv with swap!.)"
+  You can use (partial next-popenv ...) with swap!.)"
   [rng cfg-data$ popenv]
+  (println "next-popenv") ; DEBUG
   (let [{:keys [west east]} popenv
         west' (eat rng @cfg-data$ west) ; better to eat before reproduction--makes sense
         east' (eat rng @cfg-data$ east) ; and avoids complexity with max energy
@@ -356,7 +357,9 @@
         mothers (Bag. west-mothers)] ; MASON Bags have an in-place shuffle routine
     (.addAll mothers east-mothers)
     (.shuffle mothers rng)
+    ;(println "mothers size = " (.size mothers)) ; DEBUG
     (doseq [snipe mothers]
+      ;(print ".") ; DEBUG
       (let [[num-births snipe'] (give-birth @cfg-data$ snipe)
             parental-snipe-field' (if (= (:subenv snipe') :west)
                                     west-snipe-field'
@@ -364,6 +367,12 @@
         ;; replace old snipe with one updated to reflect birth:
         (.set parental-snipe-field' (:x snipe') (:y snipe') snipe')
         ;; create and place newborns:
+	;(println num-births
+	;         (cond (sn/k-snipe? snipe') "k-snipe"  ; DEBUG
+	;	       (sn/r-snipe? snipe') "r-snipe"  ; DEBUG
+	;	       (sn/s-snipe? snipe') "s-snipe"  ; DEBUG
+	;	       :else "weird snipe"))           ; DEBUG
+	;; FIXME Can this ever be anything but 1?  IF SO, it can be simplified:
         (dotimes [_ num-births]
           (let [[child-snipe-field subenv-key] (if (< (ran/next-double rng) 0.5)   ; newborns are randomly 
                                                  [west-snipe-field' :west]  ; assigned to a subenv
@@ -372,6 +381,7 @@
                                        (organism-setter (cond (sn/k-snipe? snipe') (partial sn/make-newborn-k-snipe cfg-data$ subenv-key)
                                                               (sn/r-snipe? snipe') (partial sn/make-newborn-r-snipe rng cfg-data$ subenv-key)
                                                               :else                (partial sn/make-newborn-s-snipe rng cfg-data$ subenv-key))))))))
+    ;(println) ; DEBUG
     [west-snipe-field' east-snipe-field']))
 
  ; newborn should be like parent
