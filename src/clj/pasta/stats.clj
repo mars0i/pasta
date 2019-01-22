@@ -103,7 +103,7 @@
   count, average energy, average mush preference, and average age."
   [snipes]
    (let [num-snipes (count snipes)
-         avg-energy (/ (sum-by :energy snipes) num-snipes) ; FIXME assumes there are > 0 snipes
+         avg-energy (if (pos? num-snipes) (/ (sum-by :energy snipes) num-snipes) 0) ; return 0 if there are no snipes
          avg-pref (/ (sum-by :mush-pref snipes) num-snipes)
          avg-age (/ (sum-by :age snipes) num-snipes)]
      [num-snipes avg-energy avg-pref avg-age]))
@@ -261,10 +261,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; USED BY GUI INSPECTORS DEFINED IN pasta.simconfig
 
-;; SAVE
 (def freqs$ (atom {}))
 
-;; SAVE
 (defn get-freq
   "Given an integer tick representing a MASON step, and a key k
   for a snipes class (:k-snipe, :r-snipe, :r-snipe,
@@ -286,7 +284,6 @@
                     new-freqs))]
     (k freqs)))
 
-;; SAVE
 (defn maybe-get-freq
   "Kludge: Calls get-freq if and only if at timestep 1 or later.  Avoids
   irrelevant NPEs during initial setup."
