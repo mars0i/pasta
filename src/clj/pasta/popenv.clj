@@ -194,7 +194,7 @@
 ;; keeps the frequencies the same.
 (defn replace-mush!
   "Adds a mush just like old-mush but with a new id.  Note that x must
-  be in the subenv as the one from which the old mush came.  Otherwise
+  be in the same subenv as the one from which the old mush came.  Otherwise
   size and nutrition won't match up properly."
   [old-mush field x y]
   (.set field x y 
