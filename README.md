@@ -212,14 +212,15 @@ means that if you only want stats on the last time step, simply give
 
 If the data is written to the file, the resulting csv file (which can be
 pulled into Excel, for example) will consist of rows of data separated
-by commas.  (There will be a header row in a separate file with "header"
-in its name.)  The columns one for the run id (which is also the random
-seed), so that you can append multiple runs to the same file; the time
-step at which the data was collected; the snipe class&mdash;i.e. whether
-it is a k-snipe, r-snipe, or s-snipe; the sub-environment (east or west)
-of the snipes that are summarized; whether the snipes summarized have a
-negative, positive, or neutral size preference for mushrooms; the number
-of mushrooms in the condition specified by the previous columns; their
+by commas.  There will be a header row in a separate file with "header"
+in its name which you can concatenate onto the data file.  The columns
+one for the run id (which is also the random seed), so that you can
+append multiple runs to the same file; the time step at which the data
+was collected; the snipe class&mdash;i.e. whether it is a k-snipe,
+r-snipe, or s-snipe; the sub-environment (east or west) of the snipes
+that are summarized; whether the snipes summarized have a negative,
+positive, or neutral size preference for mushrooms; the number of
+mushrooms in the condition specified by the previous columns; their
 average energy; average mushroom preference value; and average age.  If
 you use the same basename as an existing data file, or if you specify a
 basename with multiple runs using MASON's `-repeat`, the data will be
@@ -232,15 +233,16 @@ negative to indicate the degree of preference for small mushrooms. See
 <a href="doc/kSnipePerception.pdf">doc/kSnipePerception.pdf</a> for
 details.)
 
-If the data isn't written to a file, it will be sent to standard output.
-The format is different though, and though it's not particularly
-user-friendly, if you stare at it for a minute you'll probably figure
-out what's what.  Once you do, the format will be easier to parse
-visually than it would be in the comma-separated format.  This format
-was very easy for me to generate, and I prefer it to the csv format for
-a quick look.  If you prefer the csv but want to see data immediately,
-write it to a file and then keep looking at that file; on Unix systems,
-the `tail` command is useful for this purpose.
+If the data isn't written to a file, it will be sent to standard
+output. The format for the data sent to is different though.  It's not
+it's not  ideally user-friendly, if you stare at it for a minute
+you'll probably figure out what's what.  Once you do, the format will
+be easier to parse visually than it would be in the comma-separated
+format.  This format was very easy for me to generate, and I prefer it
+to the csv format for a quick look.  If you prefer the csv but want to
+see data immediately as it's generated, you can write it to a file and
+then keep looking at that file; on Unix systems, the `tail` command is
+useful for this purpose.
 
 (If you want more fine-grained data, you could modify the source code for
 pasta&mdash;I would be happy to help you if I have time&mdash;but I would suggest
