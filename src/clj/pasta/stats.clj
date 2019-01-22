@@ -261,9 +261,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; USED BY GUI INSPECTORS DEFINED IN pasta.simconfig
 
-(def freqs$ (atom {}))
+;; These functions provide a crude way to allow plotting and displaying
+;; relative frequencies of snipes in the overall pop within the GUI.  
+;; It should not be used with -parallel.  If there's a reason to do
+;; that, this code needs to be modified.  However, you shouldn't need
+;; to do that, because the csv-writing methods above allow you to
+;; store data from which you can easily calculate the relative frequencies
+;; at any point in time for which you record the data (using the
+;; --report-every commandline option).
 
-(defn get-freq
+;; This variable is global to the entire application.  
+;; That's OK as long as it's only used in the GUI.
+(def freqs-for-gui$ (atom {}))
+
+(defn get-freq-for-gui
   "Given an integer tick representing a MASON step, and a key k
   for a snipes class (:k-snipe, :r-snipe, :r-snipe,
   :s-snipe) or :total, returns the relative frequency of that snipe class
@@ -275,19 +286,19 @@
   and are associated with the newly passed tick, whether it's actually the 
   current tick or not."
   [tick k popenv]
-  (let [freqs (or (@freqs$ tick) ; if already got freqs for this tick, use 'em; else make 'em:
+  (let [freqs (or (@freqs-for-gui$ tick) ; if already got freqs for this tick, use 'em; else make 'em:
                   (let [{:keys [west east]} popenv
                         snipes (.elements (:snipe-field west))
                         _ (.addAll snipes (.elements (:snipe-field east)))
                         new-freqs (snipe-freqs (sum-snipes snipes))]
-                    (reset! freqs$ {tick new-freqs})
+                    (reset! freqs-for-gui$ {tick new-freqs})
                     new-freqs))]
     (k freqs)))
 
-(defn maybe-get-freq
+(defn maybe-get-freq-for-gui
   "Kludge: Calls get-freq if and only if at timestep 1 or later.  Avoids
   irrelevant NPEs during initial setup."
   [tick k popenv]
   (if (and tick (pos? tick))
-    (get-freq tick k popenv)
+    (get-freq-for-gui tick k popenv)
     0.0))

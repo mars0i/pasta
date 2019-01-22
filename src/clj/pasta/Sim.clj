@@ -69,9 +69,9 @@
 (defn curr-popenv [sim] (:popenv @(.simData sim)))
 ;; NOTE these get called on every tick in GUI even if not reported:
 (defn -getPopSize    [^Sim this] (stats/get-pop-size @(.simData this)))
-(defn -getKSnipeFreq [^Sim this] (stats/maybe-get-freq (curr-step this) :k-snipe (curr-popenv this)))
-(defn -getRSnipeFreq [^Sim this] (stats/maybe-get-freq (curr-step this) :r-snipe (curr-popenv this)))
-(defn -getSSnipeFreq [^Sim this] (stats/maybe-get-freq (curr-step this) :s-snipe (curr-popenv this)))
+(defn -getKSnipeFreq [^Sim this] (stats/maybe-get-freq-for-gui (curr-step this) :k-snipe (curr-popenv this)))
+(defn -getRSnipeFreq [^Sim this] (stats/maybe-get-freq-for-gui (curr-step this) :r-snipe (curr-popenv this)))
+(defn -getSSnipeFreq [^Sim this] (stats/maybe-get-freq-for-gui (curr-step this) :s-snipe (curr-popenv this)))
 
 ;; no good reason to put this into the defsim macro since it doesn't include any
 ;; field-specific code.  Easier to redefine if left here.
