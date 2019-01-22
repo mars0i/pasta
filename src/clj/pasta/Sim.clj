@@ -77,8 +77,8 @@
 ;; field-specific code.  Easier to redefine if left here.
 (defn set-sim-data-from-commandline!
   "Set fields in the Sim's simData from parameters passed on the command line."
-  [^Sim sim cmdline]
-  (let [options (:options @cmdline)
+  [^Sim sim cmdline$]
+  (let [options (:options @cmdline$)
         sim-data (.simData sim)]
     (run! #(apply swap! sim-data assoc %) ; arg is a MapEntry, which is sequential? so will function like a list or vector
           options)))
@@ -87,7 +87,8 @@
 
 (defn -main
   [& args]
-  (record-commandline-args! args) ; The Sim isn't available yet, so store commandline args for later access by start().
+  ;; The Sim isn't available yet, so store commandline args for later access by start():
+  (record-commandline-args! args) ; defined by defsim
   (sim.engine.SimState/doLoop pasta.Sim (into-array String args))
   (System/exit 0))
 
