@@ -191,14 +191,14 @@
 ;; over time, the population will tend to eat mostly nutritious mushrooms,
 ;; if we randomly assign nutritiousness to replacement mushrooms, there
 ;; will gradual loss of nutritious mushrooms.  This function instead
-;; keeps the frequencies the same.
+;; keeps the frequencies the same.  Note that this just moves the eaten
+;; mushroom, unchanged, to a new location.
 (defn replace-mush!
   "Adds a mush just like old-mush but with a new id.  Note that x must
   be in the same subenv as the one from which the old mush came.  Otherwise
   size and nutrition won't match up properly."
   [old-mush field x y]
-  (.set field x y 
-        (assoc old-mush :id (mu/next-id))))
+  (.set field x y old-mush))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MOVEMENT
