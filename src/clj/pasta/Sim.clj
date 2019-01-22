@@ -24,7 +24,7 @@
 ;;    (require '[utils.defsim :as defsim])
 ;;    (pprint (macroexpand-1 '<insert defsim call>))
 
-(def commandline$ (atom nil)) ; Needed by defsim and other code below if we're defining commandline options
+(def commandline$ (atom nil)) ; Used by record-commandline-args!, which is defined by defsim, and below
 
 ;; Note: There is no option below for max number of steps.  Use MASON's -for instead.
 ;;              field name    initial-value type   in ui? with range?
@@ -87,8 +87,6 @@
 
 (defn -main
   [& args]
-  ;; The Sim isn't available yet, so store commandline args for later access by start():
-  (record-commandline-args! args) ; defined by defsim
   (sim.engine.SimState/doLoop pasta.Sim (into-array String args))
   (System/exit 0))
 
@@ -162,12 +160,12 @@
 (defn -start
   "Function that's called to (re)start a new simulation run."
   [^Sim this]
-  ;; If user passed commandline options, use them to set parameters, rather than defaults:
   (.superStart this)
   ;; Construct core data structures of the simulation:
   (let [^SimData sim-data$ (.simData this)
         ^MersenneTwisterFast rng (.-random this)
         seed (.seed this)]
+  ;; If user passed commandline options, use them to set parameters, rather than defaults:
     (when (and @commandline$ (not (:in-gui @sim-data$))) ; see issue #56 in github for the logic here
       (set-sim-data-from-commandline! this commandline$))
     (swap! sim-data$ assoc :seed seed)
