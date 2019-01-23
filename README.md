@@ -68,29 +68,32 @@ For other ways to run pasta, see "Full installation" below.
 easy to figure out with a bit of guessing and trial and error.)
 
 <p><b>The two environments:</b> Snipes eat mushrooms.<a
-id="mushjokeref" href="#mushjoke"><sup>3</sup></a> in one of two
-environments.  In the <em>east</em> (usually left) environment, small
-mushrooms are nutritious (gray-brown-green) and large mushrooms are
+id="mushjokeref" href="#mushjoke"><sup>3</sup></a> In the
+<em>east</em> (usually left) environment, small mushrooms are
+nutritious (gray-brown-green) and large mushrooms are slightly
 poisonous (greenish yellow).  In the <em>west</em> (usually right)
-environment, large mushrooms are nutritious (dark gray) and small
-mushrooms are poisonous (light gray).</p>
+environment, it's the large mushrooms that are nutritious (dark gray),
+and the small mushrooms that are poisonous (light gray).  The general
+rule is that darker mushrooms are nutritious and lighter  mushrooms
+are poisonous.</p> 
 
 <p><b>Basic snipe behavior:</b> Snipes move randomly within an
 environment.  Note that the orientation of snipes' icons does not
-indicate direction of movement (see below).  Snipes gain energy
-from eating nutritious mushrooms, and lose energy from eating
-poisonous mushrooms or giving birth.  Movement and internal processes
-have no cost.  Snipes that accumulate sufficient energy will give birth to
-a single offspring, losing energy as a result. A snipe
-can have multiple offspring only by repeatedly acquiring enough energy to
-give birth.  At birth, each newborn snipe is placed at a random location in
-a randomly chosen environment, as if parents had temporarily migrated
-to a new location to give birth.</p>
+indicate direction of movement (see below).  Snipes gain energy from
+eating nutritious mushrooms, and lose energy from eating poisonous
+mushrooms or from producing an offspring. Movement and internal
+processes have no cost.  Snipes that accumulate sufficient energy will
+give birth to a single offspring, losing energy as a result. A snipe can
+have multiple offspring only by repeatedly acquiring enough energy to
+give birth.  At birth, each newborn snipe is placed at a random location
+in a randomly chosen environment, as if parents had temporarily migrated
+to a new location to leave an egg to hatch.</p>
 
 <p><b>k-snipes</b> (red circles with pointers) initially eat mushrooms
-randomly,  but learn to eat mushrooms whose size signal (which is
-normally distributed) indicates that they are probably nutritious. The
-direction of a k-snipe's pointer&mdash;how far up or down it is
+randomly, i.e. with no preference for large or small mushrooms, but
+learn to eat mushrooms whose size signal (which is normally distributed)
+indicates that they are probably nutritious. The direction of a
+k-snipe's pointer&mdash;how far up or down it is
 pointing&mdash;indicates the degree of the snipe's preference for large
 or small mushrooms.  For details, see <a
 href="doc/kSnipePerception.pdf">doc/kSnipePerception.pdf</a>.
@@ -106,14 +109,14 @@ generally die before reproduction. </p>
 <p><b>s-snipes</b> (purple wing shapes) use a social learning or
 cultural transmission strategy known as success bias.  A newborn s-snipe
 examines nearby snipes and copies the current mushroom size preference
-of whatever nearby snipe has the most energy.  If there are no snipes
+of whichever nearby snipe has the most energy.  If there are no snipes
 that are sufficiently near (see the parameter list below), the s-snipe tries
 again on the next time step.  Once an s-snipe adopts a preference, the
 preference never changes.  The direction in which an s-snipe points&mdash;how
 far up or down it is tilted&mdash;indicates the degree of the snipe's
 preference for large or small mushrooms.</p>
 
-<p><b>Colors:</b> Snipes' energy levels are reflected in their
+<p><b>Colors and energy:</b> Snipes' energy levels are reflected in their
 brightness, with greater brightness indicating more energy.  (This
 effect can be subtle.)  The two mushroom colors in each environment
 indicate nutritiousness/poisonousness: Darker colors indicate
@@ -121,7 +124,33 @@ nutritiousness&mdash;i.e. these mushrooms are energetically favorable to
 snipes&mdash;while lighter colors indicate poisonousness&mdash;energetic
 unfavorability.  (The fact that the East and West mushrooms have
 different hues has no functional meaning; it could be considered a
-difference between local mushroom species.) </p>
+difference between local mushroom species.)</p>
+
+<p><b>More on energy:</b> In this simple model the only things that
+can reduce the energy of a snipe are (a) eating poisonous mushrooms,
+or (b) producing offspring.  There is no cost to movement or simple
+persistence.  You can assume that snipes have another source of
+nutrition that maintains them, but that is not represented in the
+model. In theory a snipe could live forever without eating any
+nutritious mushrooms, as long as it never ate poisonous mushrooms. 
+(Such a snipe would never give birth more than once, either; if it had
+enough energy to give birth it would, but its energy would be reduced
+as a result and it would never acquire any additional energy since it
+never ate nutrious mushrooms.) Assume that this other source of
+nutritiou would not on its own allow a snipe to gain sufficient energy
+for reproduction.  Also, although in nature, mechanisms that allow
+learning can be costly in energy use or extra developmental time,
+k-snipe's individual learning and s-snipe's social learning has no
+energetic or time cost in the model.  k-snipes do suffer a cost
+relative to r-snipes, because during a k-snipe's learning process, it
+often ends up eating a number of poisonous mushrooms.  This slows down
+its acquisition of energy for birth, and sometimes leads to a
+sustained loss of energy during its initial learning period. 
+(A k-snipe never stops learning, but after a while it will mostly choose
+nutritious mushrooms, and its preference for whatever mushroom size is
+nutritious in its environment is merely reinforced.)  Whether an
+s-snipe's social learning ends up being costly or profitable depends
+on its neighbors early in its life.</p>
 
 <p><b>Monitoring individual snipes:</b> If you pause a run, you can
 double-click on a snipe to monitor its internal state and watch it move.
