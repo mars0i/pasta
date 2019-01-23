@@ -23,7 +23,7 @@
          add-organism-to-rand-loc! add-k-snipes! add-r-snipes! add-s-snipes! add-mush! 
          maybe-add-mush! add-mushs! move-snipes move-snipe! choose-next-loc
          perceive-mushroom add-to-energy eat-if-appetizing snipes-eat 
-         snipes-die snipes-reproduce cull-snipes age-snipes)
+         snipes-die snipes-reproduce cull-snipes age-snipes carrying-capacity-excess)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TOP LEVEL FUNCTIONS
@@ -78,6 +78,7 @@
   (swap! curr-snipe-id$ inc))
 
 (defn eat
+  "Wrapper for snipes-eat."
   [rng cfg-data subenv]
   (let [{:keys [snipe-field mush-field dead-snipes]} subenv
         [snipe-field' mush-field'] (snipes-eat rng cfg-data snipe-field mush-field)]
@@ -86,10 +87,15 @@
              dead-snipes)))
 
 (defn die-move
+  "Remove snipes that have no energy, cull snipes if carrying capacity is
+  exceeded, move snipes, increment snipe ages."
   [rng cfg-data subenv]
+  ;; Note that order of bindings below is important.  e.g. we shouldn't worry
+  ;; about carrying capacity until energy-less snipes have been removed.
   (let [{:keys [snipe-field mush-field dead-snipes]} subenv
         [snipe-field' newly-died] (snipes-die cfg-data snipe-field)
-        [snipe-field' newly-culled] (cull-snipes rng cfg-data snipe-field')
+        num-to-cull (carrying-capacity-excess cfg-data snipe-field')
+        [snipe-field' newly-culled] (cull-snipes rng cfg-data snipe-field' num-to-cull)
         snipe-field' (move-snipes rng cfg-data snipe-field')     ; only the living get to move
         snipe-field' (age-snipes snipe-field')]
     (SubEnv. snipe-field' 
@@ -97,7 +103,8 @@
              (conj dead-snipes (concat newly-died newly-culled))))) ; each timestep adds a separate collection of dead snipes
 
 (defn next-popenv
-  "Given an rng, a simConfigData atom, and a SubEnv, return a new SubEnv."
+  "Given an rng, a simConfigData atom, and a SubEnv, return a new SubEnv for
+  the next time step.  Snipes eat, reproduce, die, and move."
   [popenv rng cfg-data$]
   (let [{:keys [west east curr-snipe-id$]} popenv
         west' (eat rng @cfg-data$ west) ; better to eat before reproduction--makes sense
@@ -264,6 +271,7 @@
 ;; PERCEPTION AND EATING
 
 (defn snipes-eat
+  "Snipes on mushrooms eat, if they decide to do so."
   [rng cfg-data snipe-field mush-field]
   (let [{:keys [env-center env-width env-height max-energy]} cfg-data
         snipes (.elements snipe-field)
@@ -324,16 +332,20 @@
       (.set new-snipe-field (:x snipe) (:y snipe) snipe))
     [new-snipe-field newly-dead]))
 
+(defn carrying-capacity-excess
+  [cfg-data snipe-field]
+  (let [{:keys [max-pop-size]} cfg-data
+        snipes (.elements snipe-field)]
+    (- (count snipes) max-pop-size)))
+
 (defn cull-snipes
   "If number of snipes exceeds max-pop-size calculated during initialization,
   randomly remove enough snipes that the pop size is now equal to max-pop-size."
-  [rng cfg-data snipe-field]
+  [rng cfg-data snipe-field num-to-cull]
   (let [{:keys [max-pop-size]} cfg-data
-        snipes (.elements snipe-field)
-        pop-size (count snipes)
-        excess-count (- pop-size max-pop-size)]
-    (if (pos? excess-count)
-      (let [excess-snipes (ranu/sample-without-repl rng excess-count (seq snipes)) ; choose random snipes for removal
+        snipes (.elements snipe-field)]
+    (if (pos? num-to-cull)
+      (let [excess-snipes (ranu/sample-without-repl rng num-to-cull (seq snipes)) ; choose random snipes for removal
             new-snipe-field (ObjectGrid2D. snipe-field)]
         (doseq [snipe excess-snipes]
           (.set new-snipe-field (:x snipe) (:y snipe) nil)) ; remove chosen snipes
