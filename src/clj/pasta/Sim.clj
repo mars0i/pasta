@@ -175,7 +175,7 @@
     (when-let [write-csv (:write-csv @sim-data$)]
       (let [initial-basename (:csv-basename @sim-data$) ; might be nil
             basename (or initial-basename (str "pasta" seed))
-            data-filename (str basename ".csv")
+            data-filename (str basename "_data.csv")
             header-filename (str basename "_header.csv")
             add-to-file? (.exists (clojure.java.io/file data-filename)) ; should we create new file, or add to an older one?
             writer (clojure.java.io/writer data-filename :append add-to-file?)]
