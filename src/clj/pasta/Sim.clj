@@ -54,6 +54,7 @@
                 [report-every        0      double  true        ["-i" "Report basic stats every i ticks after the first one (0 = never); format depends on -w." :parse-fn #(Double. %)]]
                 [write-csv         false    boolean false       ["-w" "Write data to file instead of printing it to console." :parse-fn #(Boolean. %)]]
                 [csv-basename       nil java.lang.String false  ["-F" "Base name of files to append data to.  Otherwise new filenames generated from seed." :parse-fn #(String. %)]]
+		[yo                 nil clojure.lang.PersistentVector false ["-y" "test: specify a sequence of numbers with commas and no speces: \"[1.0,2,-43]\"" :parse-fn read-string]] ; TEST
                 [csv-writer         nil java.io.BufferedWriter false]
                 [max-pop-size        0      long    false]
                 [seed               nil     long    false] ; convenience field to store Sim's seed
@@ -168,6 +169,9 @@
   ;; If user passed commandline options, use them to set parameters, rather than defaults:
     (when (and @commandline$ (not (:in-gui @sim-data$))) ; see issue #56 in github for the logic here
       (set-sim-data-from-commandline! this commandline$))
+    (when-let [yo (:yo @sim-data$)]                       ; TEST
+      (println yo (class yo) (type yo) (count yo))        ; TEST
+      (println (type (first yo)) (class (first yo))))     ; TEST
     (swap! sim-data$ assoc :seed seed)
     (pe/setup-popenv-config! sim-data$)
     (swap! sim-data$ assoc :popenv (pe/make-popenv rng sim-data$)) ; create new popenv
