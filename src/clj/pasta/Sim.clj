@@ -54,6 +54,14 @@
                 [report-every        0      double  true        ["-i" "Report basic stats every i ticks after the first one (0 = never); format depends on -w." :parse-fn #(Double. %)]]
                 [write-csv         false    boolean false       ["-w" "Write data to file instead of printing it to console." :parse-fn #(Boolean. %)]]
                 [csv-basename       nil java.lang.String false  ["-F" "Base name of files to append data to.  Otherwise new filenames generated from seed." :parse-fn #(String. %)]]
+                ;; TEST: experiment.  
+                ;; See https://stackoverflow.com/questions/8435681/how-to-convert-a-clojure-string-of-numbers-into-separate-integers
+                ;; for a possibly safer approach.
+		;; Note comment here https://stackoverflow.com/questions/2640169/whats-the-easiest-way-to-parse-numbers-in-clojure:
+		;;    "This isn't safe if you're parsing arbitrary user-supplied input, because 
+		;;    reader macros can be used to execute arbitrary code at read-time and delete
+		;;    your hard drive etc."
+		;; That question also has other useful answers.
 		[yo                 nil clojure.lang.PersistentVector false ["-y" "test: specify a sequence of numbers with commas and no speces: \"[1.0,2,-43]\"" :parse-fn read-string]] ; TEST
                 [csv-writer         nil java.io.BufferedWriter false]
                 [max-pop-size        0      long    false]
