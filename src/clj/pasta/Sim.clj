@@ -27,12 +27,17 @@
 (def commandline$ (atom nil)) ; Used by record-commandline-args!, which is defined by defsim, and below
 
 ;; TODO make it handle bad input, accept only integers
+;; TODO should it do something if the input is bad?  I'm not doing that for any other commandline options.
 ;; See https://stackoverflow.com/questions/8435681/how-to-convert-a-clojure-string-of-numbers-into-separate-integers
 ;; and https://stackoverflow.com/questions/2640169/whats-the-easiest-way-to-parse-numbers-in-clojure:
-(defn read-longs
-  "Read a string specifying a sequence of integers."
+(defn read-long-pairs
+  "Read a string specifying a sequence of integers into a sequence.  This
+  sequence is returned if its length is even; if not, then nil is returned."
   [s]
-  (clojure.edn/read-string s))
+  (let [pairs (clojure.edn/read-string s)]
+    (if (even? (count pairs))
+      pairs
+      nil)))
 
 ;; Note: There is no option below for max number of steps.  Use MASON's -for instead.
 ;;              field name    initial-value type   in ui? with range?
@@ -40,7 +45,7 @@
                 [num-r-snipes       25      long    [0 500]     ["-R" "Size of r-snipe subpopulation" :parse-fn #(Long. %)]]
                 [num-s-snipes       25      long    [0 500]     ["-S" "Size of s-snipe subpopulation" :parse-fn #(Long. %)]]
                 [mush-prob           0.2    double  [0.0 1.0]   ["-M" "Average frequency of mushrooms." :parse-fn #(Double. %)]]
-                [mush-low-size       4.0    double  true        ["-s" "Size of small mushrooms (mean of light distribution)" :parse-fn #(Double. %)]]
+                [mush-low-size       4.0    double  true        ["-t" "Size of small mushrooms (mean of light distribution)" :parse-fn #(Double. %)]]
                 [mush-high-size      6.0    double  true        ["-l" "Size of large mushrooms (mean of light distribution)" :parse-fn #(Double. %)]]
                 [mush-sd             2.0    double  true        ["-v" "Standard deviation of mushroom light distribution" :parse-fn #(Double. %)]]
                 [mush-mid-size       0      double  false] ; calculated from the previous values
@@ -53,7 +58,7 @@
                 [birth-cost          5.0    double  [0.0 10.0]  ["-o" "Energetic cost of giving birth to one offspring" :parse-fn #(Double. %)]]
                 [max-energy         30.0    double  [1.0 100.0] ["-m" "Max energy that a snipe can have." :parse-fn #(Double. %)]]
                 [carrying-proportion 0.25   double  [0.1 0.9]   ["-c" "Snipes are randomly culled when number exceed this times # of cells." :parse-fn #(Double. %)]]
-                [neighbor-radius     5      long    [1 10]      ["-r" "s-snipe neighbors (for copying) are no more than this distance away." :parse-fn #(Long. %)]]
+                [neighbor-radius     5      long    [1 10]      ["-d" "s-snipe neighbors (for copying) are no more than this distance away." :parse-fn #(Long. %)]]
                 [env-width          40      long    [10 250]    ["-W" "Width of env.  Must be an even number." :parse-fn #(Long. %)]] ; Haven't figured out how to change 
                 [env-height         40      long    [10 250]    ["-H" "Height of env. Must be an even number." :parse-fn #(Long. %)]] ;  within app without distortion
                 [env-display-size   12.0    double  false       ["-D" "How large to display the env in gui by default." :parse-fn #(Double. %)]]
@@ -62,8 +67,9 @@
                 [report-every        0      double  true        ["-i" "Report basic stats every i ticks after the first one (0 = never); format depends on -w." :parse-fn #(Double. %)]]
                 [write-csv         false    boolean false       ["-w" "Write data to file instead of printing it to console." :parse-fn #(Boolean. %)]]
                 [csv-basename       nil java.lang.String false  ["-F" "Base name of files to append data to.  Otherwise new filenames generated from seed." :parse-fn #(String. %)]]
-		[cull-times         nil clojure.lang.PersistentVector false ["-%" "Comma-separated sequence of steps at which to cull each subpop to, e.g. \"[200,500]\"" :parse-fn read-longs]]
-		[cull-to            nil clojure.lang.PersistentVector false ["-C" "Comma-separated sequence of pop sizes to cull each subpop to, e.g. \"[50,100]\"" :parse-fn read-longs]]
+		[k-cull-to-at       nil PersistentVector false  ["-k" "Comma-separated sequence of target subpop sizes and times cull k-snipes, e.g.  \"[100,200,100,400]\"" :parse-fn read-long-pairs]]
+		[r-cull-to-at       nil PersistentVector false  ["-r" "Comma-separated sequence of target subpop sizes and times cull r-snipes, e.g.  \"[100,200,100,400]\"" :parse-fn read-long-pairs]]
+		[s-cull-to-at       nil PersistentVector false  ["-s" "Comma-separated sequence of target subpop sizes and times cull s-snipes, e.g.  \"[100,200,100,400]\"" :parse-fn read-long-pairs]]
                 [csv-writer         nil java.io.BufferedWriter false]
                 [max-pop-size        0      long    false]
                 [seed               nil     long    false] ; convenience field to store Sim's seed
@@ -178,10 +184,9 @@
   ;; If user passed commandline options, use them to set parameters, rather than defaults:
     (when (and @commandline$ (not (:in-gui @sim-data$))) ; see issue #56 in github for the logic here
       (set-sim-data-from-commandline! this commandline$))
-    (when-let [cull-times (:cull-times @sim-data$)]                                           ; DEBUG
-      (println cull-times (class cull-times) (count cull-times) (class (first cull-times))))  ; DEBUG
-    (when-let [cull-to (:cull-to @sim-data$)]                                                 ; DEBUG
-      (println cull-to (class cull-to) (count cull-to) (class (first cull-to))))              ; DEBUG
+    (when-let [k-cull-to-at (:k-cull-to-at @sim-data$)] (println k-cull-to-at (class k-cull-to-at) (count k-cull-to-at) (class (first k-cull-to-at))))  ; DEBUG
+    (when-let [r-cull-to-at (:r-cull-to-at @sim-data$)] (println r-cull-to-at (class r-cull-to-at) (count r-cull-to-at) (class (first r-cull-to-at))))  ; DEBUG
+    (when-let [s-cull-to-at (:s-cull-to-at @sim-data$)] (println s-cull-to-at (class s-cull-to-at) (count s-cull-to-at) (class (first s-cull-to-at))))  ; DEBUG
     (swap! sim-data$ assoc :seed seed)
     (pe/setup-popenv-config! sim-data$)
     (swap! sim-data$ assoc :popenv (pe/make-popenv rng sim-data$)) ; create new popenv
