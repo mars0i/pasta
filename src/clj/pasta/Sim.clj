@@ -26,6 +26,14 @@
 
 (def commandline$ (atom nil)) ; Used by record-commandline-args!, which is defined by defsim, and below
 
+;; TODO make it handle bad input, accept only integers
+;; See https://stackoverflow.com/questions/8435681/how-to-convert-a-clojure-string-of-numbers-into-separate-integers
+;; and https://stackoverflow.com/questions/2640169/whats-the-easiest-way-to-parse-numbers-in-clojure:
+(defn read-longs
+  "Read a string specifying a sequence of integers."
+  [s]
+  (clojure.edn/read-string s))
+
 ;; Note: There is no option below for max number of steps.  Use MASON's -for instead.
 ;;              field name    initial-value type   in ui? with range?
 (defsim/defsim [[num-k-snipes       25      long    [0 500]     ["-K" "Size of k-snipe subpopulation" :parse-fn #(Long. %)]]
@@ -54,15 +62,8 @@
                 [report-every        0      double  true        ["-i" "Report basic stats every i ticks after the first one (0 = never); format depends on -w." :parse-fn #(Double. %)]]
                 [write-csv         false    boolean false       ["-w" "Write data to file instead of printing it to console." :parse-fn #(Boolean. %)]]
                 [csv-basename       nil java.lang.String false  ["-F" "Base name of files to append data to.  Otherwise new filenames generated from seed." :parse-fn #(String. %)]]
-                ;; TEST: experiment.  
-                ;; See https://stackoverflow.com/questions/8435681/how-to-convert-a-clojure-string-of-numbers-into-separate-integers
-                ;; for a possibly safer approach.
-		;; Note comment here https://stackoverflow.com/questions/2640169/whats-the-easiest-way-to-parse-numbers-in-clojure:
-		;;    "This isn't safe if you're parsing arbitrary user-supplied input, because 
-		;;    reader macros can be used to execute arbitrary code at read-time and delete
-		;;    your hard drive etc."
-		;; That question also has other useful answers.
-		[yo                 nil clojure.lang.PersistentVector false ["-y" "test: specify a sequence of numbers with commas and no speces: \"[1.0,2,-43]\"" :parse-fn read-string]] ; TEST
+		[cull-times         nil clojure.lang.PersistentVector false ["-%" "Comma-separated sequence of steps at which to cull each subpop to, e.g. \"[200,500]\"" :parse-fn read-longs]]
+		[cull-to            nil clojure.lang.PersistentVector false ["-C" "Comma-separated sequence of pop sizes to cull each subpop to, e.g. \"[50,100]\"" :parse-fn read-longs]]
                 [csv-writer         nil java.io.BufferedWriter false]
                 [max-pop-size        0      long    false]
                 [seed               nil     long    false] ; convenience field to store Sim's seed
@@ -177,9 +178,10 @@
   ;; If user passed commandline options, use them to set parameters, rather than defaults:
     (when (and @commandline$ (not (:in-gui @sim-data$))) ; see issue #56 in github for the logic here
       (set-sim-data-from-commandline! this commandline$))
-    (when-let [yo (:yo @sim-data$)]                       ; TEST
-      (println yo (class yo) (type yo) (count yo))        ; TEST
-      (println (type (first yo)) (class (first yo))))     ; TEST
+    (when-let [cull-times (:cull-times @sim-data$)]                                           ; DEBUG
+      (println cull-times (class cull-times) (count cull-times) (class (first cull-times))))  ; DEBUG
+    (when-let [cull-to (:cull-to @sim-data$)]                                                 ; DEBUG
+      (println cull-to (class cull-to) (count cull-to) (class (first cull-to))))              ; DEBUG
     (swap! sim-data$ assoc :seed seed)
     (pe/setup-popenv-config! sim-data$)
     (swap! sim-data$ assoc :popenv (pe/make-popenv rng sim-data$)) ; create new popenv
