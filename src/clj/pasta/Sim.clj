@@ -26,18 +26,12 @@
 
 (def commandline$ (atom nil)) ; Used by record-commandline-args!, which is defined by defsim, and below
 
-;; TODO make it handle bad input, accept only integers
-;; TODO should it do something if the input is bad?  I'm not doing that for any other commandline options.
 ;; See https://stackoverflow.com/questions/8435681/how-to-convert-a-clojure-string-of-numbers-into-separate-integers
 ;; and https://stackoverflow.com/questions/2640169/whats-the-easiest-way-to-parse-numbers-in-clojure:
-(defn read-long-pairs
-  "Read a string specifying a sequence of integers into a sequence.  This
-  sequence is returned if its length is even; if not, then nil is returned."
+(defn string-to-map
+  "Read a string containing comma-separated integers into map."
   [s]
-  (let [pairs (clojure.edn/read-string s)]
-    (if (even? (count pairs))
-      pairs
-      nil)))
+  (clojure.edn/read-string (str "{" s "}")))
 
 ;; Note: There is no option below for max number of steps.  Use MASON's -for instead.
 ;;              field name    initial-value type   in ui? with range?
@@ -67,9 +61,9 @@
                 [report-every        0      double  true        ["-i" "Report basic stats every i ticks after the first one (0 = never); format depends on -w." :parse-fn #(Double. %)]]
                 [write-csv         false    boolean false       ["-w" "Write data to file instead of printing it to console." :parse-fn #(Boolean. %)]]
                 [csv-basename       nil java.lang.String false  ["-F" "Base name of files to append data to.  Otherwise new filenames generated from seed." :parse-fn #(String. %)]]
-		[k-cull-to-at       nil PersistentVector false  ["-k" "Comma-separated sequence of target subpop sizes and times cull k-snipes, e.g.  \"[100,200,100,400]\"" :parse-fn read-long-pairs]]
-		[r-cull-to-at       nil PersistentVector false  ["-r" "Comma-separated sequence of target subpop sizes and times cull r-snipes, e.g.  \"[100,200,100,400]\"" :parse-fn read-long-pairs]]
-		[s-cull-to-at       nil PersistentVector false  ["-s" "Comma-separated sequence of target subpop sizes and times cull s-snipes, e.g.  \"[100,200,100,400]\"" :parse-fn read-long-pairs]]
+		[cull-k-at-to       nil PersistentVector false  ["-k" "Comma-separated sequence of target subpop sizes and times cull k-snipes, e.g.  \"100,200,100,400\"" :parse-fn string-to-map]]
+		[cull-r-at-to       nil PersistentVector false  ["-r" "Comma-separated sequence of target subpop sizes and times cull r-snipes, e.g.  \"100,200,100,400\"" :parse-fn string-to-map]]
+		[cull-s-at-to       nil PersistentVector false  ["-s" "Comma-separated sequence of target subpop sizes and times cull s-snipes, e.g.  \"100,200,100,400\"" :parse-fn string-to-map]]
                 [csv-writer         nil java.io.BufferedWriter false]
                 [max-pop-size        0      long    false]
                 [seed               nil     long    false] ; convenience field to store Sim's seed
@@ -184,9 +178,9 @@
   ;; If user passed commandline options, use them to set parameters, rather than defaults:
     (when (and @commandline$ (not (:in-gui @sim-data$))) ; see issue #56 in github for the logic here
       (set-sim-data-from-commandline! this commandline$))
-    (when-let [k-cull-to-at (:k-cull-to-at @sim-data$)] (println k-cull-to-at (class k-cull-to-at) (count k-cull-to-at) (class (first k-cull-to-at))))  ; DEBUG
-    (when-let [r-cull-to-at (:r-cull-to-at @sim-data$)] (println r-cull-to-at (class r-cull-to-at) (count r-cull-to-at) (class (first r-cull-to-at))))  ; DEBUG
-    (when-let [s-cull-to-at (:s-cull-to-at @sim-data$)] (println s-cull-to-at (class s-cull-to-at) (count s-cull-to-at) (class (first s-cull-to-at))))  ; DEBUG
+    (when-let [cull-k-at-to (:cull-k-at-to @sim-data$)] (println cull-k-at-to (class cull-k-at-to) (class (first (keys cull-k-at-to)))))  ; DEBUG
+    (when-let [cull-r-at-to (:cull-r-at-to @sim-data$)] (println cull-r-at-to (class cull-r-at-to) (class (first (keys cull-r-at-to)))))  ; DEBUG
+    (when-let [cull-s-at-to (:cull-s-at-to @sim-data$)] (println cull-s-at-to (class cull-s-at-to) (class (first (keys cull-s-at-to)))))  ; DEBUG
     (swap! sim-data$ assoc :seed seed)
     (pe/setup-popenv-config! sim-data$)
     (swap! sim-data$ assoc :popenv (pe/make-popenv rng sim-data$)) ; create new popenv
