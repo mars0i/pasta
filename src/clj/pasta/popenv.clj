@@ -358,8 +358,7 @@
                  (filterv (first filter-pred) snipes) ; could be slow--don't do this often
                  snipes)]
     (if (pos? num-to-cull)
-      (let [_ (println num-to-cull) 
-            excess-snipes (ranu/sample-without-repl rng num-to-cull (seq snipes)) ; choose random snipes for removal
+      (let [excess-snipes (ranu/sample-without-repl rng num-to-cull (seq snipes)) ; choose random snipes for removal
             new-snipe-field (ObjectGrid2D. snipe-field)]
         (doseq [snipe excess-snipes]
           (.set new-snipe-field (:x snipe) (:y snipe) nil)) ; remove chosen snipes
