@@ -99,7 +99,7 @@
         [snipe-field' r-newly-culled] (cull-typed-snipes rng cfg-data snipe-field' :r-cull-map sn/r-snipe?)
         [snipe-field' s-newly-culled] (cull-typed-snipes rng cfg-data snipe-field' :s-cull-map sn/s-snipe?)
         carrying-to-cull (carrying-capacity-excess cfg-data snipe-field')
-        [snipe-field' carrying-newly-culled] (cull-snipes rng cfg-data snipe-field' carrying-to-cull)
+        [snipe-field' carrying-newly-culled] (cull-snipes rng snipe-field' carrying-to-cull)
         snipe-field' (move-snipes rng cfg-data snipe-field')     ; only the living get to move
         snipe-field' (age-snipes snipe-field')]
     (SubEnv. snipe-field' 
@@ -347,13 +347,10 @@
     (- (count snipes) max-pop-size)))
 
 (defn cull-snipes
-  "If number of snipes exceeds max-pop-size calculated during initialization,
-  randomly remove enough snipes that the pop size is now equal to max-pop-size.
-  If a single filter-pred is provided, then only snipes that satisfy it may be
-  removed."
-  [rng cfg-data snipe-field num-to-cull & filter-pred]
-  (let [{:keys [max-pop-size]} cfg-data
-        snipes (.elements snipe-field)
+  "Return a new snipe-field like the old one butwith num-to-cull snipes removed.
+  If a single filter-pred is provided, only snipes that satisfy it may be removed."
+  [rng snipe-field num-to-cull & filter-pred]
+  (let [snipes (.elements snipe-field)
         snipes (if filter-pred
                  (filterv (first filter-pred) snipes) ; could be slow--don't do this often
                  snipes)]
@@ -373,7 +370,7 @@
   (let [cull-map (snipe-map-key cfg-data)]
     (if-let [snipes-to-cull (and cull-map
                                  (cull-map (:curr-step cfg-data)))]
-      (cull-snipes rng cfg-data snipe-field snipes-to-cull snipe-pred)
+      (cull-snipes rng snipe-field snipes-to-cull snipe-pred)
       [snipe-field nil])))
 
 (defn give-birth
