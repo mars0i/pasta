@@ -333,6 +333,7 @@
     [new-snipe-field newly-dead]))
 
 (defn carrying-capacity-excess
+  "Calculate number of snipes in excess of carrying capacity (max-pop-size)."
   [cfg-data snipe-field]
   (let [{:keys [max-pop-size]} cfg-data
         snipes (.elements snipe-field)]
