@@ -23,7 +23,8 @@
          add-organism-to-rand-loc! add-k-snipes! add-r-snipes! add-s-snipes! add-mush! 
          maybe-add-mush! add-mushs! move-snipes move-snipe! choose-next-loc
          perceive-mushroom add-to-energy eat-if-appetizing snipes-eat 
-         snipes-die snipes-reproduce cull-snipes age-snipes carrying-capacity-excess)
+         snipes-die snipes-reproduce cull-snipes cull-typed-snipes age-snipes 
+         carrying-capacity-excess)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TOP LEVEL FUNCTIONS
@@ -94,13 +95,19 @@
   ;; about carrying capacity until energy-less snipes have been removed.
   (let [{:keys [snipe-field mush-field dead-snipes]} subenv
         [snipe-field' newly-died] (snipes-die cfg-data snipe-field)
-        num-to-cull (carrying-capacity-excess cfg-data snipe-field')
-        [snipe-field' newly-culled] (cull-snipes rng cfg-data snipe-field' num-to-cull)
+        [snipe-field' k-newly-culled] (cull-typed-snipes rng cfg-data snipe-field' :k-cull-map sn/k-snipe?)
+        [snipe-field' r-newly-culled] (cull-typed-snipes rng cfg-data snipe-field' :r-cull-map sn/r-snipe?)
+        [snipe-field' s-newly-culled] (cull-typed-snipes rng cfg-data snipe-field' :s-cull-map sn/s-snipe?)
+        carrying-to-cull (carrying-capacity-excess cfg-data snipe-field')
+        [snipe-field' carrying-newly-culled] (cull-snipes rng cfg-data snipe-field' carrying-to-cull)
         snipe-field' (move-snipes rng cfg-data snipe-field')     ; only the living get to move
         snipe-field' (age-snipes snipe-field')]
     (SubEnv. snipe-field' 
              mush-field 
-             (conj dead-snipes (concat newly-died newly-culled))))) ; each timestep adds a separate collection of dead snipes
+             (conj dead-snipes  ; each timestep adds a separate collection of dead snipes
+                   (concat newly-died
+                           k-newly-culled r-newly-culled s-newly-culled
+                           carrying-newly-culled)))))
 
 (defn next-popenv
   "Given an rng, a simConfigData atom, and a SubEnv, return a new SubEnv for
@@ -341,16 +348,33 @@
 
 (defn cull-snipes
   "If number of snipes exceeds max-pop-size calculated during initialization,
-  randomly remove enough snipes that the pop size is now equal to max-pop-size."
-  [rng cfg-data snipe-field num-to-cull]
+  randomly remove enough snipes that the pop size is now equal to max-pop-size.
+  If a single filter-pred is provided, then only snipes that satisfy it may be
+  removed."
+  [rng cfg-data snipe-field num-to-cull & filter-pred]
   (let [{:keys [max-pop-size]} cfg-data
-        snipes (.elements snipe-field)]
+        snipes (.elements snipe-field)
+        snipes (if filter-pred
+                 (filterv (first filter-pred) snipes) ; could be slow--don't do this often
+                 snipes)]
     (if (pos? num-to-cull)
-      (let [excess-snipes (ranu/sample-without-repl rng num-to-cull (seq snipes)) ; choose random snipes for removal
+      (let [_ (println num-to-cull) 
+            excess-snipes (ranu/sample-without-repl rng num-to-cull (seq snipes)) ; choose random snipes for removal
             new-snipe-field (ObjectGrid2D. snipe-field)]
         (doseq [snipe excess-snipes]
           (.set new-snipe-field (:x snipe) (:y snipe) nil)) ; remove chosen snipes
         [new-snipe-field excess-snipes])
+      [snipe-field nil])))
+
+(defn cull-typed-snipes
+  "If the cull map in cfg-data for snipe-map-key exists and has an entry for
+  the current step, cull those snipes (the ones that satisfy snipe-pred) to
+  the size that is the value of this step in the cull map."
+  [rng cfg-data snipe-field snipe-map-key snipe-pred]
+  (let [cull-map (snipe-map-key cfg-data)]
+    (if-let [snipes-to-cull (and cull-map
+                                 (cull-map (:curr-step cfg-data)))]
+      (cull-snipes rng cfg-data snipe-field snipes-to-cull snipe-pred)
       [snipe-field nil])))
 
 (defn give-birth
