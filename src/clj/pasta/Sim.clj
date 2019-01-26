@@ -61,9 +61,9 @@
                 [report-every        0      double  true        ["-i" "Report basic stats every i ticks after the first one (0 = never); format depends on -w." :parse-fn #(Double. %)]]
                 [write-csv         false    boolean false       ["-w" "Write data to file instead of printing it to console." :parse-fn #(Boolean. %)]]
                 [csv-basename       nil java.lang.String false  ["-F" "Base name of files to append data to.  Otherwise new filenames generated from seed." :parse-fn #(String. %)]]
-		[cull-k-at-to       nil PersistentVector false  ["-k" "Comma-separated sequence of target subpop sizes and times cull k-snipes, e.g.  \"100,200,100,400\"" :parse-fn string-to-map]]
-		[cull-r-at-to       nil PersistentVector false  ["-r" "Comma-separated sequence of target subpop sizes and times cull r-snipes, e.g.  \"100,200,100,400\"" :parse-fn string-to-map]]
-		[cull-s-at-to       nil PersistentVector false  ["-s" "Comma-separated sequence of target subpop sizes and times cull s-snipes, e.g.  \"100,200,100,400\"" :parse-fn string-to-map]]
+		[k-cull-map       nil PersistentVector false  ["-k" "Comma-separated sequence of target subpop sizes and times cull k-snipes, e.g.  \"100,200,100,400\"" :parse-fn string-to-map]]
+		[r-cull-map       nil PersistentVector false  ["-r" "Comma-separated sequence of target subpop sizes and times cull r-snipes, e.g.  \"100,200,100,400\"" :parse-fn string-to-map]]
+		[s-cull-map       nil PersistentVector false  ["-s" "Comma-separated sequence of target subpop sizes and times cull s-snipes, e.g.  \"100,200,100,400\"" :parse-fn string-to-map]]
                 [csv-writer         nil java.io.BufferedWriter false]
                 [max-pop-size        0      long    false]
                 [seed               nil     long    false] ; convenience field to store Sim's seed
@@ -154,6 +154,7 @@
         stoppable (.scheduleRepeating schedule Schedule/EPOCH 0 ; epoch = starting at beginning, 0 means run this first during timestep
                                       (reify Steppable 
                                         (step [this sim-state]
+                                          (swap! sim-data$ assoc :curr-step (curr-step sim-sim)) ; make current tick available to popenv
                                           (swap! sim-data$ update :popenv pe/next-popenv rng sim-data$))))]
     (swap! sim-data$ assoc :stoppable stoppable) ; make it available to finish()
     ;; maybe report stats periodically
@@ -161,7 +162,7 @@
       (.scheduleRepeating schedule report-every 1 ; first tick to report at; ordering within tick
                           (reify Steppable
                             (step [this sim-state]
-                              (let [steps (.getSteps schedule)]
+                              (let [steps (.getSteps schedule)] ; can't get this from above; we want the live value, not an old value from the closure. TODO use curr-step in simd-ata$ ??
                                   (stats/report-stats @sim-data$ seed steps))))
                           report-every))))
 
@@ -178,9 +179,9 @@
   ;; If user passed commandline options, use them to set parameters, rather than defaults:
     (when (and @commandline$ (not (:in-gui @sim-data$))) ; see issue #56 in github for the logic here
       (set-sim-data-from-commandline! this commandline$))
-    (when-let [cull-k-at-to (:cull-k-at-to @sim-data$)] (println cull-k-at-to (class cull-k-at-to) (class (first (keys cull-k-at-to)))))  ; DEBUG
-    (when-let [cull-r-at-to (:cull-r-at-to @sim-data$)] (println cull-r-at-to (class cull-r-at-to) (class (first (keys cull-r-at-to)))))  ; DEBUG
-    (when-let [cull-s-at-to (:cull-s-at-to @sim-data$)] (println cull-s-at-to (class cull-s-at-to) (class (first (keys cull-s-at-to)))))  ; DEBUG
+    ;(when-let [k-cull-map (:k-cull-map @sim-data$)] (println k-cull-map (class k-cull-map) (class (first (keys k-cull-map)))))  ; DEBUG
+    ;(when-let [r-cull-map (:r-cull-map @sim-data$)] (println r-cull-map (class r-cull-map) (class (first (keys r-cull-map)))))  ; DEBUG
+    ;(when-let [s-cull-map (:s-cull-map @sim-data$)] (println s-cull-map (class s-cull-map) (class (first (keys s-cull-map)))))  ; DEBUG
     (swap! sim-data$ assoc :seed seed)
     (pe/setup-popenv-config! sim-data$)
     (swap! sim-data$ assoc :popenv (pe/make-popenv rng sim-data$)) ; create new popenv
