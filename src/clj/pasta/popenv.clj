@@ -373,7 +373,7 @@
     (if-let [target-subpop-size (and cull-map (cull-map (:curr-step cfg-data)))] ; nil if no map or this step not in map
       (cull-snipes rng snipe-field
                    (- (count (filterv snipe-pred (.elements snipe-field)))
-		      (int (/ target-subpop-size 2)))
+		      target-subpop-size)
                    snipe-pred)
       [snipe-field nil])))
 
