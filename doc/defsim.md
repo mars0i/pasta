@@ -1,9 +1,9 @@
-Use of pasta.defsim/defsim in pasta.Sim
+Use of utils.defsim/defsim in pasta.Sim
 ====
 
 ### Rationale
 
-`defsim/defsim` is a macro with two goals:
+`utils.defsim/defsim` is a macro with two goals:
 
     1. Generate a series of coordinated definitions.
     2. Move global configuration data into its own namespace.
@@ -65,7 +65,7 @@ Example of the use of `defsim` in Sim.clj:
 
 ```clojure
 ;;              field name   initial-value  type   in ui? with range?  info for clojure's cli commandline option function
-(defsim/defsim [[num-k-snipes       25      long    [0 500]     ["-K" "Size of k-snipe subpopulation" :parse-fn #(Long. %)]]
+(utils.defsim/defsim [[num-k-snipes       25      long    [0 500]     ["-K" "Size of k-snipe subpopulation" :parse-fn #(Long. %)]]
                 [mush-prob           0.2    double  [0.0 1.0]   ["-M" "Average frequency of mushrooms." :parse-fn #(Double. %)]]
                 [mush-low-size       4.0    double  true        ["-s" "Size of small mushrooms (mean of light distribution)" :parse-fn #(Double. %)]]
                 [mush-mid-size       0      double  false] ; calculated from the previous values
@@ -84,8 +84,7 @@ generates code that performs some or all of the five functions listed in
 a previous section.  
 
 Along the way, `defsim` defines, in a separate namespace
-`<your
-prefix>.data`, a defrecord named `SimData`.  An instance of this
+`<your prefix>.data`, a defrecord named `SimData`.  An instance of this
 defrecord will be put into the "state" variable of your `Sim` class
 instance (i.e. the class that inherits from Mason's `sim.engine.SimState`).
 This state variable, named `simData`, is the only instance variable that 
@@ -193,9 +192,9 @@ like this:
 
 ### What `defsim` expands to
 
-To see what your `defim` call does, you can pass the quoted (i.e. with
-`'`) expression containing it to `macroexpand-1`.  You might also want
-to pass the output of `macroexand-1` to `pprint`.
+To see what your `defsim` call does, you can pass the  quoted
+expression containing it to `macroexpand-1`.  You might also want to
+pass the output of `macroexand-1` to `pprint`.
 
 For example, the `defsim` example above expands to the following code.
 I've added comments that are not generated with the code.
