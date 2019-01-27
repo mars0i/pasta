@@ -262,16 +262,13 @@ negative to indicate the degree of preference for small mushrooms. See
 <a href="doc/kSnipePerception.pdf">doc/kSnipePerception.pdf</a> for
 details.)
 
-If the data isn't written to a file, it will be sent to standard
-output. The format for the data sent to is different though.  It's not
-it's not  ideally user-friendly, if you stare at it for a minute
-you'll probably figure out what's what.  Once you do, the format will
-be easier to parse visually than it would be in the comma-separated
-format.  This format was very easy for me to generate, and I prefer it
-to the csv format for a quick look.  If you prefer the csv but want to
-see data immediately as it's generated, you can write it to a file and
-then keep looking at that file; on Unix systems, the `tail` command is
-useful for this purpose.
+If the data isn't written to a file, it will be sent to standard output.
+The format for the data sent to is different though.  It's not it's not
+ideally user-friendly, and I need to document it better.  (The format is
+defined somewhere in the guts of stats.clj.) If you prefer the csv
+format but want to see data immediately as it's generated, you can write
+it to a file and then keep looking at that file; on Unix systems, the
+`tail` command is useful for this purpose.
 
 (If you want more fine-grained data, you could modify the source code for
 pasta&mdash;I would be happy to help you if I have time&mdash;but I would suggest
