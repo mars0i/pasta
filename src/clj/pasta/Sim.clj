@@ -51,7 +51,7 @@
                 [k-pref-noise-sd     0.0625 double  true        ["-a" "Standard deviation of internal noise in k-snipe preference determination." :parse-fn #(Double. %)]]
                 [birth-cost          5.0    double  [0.0 10.0]  ["-o" "Energetic cost of giving birth to one offspring" :parse-fn #(Double. %)]]
                 [max-energy         30.0    double  [1.0 100.0] ["-m" "Max energy that a snipe can have." :parse-fn #(Double. %)]]
-                [carrying-proportion 0.25   double  [0.1 0.9]   ["-c" "Snipes are randomly culled when number exceed this times # of cells." :parse-fn #(Double. %)]]
+                [carrying-proportion 0.25   double  [0.1 0.9]   ["-c" "Snipes are randomly culled when number exceed this times # of cells in a subenv (east or west)." :parse-fn #(Double. %)]]
                 [neighbor-radius     5      long    [1 10]      ["-d" "s-snipe neighbors (for copying) are no more than this distance away." :parse-fn #(Long. %)]]
                 [env-width          40      long    [10 250]    ["-W" "Width of env.  Must be an even number." :parse-fn #(Long. %)]] ; Haven't figured out how to change 
                 [env-height         40      long    [10 250]    ["-H" "Height of env. Must be an even number." :parse-fn #(Long. %)]] ;  within app without distortion
@@ -65,7 +65,7 @@
 		[r-cull-map       nil PersistentVector false  ["-r" "Comma-separated sequence of target subpop sizes and times cull r-snipes, e.g.  \"100,200,100,400\"" :parse-fn string-to-map]]
 		[s-cull-map       nil PersistentVector false  ["-s" "Comma-separated sequence of target subpop sizes and times cull s-snipes, e.g.  \"100,200,100,400\"" :parse-fn string-to-map]]
                 [csv-writer         nil java.io.BufferedWriter false]
-                [max-pop-size        0      long    false]
+                [max-pop-size        0      long    false] ; maximum per-subenvironment population size
                 [seed               nil     long    false] ; convenience field to store Sim's seed
 		[in-gui           false     boolean false] ; convenience field to store Boolean re whether in GUI
                 [popenv             nil  pasta.popenv.PopEnv false]]
