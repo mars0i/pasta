@@ -24,7 +24,7 @@
          maybe-add-mush! add-mushs! move-snipes move-snipe! choose-next-loc
          perceive-mushroom add-to-energy eat-if-appetizing snipes-eat 
          snipes-die snipes-reproduce cull-snipes cull-typed-snipes age-snipes 
-         carrying-capacity-excess)
+         excess-snipes)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TOP LEVEL FUNCTIONS
@@ -40,7 +40,7 @@
   (let [{:keys [env-width env-height carrying-proportion mush-low-size mush-high-size]} @cfg-data$]
     (swap! cfg-data$ assoc :mush-size-scale (/ 1.0 (- mush-high-size mush-low-size)))
     (swap! cfg-data$ assoc :mush-mid-size (/ (+ mush-low-size mush-high-size) 2.0))
-    (swap! cfg-data$ assoc :max-pop-size (int (* env-width env-height carrying-proportion)))))
+    (swap! cfg-data$ assoc :max-subenv-pop-size (int (* env-width env-height carrying-proportion)))))
 
 (defn make-subenv
   "Returns new SubEnv with mushs and snipes.  subenv-key is :west or :east."
@@ -98,8 +98,7 @@
         [snipe-field' k-newly-culled] (cull-typed-snipes rng cfg-data snipe-field' :k-cull-map sn/k-snipe?)
         [snipe-field' r-newly-culled] (cull-typed-snipes rng cfg-data snipe-field' :r-cull-map sn/r-snipe?)
         [snipe-field' s-newly-culled] (cull-typed-snipes rng cfg-data snipe-field' :s-cull-map sn/s-snipe?)
-        carrying-to-cull (carrying-capacity-excess cfg-data snipe-field')
-        [snipe-field' carrying-newly-culled] (cull-snipes rng snipe-field' carrying-to-cull)
+        [snipe-field' carrying-newly-culled] (cull-snipes rng snipe-field' (excess-snipes cfg-data snipe-field'))
         snipe-field' (move-snipes rng cfg-data snipe-field')     ; only the living get to move
         snipe-field' (age-snipes snipe-field')]
     (SubEnv. snipe-field' 
@@ -339,13 +338,15 @@
       (.set new-snipe-field (:x snipe) (:y snipe) snipe))
     [new-snipe-field newly-dead]))
 
-(defn carrying-capacity-excess
-  "Calculate number of snipes in excess of carrying capacity (max-pop-size)."
+;; FIXME works but redundant filtering in cull-* is inelegant at best
+(defn excess-snipes
+  "Calculate number of snipes in excess of carrying capacity (max-subenv-pop-size)."
   [cfg-data snipe-field]
-  (let [{:keys [max-pop-size]} cfg-data
+  (let [{:keys [max-subenv-pop-size]} cfg-data
         snipes (.elements snipe-field)]
-    (- (count snipes) max-pop-size)))
+    (- (count snipes) max-subenv-pop-size)))
 
+;; FIXME works but redundant filtering in cull-* is inelegant at best
 (defn cull-snipes
   "Return a new snipe-field like the old one butwith num-to-cull snipes removed.
   If a single filter-pred is provided, only snipes that satisfy it may be removed."
@@ -362,15 +363,18 @@
         [new-snipe-field excess-snipes])
       [snipe-field nil])))
 
+;; FIXME works but redundant filtering in cull-* is inelegant at best
 (defn cull-typed-snipes
   "If the cull map in cfg-data for snipe-map-key exists and has an entry for
   the current step, cull those snipes (the ones that satisfy snipe-pred) to
   the size that is the value of this step in the cull map."
   [rng cfg-data snipe-field snipe-map-key snipe-pred]
   (let [cull-map (snipe-map-key cfg-data)]
-    (if-let [snipes-to-cull (and cull-map
-                                 (cull-map (:curr-step cfg-data)))]
-      (cull-snipes rng snipe-field snipes-to-cull snipe-pred)
+    (if-let [target-subpop-size (and cull-map (cull-map (:curr-step cfg-data)))] ; nil if no map or this step not in map
+      (cull-snipes rng snipe-field
+                   (- (count (filterv snipe-pred (.elements snipe-field)))
+		      (int (/ target-subpop-size 2)))
+                   snipe-pred)
       [snipe-field nil])))
 
 (defn give-birth
