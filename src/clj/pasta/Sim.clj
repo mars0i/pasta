@@ -61,11 +61,11 @@
                 [report-every        0      double  true        ["-i" "Report basic stats every i ticks after the first one (0 = never); format depends on -w." :parse-fn #(Double. %)]]
                 [write-csv         false    boolean false       ["-w" "Write data to file instead of printing it to console." :parse-fn #(Boolean. %)]]
                 [csv-basename       nil java.lang.String false  ["-F" "Base name of files to append data to.  Otherwise new filenames generated from seed." :parse-fn #(String. %)]]
-		[k-cull-map       nil PersistentVector false  ["-k" "Comma-separated sequence of target subpop sizes and times cull k-snipes, e.g.  \"100,200,100,400\"" :parse-fn string-to-map]]
-		[r-cull-map       nil PersistentVector false  ["-r" "Comma-separated sequence of target subpop sizes and times cull r-snipes, e.g.  \"100,200,100,400\"" :parse-fn string-to-map]]
-		[s-cull-map       nil PersistentVector false  ["-s" "Comma-separated sequence of target subpop sizes and times cull s-snipes, e.g.  \"100,200,100,400\"" :parse-fn string-to-map]]
+		[k-cull-map         nil PersistentVector false  ["-k" "Comma-separated sequence of times and target subpop sizes to cull k-snipes to, e.g.  \"100,200,100,400\"" :parse-fn string-to-map]]
+		[r-cull-map         nil PersistentVector false  ["-r" "Comma-separated sequence of times and target subpop sizes to cull r-snipes to, e.g.  \"100,200,100,400\"" :parse-fn string-to-map]]
+		[s-cull-map         nil PersistentVector false  ["-s" "Comma-separated sequence of times and target subpop sizes to cull s-snipes to, e.g.  \"100,200,100,400\"" :parse-fn string-to-map]]
                 [csv-writer         nil java.io.BufferedWriter false]
-                [max-pop-size        0      long    false] ; maximum per-subenvironment population size
+                [max-subenv-pop-size 0      long    false] ; maximum per-subenvironment population size
                 [seed               nil     long    false] ; convenience field to store Sim's seed
 		[in-gui           false     boolean false] ; convenience field to store Boolean re whether in GUI
                 [popenv             nil  pasta.popenv.PopEnv false]]
@@ -179,9 +179,9 @@
   ;; If user passed commandline options, use them to set parameters, rather than defaults:
     (when (and @commandline$ (not (:in-gui @sim-data$))) ; see issue #56 in github for the logic here
       (set-sim-data-from-commandline! this commandline$))
-    ;(when-let [k-cull-map (:k-cull-map @sim-data$)] (println k-cull-map (class k-cull-map) (class (first (keys k-cull-map)))))  ; DEBUG
-    ;(when-let [r-cull-map (:r-cull-map @sim-data$)] (println r-cull-map (class r-cull-map) (class (first (keys r-cull-map)))))  ; DEBUG
-    ;(when-let [s-cull-map (:s-cull-map @sim-data$)] (println s-cull-map (class s-cull-map) (class (first (keys s-cull-map)))))  ; DEBUG
+    ;(when-let [k-cull-map (:k-cull-map @sim-data$)] (println "k:" k-cull-map (class k-cull-map) (class (first (keys k-cull-map)))))  ; DEBUG
+    ;(when-let [r-cull-map (:r-cull-map @sim-data$)] (println "r:" r-cull-map (class r-cull-map) (class (first (keys r-cull-map)))))  ; DEBUG
+    ;(when-let [s-cull-map (:s-cull-map @sim-data$)] (println "s:" s-cull-map (class s-cull-map) (class (first (keys s-cull-map)))))  ; DEBUG
     (swap! sim-data$ assoc :seed seed)
     (pe/setup-popenv-config! sim-data$)
     (swap! sim-data$ assoc :popenv (pe/make-popenv rng sim-data$)) ; create new popenv
