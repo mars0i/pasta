@@ -194,7 +194,9 @@ like this:
 
 To see what your `defsim` call does, you can pass the  quoted
 expression containing it to `macroexpand-1`.  You might also want to
-pass the output of `macroexand-1` to `pprint`.
+pass the output of `macroexand-1` to `pprint`.  Note that first you
+should switch to the namespace of your main `Sim` class, and
+`(use 'utils.defsim)`.
 
 For example, the `defsim` example above expands to the following code.
 I've added comments that are not generated with the code.
