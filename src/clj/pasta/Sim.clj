@@ -29,9 +29,14 @@
 ;; See https://stackoverflow.com/questions/8435681/how-to-convert-a-clojure-string-of-numbers-into-separate-integers
 ;; and https://stackoverflow.com/questions/2640169/whats-the-easiest-way-to-parse-numbers-in-clojure:
 (defn string-to-map
-  "Read a string containing comma-separated integers into map."
+  "Read a string containing comma-separated integers into a Clojure map."
   [s]
   (clojure.edn/read-string (str "{" s "}")))
+
+;(defn string-to-java-map
+;  "Read a string containing comma-separated integers into a Java map."
+;  [s]
+;  (java.util.HashMap. (string-to-map s)))
 
 ;; Note: There is no option below for max number of steps.  Use MASON's -for instead.
 ;;              field name    initial-value type   in ui? with range?
@@ -61,9 +66,9 @@
                 [report-every        0      double  true        ["-i" "Report basic stats every i ticks after the first one (0 = never); format depends on -w." :parse-fn #(Double. %)]]
                 [write-csv         false    boolean false       ["-w" "Write data to file instead of printing it to console." :parse-fn #(Boolean. %)]]
                 [csv-basename       nil java.lang.String false  ["-F" "Base name of files to append data to.  Otherwise new filenames generated from seed." :parse-fn #(String. %)]]
-		[k-cull-map         nil clojure.lang.IPersistentMap true ["-k" "Comma-separated sequence of times and target subpop sizes to cull k-snipes to, e.g.  \"100,200,100,400\"" :parse-fn string-to-map]]
-		[r-cull-map         nil clojure.lang.IPersistentMap true ["-r" "Comma-separated sequence of times and target subpop sizes to cull r-snipes to, e.g.  \"100,200,100,400\"" :parse-fn string-to-map]]
-		[s-cull-map         nil clojure.lang.IPersistentMap true ["-s" "Comma-separated sequence of times and target subpop sizes to cull s-snipes to, e.g.  \"100,200,100,400\"" :parse-fn string-to-map]]
+		[k-cull-map         nil clojure.lang.IPersistentMap true ["-k" "Comma-separated times and target subpop sizes to cull k-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]] ; issue #63 for commentary:
+		[r-cull-map         nil clojure.lang.IPersistentMap true ["-r" "Comma-separated times and target subpop sizes to cull r-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]]
+		[s-cull-map         nil clojure.lang.IPersistentMap true ["-s" "Comma-separated times and target subpop sizes to cull s-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]]
                 [csv-writer         nil java.io.BufferedWriter false]
                 [max-subenv-pop-size 0      long    false] ; maximum per-subenvironment population size
                 [seed               nil     long    false] ; convenience field to store Sim's seed
