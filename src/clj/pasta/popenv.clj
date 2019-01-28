@@ -370,7 +370,8 @@
   the size that is the value of this step in the cull map."
   [rng cfg-data snipe-field snipe-map-key snipe-pred]
   (let [cull-map (snipe-map-key cfg-data)]
-    (if-let [target-subpop-size (and cull-map (cull-map (:curr-step cfg-data)))] ; nil if no map or this step not in map
+    (if-let [target-subpop-size (and cull-map ; nil if no map or this step not in map
+                                     (get cull-map (:curr-step cfg-data)))] ; use get: it might be a java Map
       (cull-snipes rng snipe-field
                    (- (count (filterv snipe-pred (.elements snipe-field)))
 		      target-subpop-size)
