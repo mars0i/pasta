@@ -24,7 +24,7 @@
          maybe-add-mush! add-mushs! move-snipes move-snipe! choose-next-loc
          perceive-mushroom add-to-energy eat-if-appetizing snipes-eat 
          snipes-die snipes-reproduce cull-snipes cull-typed-snipes age-snipes 
-         excess-snipes)
+         excess-snipes snipes-in-subenv obey-carrying-capacity)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TOP LEVEL FUNCTIONS
@@ -98,7 +98,7 @@
         [snipe-field' k-newly-culled] (cull-typed-snipes rng cfg-data snipe-field' :k-cull-map sn/k-snipe?)
         [snipe-field' r-newly-culled] (cull-typed-snipes rng cfg-data snipe-field' :r-cull-map sn/r-snipe?)
         [snipe-field' s-newly-culled] (cull-typed-snipes rng cfg-data snipe-field' :s-cull-map sn/s-snipe?)
-        [snipe-field' carrying-newly-culled] (cull-snipes rng snipe-field' (excess-snipes cfg-data snipe-field'))
+        [snipe-field' carrying-newly-culled] (obey-carrying-capacity rng cfg-data snipe-field')
         snipe-field' (move-snipes rng cfg-data snipe-field')     ; only the living get to move
         snipe-field' (age-snipes snipe-field')]
     (SubEnv. snipe-field' 
@@ -339,29 +339,34 @@
     [new-snipe-field newly-dead]))
 
 ;; FIXME works but redundant filtering in cull-* is inelegant at best
-(defn excess-snipes
-  "Calculate number of snipes in excess of carrying capacity (max-subenv-pop-size)."
-  [cfg-data snipe-field]
-  (let [{:keys [max-subenv-pop-size]} cfg-data
-        snipes (.elements snipe-field)]
-    (- (count snipes) max-subenv-pop-size)))
+;(defn excess-snipes
+;  "Calculate number of snipes in excess of carrying capacity (max-subenv-pop-size)."
+;  [cfg-data snipe-field]
+;  (let [{:keys [max-subenv-pop-size]} cfg-data
+;        snipes (.elements snipe-field)]
+;    (- (count snipes) max-subenv-pop-size)))
+
+(defn obey-carrying-capacity
+  [rng cfg-data snipe-field]
+  (let [snipes (.elements snipe-field)
+        target-size (:max-subenv-pop-size cfg-data)
+        num-to-cull (- (count snipes) target-size)]
+    (if (pos? num-to-cull)
+      (cull-snipes rng snipe-field snipes num-to-cull)
+      [snipe-field nil])))
 
 ;; FIXME works but redundant filtering in cull-* is inelegant at best
 (defn cull-snipes
-  "Return a new snipe-field like the old one butwith num-to-cull snipes removed.
-  If a single filter-pred is provided, only snipes that satisfy it may be removed."
-  [rng snipe-field num-to-cull & filter-pred]
-  (let [snipes (.elements snipe-field)
-        snipes (if filter-pred
-                 (filterv (first filter-pred) snipes) ; could be slow--don't do this often
-                 snipes)]
-    (if (pos? num-to-cull)
-      (let [excess-snipes (ranu/sample-without-repl rng num-to-cull (seq snipes)) ; choose random snipes for removal
-            new-snipe-field (ObjectGrid2D. snipe-field)]
-        (doseq [snipe excess-snipes]
-          (.set new-snipe-field (:x snipe) (:y snipe) nil)) ; remove chosen snipes
-        [new-snipe-field excess-snipes])
-      [snipe-field nil])))
+  "Return a vector containing a new snipe-field like the old one but with 
+  the number of element in snipes randomly reduced to target-size, and a
+  collection of removed snipes.  Assumes the number of snipes is at least
+  as great as target-size."
+  [rng snipe-field snipes num-to-cull]
+  (let [excess-snipes (ranu/sample-without-repl rng num-to-cull (seq snipes)) ; choose random snipes for removal
+        new-snipe-field (ObjectGrid2D. snipe-field)]
+    (doseq [snipe excess-snipes]
+      (.set new-snipe-field (:x snipe) (:y snipe) nil)) ; remove chosen snipes
+    [new-snipe-field excess-snipes]))
 
 ;; FIXME works but redundant filtering in cull-* is inelegant at best
 (defn cull-typed-snipes
@@ -372,10 +377,8 @@
   (let [cull-map (snipe-map-key cfg-data)]
     (if-let [target-subpop-size (and cull-map ; nil if no map or this step not in map
                                      (get cull-map (:curr-step cfg-data)))] ; use get: it might be a java Map
-      (cull-snipes rng snipe-field
-                   (- (count (filterv snipe-pred (.elements snipe-field)))
-		      target-subpop-size)
-                   snipe-pred)
+      (let [snipes (filterv snipe-pred (.elements snipe-field))]
+        (cull-snipes rng snipe-field snipes (- target-subpop-size (count snipes))))
       [snipe-field nil])))
 
 (defn give-birth
