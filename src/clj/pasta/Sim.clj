@@ -61,9 +61,9 @@
                 [report-every        0      double  true        ["-i" "Report basic stats every i ticks after the first one (0 = never); format depends on -w." :parse-fn #(Double. %)]]
                 [write-csv         false    boolean false       ["-w" "Write data to file instead of printing it to console." :parse-fn #(Boolean. %)]]
                 [csv-basename       nil java.lang.String false  ["-F" "Base name of files to append data to.  Otherwise new filenames generated from seed." :parse-fn #(String. %)]]
-		[k-cull-map         {50,5} clojure.lang.IPersistentMap true    ["-k" "Comma-separated sequence of times and target subpop sizes to cull k-snipes to, e.g.  \"100,200,100,400\"" :parse-fn string-to-map]]
-		[r-cull-map         nil clojure.lang.IPersistentMap false    ["-r" "Comma-separated sequence of times and target subpop sizes to cull r-snipes to, e.g.  \"100,200,100,400\"" :parse-fn string-to-map]]
-		[s-cull-map         nil clojure.lang.IPersistentMap false    ["-s" "Comma-separated sequence of times and target subpop sizes to cull s-snipes to, e.g.  \"100,200,100,400\"" :parse-fn string-to-map]]
+		[k-cull-map         nil clojure.lang.IPersistentMap true ["-k" "Comma-separated sequence of times and target subpop sizes to cull k-snipes to, e.g.  \"100,200,100,400\"" :parse-fn string-to-map]]
+		[r-cull-map         nil clojure.lang.IPersistentMap true ["-r" "Comma-separated sequence of times and target subpop sizes to cull r-snipes to, e.g.  \"100,200,100,400\"" :parse-fn string-to-map]]
+		[s-cull-map         nil clojure.lang.IPersistentMap true ["-s" "Comma-separated sequence of times and target subpop sizes to cull s-snipes to, e.g.  \"100,200,100,400\"" :parse-fn string-to-map]]
                 [csv-writer         nil java.io.BufferedWriter false]
                 [max-subenv-pop-size 0      long    false] ; maximum per-subenvironment population size
                 [seed               nil     long    false] ; convenience field to store Sim's seed
