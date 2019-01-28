@@ -193,12 +193,14 @@ The following parameters for model runs can be set in the Model tab:
 <tr><td valign=top>MaxEnergy:</td> <td>Max energy that a snipe can have.</td></tr>
 <tr><td valign=top>CarryingProportion:</td> <td valign=top>Snipes are randomly culled when number exceed this times # of cells.</td></tr>
 <tr><td valign=top>NeighborRadius:</td> <td>s-snipe neighbors (for copying) are no more than this distance away.</td></tr>
-<tr><td valign=top>ReportEvery:</td> <td>Report basic statistics in shell every this many ticks after the first one (0 = never).</td></tr>
-<tr><td valign=top>MaxTicks:</td> <td>Stop model run after this number of timesteps, or never if 0.</td></tr>
 <tr><td valign=top>EnvWidth:</td> <td>Width of environments.  Must be an even number.</td></tr>
 <tr><td valign=top>EnvHeight:</td> <td>Height of environments. Must be an even number.</td></tr>
-<tr><td valign=top>EnvDisplaySize:</td> <td>How large to display environments in GUI by default.</td></tr>
 <tr><td valign=top>ExtremePref:</td> <td>Absolute value of r-snipe preferences and max for k- and s-snipes.</td></tr>
+<tr><td valign=top>ReportEvery:</td> <td>Report basic statistics in shell every this many ticks after the first one (0 = never).</td></tr>
+<tr><td valign=top>KCullMap:</td> <td>Times at which and target subpop sizes to cull k-snipes to. (Set from command line.)</td></tr>
+<tr><td valign=top>RCullMap:</td> <td>Times at which and target subpop sizes to cull r-snipes to. (Set from command line.)</td></tr>
+<tr><td valign=top>SCullMap:</td> <td>Times at which and target subpop sizes to cull s-snipes to. (Set from command line.)</td></tr>
+<tr><td valign=top>EnvDisplaySize:</td> <td>How large to display environments in GUI by default. (Set from command line.)</td></tr>
 </table>
 
 <p>Some data is reported in other variables displayed in the Model tab:

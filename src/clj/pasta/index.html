@@ -145,12 +145,15 @@ The following parameters for model runs can be set in the Model tab:
 <tr><td valign=top>MaxEnergy:</td> <td>Max energy that a snipe can have.</td></tr>
 <tr><td valign=top>CarryingProportion:</td> <td valign=top>Snipes are randomly culled when number exceed this times # of cells.</td></tr>
 <tr><td valign=top>NeighborRadius:</td> <td>s-snipe neighbors (for copying) are no more than this distance away.</td></tr>
-<tr><td valign=top>ReportEvery:</td> <td>Report basic statistics in shell every this many ticks after the first one (0 = never).</td></tr>
-<tr><td valign=top>MaxTicks:</td> <td>Stop model run after this number of timesteps, or never if 0.</td></tr>
+<tr><td valign=top>ExtremePref:</td> <td>Absolute value of r-snipe preferences.</td></tr>
 <tr><td valign=top>EnvWidth:</td> <td>Width of environments.  Must be an even number.</td></tr>
 <tr><td valign=top>EnvHeight:</td> <td>Height of environments. Must be an even number.</td></tr>
-<tr><td valign=top>EnvDisplaySize:</td> <td>How large to display environments in GUI by default.</td></tr>
-<tr><td valign=top>ExtremePref:</td> <td>Absolute value of r-snipe preferences.</td></tr>
+<tr><td valign=top>ExtremePref:</td> <td>Absolute value of r-snipe preferences and max for k- and s-snipes.</td></tr>
+<tr><td valign=top>ReportEvery:</td> <td>Report basic statistics in shell every this many ticks after the first one (0 = never).</td></tr>
+<tr><td valign=top>KCullMap:</td> <td>Times at which and target subpop sizes to cull k-snipes to. (Set from command line.)</td></tr>
+<tr><td valign=top>RCullMap:</td> <td>Times at which and target subpop sizes to cull r-snipes to. (Set from command line.)</td></tr>
+<tr><td valign=top>SCullMap:</td> <td>Times at which and target subpop sizes to cull s-snipes to. (Set from command line.)</td></tr>
+<tr><td valign=top>EnvDisplaySize:</td> <td>How large to display environments in GUI by default. (Set from command line.)</td></tr>
 </table>
 
 <p>Some data is reported in other variables displayed in the Model tab:
@@ -187,6 +190,20 @@ a few snipes over time.)
 evolutionary race.  For example, before the start of a k-snipe vs.
 r-snipe run, reduce MushNegNutrition.  Does this affects k-snipes'
 relative success?  Why?</p>
+
+<p>k-snipes begin with no preference for large or small snipes.
+This means that at the beginning of a run, they are all in the
+same ignorant state.  At later times, there will be a mixture
+of well trained, still poorly trained, and new, completely ignorant
+k-snipes.  This is not a random distribution.  k-snipes that are
+well-trained for their environment may be more prevalent than those
+that are poorly trained for their environment.  You can use the
+commandline cull options to specify a time at which, for example,
+the k-snipe and r-snipe subpopulations are randomly sampled and 
+set back to their initial frequencies.  The k-snipe preference
+distribution will be more "realistic" for an ongoing population.
+Does this make a difference to the ultimate outcomes of competition
+between snipe types?</p>
 
 <a name="license"></a><h2>License:</h2>
 
