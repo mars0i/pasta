@@ -355,8 +355,11 @@
   (let [cull-map (snipe-map-key cfg-data)]
     (if-let [target-subpop-size (and cull-map ; nil if no map or this step not in map
                                      (get cull-map (:curr-step cfg-data)))] ; use get: it might be a java Map
-      (let [snipes (filterv snipe-pred (.elements snipe-field))]
-        (cull-snipes rng snipe-field snipes (- target-subpop-size (count snipes))))
+      (let [snipes (filterv snipe-pred (.elements snipe-field))
+            num-to-cull (- (count snipes) target-subpop-size)]
+        (if (pos? num-to-cull)
+          (cull-snipes rng snipe-field snipes num-to-cull)
+          [snipe-field nil]))
       [snipe-field nil])))
 
 (defn cull-snipes
