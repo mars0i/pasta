@@ -338,14 +338,6 @@
       (.set new-snipe-field (:x snipe) (:y snipe) snipe))
     [new-snipe-field newly-dead]))
 
-;; FIXME works but redundant filtering in cull-* is inelegant at best
-;(defn excess-snipes
-;  "Calculate number of snipes in excess of carrying capacity (max-subenv-pop-size)."
-;  [cfg-data snipe-field]
-;  (let [{:keys [max-subenv-pop-size]} cfg-data
-;        snipes (.elements snipe-field)]
-;    (- (count snipes) max-subenv-pop-size)))
-
 (defn obey-carrying-capacity
   [rng cfg-data snipe-field]
   (let [snipes (.elements snipe-field)
@@ -355,20 +347,6 @@
       (cull-snipes rng snipe-field snipes num-to-cull)
       [snipe-field nil])))
 
-;; FIXME works but redundant filtering in cull-* is inelegant at best
-(defn cull-snipes
-  "Return a vector containing a new snipe-field like the old one but with 
-  the number of element in snipes randomly reduced to target-size, and a
-  collection of removed snipes.  Assumes the number of snipes is at least
-  as great as target-size."
-  [rng snipe-field snipes num-to-cull]
-  (let [excess-snipes (ranu/sample-without-repl rng num-to-cull (seq snipes)) ; choose random snipes for removal
-        new-snipe-field (ObjectGrid2D. snipe-field)]
-    (doseq [snipe excess-snipes]
-      (.set new-snipe-field (:x snipe) (:y snipe) nil)) ; remove chosen snipes
-    [new-snipe-field excess-snipes]))
-
-;; FIXME works but redundant filtering in cull-* is inelegant at best
 (defn cull-typed-snipes
   "If the cull map in cfg-data for snipe-map-key exists and has an entry for
   the current step, cull those snipes (the ones that satisfy snipe-pred) to
@@ -380,6 +358,18 @@
       (let [snipes (filterv snipe-pred (.elements snipe-field))]
         (cull-snipes rng snipe-field snipes (- target-subpop-size (count snipes))))
       [snipe-field nil])))
+
+(defn cull-snipes
+  "Return a vector containing a new snipe-field like the old one but with 
+  the number of element in snipes randomly reduced to target-size, and a
+  collection of removed snipes.  Assumes the number of snipes is at least
+  as great as target-size."
+  [rng snipe-field snipes num-to-cull]
+  (let [excess-snipes (ranu/sample-without-repl rng num-to-cull (seq snipes)) ; choose random snipes for removal
+        new-snipe-field (ObjectGrid2D. snipe-field)]
+    (doseq [snipe excess-snipes]
+      (.set new-snipe-field (:x snipe) (:y snipe) nil)) ; remove chosen snipes
+    [new-snipe-field excess-snipes]))
 
 (defn give-birth
   [cfg-data snipe]
