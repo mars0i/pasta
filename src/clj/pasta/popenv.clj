@@ -20,11 +20,11 @@
 ;(use '[clojure.pprint]) ; DEBUG
 
 (declare setup-popenv-config! make-popenv next-popenv organism-setter 
-         add-organism-to-rand-loc! add-k-snipes! add-r-snipes! add-s-snipes! add-mush! 
-         maybe-add-mush! add-mushs! move-snipes move-snipe! choose-next-loc
+         add-organism-to-rand-loc! ; add-k-snipes! add-r-snipes! add-s-snipes! 
+	 add-mush!  maybe-add-mush! add-mushs! move-snipes move-snipe! choose-next-loc
          perceive-mushroom add-to-energy eat-if-appetizing snipes-eat 
          snipes-die snipes-reproduce cull-snipes cull-typed-snipes age-snipes 
-         excess-snipes snipes-in-subenv obey-carrying-capacity)
+         excess-snipes snipes-in-subenv obey-carrying-capacity add-snipes!)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TOP LEVEL FUNCTIONS
@@ -51,9 +51,9 @@
     (.clear mush-field)
     (add-mushs! rng @cfg-data$ mush-field subenv-key)
     (.clear snipe-field)
-    (add-k-snipes! rng cfg-data$ snipe-field subenv-key curr-snipe-id$)
-    (add-r-snipes! rng cfg-data$ snipe-field subenv-key curr-snipe-id$)
-    (add-s-snipes! rng cfg-data$ snipe-field subenv-key curr-snipe-id$)
+    (add-snipes! rng cfg-data$ snipe-field subenv-key :num-k-snipes sn/make-rand-k-snipe curr-snipe-id$)
+    (add-snipes! rng cfg-data$ snipe-field subenv-key :num-r-snipes sn/make-rand-r-snipe curr-snipe-id$)
+    (add-snipes! rng cfg-data$ snipe-field subenv-key :num-s-snipes sn/make-rand-s-snipe curr-snipe-id$)
     (SubEnv. snipe-field mush-field [])))
 
 (defn make-snipe-map
@@ -146,26 +146,17 @@
         (organism-setter! field x y)
         (recur)))))
 
-(defn add-k-snipes!
-  [rng cfg-data$ field subenv-key curr-snipe-id$]
-  (let [{:keys [env-width env-height num-k-snipes]} @cfg-data$]
-    (dotimes [_ num-k-snipes] ; don't use lazy method--it may never be executed
-      (add-organism-to-rand-loc! rng @cfg-data$ field env-width env-height 
-                                 (organism-setter (partial sn/make-rand-k-snipe rng cfg-data$ subenv-key (next-snipe-id curr-snipe-id$)))))))
-
-(defn add-r-snipes!
-  [rng cfg-data$ field subenv-key curr-snipe-id$]
-  (let [{:keys [env-width env-height num-r-snipes]} @cfg-data$]
-    (dotimes [_ num-r-snipes]
-      (add-organism-to-rand-loc! rng @cfg-data$ field env-width env-height 
-                                 (organism-setter (partial sn/make-rand-r-snipe rng cfg-data$ subenv-key (next-snipe-id curr-snipe-id$)))))))
-
-(defn add-s-snipes!
-  [rng cfg-data$ field subenv-key curr-snipe-id$]
-  (let [{:keys [env-width env-height num-s-snipes]} @cfg-data$]
-    (dotimes [_ num-s-snipes]
-      (add-organism-to-rand-loc! rng @cfg-data$ field env-width env-height 
-                                 (organism-setter (partial sn/make-rand-s-snipe rng cfg-data$ subenv-key (next-snipe-id curr-snipe-id$)))))))
+(defn add-snipes!
+ "Add snipes to field at random locations.  snipe-num-key is a key for 
+ the number of snipes of a given type to make, and snipe-maker is a function
+ that will make an individual snipe."
+ [rng cfg-data$ field subenv-key snipe-num-key snipe-maker curr-snipe-id$]
+ (let [cfg-data @cfg-data$
+       {:keys [env-width env-height]} cfg-data
+       num-snipes (snipe-num-key cfg-data)]
+  (dotimes [_ num-snipes] ; don't use lazy method--it may never be executed
+   (add-organism-to-rand-loc! rng cfg-data field env-width env-height 
+    (organism-setter (partial snipe-maker rng cfg-data$ subenv-key (next-snipe-id curr-snipe-id$)))))))
 
 ;; Do I really need so many mushrooms?  They don't change.  Couldn't I just define four mushrooms,
 ;; and reuse them?  (If so, be careful about their deaths.)
@@ -358,7 +349,7 @@
       (let [snipes (filterv snipe-pred (.elements snipe-field))
             num-to-cull (- (count snipes) target-subpop-size)]
         (if (pos? num-to-cull)
-          (cull-snipes rng snipe-field snipes num-to-cull)
+          (cull-snipes rng snipe-field snipes num-to-cull) ; too many snipes
           [snipe-field nil]))
       [snipe-field nil])))
 
