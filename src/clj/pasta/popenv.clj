@@ -352,7 +352,7 @@
             num-to-cull (- (count snipes) target-subpop-size)]
         (if (pos? num-to-cull)
           (cull-snipes rng snipe-field snipes num-to-cull) ; too many snipes
-          [snipe-field nil]))
+          [snipe-field nil])) ; what would be needed to add snipes here: (add-snipes rng cfg-data$ snipe-field SUBENV-KEY (- num-to-cull) SNIPE-MAKER CURR-SNIPE-ID$)
       [snipe-field nil])))
 
 (defn cull-snipes
