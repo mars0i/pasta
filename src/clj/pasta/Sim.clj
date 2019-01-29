@@ -40,9 +40,9 @@
 
 ;; Note: There is no option below for max number of steps.  Use MASON's -for instead.
 ;;              field name    initial-value type   in ui? with range?
-(defsim/defsim [[num-k-snipes       25      long    [0 500]     ["-K" "Size of k-snipe subpopulation" :parse-fn #(Long. %)]]
-                [num-r-snipes       25      long    [0 500]     ["-R" "Size of r-snipe subpopulation" :parse-fn #(Long. %)]]
-                [num-s-snipes       25      long    [0 500]     ["-S" "Size of s-snipe subpopulation" :parse-fn #(Long. %)]]
+(defsim/defsim [[num-k-snipes       25      long    [0 500]     ["-1" "Size of k-snipe subpopulation" :parse-fn #(Long. %)]]
+                [num-r-snipes       25      long    [0 500]     ["-2" "Size of r-snipe subpopulation" :parse-fn #(Long. %)]]
+                [num-s-snipes       25      long    [0 500]     ["-3" "Size of s-snipe subpopulation" :parse-fn #(Long. %)]]
                 [mush-prob           0.2    double  [0.0 1.0]   ["-M" "Average frequency of mushrooms." :parse-fn #(Double. %)]]
                 [mush-low-size       4.0    double  true        ["-t" "Size of small mushrooms (mean of light distribution)" :parse-fn #(Double. %)]]
                 [mush-high-size      6.0    double  true        ["-l" "Size of large mushrooms (mean of light distribution)" :parse-fn #(Double. %)]]
@@ -66,9 +66,12 @@
                 [report-every        0      double  true        ["-i" "Report basic stats every i ticks after the first one (0 = never); format depends on -w." :parse-fn #(Double. %)]]
                 [write-csv         false    boolean false       ["-w" "Write data to file instead of printing it to console." :parse-fn #(Boolean. %)]]
                 [csv-basename       nil java.lang.String false  ["-F" "Base name of files to append data to.  Otherwise new filenames generated from seed." :parse-fn #(String. %)]]
-		[k-cull-map         nil clojure.lang.IPersistentMap true ["-k" "Comma-separated times and target subpop sizes to cull k-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]] ; issue #63 for commentary:
-		[r-cull-map         nil clojure.lang.IPersistentMap true ["-r" "Comma-separated times and target subpop sizes to cull r-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]]
-		[s-cull-map         nil clojure.lang.IPersistentMap true ["-s" "Comma-separated times and target subpop sizes to cull s-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]]
+		[k-max-map         nil clojure.lang.IPersistentMap true ["-K" "Comma-separated times and target subpop sizes to cull k-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]] ; issue #63 for commentary:
+		[r-max-map         nil clojure.lang.IPersistentMap true ["-R" "Comma-separated times and target subpop sizes to cull r-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]]
+		[s-max-map         nil clojure.lang.IPersistentMap true ["-S" "Comma-separated times and target subpop sizes to cull s-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]]
+		[k-min-map         nil clojure.lang.IPersistentMap true ["-k" "Comma-separated times and target subpop sizes to increase k-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]] ; issue #63 for commentary:
+		[r-min-map         nil clojure.lang.IPersistentMap true ["-r" "Comma-separated times and target subpop sizes to increase r-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]]
+		[s-min-map         nil clojure.lang.IPersistentMap true ["-s" "Comma-separated times and target subpop sizes to increase s-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]]
                 [csv-writer         nil java.io.BufferedWriter false]
                 [max-subenv-pop-size 0      long    false] ; maximum per-subenvironment population size
                 [seed               nil     long    false] ; convenience field to store Sim's seed
@@ -184,9 +187,9 @@
   ;; If user passed commandline options, use them to set parameters, rather than defaults:
     (when (and @commandline$ (not (:in-gui @sim-data$))) ; see issue #56 in github for the logic here
       (set-sim-data-from-commandline! this commandline$))
-    ;(when-let [k-cull-map (:k-cull-map @sim-data$)] (println "k:" k-cull-map (class k-cull-map) (class (first (keys k-cull-map)))))  ; DEBUG
-    ;(when-let [r-cull-map (:r-cull-map @sim-data$)] (println "r:" r-cull-map (class r-cull-map) (class (first (keys r-cull-map)))))  ; DEBUG
-    ;(when-let [s-cull-map (:s-cull-map @sim-data$)] (println "s:" s-cull-map (class s-cull-map) (class (first (keys s-cull-map)))))  ; DEBUG
+    ;(when-let [k-max-map (:k-max-map @sim-data$)] (println "k:" k-max-map (class k-max-map) (class (first (keys k-max-map)))))  ; DEBUG
+    ;(when-let [r-max-map (:r-max-map @sim-data$)] (println "r:" r-max-map (class r-max-map) (class (first (keys r-max-map)))))  ; DEBUG
+    ;(when-let [s-max-map (:s-max-map @sim-data$)] (println "s:" s-max-map (class s-max-map) (class (first (keys s-max-map)))))  ; DEBUG
     (swap! sim-data$ assoc :seed seed)
     (pe/setup-popenv-config! sim-data$)
     (swap! sim-data$ assoc :popenv (pe/make-popenv rng sim-data$)) ; create new popenv
