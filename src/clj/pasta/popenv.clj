@@ -91,14 +91,15 @@
 (defn die-move
   "Remove snipes that have no energy, cull snipes if carrying capacity is
   exceeded, move snipes, increment snipe ages."
-  [rng cfg-data subenv]
+  [rng cfg-data$ subenv]
   ;; Note that order of bindings below is important.  e.g. we shouldn't worry
   ;; about carrying capacity until energy-less snipes have been removed.
-  (let [{:keys [snipe-field mush-field dead-snipes]} subenv
+  (let [cfg-data @cfg-data$
+        {:keys [snipe-field mush-field dead-snipes]} subenv
         [snipe-field' newly-died] (snipes-die cfg-data snipe-field)
-        [snipe-field' k-newly-culled] (cull-typed-snipes rng cfg-data snipe-field' :k-cull-map sn/k-snipe?)
-        [snipe-field' r-newly-culled] (cull-typed-snipes rng cfg-data snipe-field' :r-cull-map sn/r-snipe?)
-        [snipe-field' s-newly-culled] (cull-typed-snipes rng cfg-data snipe-field' :s-cull-map sn/s-snipe?)
+        [snipe-field' k-newly-culled] (cull-typed-snipes rng cfg-data$ snipe-field' :k-cull-map sn/k-snipe?)
+        [snipe-field' r-newly-culled] (cull-typed-snipes rng cfg-data$ snipe-field' :r-cull-map sn/r-snipe?)
+        [snipe-field' s-newly-culled] (cull-typed-snipes rng cfg-data$ snipe-field' :s-cull-map sn/s-snipe?)
         [snipe-field' carrying-newly-culled] (obey-carrying-capacity rng cfg-data snipe-field')
         snipe-field' (move-snipes rng cfg-data snipe-field')     ; only the living get to move
         snipe-field' (age-snipes snipe-field')]
@@ -120,8 +121,8 @@
                                                                 (:snipe-field west')
                                                                 (:snipe-field east')
 								curr-snipe-id$)
-        west' (die-move rng @cfg-data$ (assoc west' :snipe-field west-snipe-field'))
-        east' (die-move rng @cfg-data$ (assoc east' :snipe-field east-snipe-field'))
+        west' (die-move rng cfg-data$ (assoc west' :snipe-field west-snipe-field'))
+        east' (die-move rng cfg-data$ (assoc east' :snipe-field east-snipe-field'))
         snipe-map' (make-snipe-map (:snipe-field west') (:snipe-field east'))]
     (PopEnv. west' east' snipe-map' curr-snipe-id$)))
 
@@ -342,8 +343,9 @@
   "If the cull map in cfg-data for snipe-map-key exists and has an entry for
   the current step, cull those snipes (the ones that satisfy snipe-pred) to
   the size that is the value of this step in the cull map."
-  [rng cfg-data snipe-field snipe-map-key snipe-pred]
-  (let [cull-map (snipe-map-key cfg-data)]
+  [rng cfg-data$ snipe-field snipe-map-key snipe-pred]
+  (let [cfg-data @cfg-data$
+        cull-map (snipe-map-key cfg-data)]
     (if-let [target-subpop-size (and cull-map ; nil if no map or this step not in map
                                      (get cull-map (:curr-step cfg-data)))] ; use get: it might be a java Map
       (let [snipes (filterv snipe-pred (.elements snipe-field))
