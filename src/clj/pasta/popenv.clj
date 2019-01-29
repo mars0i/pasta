@@ -45,15 +45,16 @@
 (defn make-subenv
   "Returns new SubEnv with mushs and snipes.  subenv-key is :west or :east."
   [rng cfg-data$ subenv-key curr-snipe-id$]
-  (let [{:keys [env-width env-height]} @cfg-data$
+  (let [cfg-data @cfg-data$
+        {:keys [env-width env-height]} cfg-data
         snipe-field (ObjectGrid2D. env-width env-height)
         mush-field  (ObjectGrid2D. env-width env-height)]
     (.clear mush-field)
-    (add-mushs! rng @cfg-data$ mush-field subenv-key)
+    (add-mushs! rng cfg-data mush-field subenv-key)
     (.clear snipe-field)
-    (add-snipes! rng cfg-data$ snipe-field subenv-key :num-k-snipes sn/make-rand-k-snipe curr-snipe-id$)
-    (add-snipes! rng cfg-data$ snipe-field subenv-key :num-r-snipes sn/make-rand-r-snipe curr-snipe-id$)
-    (add-snipes! rng cfg-data$ snipe-field subenv-key :num-s-snipes sn/make-rand-s-snipe curr-snipe-id$)
+    (add-snipes! rng cfg-data$ snipe-field subenv-key (:num-k-snipes cfg-data) sn/make-rand-k-snipe curr-snipe-id$)
+    (add-snipes! rng cfg-data$ snipe-field subenv-key (:num-r-snipes cfg-data) sn/make-rand-r-snipe curr-snipe-id$)
+    (add-snipes! rng cfg-data$ snipe-field subenv-key (:num-s-snipes cfg-data) sn/make-rand-s-snipe curr-snipe-id$)
     (SubEnv. snipe-field mush-field [])))
 
 (defn make-snipe-map
@@ -150,11 +151,10 @@
  "Add snipes to field at random locations.  snipe-num-key is a key for 
  the number of snipes of a given type to make, and snipe-maker is a function
  that will make an individual snipe."
- [rng cfg-data$ field subenv-key snipe-num-key snipe-maker curr-snipe-id$]
+ [rng cfg-data$ field subenv-key num-to-add snipe-maker curr-snipe-id$]
  (let [cfg-data @cfg-data$
-       {:keys [env-width env-height]} cfg-data
-       num-snipes (snipe-num-key cfg-data)]
-  (dotimes [_ num-snipes] ; don't use lazy method--it may never be executed
+       {:keys [env-width env-height]} cfg-data]
+  (dotimes [_ num-to-add] ; don't use lazy method--it may never be executed
    (add-organism-to-rand-loc! rng cfg-data field env-width env-height 
     (organism-setter (partial snipe-maker rng cfg-data$ subenv-key (next-snipe-id curr-snipe-id$)))))))
 
