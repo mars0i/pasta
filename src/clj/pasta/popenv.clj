@@ -347,7 +347,8 @@
   "If the max map in cfg-data for snipe-map-key exists and has an entry for
   the current step, return a new snipe field with a reduced number of 
   those snipes (the ones that satisfy snipe-pred), making their number
-  the value of this step in the max map."
+  the value of this step in the max map.  Otherwise return the original 
+  snipe field unchanged."
   [rng cfg-data$ snipe-field snipe-map-key snipe-pred]
   (let [cfg-data @cfg-data$
         max-map (snipe-map-key cfg-data)]
@@ -376,7 +377,8 @@
   "If the min map in cfg-data for snipe-map-key exists and has an entry for
   the current step, return a new snipe field with added newborn snipes, so
   that the number of the specified variety of snipes in the subpop is 
-  increased to the value of this step in the min map."
+  increased to the value of this step in the min map.  Otherwise return
+  the original snipe field unchanged."
   [rng cfg-data$ snipe-field snipe-map-key snipe-pred subenv-key snipe-maker curr-snipe-id$]
   (let [cfg-data @cfg-data$
         min-map (snipe-map-key cfg-data)]
