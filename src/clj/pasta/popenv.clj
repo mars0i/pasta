@@ -23,7 +23,7 @@
          add-organism-to-rand-loc! ; add-k-snipes! add-r-snipes! add-s-snipes! 
 	 add-mush!  maybe-add-mush! add-mushs! move-snipes move-snipe! choose-next-loc
          perceive-mushroom add-to-energy eat-if-appetizing snipes-eat 
-         snipes-die snipes-reproduce cull-snipes cull-typed-snipes age-snipes 
+         snipes-die snipes-reproduce cull-snipes cull-snipes-to-max age-snipes 
          excess-snipes snipes-in-subenv obey-carrying-capacity add-snipes!)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -88,18 +88,19 @@
              mush-field' 
              dead-snipes)))
 
-(defn die-move
-  "Remove snipes that have no energy, cull snipes if carrying capacity is
-  exceeded, move snipes, increment snipe ages."
-  [rng cfg-data$ subenv]
+(defn die-move-spawn
+  "Remove snipes that have no energy, cull snipes or increase their number
+  spontaneously if there is a population size specification, cull snipes if 
+  carrying capacity is exceeded, move snipes, increment snipe ages."
+  [rng cfg-data$ subenv subenv-key]
   ;; Note that order of bindings below is important.  e.g. we shouldn't worry
   ;; about carrying capacity until energy-less snipes have been removed.
   (let [cfg-data @cfg-data$
         {:keys [snipe-field mush-field dead-snipes]} subenv
         [snipe-field' newly-died] (snipes-die cfg-data snipe-field)
-        [snipe-field' k-newly-culled] (cull-typed-snipes rng cfg-data$ snipe-field' :k-max-map sn/k-snipe?)
-        [snipe-field' r-newly-culled] (cull-typed-snipes rng cfg-data$ snipe-field' :r-max-map sn/r-snipe?)
-        [snipe-field' s-newly-culled] (cull-typed-snipes rng cfg-data$ snipe-field' :s-max-map sn/s-snipe?)
+        [snipe-field' k-newly-culled] (cull-snipes-to-max rng cfg-data$ snipe-field' :k-max-map sn/k-snipe?)
+        [snipe-field' r-newly-culled] (cull-snipes-to-max rng cfg-data$ snipe-field' :r-max-map sn/r-snipe?)
+        [snipe-field' s-newly-culled] (cull-snipes-to-max rng cfg-data$ snipe-field' :s-max-map sn/s-snipe?)
         [snipe-field' carrying-newly-culled] (obey-carrying-capacity rng cfg-data snipe-field')
         snipe-field' (move-snipes rng cfg-data snipe-field')     ; only the living get to move
         snipe-field' (age-snipes snipe-field')]
@@ -121,8 +122,8 @@
                                                                 (:snipe-field west')
                                                                 (:snipe-field east')
 								curr-snipe-id$)
-        west' (die-move rng cfg-data$ (assoc west' :snipe-field west-snipe-field'))
-        east' (die-move rng cfg-data$ (assoc east' :snipe-field east-snipe-field'))
+        west' (die-move-spawn rng cfg-data$ (assoc west' :snipe-field west-snipe-field') :west)
+        east' (die-move-spawn rng cfg-data$ (assoc east' :snipe-field east-snipe-field') :east)
         snipe-map' (make-snipe-map (:snipe-field west') (:snipe-field east'))]
     (PopEnv. west' east' snipe-map' curr-snipe-id$)))
 
@@ -339,7 +340,7 @@
       (cull-snipes rng snipe-field snipes num-to-cull)
       [snipe-field nil])))
 
-(defn cull-typed-snipes
+(defn cull-snipes-to-max
   "If the cull map in cfg-data for snipe-map-key exists and has an entry for
   the current step, cull those snipes (the ones that satisfy snipe-pred) to
   the size that is the value of this step in the cull map."
@@ -366,6 +367,20 @@
     (doseq [snipe excess-snipes]
       (.set new-snipe-field (:x snipe) (:y snipe) nil)) ; remove chosen snipes
     [new-snipe-field excess-snipes]))
+
+(defn add-snipes-to-min
+  [rng cfg-data$ snipe-field snipe-map-key subenv-key snipe-maker curr-snipe-id$]
+  (let [cfg-data @cfg-data$
+        min-map (snipe-map-key cfg-data)]
+    (if-let [target-subpop-size (and min-map ; nil if no map or this step not in map
+                                     (get min-map (:curr-step cfg-data)))] ; use get: it might be a java Map
+      (let [num-current-snipes (count (.elements snipe-field))
+            num-to-add (- target-subpop-size num-current-snipes)]
+        (when (pos? num-to-add)
+          (let [new-snipe-field (ObjectGrid2D. snipe-field)]
+            (add-snipes! rng cfg-data$ new-snipe-field subenv-key num-to-add snipe-maker curr-snipe-id$)
+            new-snipe-field)))
+      snipe-field)))
 
 (defn give-birth
   [cfg-data snipe]
