@@ -25,6 +25,7 @@
 (def data-accessor '.simData)
 (def init-genclass-sym 'init-sim-data)
 (def init-defn-sym '-init-sim-data)
+(def gui-vars-html-filename "gui_vars_table.html") ; will contain html for documentation of vars in GUI
 
 
 ;; Positional functions
@@ -62,6 +63,7 @@
 (def field-init second)
 (def field-type third)
 (def field-ui?  fourth)
+(def field-description (comp second fifth))
 
 (defn get-class-prefix
   "Given a Java/Clojure class identifier symbol or string, or class object (found
@@ -71,17 +73,17 @@
   (s/join "." (butlast 
                 (s/split (str class-rep) #"\."))))
 
-(defn hyphed-to-studly-str
-  "Converts a hyphenated string into the corresponding studly caps string."
+(defn snake-to-camel-str
+  "Converts a hyphenated string into the corresponding camel caps string."
   [string]
   (let [parts (s/split string #"-")]
     (reduce str (map s/capitalize parts))))
 
-(defn hyphed-sym-to-studly-str
-  "Convience wrapper for hyphed-to-studly-str that converts symbol to
+(defn snake-sym-to-camel-str
+  "Convience wrapper for snake-to-camel-str that converts symbol to
   string before calling it."
   [sym]
-  (hyphed-to-studly-str (name sym)))
+  (snake-to-camel-str (name sym)))
 
 (defn prefix-sym
   "Given a prefix string and a Clojure symbol, returns a Java 
@@ -154,6 +156,19 @@
             (println "-help (note single dash): Print help message for MASON.")
             (System/exit 0)))))))
 
+(defn make-gui-vars-html
+  "Given a sequence of Java variable name strings and descriptions of them
+  formats the names and descriptions into an HTML table that can be inserted,
+  for example, into the app's index.html or a README.md file."
+  [java-var-names descriptions]
+  (apply str
+         (conj (vec (cons "<table style=\"width:100%\">"
+                          (map (fn [v d]
+                                 (format "<tr><td valign=top>%s:</td> <td>%s</td></tr>\n" v d))
+                               java-var-names
+                               descriptions)))
+               "</table>")))
+
 ;; TODO add type annotations. (maybe iff they're symbols??)
 ;; Maybe some of gensym pound signs are overkill. Can't hurt?
 (defmacro defsim
@@ -163,7 +178,7 @@
   initializer function for the map; and a call to clojure.tools.cli/parse-opts
   to define corresponding commandline options.  fields is a sequence of 4- or 
   5-element sequences starting with names of fields in which configuration 
-  data will be stored and accessed, followed by initial values and a Java 
+  data will be stored and accessed, followed by initial values and Java 
   type identifiers for the field.  The fourth element is either false to 
   indicate that the field should not be configurable from the UI, or truthy
   if it is.  In the latter case, it may be a two-element sequence containing 
@@ -185,22 +200,24 @@
    (let [addl-opts-map (apply hash-map addl-gen-class-opts)
          field-syms# (map field-sym fields)
          field-inits# (map field-init fields)
+         field-descriptions# (map field-description fields)
          ui-fields# (get-ui-fields fields)
          ui-field-syms# (map field-sym ui-fields#)
          ;ui-field-inits# (map field-init ui-fields#)
          ui-field-types# (map field-type ui-fields#)
          ui-field-keywords# (map keyword ui-field-syms#)
-         accessor-stubs# (map hyphed-sym-to-studly-str ui-field-syms#)
+         accessor-stubs# (map snake-sym-to-camel-str ui-field-syms#)
          get-syms#  (map (partial prefix-sym "get") accessor-stubs#)
          set-syms#  (map (partial prefix-sym "set") accessor-stubs#)
          -get-syms# (map (partial prefix-sym "-") get-syms#)
          -set-syms# (map (partial prefix-sym "-") set-syms#)
          range-fields# (get-range-fields ui-fields#)
-         dom-syms#  (map (comp (partial prefix-sym "dom") hyphed-sym-to-studly-str first)
+         dom-syms#  (map (comp (partial prefix-sym "dom") snake-sym-to-camel-str first)
                         range-fields#)
          -dom-syms# (map (partial prefix-sym "-") dom-syms#)
          dom-keywords# (map keyword dom-syms#)
          ranges# (map field-ui? range-fields#)
+         gui-vars-html# (make-gui-vars-html accessor-stubs# field-descriptions#)
          class-prefix (get-class-prefix *ns*)
          qualified-sim-class# (symbol (str class-prefix "." sim-class-sym))
          qualified-data-class# (symbol (str class-prefix "." data-class-sym))
@@ -216,6 +233,13 @@
                                                (map #(vector % [] 'java.lang.Object) dom-syms#)
                                                (:methods addl-opts-map)))} 
          gen-class-opts# (into gen-class-opts# (dissoc addl-opts-map :exposes-methods :methods))]
+
+     ;; GENERATE HTML TABLE DOCUMENTING VARIABLES POSSIBLY VISIBLE IN GUI
+     ;; Note this will only happen whem Sim.clj is recompiled.
+     (println "Writing GUI vars html table to file" gui-vars-html-filename ".")
+     (spit gui-vars-html-filename gui-vars-html#)
+
+     ;; GENERATE CODE FOR Sim.clj:
      `(do
         ;; Put following in its own namespace so that other namespaces can access it without cyclicly referencing Sim:
         ;; DEFINE CONFIG DATA RECORD:
@@ -242,4 +266,4 @@
 
         ;; DEFINE COMMANDLINE OPTIONS:
         ~@(make-commandline-processing-defs fields)
-        )))
+      )))
