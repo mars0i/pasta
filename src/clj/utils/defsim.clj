@@ -260,7 +260,7 @@
         (defn ~init-defn-sym [~'seed] [[~'seed] (atom (~qualified-data-rec-constructor# ~@field-inits#))])
 
         ;; DEFINE BEAN AND OTHER ACCESSORS FOR MASON UI:
-        ~@(map (fn [sym# keyw#] (list 'defn sym# '[this] `(~keyw# @(.simData ~'this))))
+        ~@(map (fn [sym# keyw#] (list 'defn sym# '[this] `(~keyw# @(~data-accessor ~'this))))
                -get-syms# ui-field-keywords#)
         ~@(map (fn [sym# keyw#] (list 'defn sym# '[this newval] `(swap! (~data-accessor ~'this) assoc ~keyw# ~'newval)))
                -set-syms# ui-field-keywords#)
