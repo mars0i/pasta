@@ -47,8 +47,6 @@
                 [mush-low-size       4.0    double  true        ["-t" "Size of small mushrooms (mean of light distribution)" :parse-fn #(Double. %)]]
                 [mush-high-size      6.0    double  true        ["-l" "Size of large mushrooms (mean of light distribution)" :parse-fn #(Double. %)]]
                 [mush-sd             2.0    double  true        ["-v" "Standard deviation of mushroom light distribution" :parse-fn #(Double. %)]]
-                [mush-mid-size       0      double  false] ; calculated from the previous values
-                [mush-size-scale     0      double  false] ; calculated from the previous values
                 [mush-pos-nutrition  1.0    double  [0.0 20.0]  ["-p" "Energy from eating a nutritious mushroom" :parse-fn #(Double. %)]]
                 [mush-neg-nutrition -1.0    double  [-20.0 0.0] ["-n" "Energy from eating a poisonous mushroom" :parse-fn #(Double. %)]]
                 [initial-energy     10.0    double  [0.0 50.0]  ["-e" "Initial energy for each snipe" :parse-fn #(Double. %)]]
@@ -72,6 +70,8 @@
 		[k-min-map         nil clojure.lang.IPersistentMap true ["-k" "Comma-separated times and target subpop sizes to increase k-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]] ; issue #63 for commentary:
 		[r-min-map         nil clojure.lang.IPersistentMap true ["-r" "Comma-separated times and target subpop sizes to increase r-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]]
 		[s-min-map         nil clojure.lang.IPersistentMap true ["-s" "Comma-separated times and target subpop sizes to increase s-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]]
+                [mush-mid-size       0      double  false] ; calculated from mush values above
+                [mush-size-scale     0      double  false] ; calculated from mush values above
                 [csv-writer         nil java.io.BufferedWriter false]
                 [max-subenv-pop-size 0      long    false] ; maximum per-subenvironment population size
                 [seed               nil     long    false] ; convenience field to store Sim's seed
