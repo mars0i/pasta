@@ -28,3 +28,4 @@ doc/FeldmanFriston2010AttnUncertFreeEnergy.pdf
 doc/phil.bib
 *.bst
 .DS_Store
+gui_vars_table.html
