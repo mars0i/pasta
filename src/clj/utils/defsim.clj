@@ -228,7 +228,7 @@
          qualified-data-rec-constructor# (symbol (str class-prefix "." data-class-sym "/" data-rec-constructor))
          gen-class-opts# {:name qualified-sim-class#
                          :extends 'sim.engine.SimState
-                         :state data-field-sym
+                         :state data-field-sym ; Experiment: :state (vary-meta data-field-sym assoc :tag qualified-data-rec#)
                          :exposes-methods (into '{start superStart} (:exposes-methods addl-opts-map))
                          :init init-genclass-sym
                          :main true
@@ -260,6 +260,7 @@
         (defn ~init-defn-sym [~'seed] [[~'seed] (atom (~qualified-data-rec-constructor# ~@field-inits#))])
 
         ;; DEFINE BEAN AND OTHER ACCESSORS FOR MASON UI:
+        ; experiment: ~@(map (fn [sym# keyw#] (list 'defn sym# '[this] `(~keyw# @(~data-accessor (vary-meta ~'this assoc :tag sim-class-sim)))))
         ~@(map (fn [sym# keyw#] (list 'defn sym# '[this] `(~keyw# @(~data-accessor ~'this))))
                -get-syms# ui-field-keywords#)
         ~@(map (fn [sym# keyw#] (list 'defn sym# '[this newval] `(swap! (~data-accessor ~'this) assoc ~keyw# ~'newval)))
