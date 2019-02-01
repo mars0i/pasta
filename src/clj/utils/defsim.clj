@@ -195,7 +195,10 @@
   for these gen-class options.  Note: defsim must be used only in a namespace
   named <namespace prefix>.Sim, where <namespace prefix> is the path before the
   last dot of the current namespace.  Sim must be aot-compiled in order for 
-  gen-class to work."
+  gen-class to work.  When run, this macro also generates a file named
+  gui_vars_table.html containing documentation on generated Java vars that will
+  be manipulable from within the GUI.  This file can be included into other
+  documentation such as the index.html file displayed in the app."
   [fields & addl-gen-class-opts]
    (let [addl-opts-map (apply hash-map addl-gen-class-opts)
          field-syms# (map field-sym fields)
