@@ -2,7 +2,7 @@
 ;; under the Gnu General Public License version 3.0 as specified in the
 ;; the file LICENSE.
 
-;(set! *warn-on-reflection* true)
+(set! *warn-on-reflection* true)
 
 (ns pasta.Sim
   (:require [clojure.tools.cli]

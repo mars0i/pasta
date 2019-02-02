@@ -203,8 +203,8 @@
    (let [addl-opts-map (apply hash-map addl-gen-class-opts)
          field-syms# (map field-sym fields)   ; symbols for data object fields (?)
          field-inits# (map field-init fields) ; data field initial values (?)
-         ui-fields# (get-ui-fields fields)    ; names of fields in GUI (?)
-         ui-field-syms# (map field-sym ui-fields#) ; sybmols for fields in GUI (?)
+         ui-fields# (get-ui-fields fields)    ; full specifications of (only) fields in GUI
+         ui-field-syms# (map field-sym ui-fields#) ; sybmols of (only) fields in GUI
          ui-field-descriptions# (map field-description ui-fields#)
          ui-field-types# (map field-type ui-fields#)
          ui-field-keywords# (map keyword ui-field-syms#)
@@ -236,13 +236,17 @@
                                                (:methods addl-opts-map)))} 
          gen-class-opts# (into gen-class-opts# (dissoc addl-opts-map :exposes-methods :methods))
          this# (vary-meta 'this assoc :tag qualified-sim-class#) ; add type hint to Sim arg of bean accessors to avoid reflection
-         ; This may be useful: (repeatedly (fn [] (vary-meta (gensym 'newval) assoc :tag java.lang.String)))
+         bare-newval-params# (repeatedly (fn [] (gensym 'newval)))
+         hinted-newval-params# (map (fn [param typ] (vary-meta param assoc :tag typ)) bare-newval-params# ui-field-types#)
          ; (map (fn [typ] (vary-meta (gensym 'newval) assoc :tag typ)) ui-field-types#) ; I'm sure this won't work, because of 'typ
+         ; This may be useful: (repeatedly (fn [] (vary-meta (gensym 'newval) assoc :tag java.lang.String)))
          ]
+
+     ;(doall (map (fn [f p t] (println f p (meta p) t)) ui-field-syms# newval-params# ui-field-types#)) ; DEBUG
 
      ;; GENERATE HTML TABLE DOCUMENTING VARIABLES POSSIBLY VISIBLE IN GUI
      ;; Note this will only happen whem Sim.clj is recompiled.
-     (println "Writing GUI vars html table to file" gui-vars-html-filename ".")
+     (println (str "Writing GUI vars html table to file " gui-vars-html-filename ".")) ; str suppresses println's spaces
      (spit gui-vars-html-filename gui-vars-html#)
 
      ;; GENERATE CODE FOR Sim.clj:
@@ -263,11 +267,11 @@
         (defn ~init-defn-sym [~'seed] [[~'seed] (atom (~qualified-data-rec-constructor# ~@field-inits#))])
 
         ;; DEFINE BEAN AND OTHER ACCESSORS FOR MASON UI:
-        ;~@(map (fn [sym# keyw#] (list 'defn sym# '[this] `(~keyw# @(~data-accessor (vary-meta ~'this assoc :tag ~'qualified-sim-class#)))))
-        ~@(map (fn [sym# keyw#] (list 'defn sym# (vector this#) `(~keyw# @(~data-accessor ~'this))))
+        ~@(map (fn [sym# keyw#] (list 'defn sym# (vector this#) `(~keyw# @(~data-accessor ~this#))))
                -get-syms# ui-field-keywords#)
-        ~@(map (fn [sym# keyw#] (list 'defn sym# (vector this# 'newval) `(swap! (~data-accessor ~'this) assoc ~keyw# ~'newval)))
-               -set-syms# ui-field-keywords#)
+        ~@(map (fn [sym# keyw# hinted-param# bare-param#]
+                 (list 'defn sym# (vector this# hinted-param#) `(swap! (~data-accessor ~this#) assoc ~keyw# ~bare-param#)))
+               -set-syms# ui-field-keywords# hinted-newval-params# bare-newval-params#)
         ~@(map (fn [sym# keyw# range-pair#] (list 'defn sym# (vector this#) `(Interval. ~@range-pair#)))
                -dom-syms# dom-keywords# ranges#)
 
