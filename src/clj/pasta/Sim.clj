@@ -74,7 +74,7 @@
                 [extreme-pref        1.0    double  true        ["-x" "Absolute value of r-snipe preferences." :parse-fn string-to-Double]]
                 [report-every        0      double  true        ["-i" "Report basic stats every i ticks after the first one (0 = never); format depends on -w." :parse-fn string-to-Double]]
                 [write-csv         false    boolean false       ["-w" "Write data to file instead of printing it to console." :parse-fn string-to-Boolean]]
-                [csv-basename       nil java.lang.String false  ["-F" "Base name of files to append data to.  Otherwise new filenames generated from seed."]] ; no parse fn needed for string to string
+                [csv-basename       nil     String false  ["-F" "Base name of files to append data to.  Otherwise new filenames generated from seed."]] ; no parse fn needed for string to string
 		[k-max-map         nil clojure.lang.IPersistentMap true ["-K" "Comma-separated times and target subpop sizes to cull k-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]] ; issue #63 for commentary:
 		[r-max-map         nil clojure.lang.IPersistentMap true ["-R" "Comma-separated times and target subpop sizes to cull r-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]]
 		[s-max-map         nil clojure.lang.IPersistentMap true ["-S" "Comma-separated times and target subpop sizes to cull s-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]]
@@ -83,11 +83,11 @@
 		[s-min-map         nil clojure.lang.IPersistentMap true ["-s" "Comma-separated times and target subpop sizes to increase s-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]]
                 [mush-mid-size       0      double  false] ; calculated from mush values above
                 [mush-size-scale     0      double  false] ; calculated from mush values above
-                [csv-writer         nil BufferedWriter false]
+                [csv-writer         nil     BufferedWriter false]
                 [max-subenv-pop-size 0      long    false] ; maximum per-subenvironment population size
                 [seed               nil     long    false] ; convenience field to store Sim's seed
 		[in-gui           false     boolean false] ; convenience field to store Boolean re whether in GUI
-                [popenv             nil  pasta.popenv.PopEnv false]]
+                [popenv             nil pasta.popenv.PopEnv false]]
   :exposes-methods {finish superFinish} ; name for function to call finish() in the superclass
   :methods [[getPopSize [] long] ; additional options here. this one is for def below; it will get merged into the generated :methods component.
             [getKSnipeFreq [] double]
