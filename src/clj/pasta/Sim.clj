@@ -2,7 +2,7 @@
 ;; under the Gnu General Public License version 3.0 as specified in the
 ;; the file LICENSE.
 
-(set! *warn-on-reflection* true)
+;(set! *warn-on-reflection* true)
 
 (ns pasta.Sim
   (:require [clojure.tools.cli]
@@ -36,37 +36,45 @@
   [s]
   (clojure.edn/read-string (str "{" s "}")))
 
-;(defn string-to-java-map
-;  "Read a string containing comma-separated integers into a Java map."
-;  [s]
-;  (java.util.HashMap. (string-to-map s)))
+;; Rather than using the constructors in in-line functions,
+;; define converters here with type hints to avoid reflection warnings:
+(defn string-to-Long [^String s] (Long. s))
+(defn string-to-Double [^String s] (Double. s))
+(defn string-to-Double [^String s] (Double. s))
+;; The next one is included only for parallelism.  You can't type hint the argument
+;; in this case, because it's generally a nothing rather than a string.
+;; i.e. clojure.tools.cli handles boolean options specially.  If you
+;; type hint it, it will always behave as if it was false.  So you will
+;; always get a reflection warning for the parameter s.  But that's OK
+;; since this runs only once when you start the application.
+(defn string-to-Boolean [s] (Boolean. s))
 
 ;; Note: There is no option below for max number of steps.  Use MASON's -for instead.
 ;;              field name    initial-value type   in ui? with range?
-(defsim/defsim [[num-k-snipes       25      long    [0 500]     ["-1" "Size of k-snipe subpopulation" :parse-fn #(Long. %)]]
-                [num-r-snipes       25      long    [0 500]     ["-2" "Size of r-snipe subpopulation" :parse-fn #(Long. %)]]
-                [num-s-snipes       25      long    [0 500]     ["-3" "Size of s-snipe subpopulation" :parse-fn #(Long. %)]]
-                [mush-prob           0.2    double  [0.0 1.0]   ["-M" "Average frequency of mushrooms." :parse-fn #(Double. %)]]
-                [mush-low-size       4.0    double  true        ["-t" "Size of small mushrooms (mean of light distribution)" :parse-fn #(Double. %)]]
-                [mush-high-size      6.0    double  true        ["-l" "Size of large mushrooms (mean of light distribution)" :parse-fn #(Double. %)]]
-                [mush-sd             2.0    double  true        ["-v" "Standard deviation of mushroom light distribution" :parse-fn #(Double. %)]]
-                [mush-pos-nutrition  1.0    double  [0.0 20.0]  ["-p" "Energy from eating a nutritious mushroom" :parse-fn #(Double. %)]]
-                [mush-neg-nutrition -1.0    double  [-20.0 0.0] ["-n" "Energy from eating a poisonous mushroom" :parse-fn #(Double. %)]]
-                [initial-energy     10.0    double  [0.0 50.0]  ["-e" "Initial energy for each snipe" :parse-fn #(Double. %)]]
-                [birth-threshold    20.0    double  [1.0 50.0]  ["-b" "Energy level at which birth takes place" :parse-fn #(Double. %)]]
-                [k-pref-noise-sd     0.0625 double  true        ["-a" "Standard deviation of internal noise in k-snipe preference determination." :parse-fn #(Double. %)]]
-                [birth-cost          5.0    double  [0.0 10.0]  ["-o" "Energetic cost of giving birth to one offspring" :parse-fn #(Double. %)]]
-                [max-energy         30.0    double  [1.0 100.0] ["-m" "Max energy that a snipe can have." :parse-fn #(Double. %)]]
-                [carrying-proportion 0.25   double  [0.1 0.9]   ["-c" "Snipes are randomly culled when number exceed this times # of cells in a subenv (east or west)." :parse-fn #(Double. %)]]
-                [neighbor-radius     5      long    [1 10]      ["-d" "s-snipe neighbors (for copying) are no more than this distance away." :parse-fn #(Long. %)]]
-                [env-width          40      long    [10 250]    ["-W" "Width of env.  Must be an even number." :parse-fn #(Long. %)]] ; Haven't figured out how to change 
-                [env-height         40      long    [10 250]    ["-H" "Height of env. Must be an even number." :parse-fn #(Long. %)]] ;  within app without distortion
-                [env-display-size   12.0    double  false       ["-D" "How large to display the env in gui by default." :parse-fn #(Double. %)]]
-                [use-gui           false    boolean false       ["-g" "If -g, use GUI; otherwise use GUI if and only if +g or there are no commandline options." :parse-fn #(Boolean. %)]]
-                [extreme-pref        1.0    double  true        ["-x" "Absolute value of r-snipe preferences." :parse-fn #(Double. %)]]
-                [report-every        0      double  true        ["-i" "Report basic stats every i ticks after the first one (0 = never); format depends on -w." :parse-fn #(Double. %)]]
-                [write-csv         false    boolean false       ["-w" "Write data to file instead of printing it to console." :parse-fn #(Boolean. %)]]
-                [csv-basename       nil java.lang.String false  ["-F" "Base name of files to append data to.  Otherwise new filenames generated from seed." :parse-fn #(String. %)]]
+(defsim/defsim [[num-k-snipes       25      long    [0 500]     ["-1" "Size of k-snipe subpopulation" :parse-fn string-to-Long]]
+                [num-r-snipes       25      long    [0 500]     ["-2" "Size of r-snipe subpopulation" :parse-fn string-to-Long]]
+                [num-s-snipes       25      long    [0 500]     ["-3" "Size of s-snipe subpopulation" :parse-fn string-to-Long]]
+                [mush-prob           0.2    double  [0.0 1.0]   ["-M" "Average frequency of mushrooms." :parse-fn string-to-Double]]
+                [mush-low-size       4.0    double  true        ["-t" "Size of small mushrooms (mean of light distribution)" :parse-fn string-to-Double]]
+                [mush-high-size      6.0    double  true        ["-l" "Size of large mushrooms (mean of light distribution)" :parse-fn string-to-Double]]
+                [mush-sd             2.0    double  true        ["-v" "Standard deviation of mushroom light distribution" :parse-fn string-to-Double]]
+                [mush-pos-nutrition  1.0    double  [0.0 20.0]  ["-p" "Energy from eating a nutritious mushroom" :parse-fn string-to-Double]]
+                [mush-neg-nutrition -1.0    double  [-20.0 0.0] ["-n" "Energy from eating a poisonous mushroom" :parse-fn string-to-Double]]
+                [initial-energy     10.0    double  [0.0 50.0]  ["-e" "Initial energy for each snipe" :parse-fn string-to-Double]]
+                [birth-threshold    20.0    double  [1.0 50.0]  ["-b" "Energy level at which birth takes place" :parse-fn string-to-Double]]
+                [k-pref-noise-sd     0.0625 double  true        ["-a" "Standard deviation of internal noise in k-snipe preference determination." :parse-fn string-to-Double]]
+                [birth-cost          5.0    double  [0.0 10.0]  ["-o" "Energetic cost of giving birth to one offspring" :parse-fn string-to-Double]]
+                [max-energy         30.0    double  [1.0 100.0] ["-m" "Max energy that a snipe can have." :parse-fn string-to-Double]]
+                [carrying-proportion 0.25   double  [0.1 0.9]   ["-c" "Snipes are randomly culled when number exceed this times # of cells in a subenv (east or west)." :parse-fn string-to-Double]]
+                [neighbor-radius     5      long    [1 10]      ["-d" "s-snipe neighbors (for copying) are no more than this distance away." :parse-fn string-to-Long]]
+                [env-width          40      long    [10 250]    ["-W" "Width of env.  Must be an even number." :parse-fn string-to-Long]] ; Haven't figured out how to change 
+                [env-height         40      long    [10 250]    ["-H" "Height of env. Must be an even number." :parse-fn string-to-Long]] ;  within app without distortion
+                [env-display-size   12.0    double  false       ["-D" "How large to display the env in gui by default." :parse-fn string-to-Double]]
+                [use-gui           false    boolean false       ["-g" "If -g, use GUI; otherwise use GUI if and only if +g or there are no commandline options." :parse-fn string-to-Boolean]]
+                [extreme-pref        1.0    double  true        ["-x" "Absolute value of r-snipe preferences." :parse-fn string-to-Double]]
+                [report-every        0      double  true        ["-i" "Report basic stats every i ticks after the first one (0 = never); format depends on -w." :parse-fn string-to-Double]]
+                [write-csv         false    boolean false       ["-w" "Write data to file instead of printing it to console." :parse-fn string-to-Boolean]]
+                [csv-basename       nil java.lang.String false  ["-F" "Base name of files to append data to.  Otherwise new filenames generated from seed."]] ; no parse fn needed for string to string
 		[k-max-map         nil clojure.lang.IPersistentMap true ["-K" "Comma-separated times and target subpop sizes to cull k-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]] ; issue #63 for commentary:
 		[r-max-map         nil clojure.lang.IPersistentMap true ["-R" "Comma-separated times and target subpop sizes to cull r-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]]
 		[s-max-map         nil clojure.lang.IPersistentMap true ["-S" "Comma-separated times and target subpop sizes to cull s-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]]
