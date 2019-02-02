@@ -236,6 +236,8 @@
                                                (:methods addl-opts-map)))} 
          gen-class-opts# (into gen-class-opts# (dissoc addl-opts-map :exposes-methods :methods))
          this# (vary-meta 'this assoc :tag qualified-sim-class#) ; add type hint to Sim arg of bean accessors to avoid reflection
+         ; This may be useful: (repeatedly (fn [] (vary-meta (gensym 'newval) assoc :tag java.lang.String)))
+         ; (map (fn [typ] (vary-meta (gensym 'newval) assoc :tag typ)) ui-field-types#) ; I'm sure this won't work, because of 'typ
          ]
 
      ;; GENERATE HTML TABLE DOCUMENTING VARIABLES POSSIBLY VISIBLE IN GUI
