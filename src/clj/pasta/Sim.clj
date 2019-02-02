@@ -2,7 +2,7 @@
 ;; under the Gnu General Public License version 3.0 as specified in the
 ;; the file LICENSE.
 
-;(set! *warn-on-reflection* true)
+(set! *warn-on-reflection* true)
 
 (ns pasta.Sim
   (:require [clojure.tools.cli]
@@ -13,10 +13,11 @@
             [pasta.snipe :as sn]
             [pasta.popenv :as pe]
             [pasta.stats :as stats])
-  (:import [sim.engine Steppable Schedule]
+  (:import [sim.engine Steppable Schedule Stoppable]
            [sim.util Interval]
            [ec.util MersenneTwisterFast]
            [java.lang String]
+           [java.io BufferedWriter]
            [pasta.popenv PopEnv]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -74,7 +75,7 @@
 		[s-min-map         nil clojure.lang.IPersistentMap true ["-s" "Comma-separated times and target subpop sizes to increase s-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]]
                 [mush-mid-size       0      double  false] ; calculated from mush values above
                 [mush-size-scale     0      double  false] ; calculated from mush values above
-                [csv-writer         nil java.io.BufferedWriter false]
+                [csv-writer         nil BufferedWriter false]
                 [max-subenv-pop-size 0      long    false] ; maximum per-subenvironment population size
                 [seed               nil     long    false] ; convenience field to store Sim's seed
 		[in-gui           false     boolean false] ; convenience field to store Boolean re whether in GUI
@@ -85,8 +86,8 @@
             [getRSnipeFreq [] double]
             [getSSnipeFreq [] double]])
 
-(defn curr-step [sim] (.getSteps (.schedule sim)))
-(defn curr-popenv [sim] (:popenv @(.simData sim)))
+(defn curr-step [^Sim sim] (.getSteps (.schedule sim)))
+(defn curr-popenv [^Sim sim] (:popenv @(.simData sim)))
 ;; NOTE these get called on every tick in GUI even if not reported:
 (defn -getPopSize    [^Sim this] (stats/get-pop-size @(.simData this)))
 (defn -getKSnipeFreq [^Sim this] (stats/maybe-get-freq-for-gui (curr-step this) :k-snipe (curr-popenv this)))
@@ -107,8 +108,9 @@
 
 (defn -main
   [& args]
-  (sim.engine.SimState/doLoop pasta.Sim (into-array String args))
-  (System/exit 0))
+  (let [^"[Ljava.lang.String;" arg-array (into-array args)]
+    (sim.engine.SimState/doLoop pasta.Sim arg-array)
+    (System/exit 0)))
 
 (defn mein
   "Externally available wrapper for -main."
@@ -119,7 +121,7 @@
 (defn -stop
   [^Sim this]
   (let [^SimData sim-data$ (.simData this)
-        writer (:csv-writer @sim-data$)]
+        ^BufferedWriter writer (:csv-writer @sim-data$)]
     (when writer
       (.close writer)
       (swap! sim-data$ :csv-writer nil))))
@@ -128,7 +130,7 @@
   [^Sim this]
   (let [^SimData sim-data$ (.simData this)
         sim-data @sim-data$
-        stoppable (:stoppable sim-data)
+        ^Stoppable stoppable (:stoppable sim-data)
         seed (:seed sim-data)
         report-every (:report-every sim-data)
         ^Schedule schedule (.schedule this)
@@ -138,7 +140,7 @@
       (stats/report-stats sim-data seed steps)
       (when (not (:write-csv sim-data))
         (stats/write-params-to-console sim-data)))
-    (when-let [writer (:csv-writer sim-data)]
+    (when-let [^BufferedWriter writer (:csv-writer sim-data)]
       (.close writer))))
 
 ;; This should not call the corresponding function in the superclass; that
@@ -156,12 +158,12 @@
 ;; Note finish is never called here.  Stopping a simulation in any
 ;; normal MASON way will result in finish() above being called.
 (defn run-sim
-  [sim-sim rng sim-data$ seed]
+  [^Sim sim-sim rng sim-data$ seed]
   (let [^Schedule schedule (.schedule sim-sim)
         report-every (:report-every @sim-data$)
         max-ticks (:max-ticks @sim-data$)
         ;; This runs the simulation:
-        stoppable (.scheduleRepeating schedule Schedule/EPOCH 0 ; epoch = starting at beginning, 0 means run this first during timestep
+        ^Stoppable stoppable (.scheduleRepeating schedule Schedule/EPOCH 0 ; epoch = starting at beginning, 0 means run this first during timestep
                                       (reify Steppable 
                                         (step [this sim-state]
                                           (swap! sim-data$ assoc :curr-step (curr-step sim-sim)) ; make current tick available to popenv
