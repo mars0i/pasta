@@ -201,23 +201,22 @@
   documentation such as the index.html file displayed in the app."
   [fields & addl-gen-class-opts]
    (let [addl-opts-map (apply hash-map addl-gen-class-opts)
-         field-syms# (map field-sym fields)
-         field-inits# (map field-init fields)
-         ui-fields# (get-ui-fields fields)
-         ui-field-syms# (map field-sym ui-fields#)
+         field-syms# (map field-sym fields)   ; symbols for data object fields (?)
+         field-inits# (map field-init fields) ; data field initial values (?)
+         ui-fields# (get-ui-fields fields)    ; names of fields in GUI (?)
+         ui-field-syms# (map field-sym ui-fields#) ; sybmols for fields in GUI (?)
          ui-field-descriptions# (map field-description ui-fields#)
-         ;ui-field-inits# (map field-init ui-fields#)
          ui-field-types# (map field-type ui-fields#)
          ui-field-keywords# (map keyword ui-field-syms#)
          accessor-stubs# (map snake-sym-to-camel-str ui-field-syms#)
-         get-syms#  (map (partial prefix-sym "get") accessor-stubs#)
-         set-syms#  (map (partial prefix-sym "set") accessor-stubs#)
-         -get-syms# (map (partial prefix-sym "-") get-syms#)
-         -set-syms# (map (partial prefix-sym "-") set-syms#)
+         get-syms#  (map (partial prefix-sym "get") accessor-stubs#) ; bean getter symbols
+         set-syms#  (map (partial prefix-sym "set") accessor-stubs#) ; bean setter symbols
+         -get-syms# (map (partial prefix-sym "-") get-syms#)         ; getter symbols with "-" prefix
+         -set-syms# (map (partial prefix-sym "-") set-syms#)         ; setter symbols with "-" prefix
          range-fields# (get-range-fields ui-fields#)
-         dom-syms#  (map (comp (partial prefix-sym "dom") snake-sym-to-camel-str first)
+         dom-syms#  (map (comp (partial prefix-sym "dom") snake-sym-to-camel-str first) ; dom range special MASON "bean" symbols
                         range-fields#)
-         -dom-syms# (map (partial prefix-sym "-") dom-syms#)
+         -dom-syms# (map (partial prefix-sym "-") dom-syms#) ; dom range symbols with "-" prefix
          dom-keywords# (map keyword dom-syms#)
          ranges# (map field-ui? range-fields#)
          gui-vars-html# (make-gui-vars-html accessor-stubs# ui-field-descriptions#)
@@ -235,7 +234,9 @@
                          :methods (vec (concat (make-accessor-sigs get-syms# set-syms# ui-field-types#)
                                                (map #(vector % [] 'java.lang.Object) dom-syms#)
                                                (:methods addl-opts-map)))} 
-         gen-class-opts# (into gen-class-opts# (dissoc addl-opts-map :exposes-methods :methods))]
+         gen-class-opts# (into gen-class-opts# (dissoc addl-opts-map :exposes-methods :methods))
+         this# (vary-meta 'this assoc :tag qualified-sim-class#) ; add type hint to Sim arg of bean accessors to avoid reflection
+         ]
 
      ;; GENERATE HTML TABLE DOCUMENTING VARIABLES POSSIBLY VISIBLE IN GUI
      ;; Note this will only happen whem Sim.clj is recompiled.
@@ -261,11 +262,11 @@
 
         ;; DEFINE BEAN AND OTHER ACCESSORS FOR MASON UI:
         ;~@(map (fn [sym# keyw#] (list 'defn sym# '[this] `(~keyw# @(~data-accessor (vary-meta ~'this assoc :tag ~'qualified-sim-class#)))))
-        ~@(map (fn [sym# keyw#] (list 'defn sym# '[this] `(~keyw# @(~data-accessor ~'this))))
+        ~@(map (fn [sym# keyw#] (list 'defn sym# (vector this#) `(~keyw# @(~data-accessor ~'this))))
                -get-syms# ui-field-keywords#)
-        ~@(map (fn [sym# keyw#] (list 'defn sym# '[this newval] `(swap! (~data-accessor ~'this) assoc ~keyw# ~'newval)))
+        ~@(map (fn [sym# keyw#] (list 'defn sym# (vector this# 'newval) `(swap! (~data-accessor ~'this) assoc ~keyw# ~'newval)))
                -set-syms# ui-field-keywords#)
-        ~@(map (fn [sym# keyw# range-pair#] (list 'defn sym# '[this] `(Interval. ~@range-pair#)))
+        ~@(map (fn [sym# keyw# range-pair#] (list 'defn sym# (vector this#) `(Interval. ~@range-pair#)))
                -dom-syms# dom-keywords# ranges#)
 
         ;; DEFINE COMMANDLINE OPTIONS:
