@@ -235,10 +235,8 @@
                                                (map #(vector % [] 'java.lang.Object) dom-syms#)
                                                (:methods addl-opts-map)))} 
          gen-class-opts# (into gen-class-opts# (dissoc addl-opts-map :exposes-methods :methods))
-         this# (vary-meta 'this assoc :tag qualified-sim-class#) ; add type hint to Sim arg of bean accessors to avoid reflection
-         ; This may be useful: (repeatedly (fn [] (vary-meta (gensym 'newval) assoc :tag java.lang.String)))
-         ; (map (fn [typ] (vary-meta (gensym 'newval) assoc :tag typ)) ui-field-types#) ; I'm sure this won't work, because of 'typ
-         ]
+         this# (vary-meta 'this assoc :tag qualified-sim-class#)] ; add type hint to Sim arg of bean accessors to avoid reflection
+         ;; Note re type-hinting the newval param of the setters below, see WhatIsThisBranch.md in branch type-hinted-newval.
 
      ;; GENERATE HTML TABLE DOCUMENTING VARIABLES POSSIBLY VISIBLE IN GUI
      ;; Note this will only happen whem Sim.clj is recompiled.
@@ -263,7 +261,6 @@
         (defn ~init-defn-sym [~'seed] [[~'seed] (atom (~qualified-data-rec-constructor# ~@field-inits#))])
 
         ;; DEFINE BEAN AND OTHER ACCESSORS FOR MASON UI:
-        ;~@(map (fn [sym# keyw#] (list 'defn sym# '[this] `(~keyw# @(~data-accessor (vary-meta ~'this assoc :tag ~'qualified-sim-class#)))))
         ~@(map (fn [sym# keyw#] (list 'defn sym# (vector this#) `(~keyw# @(~data-accessor ~'this))))
                -get-syms# ui-field-keywords#)
         ~@(map (fn [sym# keyw#] (list 'defn sym# (vector this# 'newval) `(swap! (~data-accessor ~'this) assoc ~keyw# ~'newval)))
