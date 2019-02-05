@@ -2,13 +2,16 @@
 ;; under the Gnu General Public License version 3.0 as specified in the
 ;; the file LICENSE.
 
+;(set! *warn-on-reflection* true)
+
 (ns pasta.stats
   (:require [pasta.snipe :as sn]
             [utils.map2csv :as m2c]
             [clojure.data.csv :as csv]
             [clojure.pprint :as pp]
             [clojure.math.numeric-tower :as math]
-            [com.rpl.specter :as s]))
+            [com.rpl.specter :as s])
+  (:import [sim.field.grid ObjectGrid2D]))
 
 ;; from https://clojuredocs.org/clojure.core/reduce-kv#example-57d1e9dae4b0709b524f04eb
 ;; Or consider using Specter's (transform MAP-VALS ...)
@@ -86,8 +89,8 @@
   "Returns a hierarchical map of maps of maps of colls of snipes in categories."
   [cfg-data]
    (let [popenv (:popenv cfg-data)
-         snipes (concat (.elements (:snipe-field (:west popenv)))
-                        (.elements (:snipe-field (:east popenv))))]
+         snipes (concat (.elements ^ObjectGrid2D (:snipe-field (:west popenv)))
+                        (.elements ^ObjectGrid2D (:snipe-field (:east popenv))))]
      (->> snipes
           (group-by-snipe-class)                                 ; creates a map by snipe class
           (s/transform s/MAP-VALS group-by-subenv)               ; replaces each coll of snipes by a map by subenv
@@ -288,8 +291,8 @@
   [tick k popenv]
   (let [freqs (or (@freqs-for-gui$ tick) ; if already got freqs for this tick, use 'em; else make 'em:
                   (let [{:keys [west east]} popenv
-                        snipes (.elements (:snipe-field west))
-                        _ (.addAll snipes (.elements (:snipe-field east)))
+                        snipes (.elements ^ObjectGrid2D (:snipe-field west))
+                        _ (.addAll snipes (.elements ^ObjectGrid2D (:snipe-field east)))
                         new-freqs (snipe-freqs (sum-snipes snipes))]
                     (reset! freqs-for-gui$ {tick new-freqs})
                     new-freqs))]
