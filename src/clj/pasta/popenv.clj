@@ -2,6 +2,8 @@
 ;; under the Gnu General Public License version 3.0 as specified in the
 ;; the file LICENSE.
 
+;(set! *warn-on-reflection* true)
+
 (ns pasta.popenv
   (:require [pasta.snipe :as sn]
             [pasta.mush :as mu]
@@ -9,7 +11,9 @@
             [utils.random-utils :as ranu]
             [clojure.math.numeric-tower :as nmath])
   (:import [sim.field.grid Grid2D ObjectGrid2D]
-           [sim.util IntBag Bag]))
+           [sim.util IntBag Bag]
+           [ec.util MersenneTwisterFast]
+           [java.util Collection])) ; for a type hint below
 
 ;; Conventions:
 ;; * Adding an apostrophe to a var name--e.g. making x into x-prime--means
@@ -59,7 +63,7 @@
 
 (defn make-snipe-map
   "Make a map from snipe ids to snipes."
-  [west-snipe-field east-snipe-field]
+  [^ObjectGrid2D west-snipe-field ^ObjectGrid2D east-snipe-field]
   (into {} (map #(vector (:id %) %)) ; transducer w/ vector: may be slightly faster than alternatives
         (concat (.elements west-snipe-field)
                 (.elements east-snipe-field)))) ; btw cost compared to not constructing a snipes map is trivial
@@ -135,7 +139,7 @@
 
 (defn organism-setter
   [organism-maker]
-  (fn [field x y]
+  (fn [^ObjectGrid2D field x y]
     (.set field x y (organism-maker x y))))
 
 (defn add-organism-to-rand-loc!
@@ -144,7 +148,7 @@
   be inefficient if a large proportion of cells in the field are filled.
   If :left or :right is passed for subenv, only looks for locations in
   the left or right portion of the world."
-  [rng cfg-data field width height organism-setter!]
+  [rng cfg-data ^ObjectGrid2D field width height organism-setter!]
   (loop []
     (let [x (ran/rand-idx rng width)
           y (ran/rand-idx rng height)]
@@ -185,7 +189,7 @@
   "Adds a mushroom to a random location in field.  subenv, which is 
   :west or :east, determines which size is associated 
   with which nutritional value."
-  [rng cfg-data field x y subenv-key]
+  [rng cfg-data ^ObjectGrid2D field x y subenv-key]
   (let [{:keys [mush-low-size mush-high-size 
                 mush-sd mush-pos-nutrition mush-neg-nutrition]} cfg-data
         [low-mean-nutrition high-mean-nutrition] (if (= subenv-key :west) ; subenv determines whether low vs high reflectance
@@ -206,14 +210,14 @@
   "Adds a mush just like old-mush but with a new id.  Note that x must
   be in the same subenv as the one from which the old mush came.  Otherwise
   size and nutrition won't match up properly."
-  [old-mush field x y]
+  [old-mush ^ObjectGrid2D field x y]
   (.set field x y old-mush))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MOVEMENT
 
 (defn move-snipes
-  [rng cfg-data snipe-field]
+  [rng cfg-data ^ObjectGrid2D snipe-field]
   (let [{:keys [env-width env-height]} cfg-data
         snipes (.elements snipe-field)
         loc-snipe-vec-maps (for [snipe snipes  ; make seq of maps with a coord pair as key and singleton seq containing snipe as val
@@ -237,7 +241,7 @@
 
 ;; doesn't delete old snipe ref--designed to be used on an empty snipe-field:
 (defn move-snipe!
-  [snipe-field x y snipe]
+  [^ObjectGrid2D snipe-field x y snipe]
   (.set snipe-field x y (assoc snipe :x x :y y)))
 
 ;; Formerly I made top-level reusable IntBags for choose-next-loc.
@@ -248,7 +252,7 @@
   "Return a pair of field coordinates randomly selected from the empty 
   hexagonally neighboring locations of snipe's location, or the current
   location if all neighboring locations are filled."
-  [rng snipe-field snipe]
+  [rng ^ObjectGrid2D snipe-field snipe]
   (let [curr-x (:x snipe)
         curr-y (:y snipe)
 	x-coord-bag (IntBag. 6)
@@ -274,7 +278,7 @@
 
 (defn snipes-eat
   "Snipes on mushrooms eat, if they decide to do so."
-  [rng cfg-data snipe-field mush-field]
+  [rng cfg-data ^ObjectGrid2D snipe-field ^ObjectGrid2D mush-field]
   (let [{:keys [env-center env-width env-height max-energy]} cfg-data
         snipes (.elements snipe-field)
         snipes-plus-eaten? (for [snipe snipes    ; returns only snipes on mushrooms
@@ -321,7 +325,7 @@
 
 (defn snipes-die
   "Returns a new snipe-field with zero-energy snipes removed."
-  [cfg-data snipe-field]
+  [cfg-data ^ObjectGrid2D snipe-field]
   (let [{:keys [env-width env-height]} cfg-data
         new-snipe-field (ObjectGrid2D. env-width env-height)
         [live-snipes newly-dead] (reduce (fn [[living dead] snipe]
@@ -335,7 +339,7 @@
     [new-snipe-field newly-dead]))
 
 (defn obey-carrying-capacity
-  [rng cfg-data snipe-field]
+  [rng cfg-data ^ObjectGrid2D snipe-field]
   (let [snipes (.elements snipe-field)
         target-size (:max-subenv-pop-size cfg-data)
         num-to-cull (- (count snipes) target-size)]
@@ -349,7 +353,7 @@
   those snipes (the ones that satisfy snipe-pred), making their number
   the value of this step in the max map.  Otherwise return the original 
   snipe field unchanged."
-  [rng cfg-data$ snipe-field snipe-map-key snipe-pred]
+  [rng cfg-data$ ^ObjectGrid2D snipe-field snipe-map-key snipe-pred]
   (let [cfg-data @cfg-data$
         max-map (snipe-map-key cfg-data)]
     (if-let [target-subpop-size (and max-map ; nil if no map or this step not in map
@@ -366,7 +370,7 @@
   the number of element in snipes randomly reduced to target-size, and a
   collection of removed snipes.  Assumes the number of snipes is at least
   as great as target-size."
-  [rng snipe-field snipes num-to-cull]
+  [rng ^ObjectGrid2D snipe-field snipes num-to-cull]
   (let [excess-snipes (ranu/sample-without-repl rng num-to-cull (seq snipes)) ; choose random snipes for removal
         new-snipe-field (ObjectGrid2D. snipe-field)]
     (doseq [snipe excess-snipes]
@@ -379,7 +383,7 @@
   that the number of the specified variety of snipes in the subpop is 
   increased to the value of this step in the min map.  Otherwise return
   the original snipe field unchanged."
-  [rng cfg-data$ snipe-field snipe-map-key snipe-pred subenv-key snipe-maker curr-snipe-id$]
+  [rng cfg-data$ ^ObjectGrid2D snipe-field snipe-map-key snipe-pred subenv-key snipe-maker curr-snipe-id$]
   (let [cfg-data @cfg-data$
         min-map (snipe-map-key cfg-data)]
     (if-let [target-subpop-size (and min-map ; nil if no map or this step not in map
@@ -404,13 +408,13 @@
         [num-births (assoc snipe :energy remaining-energy)]))))
 
 (defn snipes-reproduce
-  [rng cfg-data$ west-snipe-field east-snipe-field curr-snipe-id$]
+  [^MersenneTwisterFast rng cfg-data$ ^ObjectGrid2D west-snipe-field ^ObjectGrid2D east-snipe-field curr-snipe-id$]
   (let [{:keys [env-width env-height birth-threshold birth-cost]} @cfg-data$
         suff-energy (fn [snipe] (>= (:energy snipe) birth-threshold))
         west-snipe-field' (ObjectGrid2D. west-snipe-field) ; new field that's a copy of old one
         east-snipe-field' (ObjectGrid2D. east-snipe-field)
-        west-mothers (filter suff-energy (.elements west-snipe-field))
-        east-mothers (filter suff-energy (.elements east-snipe-field))
+        ^Collection west-mothers (filter suff-energy (.elements west-snipe-field))
+        ^Collection east-mothers (filter suff-energy (.elements east-snipe-field))
         mothers (Bag. west-mothers)] ; MASON Bags have an in-place shuffle routine
     (.addAll mothers east-mothers)
     (.shuffle mothers rng)
@@ -440,7 +444,7 @@
 ;; OTHER CHANGES
 
 (defn age-snipes
-  [snipe-field]
+  [^ObjectGrid2D snipe-field]
   (let [old-snipes (.elements snipe-field)
         new-snipe-field (ObjectGrid2D. snipe-field)]
     (doseq [snipe old-snipes]
