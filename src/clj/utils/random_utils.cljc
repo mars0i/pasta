@@ -2,6 +2,8 @@
 ;;; is distributed under the Gnu General Public License version 3.0 as
 ;;; specified in the file LICENSE.
 
+;(set! *warn-on-reflection* true)
+
 (ns utils.random-utils
   (:require [utils.random :as r])) ; different dependng on clj vs cljs
 

@@ -2,6 +2,8 @@
 ;; under the Gnu General Public License version 3.0 as specified in the
 ;; the file LICENSE.
 
+;(set! *warn-on-reflection* true)
+
 (ns pasta.snipe
   (:require [clojure.math.numeric-tower :as math]
             [pasta.perception :as perc]
