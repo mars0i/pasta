@@ -2,12 +2,15 @@
 ;; under the Gnu General Public License version 3.0 as specified in the
 ;; the file LICENSE.
 
+;(set! *warn-on-reflection* true)
+
 (ns pasta.perception
   (:require [clojure.algo.generic.math-functions :as amath]
             [pasta.mush :as mu]
             [utils.random :as ran]
             [utils.random-utils :as ranu])
-  (:import [sim.field.grid Grid2D]))
+  (:import [sim.field.grid Grid2D ObjectGrid2D]
+           [sim.util Bag]))
 
 (declare pref-noise calc-k-pref k-snipe-pref r-snipe-pref subenv-loc-neighbors
          subenv-snipe-neighbors this-subenv-snipe-neighbors both-subenvs-snipe-neighbors
@@ -132,8 +135,8 @@
   "Returns a MASON sim.util.Bag containing all snipes in the hexagonal region 
   around snipe's location in both of the subenvs, to a distance of neighbor-radius.  
   This will include the original snipe."
-  (let [neighbors (subenv-snipe-neighbors :west snipe)]
-    (.addAll neighbors (subenv-snipe-neighbors :east snipe))
+  (let [^Bag neighbors (subenv-snipe-neighbors :west snipe)]
+    (.addAll neighbors ^Bag (subenv-snipe-neighbors :east snipe))
     neighbors))
 
 (defn this-subenv-snipe-neighbors
@@ -157,7 +160,7 @@
   distance of neighbor-radius.  This may include the snipe at <x,y>."
   [cfg-data subenv x y]
   (let[{:keys [popenv neighbor-radius]} cfg-data
-       snipe-field (:snipe-field (subenv popenv))]
+        ^ObjectGrid2D snipe-field (:snipe-field (subenv popenv))]
     (.getHexagonalNeighbors snipe-field x y neighbor-radius Grid2D/TOROIDAL true)))
 
 
