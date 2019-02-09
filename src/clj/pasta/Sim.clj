@@ -38,16 +38,16 @@
 
 ;; Rather than using the constructors in in-line functions,
 ;; define converters here with type hints to avoid reflection warnings:
-(defn string-to-Long [^String s] (Long. s))
-(defn string-to-Double [^String s] (Double. s))
-(defn string-to-Double [^String s] (Double. s))
+;(defn string-to-Long [^String s] (Long. s))
+;(defn string-to-Double [^String s] (Double. s))
+;(defn string-to-Double [^String s] (Double. s))
 ;; The next one is included only for parallelism.  You can't type hint the argument
 ;; in this case, because it's generally a nothing rather than a string.
 ;; i.e. clojure.tools.cli handles boolean options specially.  If you
 ;; type hint it, it will always behave as if it was false.  So you will
 ;; always get a reflection warning for the parameter s.  But that's OK
 ;; since this runs only once when you start the application.
-(defn string-to-Boolean [s] (Boolean. s))
+;(defn string-to-Boolean [s] (Boolean. s))
 
 ;; Note: There is no option below for max number of steps.  Use MASON's -for instead.
 ;; Avoid these characters for single-character options, because MASON already
