@@ -78,12 +78,12 @@
                 [report-every        0      double                  true        ["-i" "Report basic stats every i ticks after the first one (0 = never); format depends on -w." :parse-fn #(Double. %)]]
                 [write-csv         false    boolean                 false       ["-w" "Write data to file instead of printing it to console." :parse-fn #(Boolean. %)]]
                 [csv-basename       nil java.lang.String            false       ["-F" "Base name of files to append data to.  Otherwise new filenames generated from seed." :parse-fn #(String. %)]]
-                [k-max-map          nil clojure.lang.IPersistentMap true        ["-T" "Comma-separated times and target subpop sizes to cull k-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]] ; issue #63 for commentary:
-                [r-max-map          nil clojure.lang.IPersistentMap true        ["-U" "Comma-separated times and target subpop sizes to cull r-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]]
-                [s-max-map          nil clojure.lang.IPersistentMap true        ["-V" "Comma-separated times and target subpop sizes to cull s-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]]
-                [k-min-map          nil clojure.lang.IPersistentMap true        ["-X" "Comma-separated times and target subpop sizes to increase k-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]] ; issue #63 for commentary:
-                [r-min-map          nil clojure.lang.IPersistentMap true        ["-Y" "Comma-separated times and target subpop sizes to increase r-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]]
-                [s-min-map          nil clojure.lang.IPersistentMap true        ["-Z" "Comma-separated times and target subpop sizes to increase s-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]]
+                [k-max-pop-sizes    nil clojure.lang.IPersistentMap true        ["-T" "Comma-separated times and target subpop sizes to cull k-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]] ; issue #63 for commentary:
+                [r-max-pop-sizes    nil clojure.lang.IPersistentMap true        ["-U" "Comma-separated times and target subpop sizes to cull r-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]]
+                [s-max-pop-sizes    nil clojure.lang.IPersistentMap true        ["-V" "Comma-separated times and target subpop sizes to cull s-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]]
+                [k-min-pop-sizes    nil clojure.lang.IPersistentMap true        ["-X" "Comma-separated times and target subpop sizes to increase k-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]] ; issue #63 for commentary:
+                [r-min-pop-sizes    nil clojure.lang.IPersistentMap true        ["-Y" "Comma-separated times and target subpop sizes to increase r-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]]
+                [s-min-pop-sizes    nil clojure.lang.IPersistentMap true        ["-Z" "Comma-separated times and target subpop sizes to increase s-snipes to, e.g. \"time,size,time,size\"" :parse-fn string-to-map]]
                 [mush-mid-size       0      double  false] ; calculated from mush values above
                 [mush-size-scale     0      double  false] ; calculated from mush values above
                 [csv-writer         nil java.io.BufferedWriter false]

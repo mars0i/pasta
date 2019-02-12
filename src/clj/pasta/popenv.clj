@@ -102,12 +102,12 @@
   (let [cfg-data @cfg-data$
         {:keys [snipe-field mush-field dead-snipes]} subenv
         [snipe-field' newly-died] (snipes-die cfg-data snipe-field)
-        snipe-field' (add-snipes-to-min rng cfg-data$ snipe-field' :k-min-map sn/k-snipe? subenv-key sn/make-rand-k-snipe curr-snipe-id$)
-        snipe-field' (add-snipes-to-min rng cfg-data$ snipe-field' :r-min-map sn/r-snipe? subenv-key sn/make-rand-r-snipe curr-snipe-id$)
-        snipe-field' (add-snipes-to-min rng cfg-data$ snipe-field' :s-min-map sn/s-snipe? subenv-key sn/make-rand-s-snipe curr-snipe-id$)
-        [snipe-field' k-newly-culled] (cull-snipes-to-max rng cfg-data$ snipe-field' :k-max-map sn/k-snipe?)
-        [snipe-field' r-newly-culled] (cull-snipes-to-max rng cfg-data$ snipe-field' :r-max-map sn/r-snipe?)
-        [snipe-field' s-newly-culled] (cull-snipes-to-max rng cfg-data$ snipe-field' :s-max-map sn/s-snipe?)
+        snipe-field' (add-snipes-to-min rng cfg-data$ snipe-field' :k-min-pop-sizes sn/k-snipe? subenv-key sn/make-rand-k-snipe curr-snipe-id$)
+        snipe-field' (add-snipes-to-min rng cfg-data$ snipe-field' :r-min-pop-sizes sn/r-snipe? subenv-key sn/make-rand-r-snipe curr-snipe-id$)
+        snipe-field' (add-snipes-to-min rng cfg-data$ snipe-field' :s-min-pop-sizes sn/s-snipe? subenv-key sn/make-rand-s-snipe curr-snipe-id$)
+        [snipe-field' k-newly-culled] (cull-snipes-to-max rng cfg-data$ snipe-field' :k-max-pop-sizes sn/k-snipe?)
+        [snipe-field' r-newly-culled] (cull-snipes-to-max rng cfg-data$ snipe-field' :r-max-pop-sizes sn/r-snipe?)
+        [snipe-field' s-newly-culled] (cull-snipes-to-max rng cfg-data$ snipe-field' :s-max-pop-sizes sn/s-snipe?)
         [snipe-field' carrying-newly-culled] (obey-carrying-capacity rng cfg-data snipe-field')
         snipe-field' (move-snipes rng cfg-data snipe-field')     ; only the living get to move
         snipe-field' (age-snipes snipe-field')]
