@@ -38,9 +38,7 @@
 
 ;; Rather than using the constructors in in-line functions,
 ;; define converters here with type hints to avoid reflection warnings:
-;(defn string-to-Long [^String s] (Long. s))
-;(defn string-to-Double [^String s] (Double. s))
-;(defn string-to-Double [^String s] (Double. s))
+;(defn string-to-Long [^String s] (Long. s)) (defn string-to-Double [^String s] (Double. s)) (defn string-to-Double [^String s] (Double. s))
 ;; The next one is included only for parallelism.  You can't type hint the argument
 ;; in this case, because it's generally a nothing rather than a string.
 ;; i.e. clojure.tools.cli handles boolean options specially.  If you
@@ -69,6 +67,7 @@
                 [k-pref-noise-sd     0.0625 double                  true        ["-a" "Standard deviation of internal noise in k-snipe preference determination." :parse-fn #(Double. %)]]
                 [birth-cost          5.0    double                  [0.0,10.0]  ["-o" "Energetic cost of giving birth to one offspring" :parse-fn #(Double. %)]]
                 [max-energy         30.0    double                  [1.0,100.0] ["-E" "Max energy that a snipe can have." :parse-fn #(Double. %)]]
+                [lifespan            0      long                    [0,200]     ["-L" "Each snipe dies after this many timesteps." :parse-fn #(Long. %)]]
                 [carrying-proportion 0.25   double                  [0.1,0.9]   ["-C" "Snipes are randomly culled when number exceed this times # of cells in a subenv (east or west)." :parse-fn #(Double. %)]]
                 [neighbor-radius     5      long                    [1,10]      ["-D" "s-snipe neighbors (for copying) are no more than this distance away." :parse-fn #(Long. %)]]
                 [env-width          40      long                    [10,250]    ["-W" "Width of env.  Must be an even number." :parse-fn #(Long. %)]] ; Haven't figured out how to change 

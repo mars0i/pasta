@@ -93,9 +93,9 @@
              dead-snipes)))
 
 (defn die-move-spawn
-  "Remove snipes that have no energy, cull snipes or increase their number
-  with newborn snipes if there is a population size specification, cull snipes
-  if carrying capacity is exceeded, move snipes, increment snipe ages."
+  "Remove snipes that have no energy or are too old, cull snipes or increase 
+  their number with newborn snipes if there is a population size specification,
+  cull snipes if carrying capacity is exceeded, move snipes, increment snipe ages."
   [rng cfg-data$ subenv subenv-key curr-snipe-id$]
   ;; Note that order of bindings below is important.  e.g. we shouldn't worry
   ;; about carrying capacity until energy-less snipes have been removed.
@@ -324,18 +324,20 @@
 ;; BIRTH AND DEATH
 
 (defn snipes-die
-  "Returns a new snipe-field with zero-energy snipes removed."
+  "Returns a new snipe-field with zero-energy and elderly snipes removed."
   [cfg-data ^ObjectGrid2D snipe-field]
-  (let [{:keys [env-width env-height]} cfg-data
+  (let [{:keys [env-width env-height lifespan]} cfg-data
         new-snipe-field (ObjectGrid2D. env-width env-height)
         [live-snipes newly-dead] (reduce (fn [[living dead] snipe]
-                                           (if (> (:energy snipe) 0)
-                                             [(conj living snipe) dead]
-                                             [living (conj dead snipe)]))
+                                           (if (and (or (zero? lifespan)           ; if there's a nonzero lifespan set
+                                                        (< (:age snipe) lifespan)) ; then if snipe is still young enough to live
+                                                    (> (:energy snipe) 0))         ; and snipe has energy left
+                                             [(conj living snipe) dead]            ; add put it in the living set
+                                             [living (conj dead snipe)]))          ; otherwise add it to the dead
                                          [[][]]
                                          (.elements snipe-field))] ; old version: (remove #(<= (:energy %) 0) (.elements snipe-field))]
     (doseq [snipe live-snipes]
-      (.set new-snipe-field (:x snipe) (:y snipe) snipe))
+      (.set new-snipe-field (:x snipe) (:y snipe) snipe)) ; add the living to the fresh snipe field
     [new-snipe-field newly-dead]))
 
 (defn obey-carrying-capacity
