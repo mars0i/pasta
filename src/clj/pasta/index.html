@@ -132,8 +132,8 @@ The following parameters for model runs can be set in the Model tab:
 <tr><td valign=top>NumRSnipes:</td> <td>Size of r-snipe subpopulation</td></tr>
 <tr><td valign=top>NumSSnipes:</td> <td>Size of s-snipe subpopulation</td></tr>
 <tr><td valign=top>MushProb:</td> <td>Average frequency of mushrooms.</td></tr>
-<tr><td valign=top>MushLowSize:</td> <td>Size of small mushrooms (mean of light distribution)</td></tr>
 <tr><td valign=top>MushHighSize:</td> <td>Size of large mushrooms (mean of light distribution)</td></tr>
+<tr><td valign=top>MushLowSize:</td> <td>Size of small mushrooms (mean of light distribution)</td></tr>
 <tr><td valign=top>MushSd:</td> <td>Standard deviation of mushroom light distribution</td></tr>
 <tr><td valign=top>MushPosNutrition:</td> <td>Energy from eating a nutritious mushroom</td></tr>
 <tr><td valign=top>MushNegNutrition:</td> <td>Energy from eating a poisonous mushroom</td></tr>
@@ -142,18 +142,19 @@ The following parameters for model runs can be set in the Model tab:
 <tr><td valign=top>KPrefNoiseSd:</td> <td>Standard deviation of internal noise in k-snipe preference determination.</td></tr>
 <tr><td valign=top>BirthCost:</td> <td>Energetic cost of giving birth to one offspring</td></tr>
 <tr><td valign=top>MaxEnergy:</td> <td>Max energy that a snipe can have.</td></tr>
+<tr><td valign=top>Lifespan:</td> <td>Each snipe dies after this many timesteps.</td></tr>
 <tr><td valign=top>CarryingProportion:</td> <td>Snipes are randomly culled when number exceed this times # of cells in a subenv (east or west).</td></tr>
 <tr><td valign=top>NeighborRadius:</td> <td>s-snipe neighbors (for copying) are no more than this distance away.</td></tr>
 <tr><td valign=top>EnvWidth:</td> <td>Width of env.  Must be an even number.</td></tr>
 <tr><td valign=top>EnvHeight:</td> <td>Height of env. Must be an even number.</td></tr>
 <tr><td valign=top>ExtremePref:</td> <td>Absolute value of r-snipe preferences.</td></tr>
 <tr><td valign=top>ReportEvery:</td> <td>Report basic stats every i ticks after the first one (0 = never); format depends on -w.</td></tr>
-<tr><td valign=top>KMaxMap:</td> <td>Comma-separated times and target subpop sizes to cull k-snipes to, e.g. "time,size,time,size"</td></tr>
-<tr><td valign=top>RMaxMap:</td> <td>Comma-separated times and target subpop sizes to cull r-snipes to, e.g. "time,size,time,size"</td></tr>
-<tr><td valign=top>SMaxMap:</td> <td>Comma-separated times and target subpop sizes to cull s-snipes to, e.g. "time,size,time,size"</td></tr>
-<tr><td valign=top>KMinMap:</td> <td>Comma-separated times and target subpop sizes to increase k-snipes to, e.g. "time,size,time,size"</td></tr>
-<tr><td valign=top>RMinMap:</td> <td>Comma-separated times and target subpop sizes to increase r-snipes to, e.g. "time,size,time,size"</td></tr>
-<tr><td valign=top>SMinMap:</td> <td>Comma-separated times and target subpop sizes to increase s-snipes to, e.g. "time,size,time,size"</td></tr>
+<tr><td valign=top>KMaxPopSizes:</td> <td>Comma-separated times and target subpop sizes to cull k-snipes to, e.g. "time,size,time,size"</td></tr>
+<tr><td valign=top>RMaxPopSizes:</td> <td>Comma-separated times and target subpop sizes to cull r-snipes to, e.g. "time,size,time,size"</td></tr>
+<tr><td valign=top>SMaxPopSizes:</td> <td>Comma-separated times and target subpop sizes to cull s-snipes to, e.g. "time,size,time,size"</td></tr>
+<tr><td valign=top>KMinPopSizes:</td> <td>Comma-separated times and target subpop sizes to increase k-snipes to, e.g. "time,size,time,size"</td></tr>
+<tr><td valign=top>RMinPopSizes:</td> <td>Comma-separated times and target subpop sizes to increase r-snipes to, e.g. "time,size,time,size"</td></tr>
+<tr><td valign=top>SMinPopSizes:</td> <td>Comma-separated times and target subpop sizes to increase s-snipes to, e.g. "time,size,time,size"</td></tr>
 </table>
 
 <p>Some data is reported in other variables displayed in the Model tab:
