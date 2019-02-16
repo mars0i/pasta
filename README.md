@@ -38,7 +38,7 @@ reproduction over survival, "betting" on the possibilities of
 different environmental states.</p>
 
 <p><b>s-snipes:</b> Agents that engage in a simple form of social
-learning by copying from nearby agents ("s-snipes").</p>
+learning by copying from nearby agents.</p>
 
 <p>The point is to compare evolutionary strategies and see which is
 selected for under different parameter combinations.</p>
