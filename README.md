@@ -30,11 +30,11 @@ roughly, prioritizes survival over reproduction.  (I do mean it's a
 <em>model</em> of PEM; what these agents do, internally, is much, much
 simpler than what's usually meant by PEM.)</p>
 
-<p><b>r-snipes:</b> Agents that don't learn, but produce different types of offspring
-that are well suited or poorly suited for survival in different
-environments.  These agents implement
-one kind of "r-strategy", which roughly prioritize reproduction over
-survival.</p>
+<p><b>r-snipes:</b> Agents that don't learn, but produce different
+types of offspring that are well suited or poorly suited for survival
+in different environments.  These agents use "bet hedging" to
+implement one kind of "r-strategy", which roughly prioritize
+reproduction over survival.</p>
 
 <p><b>s-snipes:</b> Agents that engage in a simple form of social
 learning by copying from nearby agents ("s-snipes").</p>
@@ -104,7 +104,10 @@ snipe's offspring (upward-pointing triangles) always prefer large
 mushrooms; the others (downward-pointing triangles) always prefer
 small mushrooms.  Those suited to the environment in which they live
 tend to survive and reproduce, and those unsuited to their environment
-generally die before reproduction. </p>
+generally die before reproduction.  This is a kind of {\em bet hedging\/}
+strategy: Rather than "betting" on condition (large mushrooms are nutritious, for example),
+r-snipes hedge their bets by placing bets (in the form of offspring)
+on both environmental patterns.</p>
 
 <p><b>s-snipes</b> (purple wing shapes) use a social learning or
 cultural transmission strategy known as success bias.  A newborn s-snipe
