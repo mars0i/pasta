@@ -105,10 +105,11 @@ snipe's offspring (upward-pointing triangles) always prefer large
 mushrooms; the others (downward-pointing triangles) always prefer
 small mushrooms.  Those suited to the environment in which they live
 tend to survive and reproduce, and those unsuited to their environment
-generally die before reproduction.  This is a kind of {\em bet hedging\/}
-strategy: Rather than "betting" on condition (large mushrooms are nutritious, for example),
-r-snipes hedge their bets by placing bets (in the form of offspring)
-on both environmental patterns.</p>
+generally die before reproduction.  This is a kind of {\em bet
+hedging\/} strategy: Rather than "betting" on a condition (that large
+mushrooms are nutritious, for example), r-snipes hedge their bets by
+placing bets (in the form of offspring) on both environmental
+patterns.</p>
 
 <p><b>s-snipes</b> (purple wing shapes) use a social learning or
 cultural transmission strategy known as success bias.  A newborn s-snipe
