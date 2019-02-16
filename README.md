@@ -33,8 +33,9 @@ simpler than what's usually meant by PEM.)</p>
 <p><b>r-snipes:</b> Agents that don't learn, but produce different
 types of offspring that are well suited or poorly suited for survival
 in different environments.  These agents use "bet hedging" to
-implement one kind of "r-strategy", which roughly prioritize
-reproduction over survival.</p>
+implement one kind of "r-strategy" which, roughly, prioritizes
+reproduction over survival, "betting" on the possibilities of
+different environmental states.</p>
 
 <p><b>s-snipes:</b> Agents that engage in a simple form of social
 learning by copying from nearby agents ("s-snipes").</p>
