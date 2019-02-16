@@ -326,14 +326,15 @@
 (defn snipes-die
   "Returns a new snipe-field with zero-energy and elderly snipes removed."
   [cfg-data ^ObjectGrid2D snipe-field]
-  (let [{:keys [env-width env-height lifespan]} cfg-data
+  (let [{:keys [env-width env-height]} cfg-data
         new-snipe-field (ObjectGrid2D. env-width env-height)
         [live-snipes newly-dead] (reduce (fn [[living dead] snipe]
-                                           (if (and (or (zero? lifespan)           ; if there's a nonzero lifespan set
-                                                        (< (:age snipe) lifespan)) ; then if snipe is still young enough to live
-                                                    (> (:energy snipe) 0))         ; and snipe has energy left
-                                             [(conj living snipe) dead]            ; add put it in the living set
-                                             [living (conj dead snipe)]))          ; otherwise add it to the dead
+                                           (let [lifespan (:lifespan snipe)]
+                                             (if (and (or (zero? lifespan)           ; if there's a nonzero lifespan set
+                                                          (< (:age snipe) lifespan)) ; then if snipe is still young enough to live
+                                                      (> (:energy snipe) 0))         ; and snipe has energy left
+                                               [(conj living snipe) dead]            ; add put it in the living set
+                                               [living (conj dead snipe)])))          ; otherwise add it to the dead
                                          [[][]]
                                          (.elements snipe-field))] ; old version: (remove #(<= (:energy %) 0) (.elements snipe-field))]
     (doseq [snipe live-snipes]
@@ -433,7 +434,7 @@
                                                  [west-snipe-field' :west]  ; assigned to a subenv
                                                  [east-snipe-field' :east])]
             (add-organism-to-rand-loc! rng @cfg-data$ child-snipe-field env-width env-height ; add newborn of same type as parent
-                                       (organism-setter (cond (sn/k-snipe? snipe') (partial sn/make-newborn-k-snipe cfg-data$ subenv-key 
+                                       (organism-setter (cond (sn/k-snipe? snipe') (partial sn/make-newborn-k-snipe rng cfg-data$ subenv-key 
 				                                                            (next-snipe-id curr-snipe-id$))
                                                               (sn/r-snipe? snipe') (partial sn/make-newborn-r-snipe rng cfg-data$ subenv-key
 				                                                            (next-snipe-id curr-snipe-id$))
