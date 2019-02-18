@@ -167,22 +167,24 @@
   that certain fields can be displayed in the GUI on request."
   [id cfg-data$]
   ;; These definitions need to be coordinated by hand:
-  (let [kys [:energy :mush-pref :subenv :x :y :age :circled$]       ; CHANGE FOR NEW FIELDS
-        circled-idx 6 ; HARDCODED INDEX for circled$ field  ; CHANGE FOR NEW FIELDS
-        descriptions ["Energy is what snipes get from mushrooms." ; CHANGE FOR NEW FIELDS
+  (let [kys [:energy :mush-pref :subenv :x :y :age :lifespan :circled$] ; TODO CHANGE FOR NEW FIELDS
+        circled-idx 7 ; HARDCODED INDEX for circled$ field              ; TODO CHANGE FOR NEW FIELDS
+        descriptions ["Energy is what snipes get from mushrooms."       ; TODO CHANGE FOR NEW FIELDS
                       "Preference for large (positive number) or small (negative number) mushrooms."
                       "Name of snipe's subenv"
                       "x coordinate in underlying grid"
                       "y coordinate in underlying grid"
                       "Age of snipe"
+                      "Maximum age"
                       "Boolean indicating whether circled in GUI"]
-        types [java.lang.Double java.lang.Double java.lang.String java.lang.Integer java.lang.Integer java.lang.Integer java.lang.Boolean] ; CHANGE FOR NEW FIELDS
-        read-write [false false false false false false true] ; allow user to turn off circled in UI ; CHANGE FOR NEW FIELDS
+        types [java.lang.Double java.lang.Double java.lang.String java.lang.Integer java.lang.Integer ; TODO CHANGE FOR NEW FIELDS
+               java.lang.Integer java.lang.Integer java.lang.Boolean]                                 ; TODO CHANGE FOR NEW FIELDS
+        read-write [false false false false false false false true] ; allow user to turn off circled in UI ; TODO CHANGE FOR NEW FIELDS
         names (mapv name kys)
         num-properties (count kys)
-        hidden     (vec (repeat num-properties false))
-        get-curr-snipe (fn [] ((:snipe-map (:popenv @cfg-data$)) id))]
-    (reset! (:circled$ (get-curr-snipe)) true) ; make-properties only called by inspector, in which case highlight snipe in UI
+        hidden     (vec (repeat num-properties false)) ; no properties specified here are to be hidden from GUI
+        get-curr-snipe (fn [] ((:snipe-map (:popenv @cfg-data$)) id))] ; find current version of this snipe
+    (reset! (:circled$ (get-curr-snipe)) true) ; make-properties is only called by inspector, in which case highlight snipe in UI
     (proxy [Properties] []
       (getObject [] (get-curr-snipe))
       (getName [i] (names i))
