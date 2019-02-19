@@ -204,9 +204,6 @@
   ;; If user passed commandline options, use them to set parameters, rather than defaults:
     (when (and @commandline$ (not (:in-gui @sim-data$))) ; see issue #56 in github for the logic here
       (set-sim-data-from-commandline! this commandline$))
-    ;(when-let [k-max-map (:k-max-map @sim-data$)] (println "k:" k-max-map (class k-max-map) (class (first (keys k-max-map)))))  ; DEBUG
-    ;(when-let [r-max-map (:r-max-map @sim-data$)] (println "r:" r-max-map (class r-max-map) (class (first (keys r-max-map)))))  ; DEBUG
-    ;(when-let [s-max-map (:s-max-map @sim-data$)] (println "s:" s-max-map (class s-max-map) (class (first (keys s-max-map)))))  ; DEBUG
     (swap! sim-data$ assoc :seed seed)
     (pe/setup-popenv-config! sim-data$)
     (swap! sim-data$ assoc :popenv (pe/make-popenv rng sim-data$)) ; create new popenv
