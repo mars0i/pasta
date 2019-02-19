@@ -17,3 +17,7 @@ panel.mean <- function(x, y, ...) {
     panel.points(y=tmp, x=seq_along(tmp), ...)
 }
 bwplot(count ~ snipe_class | as.factor(step), data=yo, layout=c(10,3), panel=function(x,y,...){panel.bwplot(x,y, pch="|",...);panel.mean(x,y,pch=".", col="red", cex=5);panel.hanoi(x,y,...)}, main="k-snipe and r-snipe counts at different timesteps across 100 runs with default parameters", scales=list(alternating=c(3,3)))
+
+
+# How to pull data from the first 50 of the runs:
+makeCountTimeseriesPlots(kvsr[kvsr$step>=500 & kvsr$run %in% unique(kvsr$run)[1:50],], c(10,5), "r", "Yow")

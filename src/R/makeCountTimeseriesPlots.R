@@ -19,7 +19,7 @@ require(latticeExtra)
 # 
 # What is altsnipes?  The function always plots k-snipes.  altsnipes specifies what
 # other kind of snipe to plot.
-#
+
 makeCountTimeseriesPlots <- function(dframe, layoutdims, altsnipes, title, colors=c("red", "blue"), linetypes=c(1,1)){
   # prepare the data:
   dframe$run <- factor(dframe$run)
