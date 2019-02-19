@@ -12,8 +12,6 @@
 ;; or like this:
 ;;     :aot [myproject.Sim myproject.UI]
 
-;; TODO consider moving command line processing into this macro.
-
 (ns utils.defsim
   (:require [clojure.string :as s]))
 
