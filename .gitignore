@@ -29,3 +29,4 @@ doc/phil.bib
 *.bst
 .DS_Store
 gui_vars_table.html
+.Rhistory
