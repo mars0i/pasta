@@ -168,7 +168,6 @@
                                descriptions)))
                "</table>")))
 
-;; TODO add type annotations. (maybe iff they're symbols??)
 ;; Maybe some of gensym pound signs are overkill. Can't hurt?
 (defmacro defsim
   "defsim generates Java-bean style and other MASON-style accessors; a gen-class 
