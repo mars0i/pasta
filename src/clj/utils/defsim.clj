@@ -25,20 +25,6 @@
 (def init-defn-sym '-init-sim-data)
 (def gui-vars-html-filename "gui_vars_table.html") ; will contain html for documentation of vars in GUI
 
-;(def mason-options 
-;  '[
-;    [mason-option false long false ["-r" "-repeat R: Use '-help' to see MASON options."]]
-;    [mason-option false long false ["-p" "-parallel P: Use '-help' to see MASON options."]]
-;    [mason-option false long false ["-s" "-seed S: Use '-help' to see MASON options."]]
-;    [mason-option false double false ["-u" "-until U: Use '-help' to see MASON options."]]
-;    [mason-option false long false ["-f" "-for N: Use '-help' to see MASON options."]]
-;    [mason-option false long false ["-t" "-time T: Use '-help' to see MASON options."]]
-;    [mason-option false long false ["-d" "-docheckpoint D: Use '-help' to see MASON options."]]
-;    [mason-option false String false ["-c" "-checkpointname N, : Use '-help' to see MASON options."]]
-;    [mason-option false String false ["-c" "-checkpoint C: Use '-help' to see MASON options."]]
-;    [mason-option false boolean false ["-q" "-quiet: Use '-help' to see MASON options."]]
-;    ])
-
 
 ;; Positional functions
 ;; clojure.core's first and second return nil if xs is too short (because
@@ -157,7 +143,7 @@
         (let [~'cli-options [["-?" "--help" "Print this help message."] ~@(get-cli-specs fields)]
               usage-fmt# (fn [~'options]
                            (let [~'fmt-line (fn [[~'short-opt ~'long-opt ~'desc]] (str ~'short-opt ", " ~'long-opt ": " ~'desc))]
-                             (clojure.string/join "\n" (map ~'fmt-line ~'options))))
+                             (clojure.string/join "\n" (concat (map ~'fmt-line ~'options)))))
               {:keys [~'options ~'arguments ~'errors ~'summary] :as ~'cmdline} (clojure.tools.cli/parse-opts args# ~'cli-options)]
           ;(println ~'errors)
           (reset! ~'commandline$ ~'cmdline) ; commandline should be defined previously in Sim
