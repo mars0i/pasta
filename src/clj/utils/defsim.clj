@@ -25,57 +25,19 @@
 (def init-defn-sym '-init-sim-data)
 (def gui-vars-html-filename "gui_vars_table.html") ; will contain html for documentation of vars in GUI
 
-; (def mason-options 
-;   (str "-repeat R         Long value > 0: Runs R jobs.  Unless overridden by a\n"
-;        "                  checkpoint recovery (see -checkpoint), the random seed for\n"
-;        "                  each job is the provided -seed plus the job# (starting at 0).\n"
-;        "                  Default: runs once only: job number is 0.\n\n"
-;        "-parallel P       Long value > 0: Runs P separate batches of jobs in parallel,\n"
-;        "                  each one containing R jobs (as specified by -repeat).  Each\n"
-;        "                  batch has its own independent set of checkpoint files.  Job\n"
-;        "                  numbers are 0, P, P*2, ... for the first batch, then 1, P+1,\n"
-;        "                  P*2+1, ... for the second batch, then 2, P+2, P*2+2, ... for\n"
-;        "                  the third batch, and so on.  -parallel may not be used in\n"
-;        "                  combination with -checkpoint.\n"
-;        "                  Default: one batch only (no parallelism).\n\n"
-;        "-seed S           Long value not 0: the random number generator seed, unless \n"
-;        "                  overridden by a checkpoint recovery (see -checkpoint).\n"
-;        "                  Default: the system time in milliseconds.\n\n"
-;        "-until U          Double value >= 0: the simulation must stop when the\n"
-;        "                  simulation time U has been reached or exceeded.\n"
-;        "                  If -for is also included, the simulation terminates when\n"
-;        "                  either of them is completed.\n"
-;        "                  Default: don't stop.\n"
-;        "-for N            Long value >= 0: the simulation must stop when N\n"
-;        "                  simulation steps have transpired.   If -until is also\n"
-;        "                  included, the simulation terminates when either of them is\n"
-;        "                  completed.\n"
-;        "                  Default: don't stop.\n"
-;        "-time T           Long value >= 0: print a timestamp every T simulation steps.\n"
-;        "                  If 0, nothing is printed.\n"
-;        "                  Default: auto-chooses number of steps based on how many\n"
-;        "                  appear to fit in one second of wall clock time.  Rounds to\n"
-;        "                  one of 1, 2, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, etc.\n\n"
-;        "-docheckpoint D   Long value > 0: checkpoint every D simulation steps.\n"
-;        "                  Default: never.\n"
-;        "                  Checkpoint files named       <steps>.<job#>.NAME.checkpoint\n"
-;        "                  where NAME is specified in -checkpointname\n\n"
-;        "-checkpointname N String: id for the checkpoint filename (see -docheckpoint)\n"
-;        "                  Default: Sim\n"
-;        "-checkpoint C     String: loads the simulation from file C, recovering the job\n"
-;        "                  number and the seed.  If the checkpointed simulation was begun\n"
-;        "                  on the command line but was passed through the GUI for a while\n"
-;        "                  (even multiply restarted in the GUI) and then recheckpointed,\n"
-;        "                  then the seed and job numbers will be the same as when they\n"
-;        "                  were last on the command line.  If the checkpointed simulation\n"
-;        "                  was begun on the GUI, then the seed will not be recovered and\n"+
-;        "                  job will be set to 0. Further jobs and seeds are incremented\n"
-;        "                  from the recovered job and seed.\n"
-;        "                  Default: starts a new simulation rather than loading one, at\n"
-;        "                  job 0 and with the seed given in -seed.\n\n"
-;        "-quiet            Does not print messages except for errors and warnings.\n"
-;        "                  This option implies -time 0.\n"
-;        "                  Default: prints all messages.\n"))
+(def mason-options 
+  '[
+    [mason-option nil nil false ["-r" "-repeat R: Use '-help' to see MASON options."]]
+    [mason-option nil nil false ["-p" "-parallel P: Use '-help' to see MASON options."]]
+    [mason-option nil nil false ["-s" "-seed S: Use '-help' to see MASON options."]]
+    [mason-option nil nil false ["-u" "-until U: Use '-help' to see MASON options."]]
+    [mason-option nil nil false ["-f" "-for N: Use '-help' to see MASON options."]]
+    [mason-option nil nil false ["-t" "-time T: Use '-help' to see MASON options."]]
+    [mason-option nil nil false ["-d" "-docheckpoint D: Use '-help' to see MASON options."]]
+    [mason-option nil nil false ["-c" "-checkpointname N, : Use '-help' to see MASON options."]]
+    [mason-option nil nil false ["-c" "-checkpoint C: Use '-help' to see MASON options."]]
+    [mason-option nil nil false ["-q" "-quiet: Use '-help' to see MASON options."]]
+    ])
 
 
 ;; Positional functions
