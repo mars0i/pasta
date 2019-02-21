@@ -157,7 +157,7 @@
         (let [~'cli-options [["-?" "--help" "Print this help message."] ~@(get-cli-specs fields)]
               usage-fmt# (fn [~'options]
                            (let [~'fmt-line (fn [[~'short-opt ~'long-opt ~'desc]] (str ~'short-opt ", " ~'long-opt ": " ~'desc))]
-                             (clojure.string/join "\n" (concat (map ~'fmt-line ~'options)))))
+                             (clojure.string/join "\n" (map ~'fmt-line ~'options))))
               {:keys [~'options ~'arguments ~'errors ~'summary] :as ~'cmdline} (clojure.tools.cli/parse-opts args# ~'cli-options)]
           ;(println ~'errors)
           (reset! ~'commandline$ ~'cmdline) ; commandline should be defined previously in Sim
