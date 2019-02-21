@@ -25,19 +25,19 @@
 (def init-defn-sym '-init-sim-data)
 (def gui-vars-html-filename "gui_vars_table.html") ; will contain html for documentation of vars in GUI
 
-(def mason-options 
-  '[
-    [mason-option nil nil false ["-r" "-repeat R: Use '-help' to see MASON options."]]
-    [mason-option nil nil false ["-p" "-parallel P: Use '-help' to see MASON options."]]
-    [mason-option nil nil false ["-s" "-seed S: Use '-help' to see MASON options."]]
-    [mason-option nil nil false ["-u" "-until U: Use '-help' to see MASON options."]]
-    [mason-option nil nil false ["-f" "-for N: Use '-help' to see MASON options."]]
-    [mason-option nil nil false ["-t" "-time T: Use '-help' to see MASON options."]]
-    [mason-option nil nil false ["-d" "-docheckpoint D: Use '-help' to see MASON options."]]
-    [mason-option nil nil false ["-c" "-checkpointname N, : Use '-help' to see MASON options."]]
-    [mason-option nil nil false ["-c" "-checkpoint C: Use '-help' to see MASON options."]]
-    [mason-option nil nil false ["-q" "-quiet: Use '-help' to see MASON options."]]
-    ])
+;(def mason-options 
+;  '[
+;    [mason-option false long false ["-r" "-repeat R: Use '-help' to see MASON options."]]
+;    [mason-option false long false ["-p" "-parallel P: Use '-help' to see MASON options."]]
+;    [mason-option false long false ["-s" "-seed S: Use '-help' to see MASON options."]]
+;    [mason-option false double false ["-u" "-until U: Use '-help' to see MASON options."]]
+;    [mason-option false long false ["-f" "-for N: Use '-help' to see MASON options."]]
+;    [mason-option false long false ["-t" "-time T: Use '-help' to see MASON options."]]
+;    [mason-option false long false ["-d" "-docheckpoint D: Use '-help' to see MASON options."]]
+;    [mason-option false String false ["-c" "-checkpointname N, : Use '-help' to see MASON options."]]
+;    [mason-option false String false ["-c" "-checkpoint C: Use '-help' to see MASON options."]]
+;    [mason-option false boolean false ["-q" "-quiet: Use '-help' to see MASON options."]]
+;    ])
 
 
 ;; Positional functions
