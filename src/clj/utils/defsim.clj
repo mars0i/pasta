@@ -145,12 +145,12 @@
                            (let [~'fmt-line (fn [[~'short-opt ~'long-opt ~'desc]] (str ~'short-opt ", " ~'long-opt ": " ~'desc))]
                              (clojure.string/join "\n" (concat (map ~'fmt-line ~'options)))))
               {:keys [~'options ~'arguments ~'errors ~'summary] :as ~'cmdline} (clojure.tools.cli/parse-opts args# ~'cli-options)]
-          ;(println ~'errors)
+          (println ~'errors)
           (reset! ~'commandline$ ~'cmdline) ; commandline should be defined previously in Sim
           (when (:help ~'options)
             (println "Command line options (defaults in parentheses):")
             (println (usage-fmt# ~'cli-options))
-            (println "MASON options can also be used after these options:")
+            (println "MASON options can also be used after these options and after '--'.")
 	    (println "For example, you can use -for to stop after a specific number of steps.")
             (println "-help (note single dash): Print help message for MASON.")
             (System/exit 0)))))))
