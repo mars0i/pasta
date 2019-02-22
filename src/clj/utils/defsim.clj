@@ -145,7 +145,10 @@
                            (let [~'fmt-line (fn [[~'short-opt ~'long-opt ~'desc]] (str ~'short-opt ", " ~'long-opt ": " ~'desc))]
                              (clojure.string/join "\n" (concat (map ~'fmt-line ~'options)))))
               {:keys [~'options ~'arguments ~'errors ~'summary] :as ~'cmdline} (clojure.tools.cli/parse-opts args# ~'cli-options)]
-          (println ~'errors)
+          (when ~'errors
+            (run! println ~'errors)
+            (println "MASON options should appear at the end of the command line after '--'.")
+            (System/exit 1))
           (reset! ~'commandline$ ~'cmdline) ; commandline should be defined previously in Sim
           (when (:help ~'options)
             (println "Command line options (defaults in parentheses):")
