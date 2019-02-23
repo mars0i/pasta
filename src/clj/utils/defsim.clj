@@ -1,6 +1,6 @@
-;;; This software is copyright 2016, 2017 by Marshall Abrams, and
-;;; is distributed under the Gnu General Public License version 3.0 as
-;;; specified in the file LICENSE.
+;; This software is copyright 2016, 2017, 2018, 2019 by Marshall Abrams, 
+;; and is distributed under the Gnu General Public License version 3.0 
+;; as specified in the the file LICENSE.
 
 ;; Defines a defsymstate macro that will define a subclass of MASON's
 ;; SimState with associated instance state variable, accessors, etc.
