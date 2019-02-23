@@ -27,7 +27,7 @@
      (flush-rng rng)
      rng))) 
 
-(defn rand-idx [^MersenneTwisterFast rng n] (.nextInt rng n))
+(defn rand-idx [^MersenneTwisterFast rng sup] (.nextInt rng sup))
 
 (defn next-long [^MersenneTwisterFast rng] (.nextLong rng))
 
