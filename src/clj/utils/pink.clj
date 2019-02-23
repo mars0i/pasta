@@ -5,13 +5,19 @@
 ;(set! *warn-on-reflection* true)
 
 (ns utils.pink
-  (:require [utils.random :as r])
+  (:require [utils.random :as r]
+            [clojure.math.numeric-tower :as math])
   (:import PinkNoiseFast))
 
 (defn make-pink
   "Return a PinkNoise PRNG based on ec.util.MersenneTwisterFast."
-  ([alpha poles] (make-pink (make-mst) alpha poles))
+  ([alpha poles] (make-pink (r/make-rng) alpha poles))
   ([rng alpha poles] (PinkNoiseFast. alpha poles rng)))
+
+;(defn logistic
+;  "Standard logistic function."
+;  [midpoint maximum growth x]
+;  (/ maximum (inc (java.lang.Math/exp (* growth (- midpoint x))))))
 
 (defn normalizing-logistic
   "Logistic function with max value 1, mid x value 0, and user-specified
@@ -23,6 +29,12 @@
 (defn next-double
   "Returns a random double in the half-open range from [0.0,1.0) from a pink-noise
   PRNG normalized by normalizing-logistic."
-  [rng growth]
-  (normalizing-logistic growth (.nextDouble rng)))
+  [growth rng]
+  (normalizing-logistic growth (.nextValue rng)))
 
+(defn rand-idx
+  "Return an integer in [0,sup) distributed as if it is an integer version
+  of the output of next-double (which uses normalizing-logistic)."
+  [growth rng sup]
+  (long (math/floor
+          (* sup (next-double growth rng)))))
