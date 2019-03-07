@@ -184,7 +184,7 @@
   indicate that the field should not be configurable from the UI, or truthy
   if it is.  In the latter case, it may be a two-element sequence containing 
   default min and max values to be used for sliders in the UI.  (This range 
-  doesn't constraint fields' values in any other respect.) The fifth element,
+  doesn't constrain fields' values in any other respect.) The fifth element,
   if present, specifies short commandline option lists for use by parse-opts,
   except that the second, long option specifier should be left out; it will be 
   generated from the parameter name.  The following gen-class options will
@@ -198,7 +198,7 @@
   last dot of the current namespace.  Sim must be aot-compiled in order for 
   gen-class to work.  When run, this macro also generates a file named
   gui_vars_table.html containing documentation on generated Java vars that will
-  be manipulable from within the GUI.  This file can be included into other
+  be manipulable from within the GUI.  That file can then be included into other
   documentation such as the index.html file displayed in the app."
   [fields & addl-gen-class-opts]
    (let [addl-opts-map (apply hash-map addl-gen-class-opts)
