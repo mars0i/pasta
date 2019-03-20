@@ -9,7 +9,6 @@
             [clojure.data.csv :as csv]
             [clojure.java.io]
             [masonclj.simparams :as sp]
-            [utils.defsim :as defsim]
             [utils.map2csv :as m2c]
             [pasta.snipe :as sn]
             [pasta.popenv :as pe]
