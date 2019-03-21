@@ -39,11 +39,6 @@
 (def superimposed-subenv-offset 3.5)
 (def snipe-size 0.55)
 (defn snipe-shade-fn [max-energy snipe] (int (+ 64 (* 190 (/ (:energy snipe) max-energy)))))
-;(defn snipe-shade-fn [max-energy snipe]   ; DEBUG VERSION
-;  (let [shade (int (+ 64 (* 190 (/ (:energy snipe) max-energy))))]
-;    (when (> shade 255)
-;      (println "SHADE:" shade max-energy (dissoc snipe :sim-data$)))
-;    shade))
 (defn k-snipe-color-fn [max-energy snipe] (Color. (snipe-shade-fn max-energy snipe) 0 0))
 (defn r-snipe-color-fn [max-energy snipe] (Color. 0 0 (snipe-shade-fn max-energy snipe)))
 (defn s-snipe-color-fn [max-energy snipe] (Color. (snipe-shade-fn max-energy snipe) 0 (snipe-shade-fn max-energy snipe)))
@@ -122,17 +117,6 @@
       (.setCircleShowing this @(:circled$ snipe))
       (proxy-super draw snipe graphics info))))
 
-;; doesn't work (yet)
-;(defmacro r-snipe-proxy []
-;`(proxy [ShapePortrayal2D] 
-;   ~(let [[x-points y-points] (if (pos? (:mush-pref this))
-;                               [ShapePortrayal2D/X_POINTS_TRIANGLE_UP ShapePortrayal2D/Y_POINTS_TRIANGLE_UP]
-;                               [ShapePortrayal2D/X_POINTS_TRIANGLE_DOWN ShapePortrayal2D/Y_POINTS_TRIANGLE_DOWN])]
-;     (conj [x-points y-points] (* 1.1 snipe-size)))
-;   (draw [snipe graphics info] ; override method in super
-;     (set! (.-paint this) (r-snipe-color-fn effective-max-energy snipe)) ; paint var is in superclass
-;     (proxy-super draw snipe graphics (DrawInfo2D. info (* 0.75 org-offset) (* 0.55 org-offset)))))) ; see above re last arg
-
 ;; TODO abstract out some of the repetition below
 (defn setup-portrayals
   [this-ui]  ; instead of 'this': avoid confusion with e.g. proxy below
@@ -210,30 +194,6 @@
                                (draw [snipe graphics info] ; override method in super
                                  (set! (.-paint this) (s-snipe-color-fn effective-max-energy snipe)) ; superclass var
                                  (proxy-super draw snipe graphics (DrawInfo2D. info org-offset org-offset))))) ; see above re last arg
-        ;; circle and compass version of s-snipe:
-        ;s-snipe-portrayal (make-fnl-circled-portrayal Color/black
-        ;                     (OrientedPortrayal2D.
-        ;                       (proxy [OvalPortrayal2D] [(* 1.1 snipe-size)]
-        ;                         (draw [snipe graphics info] ; override method in super
-        ;                           (set! (.-paint this) (s-snipe-color-fn effective-max-energy snipe)) ; superclass var
-        ;                           (proxy-super draw snipe graphics (DrawInfo2D. info org-offset org-offset)))) ; see above re last arg
-        ;                       0 0.6 (Color. 255 0 255) OrientedPortrayal2D/SHAPE_COMPASS))
-        ;s-snipe-portrayal (make-fnl-circled-portrayal Color/black
-        ;                     (OrientedPortrayal2D.
-        ;                       (proxy [OvalPortrayal2D] [(* 1.1 snipe-size)]
-        ;                         (draw [snipe graphics info] ; override method in super
-        ;                           (set! (.-paint this) (s-snipe-color-fn effective-max-energy snipe)) ; superclass var
-        ;                           (proxy-super draw snipe graphics (DrawInfo2D. info org-offset org-offset)))) ; see above re last arg
-        ;                       0 0.5 (Color. 255 0 255) OrientedPortrayal2D/SHAPE_KITE))
-        ;; square and line rep of s-snipes
-        ;s-snipe-portrayal (make-fnl-circled-portrayal Color/black
-        ;                      (OrientedPortrayal2D.
-        ;                        (proxy [RectanglePortrayal2D] [(* 0.915 snipe-size)] ; squares need to be bigger than circles
-        ;                          (draw [snipe graphics info] ; orverride method in super
-        ;                            (set! (.-paint this) (s-snipe-color-fn effective-max-energy snipe)) ; paint var is in superclass
-        ;                            (proxy-super draw snipe graphics (DrawInfo2D. info (* 1.5 org-offset) (* 1.5 org-offset))))) ; see above re last arg
-        ;                        0 0.6 (Color. 255 0 255) OrientedPortrayal2D/SHAPE_LINE))
-        ;bg-field-portrayal (:bg-field-portrayal ui-config)
         west-snipe-field-portrayal (:west-snipe-field-portrayal ui-config)
         east-snipe-field-portrayal (:east-snipe-field-portrayal ui-config)
         west-mush-field-portrayal (:west-mush-field-portrayal ui-config)
@@ -241,21 +201,15 @@
         shady-east-mush-field-portrayal (:shady-east-mush-field-portrayal ui-config)
         east-mush-field-portrayal (:east-mush-field-portrayal ui-config)]
     ;; connect fields to their portrayals
-    ;(.setField bg-field-portrayal (ObjectGrid2D. (:env-width sim-data) (:env-height sim-data)))
     (.setField west-mush-field-portrayal (:mush-field west))
     (.setField east-mush-field-portrayal (:mush-field east))
     (.setField shady-east-mush-field-portrayal (:mush-field east))
-    ;(.setField shady-west-mush-field-portrayal (:mush-field west))
     (.setField west-snipe-field-portrayal (:snipe-field west))
     (.setField east-snipe-field-portrayal (:snipe-field east))
-    ;; extra field portrayal to set a background color under the subenvs:
-    ;(.setPortrayalForNull bg-field-portrayal (HexagonalPortrayal2D. bg-color 1.2))
-    ;; connect portrayals to agents:
     ;; mushs:
     (.setPortrayalForClass west-mush-field-portrayal pasta.mush.Mush west-mush-portrayal)
     (.setPortrayalForClass east-mush-field-portrayal pasta.mush.Mush east-mush-portrayal)
     (.setPortrayalForClass shady-east-mush-field-portrayal pasta.mush.Mush shady-east-mush-portrayal)
-    ;(.setPortrayalForClass shady-west-mush-field-portrayal pasta.mush.Mush shady-west-mush-portrayal)
     ;; west snipes:
     (.setPortrayalForClass west-snipe-field-portrayal pasta.snipe.KSnipe k-snipe-portrayal)
     (.setPortrayalForClass west-snipe-field-portrayal pasta.snipe.RSnipe r-snipe-portrayal)
@@ -278,10 +232,6 @@
     (doto west-display         (.reset) (.repaint))
     (doto east-display         (.reset) (.repaint))
     (doto superimposed-display (.reset) (.repaint))))
-
-;    (doto west-display         (.reset) (.setBackdrop display-backdrop-color) (.repaint))
-;    (doto east-display         (.reset) (.setBackdrop display-backdrop-color) (.repaint))
-;    (doto superimposed-display (.reset) (.setBackdrop display-backdrop-color) (.repaint))))
 
 ;; For hex grid, need to rescale display (based on HexaBugsWithUI.java around line 200 in Mason 19):
 (defn hex-scale-height
