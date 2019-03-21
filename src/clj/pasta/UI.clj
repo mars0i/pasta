@@ -259,25 +259,25 @@
     ;; west snipes:
     (.setPortrayalForClass west-snipe-field-portrayal pasta.snipe.KSnipe k-snipe-portrayal)
     (.setPortrayalForClass west-snipe-field-portrayal pasta.snipe.RSnipe r-snipe-portrayal)
-(.setPortrayalForClass west-snipe-field-portrayal pasta.snipe.SSnipe s-snipe-portrayal)
-;; east snipes:
-(.setPortrayalForClass east-snipe-field-portrayal pasta.snipe.KSnipe k-snipe-portrayal)
-(.setPortrayalForClass east-snipe-field-portrayal pasta.snipe.RSnipe r-snipe-portrayal)
-(.setPortrayalForClass east-snipe-field-portrayal pasta.snipe.SSnipe s-snipe-portrayal)
-;; Since popenvs are updated functionally, have to tell the ui about the new popenv on every timestep:
-(.scheduleRepeatingImmediatelyAfter this-ui
-                                    (reify Steppable 
-                                      (step [this sim-state]
-                                        (let [{:keys [west east]} (:popenv @sim-data$)]
-                                          (.setField west-snipe-field-portrayal (:snipe-field west))
-                                          (.setField east-snipe-field-portrayal (:snipe-field east))
-                                          (.setField west-mush-field-portrayal (:mush-field west))
-                                          (.setField east-mush-field-portrayal (:mush-field east))
-                                          (.setField shady-east-mush-field-portrayal (:mush-field east))))))
-;; set up display:
-(doto west-display         (.reset) (.repaint))
-(doto east-display         (.reset) (.repaint))
-(doto superimposed-display (.reset) (.repaint))))
+    (.setPortrayalForClass west-snipe-field-portrayal pasta.snipe.SSnipe s-snipe-portrayal)
+    ;; east snipes:
+    (.setPortrayalForClass east-snipe-field-portrayal pasta.snipe.KSnipe k-snipe-portrayal)
+    (.setPortrayalForClass east-snipe-field-portrayal pasta.snipe.RSnipe r-snipe-portrayal)
+    (.setPortrayalForClass east-snipe-field-portrayal pasta.snipe.SSnipe s-snipe-portrayal)
+    ;; Since popenvs are updated functionally, have to tell the ui about the new popenv on every timestep:
+    (.scheduleRepeatingImmediatelyAfter this-ui
+                                        (reify Steppable 
+                                          (step [this sim-state]
+                                            (let [{:keys [west east]} (:popenv @sim-data$)]
+                                              (.setField west-snipe-field-portrayal (:snipe-field west))
+                                              (.setField east-snipe-field-portrayal (:snipe-field east))
+                                              (.setField west-mush-field-portrayal (:mush-field west))
+                                              (.setField east-mush-field-portrayal (:mush-field east))
+                                              (.setField shady-east-mush-field-portrayal (:mush-field east))))))
+    ;; set up display:
+    (doto west-display         (.reset) (.repaint))
+    (doto east-display         (.reset) (.repaint))
+    (doto superimposed-display (.reset) (.repaint))))
 
 ;    (doto west-display         (.reset) (.setBackdrop display-backdrop-color) (.repaint))
 ;    (doto east-display         (.reset) (.setBackdrop display-backdrop-color) (.repaint))
