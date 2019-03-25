@@ -174,7 +174,6 @@
   [^Sim sim-sim rng sim-data$ seed]
   (let [^Schedule schedule (.schedule sim-sim)
         report-every (:report-every @sim-data$)
-        max-ticks (:max-ticks @sim-data$)
         ;; This runs the simulation:
         ^Stoppable stoppable (.scheduleRepeating schedule Schedule/EPOCH 0 ; epoch = starting at beginning, 0 means run this first during timestep
                                       (reify Steppable 
