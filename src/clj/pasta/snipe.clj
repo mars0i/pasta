@@ -158,58 +158,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MAKE-PROPERTIES FUNCTION
 
-;; Predicate that indicates that we are looking at the index of
-;; circled$ in make-properties' internal sequences:
-(def circled-idx? zero?)
-
-;; Current version of next function does not allow any fields to be modifiable from the GUI.
-;; The code could be extended to allow this.
-;; Code below makes use of the fact that in Clojure, vectors can be treated as functions
-;; of indexes, returning the indexed item; that keywords such as :x can be treated as 
-;; functions of maps; and that defrecords such as snipes can be treated as maps.
-(defn new-make-properties
-  "Return a Properties subclass for use by Propertied's properties method so
-  that certain fields can be displayed in the GUI on request.
-  Used by GUI to allow inspectors to follow a functionally updated agent,
-  i.e. one whose JVM identity may change over time.
-  The first four parameters are sequences with elements in corresponding orders:
-  property-keys: Keys for fields in the agent that should be displayed in the GUI.
-  descriptions: Short text descriptions of those fields
-  types: Java types of each field.
-  are-writeable: booleans"
-  [data-field-keys data-descriptions data-types get-this-agent id cfg-data$] ; or should I make the args an arbitrary number of 4-tuples?
-  ;; Shadow the first four parameters by adding circled$:
-  (let [property-keys (vec (cons :circled$ data-field-keys)) ; circled$ assumed first below
-        descriptions (vec (cons "Boolean indicating whether circled in GUI"
-                                data-descriptions))
-        types (vec (cons java.lang.Boolean data-types))
-        num-data-fields (count data-field-keys)
-        num-properties (count property-keys)
-        names (mapv name property-keys)
-        are-writeable (vec (cons true (repeat num-data-fields false)))
-        hidden        (vec (repeat num-properties false)) ; no properties specified here are to be hidden from GUI
-        get-curr-snipe (fn [] ((:snipe-map (:popenv @cfg-data$)) id))] ; find current version of this snipe ;; FIXME FIXME THIS IS PASTA-SPECIFIC
-    (reset! (:circled$ (get-curr-snipe)) true) ; make-properties is only called by inspector, in which case highlight snipe in UI
-    (proxy [Properties] [] ; the methods below are expected by Properties
-      (getObject [] (get-this-agent))
-      (getName [i] (names i))
-      (getDescription [i] (descriptions i))
-      (getType [i] (types i))
-      (getValue [i]
-        (let [v ((property-keys i) (get-curr-snipe))]
-          (cond (atom? v) @v
-                (keyword? v) (name v)
-                :else v)))
-      (setValue [i newval]      ; allows user to turn off circled in UI
-        (when (circled-idx? i)  ; no other properties are settable from GUI (but make-properties could be modified to allow this)
-          (reset! (:circled$ (get-curr-snipe))
-                  (Boolean/valueOf newval)))) ; it's always a string that's returned from UI. (Do *not* use (Boolean. newval); it's always truthy in Clojure.)
-      (isHidden [i] (hidden i))
-      (isReadWrite [i] (are-writeable i))
-      (isVolatile [] false)
-      (numProperties [] num-properties)
-      (toString [] (str "<SimpleProperties for agent with id=" id ">")))))
-
 ;; Used by GUI to allow inspectors to follow a fnlly updated agent.
 ;; (Code below makes use of the fact that in Clojure, vectors can be treated as functions
 ;; of indexes, returning the indexed item; that keywords such as :x can be treated as 
