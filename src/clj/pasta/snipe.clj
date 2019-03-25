@@ -177,7 +177,7 @@
   descriptions: Short text descriptions of those fields
   types: Java types of each field.
   are-writeable: booleans"
-  [data-field-keys data-descriptions data-types id cfg-data$] ; or should I make the args an arbitrary number of 4-tuples?
+  [data-field-keys data-descriptions data-types get-this-agent id cfg-data$] ; or should I make the args an arbitrary number of 4-tuples?
   ;; Shadow the first four parameters by adding circled$:
   (let [property-keys (vec (cons :circled$ data-field-keys)) ; circled$ assumed first below
         descriptions (vec (cons "Boolean indicating whether circled in GUI"
@@ -191,7 +191,7 @@
         get-curr-snipe (fn [] ((:snipe-map (:popenv @cfg-data$)) id))] ; find current version of this snipe ;; FIXME FIXME THIS IS PASTA-SPECIFIC
     (reset! (:circled$ (get-curr-snipe)) true) ; make-properties is only called by inspector, in which case highlight snipe in UI
     (proxy [Properties] [] ; the methods below are expected by Properties
-      (getObject [] (get-curr-snipe))
+      (getObject [] (get-this-agent))
       (getName [i] (names i))
       (getDescription [i] (descriptions i))
       (getType [i] (types i))
