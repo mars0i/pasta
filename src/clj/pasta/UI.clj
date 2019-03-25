@@ -42,7 +42,6 @@
 (defn k-snipe-color-fn [max-energy snipe] (Color. (snipe-shade-fn max-energy snipe) 0 0))
 (defn r-snipe-color-fn [max-energy snipe] (Color. 0 0 (snipe-shade-fn max-energy snipe)))
 (defn s-snipe-color-fn [max-energy snipe] (Color. (snipe-shade-fn max-energy snipe) 0 (snipe-shade-fn max-energy snipe)))
-;(defn s-snipe-color-fn [max-energy snipe] (Color. 0 (snipe-shade-fn max-energy snipe) 0))
 (def mush-pos-nutrition-shade 150)
 (def mush-neg-nutrition-shade 200)
 (defn west-mush-color-fn 
@@ -64,21 +63,27 @@
                :east-display-frame (atom nil) ;ditto
                :superimposed-display (atom nil) ; ditto
                :superimposed-display-frame (atom nil) ; ditto
-               ;:bg-field-portrayal (HexaObjectGridPortrayal2D.) ; can be used to put a background or grid only under subenvs
                :west-snipe-field-portrayal (HexaObjectGridPortrayal2D.)
                :west-mush-field-portrayal (HexaObjectGridPortrayal2D.)
-               ;:shady-west-mush-field-portrayal (HexaObjectGridPortrayal2D.)
                :shady-east-mush-field-portrayal (HexaObjectGridPortrayal2D.)
                :east-snipe-field-portrayal (HexaObjectGridPortrayal2D.)
                :east-mush-field-portrayal (HexaObjectGridPortrayal2D.)}])
 
-;; see doc/getName.md
-(defn -getName-void [this] "pasta") ; override method in super. Should cause this string to be displayed as title of config window of gui, but it doesn't.
+(defn -getName-void
+  "Overrides method in super. Should cause the returned string to be 
+  displayed as title of config window of gui, but it doesn't.
+  See doc/getName.txt."
+  [this]
+  "pasta")
 
-;; Override methods in sim.display.GUIState so that UI can make graphs, etc.
-(defn -getSimulationInspectedObject [this] (.state this))
-;; This makes the controls for the sim state in the Model tab (and does other things?):
+(defn -getSimulationInspectedObject
+  "Override methods in sim.display.GUIState so that UI can make graphs, etc."
+  [this]
+  (.state this))
+
 (defn -getInspector [this]
+  "This function makes the controls for the sim state in the Model tab
+  (and does other things?)."
   (let [i (.superGetInspector this)]
     (.setVolatile i true)
     i))
@@ -197,7 +202,6 @@
         west-snipe-field-portrayal (:west-snipe-field-portrayal ui-config)
         east-snipe-field-portrayal (:east-snipe-field-portrayal ui-config)
         west-mush-field-portrayal (:west-mush-field-portrayal ui-config)
-        ;shady-west-mush-field-portrayal (:shady-west-mush-field-portrayal ui-config)
         shady-east-mush-field-portrayal (:shady-east-mush-field-portrayal ui-config)
         east-mush-field-portrayal (:east-mush-field-portrayal ui-config)]
     ;; connect fields to their portrayals
@@ -280,7 +284,6 @@
         height (hex-scale-height (int (* display-size (:env-height sim-data))))
         ;bg-field-portrayal (:bg-field-portrayal ui-config)
         west-mush-field-portrayal (:west-mush-field-portrayal ui-config)
-        ;shady-west-mush-field-portrayal (:shady-west-mush-field-portrayal ui-config)
         shady-east-mush-field-portrayal (:shady-east-mush-field-portrayal ui-config)
         east-mush-field-portrayal (:east-mush-field-portrayal ui-config)
         west-snipe-field-portrayal (:west-snipe-field-portrayal ui-config)
