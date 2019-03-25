@@ -17,7 +17,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; INITIAL UTILITY DEFS
 
-(declare make-properties make-k-snipe make-r-snipe is-k-snipe? is-r-snipe? rand-energy atom?)
+(declare make-properties make-properties-for-snipes 
+         make-k-snipe make-r-snipe is-k-snipe? is-r-snipe? rand-energy atom?)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; DEFRECORD CLASS DEFS
@@ -46,14 +47,19 @@
          (max (* -0.5 Math/PI) 
               orientation)))) ; even given normalization some schemes might produce values outside the range
 
-;; The two atom fields at the end are there solely for interactions with the UI.
-;; Propertied/properties is used by GUI to allow inspectors to follow a fnlly updated agent.
+(defn make-get-curr-object
+  "Return a function that can be the value of getObject in Properties,
+  i.e. that will return the current time-slice of a particular snipe.
+  The function returned will be a closure over snipe-id and cfg-data$."
+  [snipe-id cfg-data$] ; pass cfg-data$ and not @cfg-data$ so the fn always uses the latest data.
+  (fn [] ((:snipe-map (:popenv @cfg-data$)) snipe-id)))
 
 ;; K-strategy snipes use individual learning to determine which size of mushrooms 
 ;; are nutritious.  This takes time and can involve eating many poisonous mushrooms.
 (defrecord KSnipe [id perceive mush-pref energy subenv x y age lifespan circled$ cfg-data$]
   Propertied
-  (properties [original-snipe] (make-properties id cfg-data$))
+  (properties [original-snipe]
+    (make-properties-for-snipes id (make-get-curr-object id cfg-data$)))
   Oriented2D
   (orientation2D [this] (pref-orientation -0.0004 0.0004 (:mush-pref this))) ; TODO FIX THESE HARCODED VALUES?
   Object
@@ -62,7 +68,8 @@
 ;; Social snipes learn from the preferences of other nearby snipes.
 (defrecord SSnipe [id perceive mush-pref energy subenv x y age lifespan circled$ cfg-data$]
   Propertied
-  (properties [original-snipe] (make-properties id cfg-data$))
+  (properties [original-snipe]
+    (make-properties-for-snipes id (make-get-curr-object id cfg-data$)))
   Oriented2D
   (orientation2D [this] (pref-orientation -0.0004 0.0004 (:mush-pref this))) ; TODO FIX THESE HARCODED VALUES?
   Object
@@ -77,7 +84,8 @@
 ;; that have the "right" preference can usually reproduce more quickly than k-snipes.
 (defrecord RSnipe [id perceive mush-pref energy subenv x y age lifespan circled$ cfg-data$] ; r-snipe that prefers small mushrooms
   Propertied
-  (properties [original-snipe] (make-properties id cfg-data$))
+  (properties [original-snipe]
+    (make-properties-for-snipes id (make-get-curr-object id cfg-data$)))
   Object
   (toString [this] (str "<RSnipe #" id ">")))
 
@@ -167,17 +175,19 @@
 ;; Code below makes use of the fact that in Clojure, vectors can be treated as functions
 ;; of indexes, returning the indexed item; that keywords such as :x can be treated as 
 ;; functions of maps; and that defrecords such as snipes can be treated as maps.
-(defn new-make-properties
+(defn make-properties
   "Return a Properties subclass for use by Propertied's properties method so
   that certain fields can be displayed in the GUI on request.
   Used by GUI to allow inspectors to follow a functionally updated agent,
-  i.e. one whose JVM identity may change over time.
-  The first four parameters are sequences with elements in corresponding orders:
+  i.e. one whose JVM identity may change over time.  id is used only in the
+  toString string used to describe the agent in the GUI.
+  get-curr-object should be a no-arg function that knows how to look up the
+  current time-slice of the agent.  (It might be a closure over id, for example.)
+  The first three parameters are sequences with elements in corresponding order:
   property-keys: Keys for fields in the agent that should be displayed in the GUI.
   descriptions: Short text descriptions of those fields
-  types: Java types of each field.
-  are-writeable: booleans"
-  [data-field-keys data-descriptions data-types get-this-agent id cfg-data$] ; or should I make the args an arbitrary number of 4-tuples?
+  types: Java types of each field."
+  [data-field-keys data-descriptions data-types id get-curr-object] ; or should I make the args an arbitrary number of 4-tuples?
   ;; Shadow the first four parameters by adding circled$:
   (let [property-keys (vec (cons :circled$ data-field-keys)) ; circled$ assumed first below
         descriptions (vec (cons "Boolean indicating whether circled in GUI"
@@ -187,22 +197,21 @@
         num-properties (count property-keys)
         names (mapv name property-keys)
         are-writeable (vec (cons true (repeat num-data-fields false)))
-        hidden        (vec (repeat num-properties false)) ; no properties specified here are to be hidden from GUI
-        get-curr-snipe (fn [] ((:snipe-map (:popenv @cfg-data$)) id))] ; find current version of this snipe ;; FIXME FIXME THIS IS PASTA-SPECIFIC
-    (reset! (:circled$ (get-curr-snipe)) true) ; make-properties is only called by inspector, in which case highlight snipe in UI
+        hidden        (vec (repeat num-properties false))] ; no properties specified here are to be hidden from GUI
+    (reset! (:circled$ (get-curr-object)) true) ; make-properties is only called by inspector, in which case highlight snipe in UI
     (proxy [Properties] [] ; the methods below are expected by Properties
-      (getObject [] (get-this-agent))
+      (getObject [] (get-curr-object))
       (getName [i] (names i))
       (getDescription [i] (descriptions i))
       (getType [i] (types i))
       (getValue [i]
-        (let [v ((property-keys i) (get-curr-snipe))]
+        (let [v ((property-keys i) (get-curr-object))]
           (cond (atom? v) @v
                 (keyword? v) (name v)
                 :else v)))
       (setValue [i newval]      ; allows user to turn off circled in UI
         (when (circled-idx? i)  ; no other properties are settable from GUI (but make-properties could be modified to allow this)
-          (reset! (:circled$ (get-curr-snipe))
+          (reset! (:circled$ (get-curr-object))
                   (Boolean/valueOf newval)))) ; it's always a string that's returned from UI. (Do *not* use (Boolean. newval); it's always truthy in Clojure.)
       (isHidden [i] (hidden i))
       (isReadWrite [i] (are-writeable i))
@@ -210,52 +219,19 @@
       (numProperties [] num-properties)
       (toString [] (str "<SimpleProperties for agent with id=" id ">")))))
 
-;; Used by GUI to allow inspectors to follow a fnlly updated agent.
-;; (Code below makes use of the fact that in Clojure, vectors can be treated as functions
-;; of indexes, returning the indexed item; that keywords such as :x can be treated as 
-;; functions of maps; and that defrecords such as snipes can be treated as maps.)
-(defn make-properties
-  "Return a Properties subclass for use by Propertied's properties method so
-  that certain fields can be displayed in the GUI on request."
-  [id cfg-data$]
-  ;; These definitions need to be coordinated by hand:
-  (let [kys [:energy :mush-pref :subenv :x :y :age :lifespan :circled$] ; TODO CHANGE FOR NEW FIELDS
-        circled-idx 7 ; HARDCODED INDEX for circled$ field              ; TODO CHANGE FOR NEW FIELDS
-        descriptions ["Energy is what snipes get from mushrooms."       ; TODO CHANGE FOR NEW FIELDS
-                      "Preference for large (positive number) or small (negative number) mushrooms."
-                      "Name of snipe's subenv"
-                      "x coordinate in underlying grid"
-                      "y coordinate in underlying grid"
-                      "Age of snipe"
-                      "Maximum age"
-                      "Boolean indicating whether circled in GUI"]
-        types [java.lang.Double java.lang.Double java.lang.String java.lang.Integer java.lang.Integer ; TODO CHANGE FOR NEW FIELDS
-               java.lang.Integer java.lang.Integer java.lang.Boolean]                                 ; TODO CHANGE FOR NEW FIELDS
-        read-write [false false false false false false false true] ; allow user to turn off circled in UI ; TODO CHANGE FOR NEW FIELDS
-        names (mapv name kys)
-        num-properties (count kys)
-        hidden     (vec (repeat num-properties false)) ; no properties specified here are to be hidden from GUI
-        get-curr-snipe (fn [] ((:snipe-map (:popenv @cfg-data$)) id))] ; find current version of this snipe
-    (reset! (:circled$ (get-curr-snipe)) true) ; make-properties is only called by inspector, in which case highlight snipe in UI
-    (proxy [Properties] []
-      (getObject [] (get-curr-snipe))
-      (getName [i] (names i))
-      (getDescription [i] (descriptions i))
-      (getType [i] (types i))
-      (getValue [i]
-        (let [v ((kys i) (get-curr-snipe))]
-          (cond (atom? v) @v
-                (keyword? v) (name v)
-                :else v)))
-      (setValue [i newval]                  ; allow user to turn off circled in UI  ; POSS CHANGE FOR NEW FIELDS
-        (when (= i circled-idx)             ; returns nil/null for other fields
-          (reset! (:circled$ (get-curr-snipe))
-                  (Boolean/valueOf newval)))) ; it's always a string that's returned from UI. (Do *not* use (Boolean. newval); it's always truthy in Clojure.)
-      (isHidden [i] (hidden i))
-      (isReadWrite [i] (read-write i))
-      (isVolatile [] false)
-      (numProperties [] num-properties)
-      (toString [] (str "<SimpleProperties: snipe id=" id ">")))))
+;; NOTE this *must* come after make-properties; a forward declare isn't enough for partial.
+(def make-properties-for-snipes 
+  (partial make-properties
+           [:energy :mush-pref :subenv :x :y :age :lifespan]
+           ["Energy is what snipes get from mushrooms."
+            "Preference for large (positive number) or small (negative number) mushrooms."
+            "Name of snipe's subenv"
+            "x coordinate in underlying grid"
+            "y coordinate in underlying grid"
+            "Age of snipe"
+            "Maximum age"]
+            [java.lang.Double java.lang.Double java.lang.String java.lang.Integer 
+             java.lang.Integer java.lang.Integer java.lang.Integer]))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
