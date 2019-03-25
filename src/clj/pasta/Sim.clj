@@ -130,7 +130,7 @@
   [args]
   (apply -main args)) ; have to use apply since already in a seq
 
-;; Is this ever called??
+;; According to v19 manual p. 92, stop() is called at the end of the doLoop() method.
 (defn -stop
   [^Sim this]
   (let [^SimData sim-data$ (.simData this)
@@ -162,7 +162,7 @@
 ;; should be defined in the defsim statement above using :exposes-methods.
 ;; However, if you always use MASON capabilities to end simulations (e.g.
 ;; using -for or -until on the command line), you don't need to call
-;; superFinish, and this function here will automatically get called.
+;; superFinish, and the function below will automatically get called.
 ;; (I think that line 662 of SimState.java might be where this happens.)
 (defn -finish
   [^Sim this]
