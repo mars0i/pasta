@@ -47,24 +47,24 @@
          (max (* -0.5 Math/PI) 
               orientation)))) ; even given normalization some schemes might produce values outside the range
 
-(defn make-properties-for-snipes 
-  [id get-curr-obj]
-  (props/make-properties
-    id get-curr-obj
-    [:energy "Energy is what snipes get from mushrooms." java.lang.Double]
-    [:mush-pref "Preference for large (positive number) or small (negative number) mushrooms." java.lang.Double]
-    [:subenv "Name of snipe's subenv" java.lang.String]
-    [:x "x coordinate in underlying grid" java.lang.Integer]
-    [:y "y coordinate in underlying grid" java.lang.Integer]
-    [:age "Age of snipe" java.lang.Integer]
-    [:lifespan "Maximum age" java.lang.Integer]))
-
 (defn make-get-curr-obj
   "Return a function that can be the value of getObject in Properties,
   i.e. that will return the current time-slice of a particular snipe.
   The function returned will be a closure over snipe-id and cfg-data$."
   [id cfg-data$] ; pass cfg-data$ and not @cfg-data$ so the fn always uses the latest data.
   (fn [] ((:snipe-map (:popenv @cfg-data$)) id)))
+
+(defn make-properties-for-snipes 
+  [id get-curr-obj]
+  (props/make-properties
+    id get-curr-obj
+    [:energy    java.lang.Double "Energy is what snipes get from mushrooms."]
+    [:mush-pref java.lang.Double "Preference for large (positive number) or small (negative number) mushrooms."]
+    [:subenv    java.lang.String "Name of snipe's subenv"]
+    [:x         java.lang.Integer "x coordinate in underlying grid"]
+    [:y         java.lang.Integer "y coordinate in underlying grid"]
+    [:age       java.lang.Integer "Age of snipe"]
+    [:lifespan  java.lang.Integer "Maximum age"]))
 
 ;; The two atom fields at the end are there solely for interactions with the UI.
 ;; Propertied/properties is used by GUI to allow inspectors to follow a fnlly updated agent.
