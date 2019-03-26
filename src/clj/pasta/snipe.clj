@@ -59,6 +59,12 @@
     [:age "Age of snipe" java.lang.Integer]
     [:lifespan "Maximum age" java.lang.Integer]))
 
+(defn make-get-curr-obj
+  "Return a function that can be the value of getObject in Properties,
+  i.e. that will return the current time-slice of a particular snipe.
+  The function returned will be a closure over snipe-id and cfg-data$."
+  [id cfg-data$] ; pass cfg-data$ and not @cfg-data$ so the fn always uses the latest data.
+  (fn [] ((:snipe-map (:popenv @cfg-data$)) id)))
 
 ;; The two atom fields at the end are there solely for interactions with the UI.
 ;; Propertied/properties is used by GUI to allow inspectors to follow a fnlly updated agent.
