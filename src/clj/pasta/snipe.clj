@@ -7,8 +7,9 @@
 (ns pasta.snipe
   (:require [clojure.math.numeric-tower :as math]
             [pasta.perception :as perc]
-            [utils.random :as ran])
-  (:import [sim.util Properties SimpleProperties Propertied]
+            [utils.random :as ran]
+            [masonclj.properties :as props])
+  (:import [sim.util Properties SimpleProperties Propertied] ;; TODO CAN I DELETE
            [sim.portrayal Oriented2D])
   (:gen-class                 ; so it can be aot-compiled
      :name pasta.snipe)) ; without :name other aot classes won't find it
@@ -45,6 +46,19 @@
     (min (* 0.5 Math/PI)
          (max (* -0.5 Math/PI) 
               orientation)))) ; even given normalization some schemes might produce values outside the range
+
+(def make-properties-for-snipes 
+  [id get-curr-obj]
+  (props/make-properties
+    id get-curr-obj
+    [:energy "Energy is what snipes get from mushrooms." java.lang.Double]
+    [:mush-pref "Preference for large (positive number) or small (negative number) mushrooms." java.lang.Double]
+    [:subenv "Name of snipe's subenv" java.lang.String]
+    [:x "x coordinate in underlying grid" java.lang.Integer]
+    [:y "y coordinate in underlying grid" java.lang.Integer]
+    [:age "Age of snipe" java.lang.Integer]
+    [:lifespan "Maximum age" java.lang.Integer]))
+
 
 ;; The two atom fields at the end are there solely for interactions with the UI.
 ;; Propertied/properties is used by GUI to allow inspectors to follow a fnlly updated agent.
