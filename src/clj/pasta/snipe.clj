@@ -18,7 +18,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; INITIAL UTILITY DEFS
 
-(declare make-properties make-k-snipe make-r-snipe is-k-snipe? is-r-snipe? rand-energy atom?)
+(declare -properties make-k-snipe make-r-snipe is-k-snipe? is-r-snipe? rand-energy)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; DEFRECORD CLASS DEFS
@@ -47,7 +47,7 @@
          (max (* -0.5 Math/PI) 
               orientation)))) ; even given normalization some schemes might produce values outside the range
 
-(def make-properties-for-snipes 
+(defn make-properties-for-snipes 
   [id get-curr-obj]
   (props/make-properties
     id get-curr-obj
@@ -74,7 +74,7 @@
 (defrecord KSnipe [id perceive mush-pref energy subenv x y age lifespan circled$ cfg-data$]
   Propertied
   (properties [original-snipe]
-    (make-properties-for-snipes id (make-get-curr-object id cfg-data$)))
+    (make-properties-for-snipes id (make-get-curr-obj id cfg-data$)))
   Oriented2D
   (orientation2D [this] (pref-orientation -0.0004 0.0004 (:mush-pref this))) ; TODO FIX THESE HARCODED VALUES?
   Object
@@ -84,7 +84,7 @@
 (defrecord SSnipe [id perceive mush-pref energy subenv x y age lifespan circled$ cfg-data$]
   Propertied
   (properties [original-snipe]
-    (make-properties-for-snipes id (make-get-curr-object id cfg-data$)))
+    (make-properties-for-snipes id (make-get-curr-obj id cfg-data$)))
   Oriented2D
   (orientation2D [this] (pref-orientation -0.0004 0.0004 (:mush-pref this))) ; TODO FIX THESE HARCODED VALUES?
   Object
@@ -100,7 +100,7 @@
 (defrecord RSnipe [id perceive mush-pref energy subenv x y age lifespan circled$ cfg-data$] ; r-snipe that prefers small mushrooms
   Propertied
   (properties [original-snipe]
-    (make-properties-for-snipes id (make-get-curr-object id cfg-data$)))
+    (make-properties-for-snipes id (make-get-curr-obj id cfg-data$)))
   Object
   (toString [this] (str "<RSnipe #" id ">")))
 
@@ -185,54 +185,52 @@
 ;; (Code below makes use of the fact that in Clojure, vectors can be treated as functions
 ;; of indexes, returning the indexed item; that keywords such as :x can be treated as 
 ;; functions of maps; and that defrecords such as snipes can be treated as maps.)
-(defn make-properties
-  "Return a Properties subclass for use by Propertied's properties method so
-  that certain fields can be displayed in the GUI on request."
-  [id cfg-data$]
-  ;; These definitions need to be coordinated by hand:
-  (let [kys [:energy :mush-pref :subenv :x :y :age :lifespan :circled$] ; TODO CHANGE FOR NEW FIELDS
-        circled-idx 7 ; HARDCODED INDEX for circled$ field              ; TODO CHANGE FOR NEW FIELDS
-        descriptions ["Energy is what snipes get from mushrooms."       ; TODO CHANGE FOR NEW FIELDS
-                      "Preference for large (positive number) or small (negative number) mushrooms."
-                      "Name of snipe's subenv"
-                      "x coordinate in underlying grid"
-                      "y coordinate in underlying grid"
-                      "Age of snipe"
-                      "Maximum age"
-                      "Boolean indicating whether circled in GUI"]
-        types [java.lang.Double java.lang.Double java.lang.String java.lang.Integer java.lang.Integer ; TODO CHANGE FOR NEW FIELDS
-               java.lang.Integer java.lang.Integer java.lang.Boolean]                                 ; TODO CHANGE FOR NEW FIELDS
-        read-write [false false false false false false false true] ; allow user to turn off circled in UI ; TODO CHANGE FOR NEW FIELDS
-        names (mapv name kys)
-        num-properties (count kys)
-        hidden     (vec (repeat num-properties false)) ; no properties specified here are to be hidden from GUI
-        get-curr-snipe (fn [] ((:snipe-map (:popenv @cfg-data$)) id))] ; find current version of this snipe
-    (reset! (:circled$ (get-curr-snipe)) true) ; make-properties is only called by inspector, in which case highlight snipe in UI
-    (proxy [Properties] []
-      (getObject [] (get-curr-snipe))
-      (getName [i] (names i))
-      (getDescription [i] (descriptions i))
-      (getType [i] (types i))
-      (getValue [i]
-        (let [v ((kys i) (get-curr-snipe))]
-          (cond (atom? v) @v
-                (keyword? v) (name v)
-                :else v)))
-      (setValue [i newval]                  ; allow user to turn off circled in UI  ; POSS CHANGE FOR NEW FIELDS
-        (when (= i circled-idx)             ; returns nil/null for other fields
-          (reset! (:circled$ (get-curr-snipe))
-                  (Boolean/valueOf newval)))) ; it's always a string that's returned from UI. (Do *not* use (Boolean. newval); it's always truthy in Clojure.)
-      (isHidden [i] (hidden i))
-      (isReadWrite [i] (read-write i))
-      (isVolatile [] false)
-      (numProperties [] num-properties)
-      (toString [] (str "<SimpleProperties: snipe id=" id ">")))))
+;(defn make-properties
+;  "Return a Properties subclass for use by Propertied's properties method so
+;  that certain fields can be displayed in the GUI on request."
+;  [id cfg-data$]
+;  ;; These definitions need to be coordinated by hand:
+;  (let [kys [:energy :mush-pref :subenv :x :y :age :lifespan :circled$] ; TODO CHANGE FOR NEW FIELDS
+;        circled-idx 7 ; HARDCODED INDEX for circled$ field              ; TODO CHANGE FOR NEW FIELDS
+;        descriptions ["Energy is what snipes get from mushrooms."       ; TODO CHANGE FOR NEW FIELDS
+;                      "Preference for large (positive number) or small (negative number) mushrooms."
+;                      "Name of snipe's subenv"
+;                      "x coordinate in underlying grid"
+;                      "y coordinate in underlying grid"
+;                      "Age of snipe"
+;                      "Maximum age"
+;                      "Boolean indicating whether circled in GUI"]
+;        types [java.lang.Double java.lang.Double java.lang.String java.lang.Integer java.lang.Integer ; TODO CHANGE FOR NEW FIELDS
+;               java.lang.Integer java.lang.Integer java.lang.Boolean]                                 ; TODO CHANGE FOR NEW FIELDS
+;        read-write [false false false false false false false true] ; allow user to turn off circled in UI ; TODO CHANGE FOR NEW FIELDS
+;        names (mapv name kys)
+;        num-properties (count kys)
+;        hidden     (vec (repeat num-properties false)) ; no properties specified here are to be hidden from GUI
+;        get-curr-snipe (fn [] ((:snipe-map (:popenv @cfg-data$)) id))] ; find current version of this snipe
+;    (reset! (:circled$ (get-curr-snipe)) true) ; make-properties is only called by inspector, in which case highlight snipe in UI
+;    (proxy [Properties] []
+;      (getObject [] (get-curr-snipe))
+;      (getName [i] (names i))
+;      (getDescription [i] (descriptions i))
+;      (getType [i] (types i))
+;      (getValue [i]
+;        (let [v ((kys i) (get-curr-snipe))]
+;          (cond (atom? v) @v
+;                (keyword? v) (name v)
+;                :else v)))
+;      (setValue [i newval]                  ; allow user to turn off circled in UI  ; POSS CHANGE FOR NEW FIELDS
+;        (when (= i circled-idx)             ; returns nil/null for other fields
+;          (reset! (:circled$ (get-curr-snipe))
+;                  (Boolean/valueOf newval)))) ; it's always a string that's returned from UI. (Do *not* use (Boolean. newval); it's always truthy in Clojure.)
+;      (isHidden [i] (hidden i))
+;      (isReadWrite [i] (read-write i))
+;      (isVolatile [] false)
+;      (numProperties [] num-properties)
+;      (toString [] (str "<SimpleProperties: snipe id=" id ">")))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MISCELLANEOUS LITTLE FUNCTIONS
-
-(defn atom? [x] (instance? clojure.lang.Atom x)) ; This is unlikely to become part of clojure.core: http://dev.clojure.org/jira/browse/CLJ-1298
 
 ;; SHOULD THIS BE GAUSSIAN?
 ;; Is birth-threshold the right limit?
@@ -253,51 +251,3 @@
 (defn k-snipe? [s] (instance? pasta.snipe.KSnipe s))
 (defn r-snipe? [s] (instance? pasta.snipe.RSnipe s))
 (defn s-snipe? [s] (instance? pasta.snipe.SSnipe s))
-
-;; Bottleneck with threads?
-;(defn next-id 
-;  "Returns a unique integer for use as an id."
-;  [] 
-;  (Long. (str (gensym ""))))
-
-; ;; OK THIS IS A BAD IDEA.  First, the initial def and .set runs in a different
-; ;; thread than the next-id calls.  That is fixed with the when-not that
-; ;; I added.  BUT THERE ARE NEW THREADS CREATED WHILE A RUN IS RUNNING,
-; ;; at least somes when you pause and restart the simulation.  So this 
-; ;; causes the numbering to restart with 1 over and over again within a
-; ;; run.
-; ;; 
-; ;; See https://stackoverflow.com/a/21608858/1455243
-; ;; Or use amalloy's wrapper:
-; ;; https://stackoverflow.com/a/7391714/1455243
-; ;; https://github.com/flatland/useful/blob/5de8a2ff32d351dcc931d0d10cdd4d67797bdc42/src/flatland/useful/utils.clj#L201
-; (def thread-prev-id$ (ThreadLocal.))
-; (.set thread-prev-id$ (atom 0))
-; (defn next-id 
-;   "Returns a unique thread-local integer for use as an id.  (Ids are 
-;   not reset at the beginning of subsequent runs in the same Java thread
-;   but if the application is started using MASON's -parallel flag, there
-;   will be a different sequence of ids in each thread.)"
-;   [] 
-;   (when-not (.get thread-prev-id$) 
-;     (.set thread-prev-id$ (atom 0)))
-;   (swap! (.get thread-prev-id$) inc))
-
-;; Alt version that I thought would be better, but it's not:
-;; Simple, non-gensym version means that max id tracks total number 
-;; of snipes that have lived.  Using a closure is an efficient way
-;; to make the id thread-local.  Storing it in the Sim instance data
-;; seems like a bit much.  FIXME NO it's not thread-local.  The function
-;; is global, so all parallel sessions will increment the same atom,
-;; just as when I made the atom global.  Note this is not a serious problem
-;; but it does mean that snipe id's don't reflect numbers of snipes in
-;; a single run.
-;(def ^{:doc "Returns the next integer for use as a snipe id."} next-id
-;  (let [prev-id$ (atom 0)]
-;    (fn [] (swap! prev-id$ inc))))
-
-;; Does gensym avoid bottleneck??
-;(defn next-id 
-;  "Returns a unique integer for use as an id."
-;  [] 
-;  (Long. (str (gensym ""))))
