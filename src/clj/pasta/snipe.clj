@@ -73,7 +73,8 @@
 ;; are nutritious.  This takes time and can involve eating many poisonous mushrooms.
 (defrecord KSnipe [id perceive mush-pref energy subenv x y age lifespan circled$ cfg-data$]
   Propertied
-  (properties [original-snipe] (make-properties id cfg-data$))
+  (properties [original-snipe]
+    (make-properties-for-snipes id (make-get-curr-object id cfg-data$)))
   Oriented2D
   (orientation2D [this] (pref-orientation -0.0004 0.0004 (:mush-pref this))) ; TODO FIX THESE HARCODED VALUES?
   Object
@@ -82,7 +83,8 @@
 ;; Social snipes learn from the preferences of other nearby snipes.
 (defrecord SSnipe [id perceive mush-pref energy subenv x y age lifespan circled$ cfg-data$]
   Propertied
-  (properties [original-snipe] (make-properties id cfg-data$))
+  (properties [original-snipe]
+    (make-properties-for-snipes id (make-get-curr-object id cfg-data$)))
   Oriented2D
   (orientation2D [this] (pref-orientation -0.0004 0.0004 (:mush-pref this))) ; TODO FIX THESE HARCODED VALUES?
   Object
@@ -97,7 +99,8 @@
 ;; that have the "right" preference can usually reproduce more quickly than k-snipes.
 (defrecord RSnipe [id perceive mush-pref energy subenv x y age lifespan circled$ cfg-data$] ; r-snipe that prefers small mushrooms
   Propertied
-  (properties [original-snipe] (make-properties id cfg-data$))
+  (properties [original-snipe]
+    (make-properties-for-snipes id (make-get-curr-object id cfg-data$)))
   Object
   (toString [this] (str "<RSnipe #" id ">")))
 
