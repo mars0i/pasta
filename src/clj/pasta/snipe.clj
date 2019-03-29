@@ -97,12 +97,23 @@
 ;; size mushrooms, which may be the poisonous kind in their environment--or not.
 ;; Their children might have either size preference.  This means that the ones
 ;; that have the "right" preference can usually reproduce more quickly than k-snipes.
-(defrecord RSnipe [id perceive mush-pref energy subenv x y age lifespan circled$ cfg-data$] ; r-snipe that prefers small mushrooms
-  Propertied
-  (properties [original-snipe]
-    (make-properties-for-snipes id (make-get-curr-obj id cfg-data$)))
-  Object
-  (toString [this] (str "<RSnipe #" id ">")))
+;(defrecord RSnipe [id perceive mush-pref energy subenv x y age lifespan circled$ cfg-data$] ; r-snipe that prefers small mushrooms
+;  Propertied
+;  (properties [original-snipe]
+;    (make-properties-for-snipes id (make-get-curr-obj id cfg-data$)))
+;  Object
+;  (toString [this] (str "<RSnipe #" id ">")))
+
+(props/defagent RSnipe [perceive mush-pref energy subenv x y age lifespan cfg-data$]
+  (make-get-curr-obj id cfg-data$)
+  [[:energy    java.lang.Double "Energy is what snipes get from mushrooms."]
+   [:mush-pref java.lang.Double "Preference for large (positive number) or small (negative number) mushrooms."]
+    [:subenv    java.lang.String "Name of snipe's subenv"]
+    [:x         java.lang.Integer "x coordinate in underlying grid"]
+    [:y         java.lang.Integer "y coordinate in underlying grid"]
+    [:age       java.lang.Integer "Age of snipe"]
+    [:lifespan  java.lang.Integer "Maximum age"]])
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; SNIPE MAKER FUNCTIONS
@@ -132,8 +143,8 @@
   [rng cfg-data$ energy subenv new-id x y]
   (let [extreme-pref (:extreme-pref @cfg-data$)]
     (if (< (ran/next-double rng) 0.5)
-      (RSnipe. new-id perc/r-snipe-pref (- extreme-pref) energy subenv x y 0 (calc-lifespan rng @cfg-data$) (atom false) cfg-data$)
-      (RSnipe. new-id perc/r-snipe-pref extreme-pref     energy subenv x y 0 (calc-lifespan rng @cfg-data$) (atom false) cfg-data$))))
+      (RSnipe. (atom false) new-id perc/r-snipe-pref (- extreme-pref) energy subenv x y 0 (calc-lifespan rng @cfg-data$) cfg-data$)
+      (RSnipe. (atom false) new-id perc/r-snipe-pref extreme-pref     energy subenv x y 0 (calc-lifespan rng @cfg-data$) cfg-data$))))
 
 (defn make-s-snipe 
   [rng cfg-data$ energy subenv new-id x y]
