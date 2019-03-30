@@ -4,7 +4,7 @@
 
 ;(set! *warn-on-reflection* true)
 
-(ns pasta.UI
+(ns pasta.Pasta
   (:require [pasta.Sim :as sim]
             [clojure.math.numeric-tower :as math])
   (:import [pasta mush snipe Sim]
@@ -17,13 +17,25 @@
            [java.awt.geom Rectangle2D$Double] ; note wierd Clojure syntax for Java static nested class
            [java.awt Color])
   (:gen-class
-    :name pasta.UI
+    :name pasta.Pasta
     :extends sim.display.GUIState
     :main true
     :exposes {state {:get getState}}  ; accessor for field in superclass that will contain my Sim after main creates instances of this class with it.
     :exposes-methods {start superStart, quit superQuit, init superInit, getInspector superGetInspector}
     :state getUIState
     :init init-instance-state))
+
+;; This doesn't work, so the only way to control the string on top
+;; of the main application window is by naming this class.
+;(defn -getName-void
+;  "Overrides method in super. Should cause the returned string to be 
+;  displayed as title of config window of gui, but it doesn't.
+;  I think this is due to funny stuff tht MASON does with this method
+;  in GUIState: It's static so you shouldn't be able to override it,
+;  but MASON let's you do it anyway using reflection."
+;  See doc/getName.txt."
+;  [this]
+;  "pasta")
 
 ;; NOTE:
 ;; OrientedPortrayal2D shape options:
@@ -69,16 +81,6 @@
                :east-snipe-field-portrayal (HexaObjectGridPortrayal2D.)
                :east-mush-field-portrayal (HexaObjectGridPortrayal2D.)}])
 
-;(defn -getName-void
-;  "Overrides method in super. Should cause the returned string to be 
-;  displayed as title of config window of gui, but it doesn't.
-;  I think this is due to funny stuff tht MASON does with this method
-;  in GUIState: It's static so you shouldn't be able to override it,
-;  but MASON let's you do it anyway using reflection."
-;  See doc/getName.txt."
-;  [this]
-;  "pasta")
-
 (defn -getSimulationInspectedObject
   "Override methods in sim.display.GUIState so that UI can make graphs, etc."
   [this]
@@ -101,7 +103,7 @@
     ;(sim/record-commandline-args! args) 
     (when @sim/commandline$ (sim/set-sim-data-from-commandline! sim sim/commandline$)) ; we can do this in -main because we have a Sim
     (swap! (.simData sim) assoc :in-gui true) ; allow functions in Sim to check whether GUI is running
-    (.setVisible (Console. (pasta.UI. sim)) true)))  ; THIS IS WHAT CONNECTS THE GUI TO my SimState subclass Sim
+    (.setVisible (Console. (pasta.Pasta. sim)) true)))  ; THIS IS WHAT CONNECTS THE GUI TO my SimState subclass Sim
 
 (defn mein
   "Externally available wrapper for -main."
@@ -348,18 +350,18 @@
 (defn repl-gui
   "Convenience function to init and start GUI from the REPL.
   Returns the new Sim object.  Usage e.g.:
-  (use 'pasta.UI) 
+  (use 'pasta.Pasta) 
   (let [[sim ui] (repl-gui)] (def sim sim) (def ui ui)) ; considered bad practice--but convenient in this case
   (def data$ (.simData sim))"
   []
   (let [sim (Sim. (System/currentTimeMillis))
-        ui (pasta.UI. sim)]
+        ui (pasta.Pasta. sim)]
     (.setVisible (Console. ui) true)
     [sim ui]))
 
 (defmacro repl-gui-with-defs
   "Calls repl-gui to start the gui, then creates top-level definitions:
-  sim as a pasta.Sim (i.e. a SimState), ui as a pasta.UI
+  sim as a pasta.Sim (i.e. a SimState), ui as a pasta.Pasta
   (i.e. a GUIState) that references sim, and data$ as an atom containing 
   sim's SimData stru."
   []
