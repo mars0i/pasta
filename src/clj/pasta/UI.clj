@@ -69,12 +69,15 @@
                :east-snipe-field-portrayal (HexaObjectGridPortrayal2D.)
                :east-mush-field-portrayal (HexaObjectGridPortrayal2D.)}])
 
-(defn -getName-void
-  "Overrides method in super. Should cause the returned string to be 
-  displayed as title of config window of gui, but it doesn't.
-  See doc/getName.txt."
-  [this]
-  "pasta")
+;(defn -getName-void
+;  "Overrides method in super. Should cause the returned string to be 
+;  displayed as title of config window of gui, but it doesn't.
+;  I think this is due to funny stuff tht MASON does with this method
+;  in GUIState: It's static so you shouldn't be able to override it,
+;  but MASON let's you do it anyway using reflection."
+;  See doc/getName.txt."
+;  [this]
+;  "pasta")
 
 (defn -getSimulationInspectedObject
   "Override methods in sim.display.GUIState so that UI can make graphs, etc."
