@@ -49,63 +49,43 @@
 
 (defn make-get-curr-obj
   "Return a function that can be the value of getObject in Properties,
-  i.e. that will return the current time-slice of a particular snipe.
-  The function returned will be a closure over snipe-id and cfg-data$."
-  [id cfg-data$] ; pass cfg-data$ and not @cfg-data$ so the fn always uses the latest data.
-  (fn [] ((:snipe-map (:popenv @cfg-data$)) id)))
+  i.e. that will return the current time-slice of a particular snipe."
+  [cfg-data$ original-snipe] ; pass cfg-data$ and not @cfg-data$ so the fn always uses the latest data.
+  (fn [] ((:snipe-map (:popenv @cfg-data$)) (:id original-snipe))))
 
-(defn make-properties-for-snipes 
-  [id get-curr-obj]
-  (props/make-properties
-    id get-curr-obj
-    [:energy    java.lang.Double "Energy is what snipes get from mushrooms."]
-    [:mush-pref java.lang.Double "Preference for large (positive number) or small (negative number) mushrooms."]
+;; K-strategy snipes use individual learning to determine which size of mushrooms 
+;; are nutritious.  This takes time and can involve eating many poisonous mushrooms.
+(props/defagent KSnipe [id perceive mush-pref energy subenv x y age lifespan cfg-data$]
+  (partial make-get-curr-obj cfg-data$)
+  [[:energy    java.lang.Double "Energy is what snipes get from mushrooms."]
+   [:mush-pref java.lang.Double "Preference for large (positive number) or small (negative number) mushrooms."]
     [:subenv    java.lang.String "Name of snipe's subenv"]
     [:x         java.lang.Integer "x coordinate in underlying grid"]
     [:y         java.lang.Integer "y coordinate in underlying grid"]
     [:age       java.lang.Integer "Age of snipe"]
-    [:lifespan  java.lang.Integer "Maximum age"]))
-
-;; The two atom fields at the end are there solely for interactions with the UI.
-;; Propertied/properties is used by GUI to allow inspectors to follow a fnlly updated agent.
-
-;; K-strategy snipes use individual learning to determine which size of mushrooms 
-;; are nutritious.  This takes time and can involve eating many poisonous mushrooms.
-(defrecord KSnipe [id perceive mush-pref energy subenv x y age lifespan circled$ cfg-data$]
-  Propertied
-  (properties [original-snipe]
-    (make-properties-for-snipes id (make-get-curr-obj id cfg-data$)))
+    [:lifespan  java.lang.Integer "Maximum age"]]
   Oriented2D
-  (orientation2D [this] (pref-orientation -0.0004 0.0004 (:mush-pref this))) ; TODO FIX THESE HARCODED VALUES?
-  Object
-  (toString [_] (str "<KSnipe #" id">")))
+   (orientation2D [this] (pref-orientation -0.0004 0.0004 (:mush-pref this)))) ; TODO FIX THESE HARCODED VALUES?
 
 ;; Social snipes learn from the preferences of other nearby snipes.
-(defrecord SSnipe [id perceive mush-pref energy subenv x y age lifespan circled$ cfg-data$]
-  Propertied
-  (properties [original-snipe]
-    (make-properties-for-snipes id (make-get-curr-obj id cfg-data$)))
+(props/defagent SSnipe [id perceive mush-pref energy subenv x y age lifespan cfg-data$]
+  (partial make-get-curr-obj cfg-data$)
+  [[:energy    java.lang.Double "Energy is what snipes get from mushrooms."]
+   [:mush-pref java.lang.Double "Preference for large (positive number) or small (negative number) mushrooms."]
+    [:subenv    java.lang.String "Name of snipe's subenv"]
+    [:x         java.lang.Integer "x coordinate in underlying grid"]
+    [:y         java.lang.Integer "y coordinate in underlying grid"]
+    [:age       java.lang.Integer "Age of snipe"]
+    [:lifespan  java.lang.Integer "Maximum age"]]
   Oriented2D
-  (orientation2D [this] (pref-orientation -0.0004 0.0004 (:mush-pref this))) ; TODO FIX THESE HARCODED VALUES?
-  Object
-  (toString [_] (str "<SSnipe #" id">")))
-
-  ;  (let [extreme-pref (:extreme-pref @(:cfg-data$ this))] ; can I pull this out so doesn't have to run every time for every snipe?
-  ;    (pref-orientation (- extreme-pref) extreme-pref (:mush-pref this))))
+   (orientation2D [this] (pref-orientation -0.0004 0.0004 (:mush-pref this)))) ; TODO FIX THESE HARCODED VALUES?
 
 ;; r-strategy snipes don't learn: They go right to work eating their preferred
 ;; size mushrooms, which may be the poisonous kind in their environment--or not.
 ;; Their children might have either size preference.  This means that the ones
 ;; that have the "right" preference can usually reproduce more quickly than k-snipes.
-;(defrecord RSnipe [id perceive mush-pref energy subenv x y age lifespan circled$ cfg-data$] ; r-snipe that prefers small mushrooms
-;  Propertied
-;  (properties [original-snipe]
-;    (make-properties-for-snipes id (make-get-curr-obj id cfg-data$)))
-;  Object
-;  (toString [this] (str "<RSnipe #" id ">")))
-
-(props/defagent RSnipe [perceive mush-pref energy subenv x y age lifespan cfg-data$]
-  (make-get-curr-obj id cfg-data$)
+(props/defagent RSnipe [id perceive mush-pref energy subenv x y age lifespan cfg-data$]
+  (partial make-get-curr-obj cfg-data$)
   [[:energy    java.lang.Double "Energy is what snipes get from mushrooms."]
    [:mush-pref java.lang.Double "Preference for large (positive number) or small (negative number) mushrooms."]
     [:subenv    java.lang.String "Name of snipe's subenv"]
@@ -128,7 +108,8 @@
 
 (defn make-k-snipe 
   [rng cfg-data$ energy subenv new-id x y]
-  (KSnipe. new-id
+  (KSnipe. (atom false)      ; circled$ that defagent added at the front
+           new-id
            perc/k-snipe-pref ; perceive: function for responding to mushrooms
            0.0               ; mush-pref begins with indifference
            energy            ; initial energy level
@@ -136,7 +117,6 @@
            x y               ; location of snipe on grid
            0                 ; age of snipe
            (calc-lifespan rng @cfg-data$) ; lifespan
-           (atom false)      ; is snipe displayed circled in the GUI?
            cfg-data$))       ; contains global parameters for snipe operation
 
 (defn make-r-snipe
@@ -145,10 +125,12 @@
     (if (< (ran/next-double rng) 0.5)
       (RSnipe. (atom false) new-id perc/r-snipe-pref (- extreme-pref) energy subenv x y 0 (calc-lifespan rng @cfg-data$) cfg-data$)
       (RSnipe. (atom false) new-id perc/r-snipe-pref extreme-pref     energy subenv x y 0 (calc-lifespan rng @cfg-data$) cfg-data$))))
+               ; circled$ that defagent added at the front
 
 (defn make-s-snipe 
   [rng cfg-data$ energy subenv new-id x y]
-  (SSnipe. new-id
+  (SSnipe. (atom false)      ; circled$ that defagent added at the front
+           new-id
            perc/s-snipe-pref ; use simple r-snipe method but a different starting strategy
            0.0               ; will be set soon by s-snipe-pref
            energy
@@ -156,7 +138,6 @@
            x y
            0
            (calc-lifespan rng @cfg-data$)
-           (atom false)
            cfg-data$))
 
 (defn make-newborn-k-snipe 
