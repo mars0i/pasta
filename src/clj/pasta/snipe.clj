@@ -56,6 +56,9 @@
   [cfg-data$ original-snipe] ; pass cfg-data$ and not @cfg-data$ so the fn always uses the latest data.
   (fn [] ((:snipe-map (:popenv @cfg-data$)) (:id original-snipe))))
 
+;; NOTE: defagent defines a defrecord ClassName and a special constructor -->ClassName
+;; using make-get-curr-obj above:
+
 ;; K-strategy snipes use individual learning to determine which size of mushrooms 
 ;; are nutritious.  This takes time and can involve eating many poisonous mushrooms.
 (props/defagent KSnipe [id perceive mush-pref energy subenv x y age lifespan cfg-data$]
@@ -109,39 +112,38 @@
       (math/round (ran/next-gaussian rng mean sd))
       0)))
 
+;; NOTE use of special defagent constructors -->?Snipe below:
+
 (defn make-k-snipe 
   [rng cfg-data$ energy subenv new-id x y]
-  (KSnipe. (atom false)      ; circled$ that defagent added at the front
-           new-id
-           perc/k-snipe-pref ; perceive: function for responding to mushrooms
-           0.0               ; mush-pref begins with indifference
-           energy            ; initial energy level
-           subenv            ; :west or :east
-           x y               ; location of snipe on grid
-           0                 ; age of snipe
-           (calc-lifespan rng @cfg-data$) ; lifespan
-           cfg-data$))       ; contains global parameters for snipe operation
+  (-->KSnipe new-id
+             perc/k-snipe-pref ; perceive: function for responding to mushrooms
+             0.0               ; mush-pref begins with indifference
+             energy            ; initial energy level
+             subenv            ; :west or :east
+             x y               ; location of snipe on grid
+             0                 ; age of snipe
+             (calc-lifespan rng @cfg-data$) ; lifespan
+             cfg-data$))       ; contains global parameters for snipe operation
 
 (defn make-r-snipe
   [rng cfg-data$ energy subenv new-id x y]
   (let [extreme-pref (:extreme-pref @cfg-data$)]
     (if (< (ran/next-double rng) 0.5)
-      (RSnipe. (atom false) new-id perc/r-snipe-pref (- extreme-pref) energy subenv x y 0 (calc-lifespan rng @cfg-data$) cfg-data$)
-      (RSnipe. (atom false) new-id perc/r-snipe-pref extreme-pref     energy subenv x y 0 (calc-lifespan rng @cfg-data$) cfg-data$))))
-               ; circled$ that defagent added at the front
+      (-->RSnipe new-id perc/r-snipe-pref (- extreme-pref) energy subenv x y 0 (calc-lifespan rng @cfg-data$) cfg-data$)
+      (-->RSnipe new-id perc/r-snipe-pref extreme-pref     energy subenv x y 0 (calc-lifespan rng @cfg-data$) cfg-data$))))
 
 (defn make-s-snipe 
   [rng cfg-data$ energy subenv new-id x y]
-  (SSnipe. (atom false)      ; circled$ that defagent added at the front
-           new-id
-           perc/s-snipe-pref ; use simple r-snipe method but a different starting strategy
-           0.0               ; will be set soon by s-snipe-pref
-           energy
-           subenv
-           x y
-           0
-           (calc-lifespan rng @cfg-data$)
-           cfg-data$))
+  (-->SSnipe new-id
+             perc/s-snipe-pref ; use simple r-snipe method but a different starting strategy
+             0.0               ; will be set soon by s-snipe-pref
+             energy
+             subenv
+             x y
+             0
+             (calc-lifespan rng @cfg-data$)
+             cfg-data$))
 
 (defn make-newborn-k-snipe 
   [rng cfg-data$ subenv new-id x y]
