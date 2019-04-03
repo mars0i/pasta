@@ -129,9 +129,16 @@
 (defn make-r-snipe
   [rng cfg-data$ energy subenv new-id x y]
   (let [extreme-pref (:extreme-pref @cfg-data$)]
-    (if (< (ran/next-double rng) 0.5)
-      (-->RSnipe new-id perc/r-snipe-pref (- extreme-pref) energy subenv x y 0 (calc-lifespan rng @cfg-data$) cfg-data$)
-      (-->RSnipe new-id perc/r-snipe-pref extreme-pref     energy subenv x y 0 (calc-lifespan rng @cfg-data$) cfg-data$))))
+    (let [pref (if (< (ran/next-double rng) 0.5)
+                 (- extreme-pref)
+                 extreme-pref)]
+      (-->RSnipe new-id 
+                 perc/r-snipe-pref
+                 pref 
+                 energy 
+                 subenv x y 0 
+                 (calc-lifespan rng @cfg-data$)
+                 cfg-data$))))
 
 (defn make-s-snipe 
   [rng cfg-data$ energy subenv new-id x y]
