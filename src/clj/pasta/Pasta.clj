@@ -6,13 +6,16 @@
 
 (ns pasta.Pasta
   (:require [pasta.Sim :as sim]
+            [masonclj.properties :as props]
             [clojure.math.numeric-tower :as math])
   (:import [pasta mush snipe Sim]
            [sim.engine Steppable Schedule Stoppable]
            [sim.field.grid ObjectGrid2D] ; normally doesn't belong in UI: a hack to use a field portrayal to display a background pattern
            [sim.portrayal DrawInfo2D SimplePortrayal2D]
            [sim.portrayal.grid HexaObjectGridPortrayal2D]
-           [sim.portrayal.simple OvalPortrayal2D RectanglePortrayal2D CircledPortrayal2D ShapePortrayal2D OrientedPortrayal2D FacetedPortrayal2D]
+           [sim.portrayal.simple 
+             OvalPortrayal2D RectanglePortrayal2D CircledPortrayal2D 
+             ShapePortrayal2D OrientedPortrayal2D FacetedPortrayal2D]
            [sim.display Console Display2D]
            [java.awt.geom Rectangle2D$Double] ; note wierd Clojure syntax for Java static nested class
            [java.awt Color])
@@ -106,15 +109,6 @@
 
 ;; Possibly also define a load() method. See manual.
 
-(defn make-fnl-circled-portrayal
-  "Create a subclass of CircledPortrayal2D that tracks snipes by id
-  rather than by pointer identity."
-  [color child-portrayal]
-  (proxy [CircledPortrayal2D] [child-portrayal color false]
-    (draw [snipe graphics info]
-      (.setCircleShowing this @(:circled$ snipe))
-      (proxy-super draw snipe graphics info))))
-
 ;; TODO abstract out some of the repetition below
 (defn setup-portrayals
   [this-ui]  ; instead of 'this': avoid confusion with e.g. proxy below
@@ -160,7 +154,7 @@
                                         (set! (.-paint this) (east-mush-color-fn shade 200))
                                         (proxy-super draw mush graphics (DrawInfo2D. info org-offset org-offset))))) ; last arg centers organism in hex cell
         ;; r-snipes are displayed with one of two different shapes
-        r-snipe-portrayal (make-fnl-circled-portrayal Color/blue
+        r-snipe-portrayal (props/make-fnl-circled-portrayal Color/blue
                              ;; FacetedPortrayal2D chooses which of several portrayals to use:
                              (proxy [FacetedPortrayal2D] [(into-array ; make array of ShapePortrayal2Ds
                                                              ;; up triangle portrayal:
@@ -179,7 +173,7 @@
                                                                   (proxy-super draw snipe graphics (DrawInfo2D. info (* 0.75 org-offset) (* 0.55 org-offset)))))])] ; end of constructor arg
                                 (getChildIndex [snipe idxs] (if (pos? (:mush-pref snipe)) 0 1)))) ; determines which ShapePortrayal2D is chosen
         ;; k-snipes and s-snipes include pointers to display mush-prefs:
-        k-snipe-portrayal (make-fnl-circled-portrayal Color/red
+        k-snipe-portrayal (props/make-fnl-circled-portrayal Color/red
                              (OrientedPortrayal2D.
                                (proxy [OvalPortrayal2D] [(* 1.1 snipe-size)]
                                  (draw [snipe graphics info] ; override method in super
@@ -187,7 +181,7 @@
                                    (proxy-super draw snipe graphics (DrawInfo2D. info org-offset org-offset)))) ; see above re last arg
                                0 0.6 Color/red OrientedPortrayal2D/SHAPE_LINE))
         ;; This s-snipe is just an OrientedPortrayal2D on an (undrawn) SimplePortrayal2D (p. 226 of v19 manual):
-        s-snipe-portrayal (make-fnl-circled-portrayal Color/red
+        s-snipe-portrayal (props/make-fnl-circled-portrayal Color/red
                              (proxy [OrientedPortrayal2D] [(SimplePortrayal2D.) 0 0.425 Color/black OrientedPortrayal2D/SHAPE_KITE] ; color will be overridden
                                (draw [snipe graphics info] ; override method in super
                                  (set! (.-paint this) (s-snipe-color-fn effective-max-energy snipe)) ; superclass var
