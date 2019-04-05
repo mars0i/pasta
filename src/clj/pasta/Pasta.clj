@@ -10,9 +10,9 @@
   (:import [pasta mush snipe Sim]
            [sim.engine Steppable Schedule Stoppable]
            [sim.field.grid ObjectGrid2D] ; normally doesn't belong in UI: a hack to use a field portrayal to display a background pattern
-           [sim.portrayal DrawInfo2D SimpleInspector SimplePortrayal2D]
-           [sim.portrayal.grid HexaObjectGridPortrayal2D]; FastHexaObjectGridPortrayal2D ObjectGridPortrayal2D
-           [sim.portrayal.simple OvalPortrayal2D RectanglePortrayal2D CircledPortrayal2D ShapePortrayal2D OrientedPortrayal2D FacetedPortrayal2D] ; HexagonalPortrayal2D 
+           [sim.portrayal DrawInfo2D SimplePortrayal2D]
+           [sim.portrayal.grid HexaObjectGridPortrayal2D]
+           [sim.portrayal.simple OvalPortrayal2D RectanglePortrayal2D CircledPortrayal2D ShapePortrayal2D OrientedPortrayal2D FacetedPortrayal2D]
            [sim.display Console Display2D]
            [java.awt.geom Rectangle2D$Double] ; note wierd Clojure syntax for Java static nested class
            [java.awt Color])
@@ -24,18 +24,6 @@
     :exposes-methods {start superStart, quit superQuit, init superInit, getInspector superGetInspector}
     :state getUIState
     :init init-instance-state))
-
-;; This doesn't work, so the only way to control the string on top
-;; of the main application window is by naming this class.
-;(defn -getName-void
-;  "Overrides method in super. Should cause the returned string to be 
-;  displayed as title of config window of gui, but it doesn't.
-;  I think this is due to funny stuff tht MASON does with this method
-;  in GUIState: It's static so you shouldn't be able to override it,
-;  but MASON let's you do it anyway using reflection."
-;  See doc/getName.txt."
-;  [this]
-;  "pasta")
 
 ;; NOTE:
 ;; OrientedPortrayal2D shape options:
