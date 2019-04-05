@@ -370,5 +370,5 @@
     (def ui ui))
   (def data$ (.simData sim))
   (println "cfg is defined as a Sim (i.e. a SimState)")
-  (println "ui is defined as a UI (i.e. a GUIState)")
+  (println "ui is defined as a Example (i.e. a GUIState)")
   (println "data$ is defined as an atom containing cfg's SimData stru."))
