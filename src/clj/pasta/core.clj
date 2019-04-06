@@ -6,7 +6,7 @@
 
 (ns pasta.core
   (:require [pasta.Sim :as sim]
-            [pasta.Pasta :as ui]
+            [pasta.UI :as ui]
             [clojure.pprint]) ; for *print-right-margin*
   (:gen-class))
 

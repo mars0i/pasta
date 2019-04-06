@@ -4,7 +4,7 @@
 
 ;(set! *warn-on-reflection* true)
 
-(ns pasta.Pasta
+(ns pasta.UI
   (:require [pasta.Sim :as sim]
             [masonclj.properties :as props]
             [clojure.math.numeric-tower :as math])
@@ -20,13 +20,30 @@
            [java.awt.geom Rectangle2D$Double] ; note wierd Clojure syntax for Java static nested class
            [java.awt Color])
   (:gen-class
-    :name pasta.Pasta
+    :name pasta.UI
     :extends sim.display.GUIState
     :main true
+    :methods [^:static [getName [] java.lang.String]] ; see comment on getName, or getName.md in mmasonclj
     :exposes {state {:get getState}}  ; accessor for field in superclass that will contain my Sim after main creates instances of this class with it.
     :exposes-methods {start superStart, quit superQuit, init superInit, getInspector superGetInspector}
     :state getUIState
     :init init-instance-state))
+
+;; getName() is static in GUIState.  You can't actually override a static
+;; method, normally, in the sense that the method to run would be chosen
+;; at runtime by the actual class used.  Rather, with a static method,
+;; the declared class of a variable determines at compile time which 
+;; method to call.  *But* MASON uses reflection to figure out which
+;; method to call at runtime.  Nevertheless, this means that we need 
+;; a declaration in :methods, which you would not do for overriding
+;; non-static methods from a superclass.  Also, the declaration should 
+;; be declared static using metadata *on the entire declaration vector.
+(defn -getName 
+  "`\"Overrides\" the no-arg static getName() method in GUIState, and
+  returns the name to be displayed on the title bar of the main window."
+  []
+  "pasta")
+
 
 ;; NOTE:
 ;; OrientedPortrayal2D shape options:
@@ -94,7 +111,7 @@
     ;(sim/record-commandline-args! args) 
     (when @sim/commandline$ (sim/set-sim-data-from-commandline! sim sim/commandline$)) ; we can do this in -main because we have a Sim
     (swap! (.simData sim) assoc :in-gui true) ; allow functions in Sim to check whether GUI is running
-    (.setVisible (Console. (pasta.Pasta. sim)) true)))  ; THIS IS WHAT CONNECTS THE GUI TO my SimState subclass Sim
+    (.setVisible (Console. (pasta.UI. sim)) true)))  ; THIS IS WHAT CONNECTS THE GUI TO my SimState subclass Sim
 
 (defn mein
   "Externally available wrapper for -main."
@@ -332,18 +349,18 @@
 (defn repl-gui
   "Convenience function to init and start GUI from the REPL.
   Returns the new Sim object.  Usage e.g.:
-  (use 'pasta.Pasta) 
+  (use 'pasta.UI) 
   (let [[sim ui] (repl-gui)] (def sim sim) (def ui ui)) ; considered bad practice--but convenient in this case
   (def data$ (.simData sim))"
   []
   (let [sim (Sim. (System/currentTimeMillis))
-        ui (pasta.Pasta. sim)]
+        ui (pasta.UI. sim)]
     (.setVisible (Console. ui) true)
     [sim ui]))
 
 (defmacro repl-gui-with-defs
   "Calls repl-gui to start the gui, then creates top-level definitions:
-  sim as a pasta.Sim (i.e. a SimState), ui as a pasta.Pasta
+  sim as a pasta.Sim (i.e. a SimState), ui as a pasta.UI
   (i.e. a GUIState) that references sim, and data$ as an atom containing 
   sim's SimData stru."
   []

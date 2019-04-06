@@ -28,20 +28,20 @@
   :jvm-opts ["-Xms2g"]
   ;:resource-paths ["lib/*"]
   :source-paths ["src/clj"]
-  ;:main pasta.Pasta
-  :aot [pasta.mush pasta.snipe pasta.popenv pasta.Sim pasta.Pasta pasta.core]
-  ;:aot [pasta.Sim pasta.Pasta]
+  ;:main pasta.UI
+  :aot [pasta.mush pasta.snipe pasta.popenv pasta.Sim pasta.UI pasta.core]
+  ;:aot [pasta.Sim pasta.UI]
   :profiles {:nogui {:main pasta.Sim} ; execute this with 'lein with-profile nogui run'
-             :gui   {:main pasta.Pasta}      ; execute this with 'lein with-profile gui run'
+             :gui   {:main pasta.UI}      ; execute this with 'lein with-profile gui run'
              :core  {:main pasta.core}
              :uberjar {;:aot :all ; wrong order of compilation
-                       :prep-tasks [["compile" "pasta.Pasta"]
+                       :prep-tasks [["compile" "pasta.UI"]
                                     ["compile" "utils.random" "utils.random-utils" "pasta.mush" "pasta.snipe"
                                      "pasta.popenv" "pasta.perception" "pasta.stats" "pasta.Sim"
                                      "pasta.core"]]
                        ;:aot [utils.random utils.random-utils  ; spell out by hand so core isn't compiled too early
                        ;      pasta.mush pasta.snipe pasta.popenv pasta.perception ; doesn't work
-                       ;      pasta.stats pasta.Sim pasta.Pasta pasta.core]
+                       ;      pasta.stats pasta.Sim pasta.UI pasta.core]
                        :main pasta.core}}
 
   :target-path "target/%s"
