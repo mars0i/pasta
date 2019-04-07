@@ -50,18 +50,18 @@
 (defn make-get-curr-obj
   "Return a function that can be the value of getObject in Properties,
   i.e. that will return the current time-slice of a particular snipe.
-  The function passed to defagt should take a single argument--
+  The function passed to defagent should take a single argument--
   is the original time-slice of the snipe.  Use partial to make that
   function from this one."
   [cfg-data$ original-snipe] ; pass cfg-data$ and not @cfg-data$ so the fn always uses the latest data.
   (fn [] ((:snipe-map (:popenv @cfg-data$)) (:id original-snipe))))
 
-;; NOTE: defagt defines a defrecord ClassName and a special constructor -->ClassName
+;; NOTE: defagent defines a defrecord ClassName and a special constructor -->ClassName
 ;; using make-get-curr-obj above:
 
 ;; K-strategy snipes use individual learning to determine which size of mushrooms 
 ;; are nutritious.  This takes time and can involve eating many poisonous mushrooms.
-(props/defagt KSnipe [id perceive mush-pref energy subenv x y age lifespan cfg-data$]
+(props/defagent KSnipe [id perceive mush-pref energy subenv x y age lifespan cfg-data$]
   (partial make-get-curr-obj cfg-data$) ; get-object function will be a closure over cfg-data$
   [[:energy    java.lang.Double "Energy is what snipes get from mushrooms."]
    [:mush-pref java.lang.Double "Preference for large (positive number) or small (negative number) mushrooms."]
@@ -74,7 +74,7 @@
    (orientation2D [this] (pref-orientation -0.0004 0.0004 (:mush-pref this)))) ; TODO FIX THESE HARCODED VALUES?
 
 ;; Social snipes learn from the preferences of other nearby snipes.
-(props/defagt SSnipe [id perceive mush-pref energy subenv x y age lifespan cfg-data$]
+(props/defagent SSnipe [id perceive mush-pref energy subenv x y age lifespan cfg-data$]
   (partial make-get-curr-obj cfg-data$) ; get-object function will be a closure over cfg-data$
   [[:energy    java.lang.Double "Energy is what snipes get from mushrooms."]
    [:mush-pref java.lang.Double "Preference for large (positive number) or small (negative number) mushrooms."]
@@ -90,7 +90,7 @@
 ;; size mushrooms, which may be the poisonous kind in their environment--or not.
 ;; Their children might have either size preference.  This means that the ones
 ;; that have the "right" preference can usually reproduce more quickly than k-snipes.
-(props/defagt RSnipe [id perceive mush-pref energy subenv x y age lifespan cfg-data$]
+(props/defagent RSnipe [id perceive mush-pref energy subenv x y age lifespan cfg-data$]
   (partial make-get-curr-obj cfg-data$) ; get-object function will be a closure over cfg-data$
   [[:energy    java.lang.Double "Energy is what snipes get from mushrooms."]
    [:mush-pref java.lang.Double "Preference for large (positive number) or small (negative number) mushrooms."]
@@ -112,7 +112,7 @@
       (math/round (ran/next-gaussian rng mean sd))
       0)))
 
-;; NOTE use of special defagt constructors -->?Snipe below:
+;; NOTE use of special defagent constructors -->?Snipe below:
 
 (defn make-k-snipe 
   [rng cfg-data$ energy subenv new-id x y]
