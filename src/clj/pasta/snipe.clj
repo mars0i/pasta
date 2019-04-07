@@ -25,7 +25,7 @@
 
 ;; The real difference between snipe types is in perception/preferences occurs,
 ;; so you don't really need separate defrecords--except that it's easier to
-;; display snipes of different types differently in the UI if they're represented
+;; display snipes of different types differently in the GUI if they're represented
 ;; by different Java classes.
 
 ;; Notes on Orientation2D, etc.:

@@ -6,7 +6,7 @@
 
 (ns pasta.core
   (:require [pasta.Sim :as sim]
-            [pasta.UI :as ui]
+            [pasta.GUI :as gui]
             [clojure.pprint]) ; for *print-right-margin*
   (:gen-class))
 
@@ -21,10 +21,10 @@
 (defn -main
   "This function, core/main, examines the use-gui command line option, if
   it exists, to decide whether to run the main in Sim.clj or the main in
-  UI.clj (which will eventually run code in Sim)."
+  GUI.clj (which will eventually run code in Sim)."
   [& args]
   ;; The Sim isn't available yet, so store commandline args for later access by start():
   (sim/record-commandline-args! args) ; defined by defsim: records args in commandline$, defined above
   (if (and args (not (:use-gui (:options @sim/commandline$)))) ; if commandline options, default to no-gui unless use-gui is true
     (sim/mein args)  ; a wrapper around sim/main
-    (ui/mein args))) ; otherwise default to gui
+    (gui/mein args))) ; otherwise default to gui
