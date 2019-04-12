@@ -223,15 +223,15 @@
         loc-snipe-vec-maps (for [snipe snipes  ; make seq of maps with a coord pair as key and singleton seq containing snipe as val
                                  :let [next-loc (choose-next-loc rng snipe-field snipe)]] ; can be current loc
                              next-loc)
-        loc-snipe-vec-map (apply merge-with concat loc-snipe-vec-maps) ; convert sec of maps to a single map where snipe-vecs with same loc are concatenated
+        loc-snipe-vec-map (apply merge-with concat loc-snipe-vec-maps) ; convert seq of maps to a single map where snipe-vecs going to same loc are concatenated
         loc-snipe-map (into {}                                       ; collect several maps into one
-                            (for [[coords snipes] loc-snipe-vec-map] ; go through key-value pairs, where values are collections containing one or more snipes
-                              (let [len (count snipes)]              ; convert to key-value pairs where value is a snipe
+                            (for [[coords snipes] loc-snipe-vec-map] ; keys are target locs, vals are colls with one or more snipes
+                              (let [len (count snipes)]
                                 (if (= len 1)
-                                  [coords (first snipes)]                          ; when more than one
-                                  (let [mover (nth snipes (ran/rand-idx rng len))] ; randomly select one to move
-                                    (into {coords mover} (map (fn [snipe] {[(:x snipe) (:y snipe)] snipe}) ; and make others "move" to current loc
-                                                              (remove #(= mover %) snipes))))))))         ; (could be more efficient to leave them alone)
+                                  [coords (first snipes)]                          ; only one snipe wants this loc
+                                  (let [mover (nth snipes (ran/rand-idx rng len))] ; when more than one randomly select one to move
+                                    (into {coords mover} (map (fn [snipe] {[(:x snipe) (:y snipe)] snipe}) ; and make others "move" to where they were
+                                                              (remove #(= mover %) snipes))))))))          ; (could be more efficient to leave them alone)
         new-snipe-field (ObjectGrid2D. env-width env-height)]
     ;; Since we have a collection of all new snipe positions, including those
     ;; who remained in place, we can just place them on a fresh snipe-field:
