@@ -27,8 +27,6 @@
 ;;    (require '[utils.defsim :as defsim])
 ;;    (pprint (macroexpand-1 '<insert defsim call>))
 
-(def commandline$ (atom nil)) ; Used by record-commandline-args!, which is defined by defsim, and below
-
 ;; See https://stackoverflow.com/questions/8435681/how-to-convert-a-clojure-string-of-numbers-into-separate-integers
 ;; and https://stackoverflow.com/questions/2640169/whats-the-easiest-way-to-parse-numbers-in-clojure:
 (defn string-to-map
