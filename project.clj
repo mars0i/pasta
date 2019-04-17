@@ -9,7 +9,7 @@
                  [org.clojure/data.csv "0.1.3"]
                  [org.clojure/algo.generic "0.1.2"]
                  [com.rpl/specter "1.0.0"]
-                 [mars0i/masonclj "0.1.0"]
+                 [mars0i/masonclj "0.2.0"]
                  ;[incanter "1.5.7"]
                  ;[criterium "0.4.4"] ; to use, e.g.: (use '[criterium.core :as c])
                  [mason "19"] ; (slightly hacked version) can be installed in local maven repo: uncomment lein-localrepo below, run 'lein localrepo install lib/mason.19.noAddlApps.jar mason 19'
