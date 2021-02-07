@@ -4,6 +4,8 @@
 
 ;(set! *warn-on-reflection* true)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Functions that adjust snipes' preferences in response to experience
 (ns pasta.perception
   (:require [clojure.algo.generic.math-functions :as amath]
             [pasta.mush :as mu]

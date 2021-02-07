@@ -4,6 +4,8 @@
 
 ;(set! *warn-on-reflection* true)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Function to writes a Clojure map to a csv file
 (ns utils.map2csv
   (:require [clojure.data.csv :as csv]
             [clojure.java.io :as io]

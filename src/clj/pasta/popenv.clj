@@ -4,6 +4,11 @@
 
 ;(set! *warn-on-reflection* true)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Population-environment system: main controlling code for pasta
+;; Defines environments, contains routines for movement, eating,
+;; birth, death.  This code is called by setup and main loop
+;; code in the class that extends the MASON Sim class.
 (ns pasta.popenv
   (:require [pasta.snipe :as sn]
             [pasta.mush :as mu]

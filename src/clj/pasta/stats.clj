@@ -4,6 +4,8 @@
 
 ;(set! *warn-on-reflection* true)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Functions to collect summary statistics about snipes
 (ns pasta.stats
   (:require [pasta.snipe :as sn]
             [utils.map2csv :as m2c]

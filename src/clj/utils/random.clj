@@ -4,6 +4,8 @@
 
 ;(set! *warn-on-reflection* true)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Basic random number generating functions
 (ns utils.random
   (:import [ec.util MersenneTwisterFast]))
   ;; https://cs.gmu.edu/~sean/research/mersenne/ec/util/MersenneTwisterFast.html
