@@ -3,11 +3,10 @@
   :url "https://github.com/mars0i/pasta"
   :license {:name "Gnu General Public License version 3.0"
             :url "http://www.gnu.org/copyleft/gpl.html"}
-  :dependencies [[org.clojure/clojure "1.10.0"]
+  :dependencies [[org.clojure/clojure "1.10.3"]
                  [org.clojure/math.numeric-tower "0.0.4"]
                  [org.clojure/tools.cli "0.4.1"]
                  [org.clojure/data.csv "0.1.3"]
-                 [org.clojure/algo.generic "0.1.2"]
                  [com.rpl/specter "1.0.0"]
                  [mars0i/masonclj "0.2.0"]
                  ;[incanter "1.5.7"]

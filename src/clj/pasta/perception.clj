@@ -5,8 +5,7 @@
 ;(set! *warn-on-reflection* true)
 
 (ns pasta.perception
-  (:require [clojure.algo.generic.math-functions :as amath]
-            [pasta.mush :as mu]
+  (:require [pasta.mush :as mu]
             [utils.random :as ran]
             [utils.random-utils :as ranu])
   (:import [sim.field.grid Grid2D ObjectGrid2D]
