@@ -4,6 +4,8 @@
 
 ;(set! *warn-on-reflection* true)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Definition and constructors for mushrooms
 (ns pasta.mush
   (:require [utils.random :as ran])
   (:gen-class                ; so it can be aot-compiled

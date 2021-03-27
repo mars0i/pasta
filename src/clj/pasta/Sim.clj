@@ -4,6 +4,17 @@
 
 ;(set! *warn-on-reflection* true)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; pasta's main Sim class, which extends MASON's sim.engine.SimState
+;; That this inherits from SimStatei s not obvious below--this task
+;; is done along with a lot of other stuff by the big 
+;; mason.params/defparams call below.  (The resulting opacity is
+;; a side effect of the need to provide a number of coordinated
+;; declarations and function definitions for proper interaction
+;; between MASON and Clojure.
+;; This file also defines several functions that SimState expects
+;; to be defined here, for example setting up MASON's initial state 
+;; and main loop.
 (ns pasta.Sim
   (:require [clojure.tools.cli]
             [clojure.data.csv :as csv]

@@ -4,6 +4,8 @@
 
 ;(set! *warn-on-reflection* true)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Utility functions for use with random numbers
 (ns utils.random-utils
   (:require [utils.random :as r])) ; different dependng on clj vs cljs
 

@@ -4,6 +4,9 @@
 
 ;(set! *warn-on-reflection* true)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Main GUI configuration class for pasta
+;; Extends MASON's sim.display.GUIState
 (ns pasta.GUI
   (:require [pasta.Sim :as sim]
             [masonclj.properties :as props]

@@ -4,6 +4,8 @@
 
 ;(set! *warn-on-reflection* true)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Clojure main function, and other central utility functions
 (ns pasta.core
   (:require [pasta.Sim :as sim]
             [pasta.GUI :as gui]

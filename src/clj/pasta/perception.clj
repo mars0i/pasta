@@ -4,6 +4,8 @@
 
 ;(set! *warn-on-reflection* true)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Functions that adjust snipes' preferences in response to experience
 (ns pasta.perception
   (:require [pasta.mush :as mu]
             [utils.random :as ran]

@@ -4,6 +4,9 @@
 
 ;(set! *warn-on-reflection* true)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Definitions, constructors, etc. for snipes
+;; Uses masonclj.properties/defagent
 (ns pasta.snipe
   (:require [clojure.math.numeric-tower :as math]
             [pasta.perception :as perc]
